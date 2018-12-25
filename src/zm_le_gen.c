@@ -329,7 +329,7 @@ zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn)
     zLESolveNormMinDST( q, c, wn, ans, m, v, idx2, s );
     zMulMatTMat( q, q, mn );
     for( i=0; i<zMatRowSizeNC(mn); i++ )
-      zMatElem(mn,i,i) -= 1.0;
+      zMatElemNC(mn,i,i) -= 1.0;
   }
 
  TERMINATE1:
@@ -390,7 +390,7 @@ zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat m, zVec v, z
   zMulMatTVecNC( a, b, v );
   zMatTQuadNC( a, we, m );
   for( i=0; i<zMatRowSizeNC(m); i++ )
-    zMatElem(m,i,i) += zVecElem(wn,i);
+    zMatElemNC(m,i,i) += zVecElemNC(wn,i);
   return zLESolveGaussDST( m, v, ans, index, s );
 }
 
@@ -458,10 +458,10 @@ zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zMat m
   if( we ) zVecAmpNCDRC( b, we );
   zMulMatTVecNC( a, b, v );
   for( i=0; i<zVecSizeNC(ref); i++ )
-    zVecElem(v,i) += zVecElem(wn,i) * zVecElem(ref,i);
+    zVecElemNC(v,i) += zVecElemNC(wn,i) * zVecElemNC(ref,i);
   zMatTQuadNC( a, we, m );
   for( i=0; i<zMatRowSizeNC(m); i++ )
-    zMatElem(m,i,i) += zVecElem(wn,i);
+    zMatElemNC(m,i,i) += zVecElemNC(wn,i);
   return zLESolveGaussDST( m, v, ans, index, s );
 }
 

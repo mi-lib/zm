@@ -134,12 +134,12 @@ bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v
     for( j=1; j<n-1; j++ ){
       r1 = 1.0 / zIPDelta(&ip->dat,j);
       r2 = 1.0 / zIPDelta(&ip->dat,j+1);
-      zVecSetElem( a, j, r1 );
-      zVecSetElem( b, j, 2 * ( r1 + r2 ) );
-      zVecSetElem( c, j, r2 );
+      zVecSetElemNC( a, j, r1 );
+      zVecSetElemNC( b, j, 2 * ( r1 + r2 ) );
+      zVecSetElemNC( c, j, r2 );
       r1 = 3.0 / zSqr( zIPDelta(&ip->dat,j) );
       r2 = 3.0 / zSqr( zIPDelta(&ip->dat,j+1) );
-      zVecSetElem( d, j,
+      zVecSetElemNC( d, j,
        -zIPSecVal(&ip->dat,j-1,i)* r1
        +zIPSecVal(&ip->dat,j  ,i)*(r1-r2)
        +zIPSecVal(&ip->dat,j+1,i)* r2 );
@@ -147,14 +147,14 @@ bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v
     /* setting of the edge type at the beginning point */
     switch( etype1 ){
     case ZSPLINE_FIX_EDGE:
-      zVecSetElem( b, 0, 1 );
-      zVecSetElem( d, 0, zVecElem(v1,i) );
+      zVecSetElemNC( b, 0, 1 );
+      zVecSetElemNC( d, 0, zVecElemNC(v1,i) );
       break;
     case ZSPLINE_FREE_EDGE:
       r1 = 1.0 / zIPDelta(&ip->dat,1);
-      zVecSetElem( b, 0, 2 * r1 );
-      zVecSetElem( c, 0,     r1 );
-      zVecSetElem( d, 0, 3.0*(zIPSecVal(&ip->dat,1,i)-zIPSecVal(&ip->dat,0,i))/zSqr( zIPDelta(&ip->dat,1) ) );
+      zVecSetElemNC( b, 0, 2 * r1 );
+      zVecSetElemNC( c, 0,     r1 );
+      zVecSetElemNC( d, 0, 3.0*(zIPSecVal(&ip->dat,1,i)-zIPSecVal(&ip->dat,0,i))/zSqr( zIPDelta(&ip->dat,1) ) );
       break;
     default:
       ZRUNERROR( ZM_ERR_IP_INVTYPE );
@@ -163,14 +163,14 @@ bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v
     /* setting of the edge type at the termination point */
     switch( etype2 ){
     case ZSPLINE_FIX_EDGE:
-      zVecSetElem( b, n-1, 1 );
-      zVecSetElem( d, n-1, zVecElem(v2,i) );
+      zVecSetElemNC( b, n-1, 1 );
+      zVecSetElemNC( d, n-1, zVecElemNC(v2,i) );
       break;
     case ZSPLINE_FREE_EDGE:
       r2 = 1.0 / zIPDelta(&ip->dat,n-1);
-      zVecSetElem( a, n-1, 2 * r2 );
-      zVecSetElem( b, n-1,     r2 );
-      zVecSetElem( d, n-1, 3.0*(zIPSecVal(&ip->dat,n-1,i)-zIPSecVal(&ip->dat,n-2,i))/zSqr(zIPDelta(&ip->dat,n-1)) );
+      zVecSetElemNC( a, n-1, 2 * r2 );
+      zVecSetElemNC( b, n-1,     r2 );
+      zVecSetElemNC( d, n-1, 3.0*(zIPSecVal(&ip->dat,n-1,i)-zIPSecVal(&ip->dat,n-2,i))/zSqr(zIPDelta(&ip->dat,n-1)) );
       break;
     default:
       ZRUNERROR( ZM_ERR_IP_INVTYPE );
@@ -179,7 +179,7 @@ bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v
     /* solving tridiagonal equation */
     zTridiagSolveDST( a, b, c, d, v );
     for( j=0; j<zIPSize(&ip->dat); j++ )
-      zVecArrayElem(&ip->dat.va,j,i) = zVecElem(v,j);
+      zVecArrayElem(&ip->dat.va,j,i) = zVecElemNC(v,j);
   }
   result = true;
   ip->com = &_zm_ip_com_spline;

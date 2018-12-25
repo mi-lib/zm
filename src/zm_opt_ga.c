@@ -87,7 +87,7 @@ zOptGAChromosome *zOptGAChromosomeXover(zOptGAChromosome *c1, zOptGAChromosome *
 
   ratio = c1->fitness / ( c1->fitness + c2->fitness );
   for( i=0; i<zVecSizeNC(c->gene); i++ )
-    zVecElem(c->gene,i) = zVecElem(c2->gene,i) + ratio * ( zVecElem(c1->gene,i) - zVecElem(c2->gene,i) );
+    zVecElemNC(c->gene,i) = zVecElemNC(c2->gene,i) + ratio * ( zVecElemNC(c1->gene,i) - zVecElemNC(c2->gene,i) );
   return c;
 }
 

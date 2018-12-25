@@ -57,15 +57,15 @@ void _zODESetWeight_Adams(zVec w, int step, double g0)
     ZALLOCERROR();
     return;
   }
-  for( zVecSetElem( g, 0, 1 ), i=1; i<step; i++ ){
-    zVecSetElem( g, i, g0 );
+  for( zVecSetElemNC( g, 0, 1 ), i=1; i<step; i++ ){
+    zVecSetElemNC( g, i, g0 );
     for( j=1; j<=i; j++ )
-      zVecElem(g,i) -= zVecElem(g,i-j) / (j+1);
+      zVecElemNC(g,i) -= zVecElemNC(g,i-j) / (j+1);
   }
   for( i=0; i<step; i++ ){
     for( j=i; j<step; j++ )
-      zVecElem(w,i) += zCombi(j,i) * zVecElem(g,j);
-    if( zIsOdd(i) ) zVecElem(w,i) = -zVecElem(w,i);
+      zVecElemNC(w,i) += zCombi(j,i) * zVecElemNC(g,j);
+    if( zIsOdd(i) ) zVecElemNC(w,i) = -zVecElemNC(w,i);
   }
   zVecFree( g );
 }

@@ -16,18 +16,18 @@ zVec zTridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans)
 
   n = zVecSize( a );
   for( i=1; i<n; i++ ){
-    if( zVecElem(b,i-1) == 0 ){
+    if( zVecElemNC(b,i-1) == 0 ){
       ZRUNERROR( ZM_ERR_LE_SINGULAR );
       return NULL;
     }
-    zVecElem(b,i) -= zVecElem(c,i-1) / zVecElem(b,i-1) * zVecElem(a,i);
-    zVecElem(d,i) -= zVecElem(d,i-1) / zVecElem(b,i-1) * zVecElem(a,i);
-    zVecSetElem( a, i, 0 );
+    zVecElemNC(b,i) -= zVecElemNC(c,i-1) / zVecElemNC(b,i-1) * zVecElemNC(a,i);
+    zVecElemNC(d,i) -= zVecElemNC(d,i-1) / zVecElemNC(b,i-1) * zVecElemNC(a,i);
+    zVecSetElemNC( a, i, 0 );
   }
-  zVecSetElem( ans, n-1, zVecElem(d,n-1)/zVecElem(b,n-1) );
+  zVecSetElemNC( ans, n-1, zVecElemNC(d,n-1)/zVecElemNC(b,n-1) );
   for( i=n-2; i>=0; i-- )
-    zVecSetElem( ans, i,
-      (zVecElem(d,i)-zVecElem(c,i)*zVecElem(ans,i+1)) / zVecElem(b,i) );
+    zVecSetElemNC( ans, i,
+      (zVecElemNC(d,i)-zVecElemNC(c,i)*zVecElemNC(ans,i+1)) / zVecElemNC(b,i) );
   return ans;
 }
 

@@ -27,7 +27,7 @@ bool zIPDataAlloc(zIPData *dat, zSeq *seq)
     return true;
   }
   zArrayAlloc( &dat->knot, zIPKnotCell, zListNum(seq) );
-  if( zArrayNum(&dat->knot) == 0 ) return false;
+  if( zArraySize(&dat->knot) == 0 ) return false;
   if( !zVecArrayAlloc( &dat->va, zVecSize(zListHead(seq)->data.v), zListNum(seq) ) ){
     ZALLOCERROR();
     zIPDataFree( dat );

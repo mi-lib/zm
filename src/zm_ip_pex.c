@@ -52,10 +52,10 @@ bool zPexIPAllocBoundary(zPexIP *pc, double term, double x1, double v1, double a
   zPexIPSetCoeff( pc,n1,    -k1*n*n2  +k2*(2*n-3)-    k3 );
   zPexIPSetCoeff( pc, n, 0.5*k1*n1*n2 -k2*n2     +0.5*k3 );
   for( i=3; i<=n3; i++ ){
-    zPexIPSetCoeff( pc, i, ( k1 = zVecElem( v, i-3 ) ) );
-    zVecElem(pc->c,n ) += -0.5*(n1-i)*(n2-i)*k1;
-    zVecElem(pc->c,n1) +=      (n-i) *(n2-i)*k1;
-    zVecElem(pc->c,n2) += -0.5*(n-i) *(n1-i)*k1;
+    zPexIPSetCoeff( pc, i, ( k1 = zVecElemNC( v, i-3 ) ) );
+    zVecElemNC(pc->c,n ) += -0.5*(n1-i)*(n2-i)*k1;
+    zVecElemNC(pc->c,n1) +=      (n-i) *(n2-i)*k1;
+    zVecElemNC(pc->c,n2) += -0.5*(n-i) *(n1-i)*k1;
   }
   return true;
 }
@@ -87,11 +87,11 @@ bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, zVec t, zVec x)
   }
   for( i=0; i<n; i++ ){
     for( j=0; j<zVecSizeNC(v); j++ )
-      zVecSetElem( v, j, pow( zVecElem(t,i)/term, j ) );
+      zVecSetElemNC( v, j, pow( zVecElemNC(t,i)/term, j ) );
     for( j=0; j<m; j++ ){
       for( k=0; k<m; k++ )
-        zMatElem(a,j,k) += zVecElem(v,j+k);
-      zVecElem(b,j) += zVecElem(x,i) * zVecElem(v,j);
+        zMatElemNC(a,j,k) += zVecElemNC(v,j+k);
+      zVecElemNC(b,j) += zVecElemNC(x,i) * zVecElemNC(v,j);
     }
   }
   zLESolveGauss( a, b, pc->c );

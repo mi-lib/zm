@@ -19,17 +19,17 @@ double zMatDetDST(zMat m, zIndex idx)
 
   zIndexOrder( idx, 0 );
   for( i=0; i<zMatRowSizeNC(m); i++ ){
-    p = zIndexElem( idx, i );
+    p = zIndexElemNC( idx, i );
     if( p != zPivoting( m, idx, i, i ) ){
       det = -det;
-      p = zIndexElem( idx, i );
+      p = zIndexElemNC( idx, i );
     }
-    if( zIsTiny( ( det *= zMatElem( m, p, i ) ) ) ) return 0;
+    if( zIsTiny( ( det *= zMatElemNC( m, p, i ) ) ) ) return 0;
     for( j=i+1; j<zMatRowSizeNC(m); j++ ){
-      q = zIndexElem( idx, j );
+      q = zIndexElemNC( idx, j );
       for( k=i+1; k<zMatRowSizeNC(m); k++ )
-        zMatElem(m,q,k) -=
-          zMatElem(m,p,k) / zMatElem(m,p,i) * zMatElem(m,q,i);
+        zMatElemNC(m,q,k) -=
+          zMatElemNC(m,p,k) / zMatElemNC(m,p,i) * zMatElemNC(m,q,i);
     }
   }
   return det;
@@ -90,12 +90,12 @@ zMat zMatAdj(zMat m, zMat adj)
         if( k == i ) continue;
         for( l=v=0; l<zMatColSizeNC(m); l++ ){
           if( l == j ) continue;
-          zMatSetElem( smat, u, v, zMatElem(m,k,l) );
+          zMatSetElemNC( smat, u, v, zMatElemNC(m,k,l) );
           v++;
 	}
         u++;
       }
-      zMatSetElem( adj, j, i,
+      zMatSetElemNC( adj, j, i,
         (i+j)%2 ? -zMatDetDST( smat, idx ) : zMatDetDST( smat, idx ) );
     }
   }
@@ -117,16 +117,16 @@ void _zBalancingMatDST(zMat m1, zMat m2, zVec s)
   /* column balancing */
   if( s )
     for( i=0; i<zMatColSizeNC(m1); i++ ){
-      zVecSetElem( s, i, fabs( zMatElem(m1,0,i) ) );
+      zVecSetElemNC( s, i, fabs( zMatBuf(m1)[i] ) );
       for( j=1; j<zMatRowSizeNC(m1); j++ ){
-        tmp = fabs( zMatElem(m1,j,i) );
-        if( tmp > zVecElem(s,i) ) zVecSetElem( s, i, tmp );
+        tmp = fabs( zMatElemNC(m1,j,i) );
+        if( tmp > zVecElem(s,i) ) zVecSetElemNC( s, i, tmp );
       }
       if( zVecElem(s,i) == 0 ) continue;
       /* inverse column-balancing factor */
-      zVecSetElem( s, i, 1.0 / zVecElem(s,i) );
+      zVecSetElemNC( s, i, 1.0 / zVecElem(s,i) );
       for( j=0; j<zMatRowSizeNC(m1); j++ )
-        zMatElem(m1,j,i) *= zVecElem(s,i);
+        zMatElemNC(m1,j,i) *= zVecElemNC(s,i);
     }
   /* row balancing */
   for( mp1=zMatBuf(m1), mp2=zMatBuf(m2), i=0; i<zMatRowSizeNC(m1); mp1+=zMatColSizeNC(m1), mp2+=zMatColSizeNC(m2), i++ ){
@@ -153,40 +153,40 @@ zMat _zMulInvMat(zMat m1, zMat m2, zMat m, zIndex idx, zVec s)
   /* forward elimination */
   for( i=0; i<n; i++ ){
     p = zPivoting( m1, idx, i, i );
-    if( ( head = zMatElem(m1,p,i) ) == 0 ){
+    if( ( head = zMatElemNC(m1,p,i) ) == 0 ){
       ZRUNERROR( ZM_ERR_LE_SINGULAR );
       return NULL;
     }
     head = 1.0 / head;
-    zMatSetElem( m1, p, i, 1 );
+    zMatSetElemNC( m1, p, i, 1 );
     for( j=i+1; j<n; j++ )
-      zMatElem(m1,p,j) *= head;
+      zMatElemNC(m1,p,j) *= head;
     for( j=0; j<zMatColSizeNC(m2); j++ )
-      zMatElem(m2,p,j) *= head;
+      zMatElemNC(m2,p,j) *= head;
     for( j=i+1; j<n; j++ ){
-      q = zIndexElem( idx, j );
-      if( !zIsTiny( head = zMatElem(m1,q,i) ) ){
+      q = zIndexElemNC( idx, j );
+      if( !zIsTiny( head = zMatElemNC(m1,q,i) ) ){
         for( k=i+1; k<n; k++ )
-          zMatElem(m1,q,k) -= zMatElem(m1,p,k) * head;
+          zMatElemNC(m1,q,k) -= zMatElemNC(m1,p,k) * head;
         for( k=0; k<zMatColSizeNC(m2); k++ )
-          zMatElem(m2,q,k) -= zMatElem(m2,p,k) * head;
+          zMatElemNC(m2,q,k) -= zMatElemNC(m2,p,k) * head;
       }
-      zMatSetElem( m1, q, i, 0 );
+      zMatSetElemNC( m1, q, i, 0 );
     }
   }
   /* backward elimination */
   for( i=n-1; i>=0; i-- ){
-    p = zIndexElem( idx, i );
+    p = zIndexElemNC( idx, i );
     for( j=0; j<zMatColSizeNC(m2); j++ ){
-      x = zMatElem( m2, p, j );
+      x = zMatElemNC( m2, p, j );
       for( k=n-1; k>i; k-- )
-        x -= zMatElem(m1,p,k)*zMatElem(m,k,j);
-      zMatSetElem( m, i, j, x );
+        x -= zMatElemNC(m1,p,k)*zMatElemNC(m,k,j);
+      zMatSetElemNC( m, i, j, x );
     }
   }
   if( s )
     for( i=0; i<n; i++ )
-      zRawVecMulDRC( &zMatElem(m,i,0), zVecElem(s,i), zMatColSizeNC(m) );
+      zRawVecMulDRC( zMatRowBuf(m,i), zVecElem(s,i), zMatColSizeNC(m) );
   return m;
 }
 
@@ -245,7 +245,7 @@ zMat zMulMatInvMat(zMat m1, zMat m2, zMat m)
     ZRUNERROR( ZM_ERR_NONSQR_MAT );
     return NULL;
   }
-  if( zMatRowSize(m1)!=zMatColSize(m2) || !zMatSizeIsEqual(m1,m) ){
+  if( zMatRowSize(m1) != zMatColSize(m2) || !zMatSizeIsEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MAT );
     return NULL;
   }
@@ -285,7 +285,7 @@ zMat zMatInv(zMat m, zMat im)
     return NULL;
   }
   if( zMatColSize(m) == 1 ){ /* scalar case */
-    im->elem[0] = 1.0 / m->elem[0];
+    zMatBuf(im)[0] = 1.0 / zMatBuf(m)[0];
   } else{
     zMatIdentNC( im );
     _zMulInvMatMatNC( m, im, im );
@@ -329,7 +329,7 @@ zMat zMatInvHotelling(zMat m, zMat im, double tol, int iter)
     /* evaluate */
     zMulMatMatNC( m, mn, tmp );
     for( j=0; j<zMatRowSizeNC(tmp); j++ )
-      zMatElem(tmp,j,j) -= 1.0;
+      zMatElemNC(tmp,j,j) -= 1.0;
     if( zMatIsTol( tmp, tol ) ){
       if( mc != im ) zMatCopy( mc, im );
       goto TERMINATE;

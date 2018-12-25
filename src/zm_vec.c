@@ -22,7 +22,7 @@ zVec zVecSetElemVList(zVec v, va_list args)
   register int i;
 
   for( i=0; i<zVecSizeNC(v); i++ )
-    zVecSetElem( v, i, (double)va_arg( args, double ) );
+    zVecSetElemNC( v, i, (double)va_arg( args, double ) );
   return v;
 }
 
@@ -300,11 +300,11 @@ int _zVecSortCmp(void *p1, void *p2, void *priv)
  */
 void zVecSort(zVec v, zIndex idx)
 {
-  if( zVecSizeNC(v) != zArrayNum(idx) ){
+  if( zVecSizeNC(v) != zArraySize(idx) ){
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );
     return;
   }
-  zQuickSort( zArrayBuf(idx), zArrayNum(idx), sizeof(int), _zVecSortCmp, zVecBuf(v) );
+  zQuickSort( zArrayBuf(idx), zArraySize(idx), sizeof(int), _zVecSortCmp, zVecBuf(v) );
 }
 
 /* zVecIsEqual
@@ -640,7 +640,7 @@ zVec zVecFRead(FILE *fp)
   if( !( v = zVecAlloc( size ) ) ) return NULL;
 
   for( i=0; i<size; i++ )
-    zVecSetElem( v, i, zFDouble( fp ) );
+    zVecSetElemNC( v, i, zFDouble( fp ) );
   return v;
 }
 

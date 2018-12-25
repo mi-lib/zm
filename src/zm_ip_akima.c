@@ -142,12 +142,12 @@ bool zIPCreateAkima(zIP *ip, zSeq *seq)
   }
   for( i=0; i<zVecSizeNC(zListHead(seq)->data.v); i++ ){
     for( j=2; j<=n; j++ )
-      zVecSetElem( m, j,
+      zVecSetElemNC( m, j,
         ( zIPSecVal(&ip->dat,j-1,i)-zIPSecVal(&ip->dat,j-2,i) ) / zIPDelta(&ip->dat,j-1) );
-    zVecSetElem( m,   0, 3*zVecElem(m,2)-2*zVecElem(m,3) );
-    zVecSetElem( m,   1, 2*zVecElem(m,2)-  zVecElem(m,3) );
-    zVecSetElem( m, n+1, 2*zVecElem(m,n)-2*zVecElem(m,n-1) );
-    zVecSetElem( m, n+2, 3*zVecElem(m,n)-  zVecElem(m,n-1) );
+    zVecSetElemNC( m,   0, 3*zVecElem(m,2)-2*zVecElem(m,3) );
+    zVecSetElemNC( m,   1, 2*zVecElem(m,2)-  zVecElem(m,3) );
+    zVecSetElemNC( m, n+1, 2*zVecElem(m,n)-2*zVecElem(m,n-1) );
+    zVecSetElemNC( m, n+2, 3*zVecElem(m,n)-  zVecElem(m,n-1) );
     for( j=0; j<n; j++ ){
       dm1 = fabs( zVecElem(m,j+1) - zVecElem(m,j) );
       dm2 = fabs( zVecElem(m,j+3) - zVecElem(m,j+2) );

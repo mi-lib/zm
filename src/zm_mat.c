@@ -25,7 +25,7 @@ zMat _zMatSetElemList(zMat m, va_list args)
 
   for( i=0; i<zMatRowSizeNC(m); i++ )
     for( j=0; j<zMatColSizeNC(m); j++ )
-      zMatSetElem( m, i, j, (double)va_arg( args, double ) );
+      zMatSetElemNC( m, i, j, (double)va_arg( args, double ) );
   return m;
 }
 
@@ -492,7 +492,7 @@ void zMatShift(zMat m, double shift)
   register int i;
 
   for( i=0; i<zMatRowSizeNC(m); i++ )
-    zMatElem( m, i, i ) += shift;
+    zMatElemNC( m, i, i ) += shift;
 }
 
 /* zMatIsEqual
@@ -505,7 +505,7 @@ bool zMatIsEqual(zMat m1, zMat m2)
   if( !zMatSizeIsEqual( m1, m2 ) ) return false;
   for( i=0; i<zMatRowSizeNC(m1); i++ )
     for( j=0; j<zMatColSizeNC(m1); j++ )
-      if( !zIsTiny( zMatElem(m1,i,j) - zMatElem(m2,i,j) ) ) return false;
+      if( !zIsTiny( zMatElemNC(m1,i,j) - zMatElemNC(m2,i,j) ) ) return false;
   return true;
 }
 
@@ -1075,13 +1075,13 @@ zMat zMatQuadNC(zMat a, zVec w, zMat q)
   zMatClear( q );
   for( k=0; k<zMatColSizeNC(a); k++ )
     for( i=0; i<zMatRowSizeNC(a); i++ ){
-      wa = w ? zVecElem(w,k) * zMatElem(a,i,k) : zMatElem(a,i,k);
+      wa = w ? zVecElem(w,k) * zMatElemNC(a,i,k) : zMatElemNC(a,i,k);
       for( j=i; j<zMatRowSizeNC(a); j++ )
-        zMatElem(q,i,j) += wa * zMatElem(a,j,k);
+        zMatElemNC(q,i,j) += wa * zMatElemNC(a,j,k);
     }
   for( i=0; i<zMatRowSizeNC(a); i++ )
     for( j=i; j<zMatRowSizeNC(a); j++ )
-      zMatSetElem( q, j, i, zMatElem(q,i,j) );
+      zMatSetElemNC( q, j, i, zMatElemNC(q,i,j) );
   return q;
 }
 
@@ -1117,13 +1117,13 @@ zMat zMatTQuadNC(zMat a, zVec w, zMat q)
   zMatClear( q );
   for( k=0; k<zMatRowSizeNC(a); k++ )
     for( i=0; i<zMatColSizeNC(a); i++ ){
-      wa = w ? zVecElem(w,k) * zMatElem(a,k,i) : zMatElem(a,k,i);
+      wa = w ? zVecElem(w,k) * zMatElemNC(a,k,i) : zMatElemNC(a,k,i);
       for( j=i; j<zMatColSizeNC(a); j++ )
-        zMatElem(q,i,j) += wa * zMatElem(a,k,j);
+        zMatElemNC(q,i,j) += wa * zMatElemNC(a,k,j);
     }
   for( i=0; i<zMatColSizeNC(a); i++ )
     for( j=i; j<zMatColSizeNC(a); j++ )
-      zMatSetElem( q, j, i, zMatElem(q,i,j) );
+      zMatSetElemNC( q, j, i, zMatElemNC(q,i,j) );
   return q;
 }
 
@@ -1176,7 +1176,7 @@ zMat zMatFRead(FILE *fp)
 
   for( i=0; i<row; i++ )
     for( j=0; j<col; j++ )
-      zMatSetElem( m, i, j, zFDouble( fp ) );
+      zMatSetElemNC( m, i, j, zFDouble( fp ) );
   return m;
 }
 
@@ -1194,7 +1194,7 @@ void zMatFWrite(FILE *fp, zMat m)
       zMatRowSizeNC(m), zMatColSizeNC(m) );
     for( i=0; i<zMatRowSizeNC(m); i++ ){
       for( j=0; j<zMatColSizeNC(m); j++ )
-        fprintf( fp, " %.10g", zMatElem( m, i, j ) );
+        fprintf( fp, " %.10g", zMatElemNC( m, i, j ) );
       fprintf( fp, "\n" );
     }
     fprintf( fp, "}\n" );
@@ -1216,10 +1216,10 @@ void zMatImg(zMat m)
   d = zMax( max, min ) / 4;
   for( i=0; i<zMatRowSizeNC(m); i++ ){
     for( j=0; j<zMatColSizeNC(m); j++ ){
-      if( zIsTiny( zMatElem(m,i,j) ) )
+      if( zIsTiny( zMatElemNC(m,i,j) ) )
         printf( "  " );
       else{
-        c = zRound( zMatElem(m,i,j) / d );
+        c = zRound( zMatElemNC(m,i,j) / d );
         c = zLimit( c, -3, 3 );
         printf( "%c ", c < 0 ? pat_neg[-c] : pat_pos[c] );
       }

@@ -21,7 +21,7 @@ typedef zVec zPex;
 
 /* n-dim polynomial has n+1 coeficients including the constant term. */
 #define zPexDim(p)               (int)( zVecSizeNC(p) - 1 )
-#define zPexCoeff(p,i)           zVecElem(p,i)
+#define zPexCoeff(p,i)           zVecElemNC(p,i)
 
 #define zPexCoeffHigh(p,i)       zPexCoeff(p,zPexDim(p)-(i))
 #define zPexCoeffLow(p,i)        zPexCoeff(p,i)

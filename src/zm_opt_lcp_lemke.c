@@ -49,12 +49,12 @@ _zLemke *_zLemkeCreate(_zLemke *tab, zMat m, zVec q)
   zIndexOrder( tab->ib, n );
   zIndexOrder( tab->in, 0 );
   for( i=0; i<n; i++ ){
-    zMatSetElem( tab->m, i, i+n, 1.0 );
-    zMatSetElem( tab->m, i, tab->act, -1.0 );
+    zMatSetElemNC( tab->m, i, i+n, 1.0 );
+    zMatSetElemNC( tab->m, i, tab->act, -1.0 );
   }
   for( i=0; i<n; i++ )
     for( j=0; j<n; j++ )
-      zMatSetElem( tab->m, i, j, -zMatElem(m,i,j) );
+      zMatSetElemNC( tab->m, i, j, -zMatElemNC(m,i,j) );
   return tab;
 }
 
@@ -95,23 +95,23 @@ void _zLemkeSweep(_zLemke *tab, int p)
   double ap;
 
   /* normalize pivot row */
-  ap = zMatElem( tab->m, p, tab->act );
-  for( j=0; j<zArrayNum(tab->in); j++ )
-    zMatElem( tab->m, p, zIndexElem(tab->in,j) ) /= ap;
-  zMatElem( tab->m, p, zIndexElem(tab->ib,p) ) /= ap;
-  zMatSetElem( tab->m, p, tab->act, 1.0 );
-  zVecElem(tab->q,p) /= ap;
+  ap = zMatElemNC( tab->m, p, tab->act );
+  for( j=0; j<zArraySize(tab->in); j++ )
+    zMatElemNC( tab->m, p, zIndexElemNC(tab->in,j) ) /= ap;
+  zMatElemNC( tab->m, p, zIndexElemNC(tab->ib,p) ) /= ap;
+  zMatSetElemNC( tab->m, p, tab->act, 1.0 );
+  zVecElemNC(tab->q,p) /= ap;
   /* sweep-out rest row */
   for( i=0; i<zVecSizeNC(tab->q); i++ ){
     if( i == p ) continue;
-    ap = zMatElem( tab->m, i, tab->act );
-    for( j=0; j<zArrayNum(tab->in); j++ )
-      zMatElem( tab->m, i, zIndexElem(tab->in,j) )
-        -= zMatElem( tab->m, p, zIndexElem(tab->in,j) ) * ap;
-    zMatElem( tab->m, i, zIndexElem(tab->ib,p) )
-      =- zMatElem( tab->m, p, zIndexElem(tab->ib,p) ) * ap;
-    zMatSetElem( tab->m, i, tab->act, 0.0 );
-    zVecElem(tab->q,i) -= zVecElem(tab->q,p) * ap;
+    ap = zMatElemNC( tab->m, i, tab->act );
+    for( j=0; j<zArraySize(tab->in); j++ )
+      zMatElemNC( tab->m, i, zIndexElemNC(tab->in,j) )
+        -= zMatElemNC( tab->m, p, zIndexElemNC(tab->in,j) ) * ap;
+    zMatElemNC( tab->m, i, zIndexElemNC(tab->ib,p) )
+      =- zMatElemNC( tab->m, p, zIndexElemNC(tab->ib,p) ) * ap;
+    zMatSetElemNC( tab->m, i, tab->act, 0.0 );
+    zVecElemNC(tab->q,i) -= zVecElemNC(tab->q,p) * ap;
   }
 }
 
@@ -123,13 +123,13 @@ bool _zLemkeSwap(_zLemke *tab, int p)
 {
   register int i, ib;
 
-  ib = zIndexElem(tab->ib,p);
-  zIndexSetElem( tab->ib, p, tab->act );
+  ib = zIndexElemNC(tab->ib,p);
+  zIndexSetElemNC( tab->ib, p, tab->act );
   /* choose complementary pivot */
-  tab->act = ( ib + zArrayNum(tab->ib) ) % ( 2*zArrayNum(tab->ib) );
-  for( i=0; i<zArrayNum(tab->in); i++ )
-    if( zIndexElem(tab->in,i) == tab->act ){
-      zIndexSetElem( tab->in, i, ib );
+  tab->act = ( ib + zArraySize(tab->ib) ) % ( 2*zArraySize(tab->ib) );
+  for( i=0; i<zArraySize(tab->in); i++ )
+    if( zIndexElemNC(tab->in,i) == tab->act ){
+      zIndexSetElemNC( tab->in, i, ib );
       break;
     }
   return ib == zMatColSizeNC(tab->m) - 1 ? true : false;
@@ -145,9 +145,9 @@ int _zLemkePivot(_zLemke *tab)
   double a, p, p_min;
 
   for( p_min=HUGE_VAL, np=-1, i=0; i<zVecSizeNC(tab->q); i++ ){
-    if( ( a = zMatElem(tab->m,i,tab->act) ) < zTOL )
+    if( ( a = zMatElemNC(tab->m,i,tab->act) ) < zTOL )
       continue;
-    p = zVecElem(tab->q,i) / a;
+    p = zVecElemNC(tab->q,i) / a;
     if( p < p_min ){
       p_min = p;
       np = i;
@@ -184,16 +184,16 @@ void _zLemkeAnswer(_zLemke *tab, zVec w, zVec z)
 
   if( w ){
     zVecClear( w );
-    for( i=0; i<zArrayNum(tab->ib); i++ ){
-      idx = zIndexElem(tab->ib,i) - zVecSizeNC(w);
+    for( i=0; i<zArraySize(tab->ib); i++ ){
+      idx = zIndexElemNC(tab->ib,i) - zVecSizeNC(w);
       if( idx >= 0 && idx < zVecSizeNC(w) )
-        zVecSetElem( w, idx, zVecElem(tab->q,i) );
+        zVecSetElemNC( w, idx, zVecElemNC(tab->q,i) );
     }
   }
   zVecClear( z );
-  for( i=0; i<zArrayNum(tab->ib); i++ )
-    if( zIndexElem(tab->ib,i) < zVecSizeNC(z) )
-      zVecSetElem( z, zIndexElem(tab->ib,i), zVecElem(tab->q,i) );
+  for( i=0; i<zArraySize(tab->ib); i++ )
+    if( zIndexElemNC(tab->ib,i) < zVecSizeNC(z) )
+      zVecSetElemNC( z, zIndexElemNC(tab->ib,i), zVecElemNC(tab->q,i) );
 }
 
 #ifdef DEBUG

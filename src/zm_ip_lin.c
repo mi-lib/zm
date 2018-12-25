@@ -60,7 +60,7 @@ zVec zIPSecAccLinear(zIPData *dat, int i, zVec v)
 
   if( i <= 0 || i >= zIPSize(dat)-1 ) return zVecClear(v);
   for( j=0; j<zVecSizeNC(v); j++ )
-    zVecSetElem( v, j,
+    zVecSetElemNC( v, j,
       zVecArrayElem(&dat->va,i,j) > zVecArrayElem(&dat->va,i-1,j) ? HUGE_VAL :
       ( zVecArrayElem(&dat->va,i,j) < zVecArrayElem(&dat->va,i-1,j) ? -HUGE_VAL : 0 ) );
   return v;

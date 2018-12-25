@@ -81,7 +81,7 @@ zVecTree *_zVecTreeCreateLeaf(int split, zVec v)
  */
 int _zVecTreeChooseBranch(zVecTree *node, zVec v)
 {
-  return zVecElem(v,node->split) >= zVecElem(node->v,node->split) ? 0 : 1;
+  return zVecElemNC(v,node->split) >= zVecElemNC(node->v,node->split) ? 0 : 1;
 }
 
 /* (static)
@@ -107,9 +107,9 @@ zVecTree *_zVecTreeAdd(zVecTree *node, zVec v)
     return NULL;
   }
   if( b == 0 )
-    zVecElem(leaf->vmin,node->split) = zVecElem(node->v,node->split);
+    zVecElemNC(leaf->vmin,node->split) = zVecElemNC(node->v,node->split);
   else /* b == 1 */
-    zVecElem(leaf->vmax,node->split) = zVecElem(node->v,node->split);
+    zVecElemNC(leaf->vmax,node->split) = zVecElemNC(node->v,node->split);
   return leaf;
 }
 
@@ -137,11 +137,11 @@ bool _zVecTreeIsOverlap(zVecTree *node, zVec c, double r)
   double d, vd;
 
   for( d=0, i=0; i<zVecSizeNC(c); i++ ){
-    vd = zVecElem(c,i);
-    if( vd < zVecElem(node->vmin,i) )
-      d += zSqr( vd - zVecElem(node->vmin,i) );
-    if( vd > zVecElem(node->vmax,i) )
-      d += zSqr( vd - zVecElem(node->vmax,i) );
+    vd = zVecElemNC(c,i);
+    if( vd < zVecElemNC(node->vmin,i) )
+      d += zSqr( vd - zVecElemNC(node->vmin,i) );
+    if( vd > zVecElemNC(node->vmax,i) )
+      d += zSqr( vd - zVecElemNC(node->vmax,i) );
   }
   return d <= r*r+zTOL ? true : false;
 }

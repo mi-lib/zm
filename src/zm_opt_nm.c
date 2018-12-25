@@ -73,7 +73,7 @@ void _zOptNMInit(zOptNM *opt, zVec var, void *util)
   zVecCopyNC( var, opt->e[0] );
   for( i=1; i<opt->num; i++ ){
     zVecCopyNC( var, opt->e[i] );
-    zVecElem(opt->e[i],i-1) += 1.0;
+    zVecElemNC(opt->e[i],i-1) += 1.0;
   }
 }
 
@@ -86,7 +86,7 @@ void _zOptNMEvalAll(zOptNM *opt, void *util)
   register int i;
 
   for( i=0; i<opt->num; i++ )
-    zVecSetElem( opt->f, i, opt->eval( opt->e[i], util ) );
+    zVecSetElemNC( opt->f, i, opt->eval( opt->e[i], util ) );
   zVecSort( opt->f, opt->index );
 }
 
@@ -99,8 +99,8 @@ void _zOptNMReord(zOptNM *opt)
   register int i;
 
   for( i=0; i<opt->num; i++ )
-    if( zVecElem(opt->f,zIndexElem(opt->index,i)) > zVecElem(opt->f,zIndexHead(opt->index)) ){
-      zIndexMove( opt->index, zArrayNum(opt->index)-1, i );
+    if( zVecElemNC(opt->f,zIndexElemNC(opt->index,i)) > zVecElemNC(opt->f,zIndexHead(opt->index)) ){
+      zIndexMove( opt->index, zArraySize(opt->index)-1, i );
       break;
     }
 }
@@ -116,7 +116,7 @@ zVec _zOptNMPin(zOptNM *opt)
 
   zVecClear( opt->pin );
   for( i=1; i<opt->num; i++ )
-    zVecAddNCDRC( opt->pin, opt->e[zIndexElem(opt->index,i-1)] );
+    zVecAddNCDRC( opt->pin, opt->e[zIndexElemNC(opt->index,i-1)] );
   return zVecDivNCDRC( opt->pin, opt->num-1 );
 }
 
@@ -192,12 +192,12 @@ int _zOptNMTry(zOptNM *opt, zVec var, void *util, double tol, int iter, double *
   for( i=0; i<iter; i++ ){
     if( _zOptNMCheck( opt, tol ) ){
       zVecCopyNC( opt->e[zIndexTail(opt->index)], var );
-      if( eval ) *eval = zVecElem( opt->f, zIndexTail(opt->index) );
+      if( eval ) *eval = zVecElemNC( opt->f, zIndexTail(opt->index) );
       return i; /* succeed. */
     }
     _zOptNMPin( opt );
     _zOptNMRefl( opt );
-    bestval = zVecElem( opt->f, zIndexTail(opt->index) );
+    bestval = zVecElemNC( opt->f, zIndexTail(opt->index) );
     newval = opt->eval( opt->test, util );
     if( newval < bestval ){
       do{
@@ -206,21 +206,21 @@ int _zOptNMTry(zOptNM *opt, zVec var, void *util, double tol, int iter, double *
         _zOptNMExp( opt );
         newval = opt->eval( opt->test, util );
       } while( newval < bestval );
-      zVecSetElem( opt->f, zIndexHead(opt->index), bestval );
+      zVecSetElemNC( opt->f, zIndexHead(opt->index), bestval );
       _zOptNMReord( opt );
       continue;
     }
-    if( newval > zVecElem(opt->f,zIndexNeck(opt->index)) ){
+    if( newval > zVecElemNC(opt->f,zIndexNeck(opt->index)) ){
       _zOptNMShrink( opt );
       newval = opt->eval( opt->test, util );
-      if( newval > zVecElem(opt->f,zIndexNeck(opt->index)) ){
+      if( newval > zVecElemNC(opt->f,zIndexNeck(opt->index)) ){
         _zOptNMCrunch( opt );
         _zOptNMEvalAll( opt, util );
         continue;
       }
     }
     zVecCopyNC( opt->test, opt->e[zIndexHead(opt->index)] );
-    zVecSetElem( opt->f, zIndexHead(opt->index), newval );
+    zVecSetElemNC( opt->f, zIndexHead(opt->index), newval );
     _zOptNMReord( opt );
   }
   ZITERWARN( iter );

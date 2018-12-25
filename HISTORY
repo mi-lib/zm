@@ -1,3 +1,7 @@
+2018.12.25. Reflected new specification of zIndex. [zm_le, zm_le_pivot, zm_le_lu, zm_le_minv, zm_opt_lp_simplex, zm_opt_lcp_lemke, zm_opt_qp, zm_opt_nm]
+2018.12.25. Renamed zMatTDST to zMatTDRC. [zm_mat, zm_le_mpinv]
+2018.12.25. Redefined zMatStruct by zArray2Class. [zm_mat, zm_le, zm_le_pivot, zm_le_lu, zm_le_lq, zm_le_minv, zm_le_mpinv, zm_le_gen, zm_le_lyapnov, zm_eig, zm_mca_gmm, zm_ip_lin, zm_ip_spline, zm_ip_pex, zm_ip_akima, zm_opt_lp_stdcnv, zm_opt_lp_simplex, zm_opt_lcp_lemke, zm_opt_lcp_ip, zm_opt_qp, zm_opt_dm, zm_nle_dm]
+2018.12.25. Redefined zVecStruct by zArrayClass. [zm_vec, zm_vec_array, zm_vec_tree, zm_le, zm_le_lu, zm_le_pivot, zm_le_lq, zm_le_tridiagonal, zm_le_gen, zm_nurbs, zm_opt_lp_simplex, zm_opt_lcp_lemke, zm_opt_lcp_ip, zm_opt_qp, zm_opt_nm, zm_opt_ga, zm_eig, zm_mca_gmm, zm_pex, zm_ip, zm_ip_spline, zm_ip_pex, zm_ode_adams]
 2018.12.12. Followed renaming of CURE to ZEDA. [all]
 2018.10.19. Added _zSinCos. [zm_misc]
 2018.10.18. Created automatic testing system. [test]

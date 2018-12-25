@@ -102,8 +102,8 @@ bool _zLCPIP_PCGrad(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
   register int i;
 
   for( i=0; i<zVecSizeNC(w); i++ ){
-    zRawVecMul( zMatRowBuf(m,i), zVecElem(z,i), zMatRowBuf(wm->g,i), zMatColSizeNC(m) );
-    zMatElem(wm->g,i,i) += zVecElem(w,i);
+    zRawVecMul( zMatRowBuf(m,i), zVecElemNC(z,i), zMatRowBuf(wm->g,i), zMatColSizeNC(m) );
+    zMatElemNC(wm->g,i,i) += zVecElemNC(w,i);
   }
   return zLESolveGaussDST( wm->g, wm->b, wm->dz, wm->idx, wm->s ) ? true : false;
 }
@@ -133,7 +133,7 @@ bool _zLCPIP_PCCorr(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
 
   zVecAmpNC( w, z, wm->b );
   for( i=0; i<zVecSizeNC(wm->b); i++ )
-    zVecSetElem( wm->b, i, wm->t - zVecElem(wm->b,i) );
+    zVecSetElem( wm->b, i, wm->t - zVecElemNC(wm->b,i) );
   if( !_zLCPIP_PCGrad( wm, m, w, z ) ) return false;
   zMulMatVecNC( m, wm->dz, wm->dw );
   return true;
@@ -150,7 +150,7 @@ bool _zLCPIP_PCStep(_zLCPIP_PC *wm, zVec w, zVec z, double *step)
 
   zVecAmpNC( w, z, wm->b );
   for( i=0; i<zVecSizeNC(wm->b); i++ )
-    zVecElem(wm->b,i) -= wm->t;
+    zVecElemNC(wm->b,i) -= wm->t;
   zVecAmpNC( wm->dw, wm->dz, wm->c );
   k2 = zVecInnerProd( wm->b, wm->c );
   k1 = ( zSqr(_Z_LCPIP_PC_B*wm->t) - zVecSqrNorm(wm->b) ) / k2;

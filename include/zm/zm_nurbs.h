@@ -47,7 +47,7 @@ typedef struct{
   /*! \endcond */
 } zNURBS;
 
-#define zNURBSKnot(n,i)    zVecElem((n)->knot,i)
+#define zNURBSKnot(n,i)    zVecElemNC((n)->knot,i)
 #define zNURBSWeight(n,i)  ( zArrayElem(&(n)->cparray,i)->w )
 #define zNURBSCP(n,i)      ( zArrayElem(&(n)->cparray,i)->cp )
 
@@ -55,7 +55,7 @@ typedef struct{
 #define zNURBSKnot0(n)     zNURBSKnot(n,0)
 #define zNURBSKnotE(n)     zNURBSKnot(n,zNURBSKnotNum(n)-1)
 
-#define zNURBSCPNum(n)     zArrayNum( &(n)->cparray )
+#define zNURBSCPNum(n)     zArraySize( &(n)->cparray )
 
 /*! \brief create a NURBS curve.
  *

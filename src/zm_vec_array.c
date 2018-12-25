@@ -31,7 +31,7 @@ void zVecArrayFree(zVecArray *array)
   register int i;
 
   if( zArrayBuf(array) )
-    for( i=0; i<zArrayNum(array); i++ )
+    for( i=0; i<zArraySize(array); i++ )
       zVecFree( *zArrayElem(array,i) );
   zArrayFree( array );
 }
@@ -47,7 +47,7 @@ zVec zVecArrayFill(zVecArray *array, zVec v)
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );
     return NULL;
   }
-  for( i=0; i<zArrayNum(array); i++ )
+  for( i=0; i<zArraySize(array); i++ )
     zVecCopyNC( v, *zArrayElem(array,i) );
   return v;
 }

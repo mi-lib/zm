@@ -192,12 +192,12 @@ bool _zGMMCreateEMExpect(zGMM *gmm, zVecList *points, zMat pdf, zMat load, zVec 
     j = 0;
     zListForEach( &gmm->gl, gc ){
       if( !gc->data.active ){
-        zMatElem(pdf,j,i) = 0;
-        zVecElem(load_det,i) = HUGE_VAL;
+        zMatElemNC(pdf,j,i) = 0;
+        zVecElemNC(load_det,i) = HUGE_VAL;
       } else{
         p = _zGMMUnitPDF( &gc->data, pc->data, &gmm->met, err_util );
-        zMatElem(pdf,j,i) = p;
-        zVecElem(load_det,i) += gc->data.weight * p;
+        zMatElemNC(pdf,j,i) = p;
+        zVecElemNC(load_det,i) += gc->data.weight * p;
       }
       j++;
     }
@@ -209,10 +209,10 @@ bool _zGMMCreateEMExpect(zGMM *gmm, zVecList *points, zMat pdf, zMat load, zVec 
     j = 0;
     zListForEach( &gmm->gl, gc ){
       if( gc->data.active ){
-        gamma = gc->data.weight * zMatElem(pdf,j,i) / zVecElem(load_det,i);
-        eps += gamma - zMatElem(load,j,i);
-        zMatElem(load,j,i) = gamma;
-        zVecElem(nk,j) += gamma;
+        gamma = gc->data.weight * zMatElemNC(pdf,j,i) / zVecElemNC(load_det,i);
+        eps += gamma - zMatElemNC(load,j,i);
+        zMatElemNC(load,j,i) = gamma;
+        zVecElemNC(nk,j) += gamma;
       }
       j++;
     }
@@ -231,7 +231,7 @@ bool _zGMMLogLikelihood(zGMM *gmm, zVec load_det)
   register int i;
 
   for( i=0; i<zVecSizeNC(load_det); i++ )
-    l += log( zVecElem(load_det,i) );
+    l += log( zVecElemNC(load_det,i) );
   if( zIsTiny( gmm->log_likelihood - l ) ) return true;
   gmm->log_likelihood = l;
   return false;
@@ -249,9 +249,9 @@ void _zGMMCreateEMMaximize(zGMM *gmm, zVecList *points, zMat load, zVec nk, void
   j = 0;
   zListForEach( &gmm->gl, gc ){
     if( gc->data.active ){
-      gmm->met._mean_l_fp( points, zMatRowBuf(load,j), zVecElem(nk,j), mean_util, gc->data.mean );
-      _zGMMUnitLoadedCov( &gc->data, points, zMatRowBuf(load,j), zVecElem(nk,j), &gmm->met, err_util );
-      gc->data.weight = zVecElem(nk,j) / zListNum(points);
+      gmm->met._mean_l_fp( points, zMatRowBuf(load,j), zVecElemNC(nk,j), mean_util, gc->data.mean );
+      _zGMMUnitLoadedCov( &gc->data, points, zMatRowBuf(load,j), zVecElemNC(nk,j), &gmm->met, err_util );
+      gc->data.weight = zVecElemNC(nk,j) / zListNum(points);
     }
     j++;
   }

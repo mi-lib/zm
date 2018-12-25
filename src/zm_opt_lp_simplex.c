@@ -48,17 +48,17 @@ bool _zLPTableauCreate(_zLPTableau *tab, zMat a, zVec b)
   if( !tab->a || !tab->b ||!tab->c || !tab->ib || !tab->in )
     return false;
   for( i=0; i<zVecSizeNC(b); i++ ){
-    if( zVecElem(b,i) >= 0 ){
-      zRawVecCopy( &zMatElem(a,i,0), &zMatElem(tab->a,i,0), zMatColSizeNC(a) );
-      zVecSetElem( tab->b, i, zVecElem(b,i) );
+    if( zVecElemNC(b,i) >= 0 ){
+      zRawVecCopy( zMatRowBuf(a,i), zMatRowBuf(tab->a,i), zMatColSizeNC(a) );
+      zVecSetElemNC( tab->b, i, zVecElemNC(b,i) );
     } else{
-      zRawVecRev( &zMatElem(a,i,0), &zMatElem(tab->a,i,0), zMatColSizeNC(a) );
-      zVecSetElem( tab->b, i, -zVecElem(b,i) );
+      zRawVecRev( zMatRowBuf(a,i), zMatRowBuf(tab->a,i), zMatColSizeNC(a) );
+      zVecSetElemNC( tab->b, i, -zVecElemNC(b,i) );
     }
-    zMatSetElem( tab->a, i, zMatColSizeNC(a)+i, 1.0 );
+    zMatSetElemNC( tab->a, i, zMatColSizeNC(a)+i, 1.0 );
   }
   for( i=zMatColSizeNC(a); i<zVecSizeNC(tab->c); i++ )
-    zVecSetElem( tab->c, i, 1.0 );
+    zVecSetElemNC( tab->c, i, 1.0 );
   tab->d = 0;
   zIndexOrder( tab->ib, zMatColSizeNC(a) );
   zIndexOrder( tab->in, 0 );
@@ -88,12 +88,12 @@ void _zLPTableauSweepC1(_zLPTableau *tab, int p)
   register int i;
   double cp;
 
-  cp = zVecElem( tab->c, zIndexElem(tab->ib,p) );
-  for( i=0; i<zArrayNum(tab->in); i++ )
-    zVecElem(tab->c,zIndexElem(tab->in,i))
-      -= zMatElem(tab->a,p,zIndexElem(tab->in,i)) * cp;
-  tab->d += zVecElem(tab->b,p) * cp;
-  zVecSetElem( tab->c, zIndexElem(tab->ib,p), 0 );
+  cp = zVecElemNC( tab->c, zIndexElemNC(tab->ib,p) );
+  for( i=0; i<zArraySize(tab->in); i++ )
+    zVecElemNC(tab->c,zIndexElemNC(tab->in,i))
+      -= zMatElemNC(tab->a,p,zIndexElemNC(tab->in,i)) * cp;
+  tab->d += zVecElemNC(tab->b,p) * cp;
+  zVecSetElemNC( tab->c, zIndexElemNC(tab->ib,p), 0 );
 }
 
 /* (static)
@@ -104,7 +104,7 @@ void _zLPTableauSweepC(_zLPTableau *tab)
 {
   register int i;
 
-  for( i=0; i<zArrayNum(tab->ib); i++ )
+  for( i=0; i<zArraySize(tab->ib); i++ )
     _zLPTableauSweepC1( tab, i );
 }
 
@@ -117,10 +117,10 @@ int _zLPTableauFindNA(_zLPTableau *tab)
   register int i, na;
   double c_min;
 
-  c_min = zVecElem( tab->c, zIndexElem(tab->in,(na=0)) );
-  for( i=1; i<zArrayNum(tab->in); i++ )
-    if( zVecElem(tab->c,zIndexElem(tab->in,i)) < c_min )
-      c_min = zVecElem( tab->c, zIndexElem(tab->in,(na=i)) );
+  c_min = zVecElemNC( tab->c, zIndexElemNC(tab->in,(na=0)) );
+  for( i=1; i<zArraySize(tab->in); i++ )
+    if( zVecElemNC(tab->c,zIndexElemNC(tab->in,i)) < c_min )
+      c_min = zVecElemNC( tab->c, zIndexElemNC(tab->in,(na=i)) );
   return c_min < 0 ? na : -1;
 }
 
@@ -132,8 +132,8 @@ int _zLPTableauFindNA_deg(_zLPTableau *tab)
 { /* next axis for degenerated case */
   register int i;
 
-  for( i=0; i<zArrayNum(tab->in); i++ )
-    if( zVecElem(tab->c,zIndexElem(tab->in,i)) < 0 )
+  for( i=0; i<zArraySize(tab->in); i++ )
+    if( zVecElemNC(tab->c,zIndexElemNC(tab->in,i)) < 0 )
       return i;
   return -1;
 }
@@ -150,9 +150,9 @@ int _zLPTableauFindNP(_zLPTableau *tab, int *na)
 
  RETRY:
   for( p_min=HUGE_VAL, np=-1, i=0; i<zVecSizeNC(tab->b); i++ ){
-    if( ( a = zMatElem(tab->a,i,zIndexElem(tab->in,*na)) ) < zTOL )
+    if( ( a = zMatElemNC(tab->a,i,zIndexElemNC(tab->in,*na)) ) < zTOL )
       continue;
-    p = zVecElem(tab->b,i) / a;
+    p = zVecElemNC(tab->b,i) / a;
     if( zIsTiny( p ) && f_try ){ /* generated case */
       *na = _zLPTableauFindNA_deg( tab );
       f_try = false;
@@ -176,21 +176,21 @@ void _zLPTableauSweepA(_zLPTableau *tab, int np, int na)
   double ap;
 
   /* normalize pivot row */
-  ap = zMatElem( tab->a, np, zIndexElem(tab->in,na) );
-  for( j=0; j<zArrayNum(tab->in); j++ )
-    zMatElem( tab->a, np, zIndexElem(tab->in,j) ) /= ap;
-  zMatElem( tab->a, np, zIndexElem(tab->ib,np) ) /= ap;
-  zVecElem(tab->b,np) /= ap;
+  ap = zMatElemNC( tab->a, np, zIndexElemNC(tab->in,na) );
+  for( j=0; j<zArraySize(tab->in); j++ )
+    zMatElemNC( tab->a, np, zIndexElemNC(tab->in,j) ) /= ap;
+  zMatElemNC( tab->a, np, zIndexElemNC(tab->ib,np) ) /= ap;
+  zVecElemNC(tab->b,np) /= ap;
   /* sweep-out rest row */
   for( i=0; i<zVecSizeNC(tab->b); i++ ){
     if( i == np ) continue;
-    ap = zMatElem( tab->a, i, zIndexElem(tab->in,na) );
-    for( j=0; j<zArrayNum(tab->in); j++ )
-      zMatElem( tab->a, i, zIndexElem(tab->in,j) )
-        -= zMatElem( tab->a, np, zIndexElem(tab->in,j) ) * ap;
-    zMatElem( tab->a, i, zIndexElem(tab->ib,np) )
-      =- zMatElem( tab->a, np, zIndexElem(tab->ib,np) ) * ap;
-    zVecElem(tab->b,i) -= zVecElem(tab->b,np) * ap;
+    ap = zMatElemNC( tab->a, i, zIndexElemNC(tab->in,na) );
+    for( j=0; j<zArraySize(tab->in); j++ )
+      zMatElemNC( tab->a, i, zIndexElemNC(tab->in,j) )
+        -= zMatElemNC( tab->a, np, zIndexElemNC(tab->in,j) ) * ap;
+    zMatElemNC( tab->a, i, zIndexElemNC(tab->ib,np) )
+      =- zMatElemNC( tab->a, np, zIndexElemNC(tab->ib,np) ) * ap;
+    zVecElemNC(tab->b,i) -= zVecElemNC(tab->b,np) * ap;
   }
 }
 
@@ -202,9 +202,9 @@ void _zLPTableauSwapPivot(_zLPTableau *tab, int np, int na)
 {
   int tmp;
 
-  tmp = zIndexElem( tab->in, na );
-  zIndexSetElem( tab->in, na, zIndexElem(tab->ib,np) );
-  zIndexSetElem( tab->ib, np, tmp );
+  tmp = zIndexElemNC( tab->in, na );
+  zIndexSetElemNC( tab->in, na, zIndexElemNC(tab->ib,np) );
+  zIndexSetElemNC( tab->ib, np, tmp );
 }
 
 /* (static)
@@ -248,10 +248,10 @@ bool _zLPTableauReset(_zLPTableau *tab, zVec c)
   tab->d = 0; /* precautionary touch-up */
   n = zVecSizeNC(tab->c) - zVecSizeNC(tab->b);
   m = n - zVecSizeNC(tab->b);
-  for( i=0; i<zArrayNum(tab->ib); i++ ){
-    if( zIndexElem(tab->ib,i) < n ) continue;
-    for( j=0; j<zArrayNum(tab->in); j++ )
-      if( zIndexElem(tab->in,j) < n && zVecElem(tab->c,zIndexElem(tab->in,j)) > zTOL ){
+  for( i=0; i<zArraySize(tab->ib); i++ ){
+    if( zIndexElemNC(tab->ib,i) < n ) continue;
+    for( j=0; j<zArraySize(tab->in); j++ )
+      if( zIndexElemNC(tab->in,j) < n && zVecElemNC(tab->c,zIndexElemNC(tab->in,j)) > zTOL ){
         _zLPTableauSwapPivot( tab, i, j );
         goto NEXT;
       }
@@ -260,14 +260,14 @@ bool _zLPTableauReset(_zLPTableau *tab, zVec c)
    NEXT: ;
   }
   /* rearrange nonfeasible bases */
-  for( i=0, j=zArrayNum(tab->in)-1; j>=m; j-- ){
-    if( zIndexElem(tab->in,j) < n ){
-      while( zIndexElem(tab->in,i) < n ) i++;
+  for( i=0, j=zArraySize(tab->in)-1; j>=m; j-- ){
+    if( zIndexElemNC(tab->in,j) < n ){
+      while( zIndexElemNC(tab->in,i) < n ) i++;
       zIndexSwap( tab->in, i, j );
       i++;
     }
   }
-  zArraySetNum( tab->in, m );
+  zArraySize(tab->in) = m;
   zVecSetSize( tab->c, zVecSizeNC(c) );
   zVecCopy( c, tab->c );
   return true;
@@ -282,8 +282,8 @@ void _zLPTableauAns(_zLPTableau *tab, zVec ans)
   register int i;
 
   zVecClear( ans );
-  for( i=0; i<zArrayNum(tab->ib); i++ )
-    zVecSetElem( ans, zIndexElem(tab->ib,i), zVecElem(tab->b,i) );
+  for( i=0; i<zArraySize(tab->ib); i++ )
+    zVecSetElemNC( ans, zIndexElemNC(tab->ib,i), zVecElemNC(tab->b,i) );
 }
 
 #ifdef DEBUG

@@ -15,43 +15,49 @@
 __BEGIN_DECLS
 
 /* ********************************************************** */
-/* CLASS: zVec
- * double precision floating point value vector class
- * ********************************************************** */
-
-typedef struct{
-  int size;
-  double *elem;
-} zVecStruct;
+/*! \brief double-precision floating-point value vector class.
+ *//* ******************************************************* */
+zArrayClass( zVecStruct, double );
 typedef zVecStruct * zVec;
 
-#define zVecSizeNC(v)           (v)->size
+/*! \brief size of a vector. */
+#define zVecSizeNC(v)          zArraySize(v)
+/*! \brief size of a vector.
+ * \retval the size of a vector if \a v is not null.
+ * \retval 0 if \a v is the null pointer.
+ */
 #define zVecSize(v)            ( (v) ? zVecSizeNC(v) : 0 )
+/*! \brief set the size of a vector. */
 #define zVecSetSize(v,s)       ( zVecSizeNC(v) = (s) )
-#define zVecSizeIsEqual(v1,v2) ( zVecSize(v1) == zVecSize(v2) )
+/*! \brief check if the sizes of two vectors are equal. */
+#define zVecSizeIsEqual(v1,v2) ( zVecSizeNC(v1) == zVecSizeNC(v2) )
 
-/*! \brief convert vector to double array. */
-#define zVecBuf(v) (v)->elem
+/*! \brief check if the specified position of a vector is valid. */
+#define zVecPosIsValid(v,n)    ( (n) >= 0 && (n) < zVecSizeNC(v) )
 
-/*! \brief get a vector element */
-#define zVecElem(v,n)      zVecBuf(v)[n]
-/*! \brief set a vector element */
-#define zVecSetElem(v,n,e) ( zVecElem(v,n) = (e) )
+/*! \brief pointer to the array buffer of of double-precision floating-point values in a vector. */
+#define zVecBuf(v)         zArrayBuf(v)
+/*! \brief get an element of a vector without checking size. */
+#define zVecElemNC(v,n)    zVecBuf(v)[n]
+/*! \brief get an element of a vector. */
+#define zVecElem(v,n)      ( zVecPosIsValid(v,n) ? zVecElemNC(v,n) : 0 )
+/*! \brief set an element of a vector without checking size. */
+#define zVecSetElemNC(v,n,e) ( zVecElemNC(v,n) = (e) )
+/*! \brief set an element of a vector. */
+#define zVecSetElem(v,n,e) if( zVecPosIsValid(v,n) ) zVecSetElemNC(v,n,e)
 
-/*! \brief abstract and set vector element.
+/*! \brief set elements of a vector for values in the argument list.
  *
- * zVecSetElemList() sets all the components of \a v
- * according to the value list given by the rest of
- * arguments.
+ * zVecSetElemList() sets all elements of a vector \a v for the
+ * values given by the argument list.
  *
- * zVecSetElemVList() is equivalent to zVecSetElemList()
- * except that it accepts va_list \a args instead of
- * variable arguments. It does not call va_end, so that
- * user functions have to call va_end themselves.
- * Note that \a args after being called is undefined.
+ * zVecSetElemVList() is equivalent to zVecSetElemList() except
+ * that it accepts va_list \a args instead of variable argument
+ * list. It does not call va_end, so that user functions have to
+ * call va_end themselves.
+ * \note \a args after being called is undefined.
  * \return
- * zVecSetElemList() and zVecSetElemVList() return
- * a pointer \a v.
+ * zVecSetElemList() and zVecSetElemVList() return a pointer \a v.
  */
 __EXPORT zVec zVecSetElemVList(zVec v, va_list args);
 __EXPORT zVec zVecSetElemList(zVec v, ...);
@@ -99,7 +105,7 @@ __EXPORT zVec zVecSetElemList(zVec v, ...);
  *
  * zVecCopyArray() returns a pointer \a v.
  * \notes
- * Since zVecCopyNC()' does not check the size consistency,
+ * Since zVecCopyNC() does not check the size consistency,
  * if the size of \a src and \a dest are different from each
  * other, anything might happen.
  * If it is not urgent and you are not hasty, you would better

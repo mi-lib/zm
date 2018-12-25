@@ -94,7 +94,7 @@ int zMPInvNull(zMat m, zMat mp, zMat mn)
   zMulMatTMat( q, tmp3, mp );
   /* null space */
   zMulMatTMat( q, q, mn );
-  for( i=0; i<zMatRowSizeNC(mn); i++ ) zMatElem(mn,i,i) -= 1.0;
+  for( i=0; i<zMatRowSizeNC(mn); i++ ) zMatElemNC(mn,i,i) -= 1.0;
 
   zMatFreeAO( 5, l, q, tmp1, tmp2, tmp3 );
   zIndexFree( idx );
@@ -178,11 +178,11 @@ int zMPInvPenrose(zMat m, zMat mp)
   int rank;
 
   if( zMatColSizeNC(m) > zMatRowSizeNC(m) ){
-    zMatTDST( m );
-    zMatTDST( mp );
+    zMatTDRC( m );
+    zMatTDRC( mp );
     rank = _zMPInvPenrose( m, mp );
-    zMatTDST( m );
-    zMatTDST( mp );
+    zMatTDRC( m );
+    zMatTDRC( mp );
   } else
     rank = _zMPInvPenrose( m, mp );
   return rank;

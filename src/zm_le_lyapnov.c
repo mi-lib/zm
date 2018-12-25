@@ -44,8 +44,8 @@ zMat zLyapnovSolve(zMat a, zMat b, zMat ans)
   for( i=0; i<n; i++ )
     for( j=0; j<n; j++ )
       for( k=0; k<n; k++ ){
-        zMatElem(aw,n*i+k,n*k+j) += zMatElem(a,j,i);
-        zMatElem(aw,n*k+i,n*j+k) += zMatElem(a,j,i);
+        zMatElemNC(aw,n*i+k,n*k+j) += zMatElemNC(a,j,i);
+        zMatElemNC(aw,n*k+i,n*j+k) += zMatElemNC(a,j,i);
       }
   if( !zLESolveGaussDST( aw, &bvec, &ansvec, idx, s ) ){
     ZRUNERROR( ZM_ERR_LE_SINGULAR );

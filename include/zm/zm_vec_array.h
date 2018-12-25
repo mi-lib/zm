@@ -33,7 +33,7 @@ __EXPORT bool zVecArrayAlloc(zVecArray *array, int dim, int num);
 __EXPORT void zVecArrayFree(zVecArray *array);
 
 /*! \brief an element of a vector in an array */
-#define zVecArrayElem(a,i,j) zVecElem( *zArrayElem( a, i ), j )
+#define zVecArrayElem(a,i,j) zVecElemNC( *zArrayElem(a,i), j )
 
 /*! \brief fill a vector array uniformly with the same vector.
  *

@@ -22,14 +22,14 @@ int zLQDecompDST(zMat m, zMat l, zMat q, zIndex idx)
     for( j=0; j<rank; j++ ){
       r = zRawVecInnerProd( mp, zMatRowBuf(q,j), zMatColSizeNC(m) );
       zRawVecCatDRC( mp, -r, zMatRowBuf(q,j), zMatColSizeNC(q) );
-      zMatElem(l,i,j) = r;
+      zMatElemNC(l,i,j) = r;
     }
     if( zIsTiny( r = zRawVecNorm(mp,zMatColSizeNC(m)) ) ){
-      zIndexMove( idx, rank, zArrayNum(idx)-1 );
+      zIndexMove( idx, rank, zArraySize(idx)-1 );
       continue;
     }
     zRawVecDiv( mp, r, zMatRowBuf(q,rank), zMatColSizeNC(m) );
-    zMatElem(l,i,rank) = r;
+    zMatElemNC(l,i,rank) = r;
     if( rank < zMatColSizeNC(m) ) rank++;
   }
   return rank;

@@ -42,12 +42,12 @@ zVec _zOptDMGradNG(zOptDM *opt, zVec var, zVec g, void *util)
 
   for( i=0; i<zVecSizeNC(var); i++ ){
     org = zVecElem(var,i);
-    zVecSetElem( var, i, org+Z_OPT_EPS );
+    zVecSetElemNC( var, i, org+Z_OPT_EPS );
     adv = opt->eval( var, util );
-    zVecSetElem( var, i, org-Z_OPT_EPS );
+    zVecSetElemNC( var, i, org-Z_OPT_EPS );
     prv = opt->eval( var, util );
-    zVecSetElem( g, i, 0.5 * ( adv - prv ) / Z_OPT_EPS );
-    zVecSetElem( var, i, org );
+    zVecSetElemNC( g, i, 0.5 * ( adv - prv ) / Z_OPT_EPS );
+    zVecSetElemNC( var, i, org );
   }
   return g;
 }
@@ -72,12 +72,12 @@ zMat _zOptDMHessNG(zOptDM *opt, zVec var, zMat h, void *util)
   }
   for( i=0; i<zVecSizeNC(var); i++ ){
     org = zVecElem(var,i);
-    zVecSetElem( var, i, org+Z_OPT_EPS );
+    zVecSetElemNC( var, i, org+Z_OPT_EPS );
     opt->_grad( opt, var, adg, util );
-    zVecSetElem( var, i, org-Z_OPT_EPS );
+    zVecSetElemNC( var, i, org-Z_OPT_EPS );
     opt->_grad( opt, var, prg, util );
     zRawVecSub( zVecBuf(adg), zVecBuf(prg), zMatRowBuf(h,i), zMatRowSizeNC(h) );
-    zVecSetElem( var, i, org );
+    zVecSetElemNC( var, i, org );
   }
   zMatMulDRC( h, 0.5/Z_OPT_EPS );
  TERMINATE:
@@ -316,7 +316,7 @@ zMat _zOptDMUpdateBFGS(zOptDM *opt, int count) /* Broyden-Fletcher-Goldfalb-Shan
     for( j=0; j<zVecSizeNC(opt->_p); j++ ){
       pj = zVecElem( opt->_p, j );
       rj = zVecElem( opt->_r, j );
-      zMatElem(opt->_h,i,j) += ( l*pi*pj - ri*pj - rj*pi ) * k;
+      zMatElemNC(opt->_h,i,j) += ( l*pi*pj - ri*pj - rj*pi ) * k;
     }
   }
   return opt->_h;
@@ -339,7 +339,7 @@ zVec _zOptDMVecLM(zOptDM *opt, zVec var, zVec d, void *util)
   opt->_hess( opt, var, opt->_h, util );
   m = zVecSqrNorm( opt->_g );
   for( i=0; i<zVecSizeNC(opt->_g); i++ )
-    zMatElem(opt->_h,i,i) += m;
+    zMatElemNC(opt->_h,i,i) += m;
   return zLESolveGaussDST( opt->_h, opt->_g, opt->_d, opt->_idx, opt->_r );
 }
 

@@ -30,13 +30,13 @@ zMat _zNLEJacobiNG(zNLE *nle, zVec var, zMat j, void *util)
 
   for( i=0; i<zVecSizeNC(var); i++ ){
     org = zVecElem(var,i);
-    zVecSetElem( var, i, org+Z_OPT_EPS );
+    zVecSetElemNC( var, i, org+Z_OPT_EPS );
     nle->f( var, nle->_adg, util );
-    zVecSetElem( var, i, org-Z_OPT_EPS );
+    zVecSetElemNC( var, i, org-Z_OPT_EPS );
     nle->f( var, nle->_prg, util );
     zRawVecSub( zVecBuf(nle->_adg), zVecBuf(nle->_prg),
       &zMatBuf(j)[zMatColSizeNC(j)*i], zMatRowSizeNC(j) );
-    zVecSetElem( var, i, org );
+    zVecSetElemNC( var, i, org );
   }
   zMatMulDRC( j, 0.5/Z_OPT_EPS );
   return j;

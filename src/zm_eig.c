@@ -18,40 +18,40 @@ void zHouseholder(zMat m, zMat p, int from, int to, zVec u, zVec v, zVec w)
 
   /* v = 2Mu, w = 2M^Tu */
   for( i=0; i<zVecSizeNC(v); i++ ){
-    zVecSetElem( v, i, 0 );
-    zVecSetElem( w, i, 0 );
+    zVecSetElemNC( v, i, 0 );
+    zVecSetElemNC( w, i, 0 );
     for( j=from; j<to; j++ ){
-      zVecElem(v,i) += zMatElem(m,i,j)*zVecElem(u,j);
-      zVecElem(w,i) += zMatElem(m,j,i)*zVecElem(u,j);
+      zVecElemNC(v,i) += zMatElemNC(m,i,j)*zVecElemNC(u,j);
+      zVecElemNC(w,i) += zMatElemNC(m,j,i)*zVecElemNC(u,j);
     }
-    zVecElem(v,i) *= 2;
-    zVecElem(w,i) *= 2;
+    zVecElemNC(v,i) *= 2;
+    zVecElemNC(w,i) *= 2;
   }
   /* s = v^T u */
-  a = zRawVecInnerProd( &zVecElem(v,from), &zVecElem(u,from), to-from );
+  a = zRawVecInnerProd( &zVecElemNC(v,from), &zVecElemNC(u,from), to-from );
   /* v -= su, w -= su */
   for( i=from; i<to; i++ ){
-    s = a * zVecElem(u,i);
-    zVecElem(v,i) -= s;
-    zVecElem(w,i) -= s;
+    s = a * zVecElemNC(u,i);
+    zVecElemNC(v,i) -= s;
+    zVecElemNC(w,i) -= s;
   }
   /* M -= vu^T+uw^T */
   for( i=0; i<zVecSizeNC(v); i++ )
     for( j=from; j<to; j++ ){
-      zMatElem(m,i,j) -= zVecElem(v,i)*zVecElem(u,j);
-      zMatElem(m,j,i) -= zVecElem(u,j)*zVecElem(w,i);
+      zMatElemNC(m,i,j) -= zVecElemNC(v,i)*zVecElemNC(u,j);
+      zMatElemNC(m,j,i) -= zVecElemNC(u,j)*zVecElemNC(w,i);
     }
   /* transportation matrix */
   if( !p ) return;
   zVecClear( v );
   for( i=0; i<zVecSizeNC(v); i++ ){
     for( j=from; j<to; j++ )
-      zVecElem(v,i) += zMatElem(p,i,j)*zVecElem(u,j);
-    zVecElem(v,i) *= 2;
+      zVecElemNC(v,i) += zMatElemNC(p,i,j)*zVecElemNC(u,j);
+    zVecElemNC(v,i) *= 2;
   }
   for( i=0; i<zVecSizeNC(v); i++ )
     for( j=from; j<to; j++ )
-      zMatElem(p,i,j) -= zVecElem(v,i)*zVecElem(u,j);
+      zMatElemNC(p,i,j) -= zVecElemNC(v,i)*zVecElemNC(u,j);
 }
 
 /* (static)
@@ -64,10 +64,10 @@ zVec zHouseholderVec(zMat m, int col, int from, int to, zVec u)
   double s;
 
   for( s=0, i=from; i<to; i++ )
-    s += zSqr( zVecSetElem( u, i, zMatElem(m,i,col) ) );
+    s += zSqr( zVecSetElemNC( u, i, zMatElemNC(m,i,col) ) );
   if( zIsTiny( s ) ) return u;
-  zVecElem(u,from) -= ( s = -zSgn(zMatElem(m,from,col)) * sqrt(s) );
-  zRawVecDivDRC( &zVecElem(u,from), sqrt(2*(s-zMatElem(m,from,col))*s), to-from );
+  zVecElemNC(u,from) -= ( s = -zSgn(zMatElemNC(m,from,col)) * sqrt(s) );
+  zRawVecDivDRC( &zVecElemNC(u,from), sqrt(2*(s-zMatElemNC(m,from,col))*s), to-from );
   return u;
 }
 
@@ -112,7 +112,7 @@ zMat zHess(zMat m, zMat h, zMat p)
     zHouseholderVec( h, n, n+1, zVecSizeNC(u), u );
     zHouseholder( h, p, n+1, zVecSizeNC(u), u, v, w );
     for( i=n+2; i<zMatRowSizeNC(h); i++ ) /* need refinement? */
-      if( !zIsTiny( zMatElem(h,i,n) ) ) goto RETRY;
+      if( !zIsTiny( zMatElemNC(h,i,n) ) ) goto RETRY;
   }
  TERMINATE:
   zVecFreeAO( 3, u, v, w );
@@ -145,17 +145,17 @@ void _zEigDQRHouseholder(zMat a, int r, int c, double g1, double g2, double g3)
   c1 = c + 1;
   c2 = c + 2;
   for( i=zMax(c-1,0); i<=r; i++ ){
-    s = (zMatElem(a,c,i)+g2*zMatElem(a,c1,i)+g3*zMatElem(a,c2,i))*alpha;
-    zMatElem(a,c ,i) -= s;
-    zMatElem(a,c1,i) -= s * g2;
-    zMatElem(a,c2,i) -= s * g3;
+    s = (zMatElemNC(a,c,i)+g2*zMatElemNC(a,c1,i)+g3*zMatElemNC(a,c2,i))*alpha;
+    zMatElemNC(a,c ,i) -= s;
+    zMatElemNC(a,c1,i) -= s * g2;
+    zMatElemNC(a,c2,i) -= s * g3;
   }
   n = zLimit( c+3, r, zMatRowSizeNC(a)-1 );
   for( i=0; i<=n; i++ ){
-    s = (zMatElem(a,i,c)+g2*zMatElem(a,i,c1)+g3*zMatElem(a,i,c2))*alpha;
-    zMatElem(a,i,c ) -= s;
-    zMatElem(a,i,c1) -= s * g2;
-    zMatElem(a,i,c2) -= s * g3;
+    s = (zMatElemNC(a,i,c)+g2*zMatElemNC(a,i,c1)+g3*zMatElemNC(a,i,c2))*alpha;
+    zMatElemNC(a,i,c ) -= s;
+    zMatElemNC(a,i,c1) -= s * g2;
+    zMatElemNC(a,i,c2) -= s * g3;
   }
 }
 
@@ -180,34 +180,34 @@ bool zEigDQR(zMat m, zComplex z[], int iter)
   zHess( a, NULL, NULL );
   for( r=zMatRowSizeNC(a)-1; r>=0; ){
     if( r == 0 ){
-      zComplexCreate( &z[0], zMatElem(a,0,0), 0.0 );
+      zComplexCreate( &z[0], zMatBuf(a)[0], 0.0 );
       break;
     }
     ZITERINIT( iter );
     for( i=0; i<iter; i++ ){
       r1 = r - 1;
-      if( zIsTiny( zMatElem(a,r,r1) ) ){
-        zComplexCreate( &z[r], zMatElem(a,r,r), 0.0 );
+      if( zIsTiny( zMatElemNC(a,r,r1) ) ){
+        zComplexCreate( &z[r], zMatElemNC(a,r,r), 0.0 );
         r = r1;
         break;
       }
-      b =-zMatElem(a,r1,r1)-zMatElem(a,r,r);
-      c = zMatElem(a,r1,r1)*zMatElem(a,r,r)
-         -zMatElem(a,r1,r) *zMatElem(a,r,r1);
-      if( r1 == 0 || zIsTiny( zMatElem(a,r1,r1-1) ) ){
+      b =-zMatElemNC(a,r1,r1)-zMatElemNC(a,r,r);
+      c = zMatElemNC(a,r1,r1)*zMatElemNC(a,r,r)
+         -zMatElemNC(a,r1,r) *zMatElemNC(a,r,r1);
+      if( r1 == 0 || zIsTiny( zMatElemNC(a,r1,r1-1) ) ){
         zQESolve( 1.0, b, c, &z[r1] );
         r -= 2;
         break;
       }
-      b += ( a0 = zMatElem(a,0,0) );
-      a1 = zMatElem(a,1,0);
+      b += ( a0 = zMatBuf(a)[0] );
+      a1 = zMatElemNC(a,1,0);
       _zEigDQRHouseholder( a, r, 0,
-        zMatElem(a,0,1)*a1+a0*b+c, (zMatElem(a,1,1)+b)*a1, zMatElem(a,2,1)*a1 );
+        zMatElemNC(a,0,1)*a1+a0*b+c, (zMatElemNC(a,1,1)+b)*a1, zMatElemNC(a,2,1)*a1 );
       for( j=1; j<=r1-1; j++ )
         _zEigDQRHouseholder( a, r, j,
-          zMatElem(a,j,j-1), zMatElem(a,j+1,j-1), zMatElem(a,j+2,j-1) );
+          zMatElemNC(a,j,j-1), zMatElemNC(a,j+1,j-1), zMatElemNC(a,j+2,j-1) );
       _zEigDQRHouseholder( a, r, j,
-        zMatElem(a,r1,r1-1), zMatElem(a,r ,r1-1), 0 );
+        zMatElemNC(a,r1,r1-1), zMatElemNC(a,r ,r1-1), 0 );
     }
   }
   zMatFree( a );
@@ -328,10 +328,10 @@ int _zEigVecComplex(zMat m, zComplex *eig, zCVec eigv1, zCVec eigv2, int iter)
   zMatPutNC( ms, zMatRowSizeNC(m), zMatColSizeNC(m), m );
   s = eig->re + shift;
   for( i=0; i<zMatRowSizeNC(m); i++ ){
-    zMatElem(ms,i,i) -= s;
-    zMatSetElem( ms, i+zMatRowSizeNC(m), i,-eig->im );
-    zMatSetElem( ms, i, i+zMatColSizeNC(m), eig->im );
-    zMatElem(ms,i+zMatRowSizeNC(m),i+zMatColSizeNC(m)) -= s;
+    zMatElemNC(ms,i,i) -= s;
+    zMatSetElemNC( ms, i+zMatRowSizeNC(m), i,-eig->im );
+    zMatSetElemNC( ms, i, i+zMatColSizeNC(m), eig->im );
+    zMatElemNC(ms,i+zMatRowSizeNC(m),i+zMatColSizeNC(m)) -= s;
   }
 
   zVecRandUniform( eigv, -1, 1 );
@@ -341,9 +341,9 @@ int _zEigVecComplex(zMat m, zComplex *eig, zCVec eigv1, zCVec eigv2, int iter)
 
   for( i=0; i<_zCVecSize(eigv1); i++ ){
     zComplexCreate( zCVecElem(eigv1,i),
-      zVecElem(eigv,i), zVecElem(eigv,i+_zCVecSize(eigv1)) );
+      zVecElemNC(eigv,i), zVecElemNC(eigv,i+_zCVecSize(eigv1)) );
     zComplexCreate( zCVecElem(eigv2,i),
-      zVecElem(eigv,i),-zVecElem(eigv,i+_zCVecSize(eigv1)) );
+      zVecElemNC(eigv,i),-zVecElemNC(eigv,i+_zCVecSize(eigv1)) );
   }
   zCVecNormalizeDRC( eigv1 );
   zCVecNormalizeDRC( eigv2 );
@@ -408,9 +408,9 @@ void _zEigSymBisecRange(zMat m, double *emin, double *emax)
 
   *emin = *emax = 0;
   for( ml=0, i=0; i<zMatRowSizeNC(m); i++, ml=mr ){
-    mr = i < zMatRowSizeNC(m) ? fabs( zMatElem(m,i,i+1) ) : 0;
-    if( ( e = zMatElem(m,i,i) + ( ml + mr ) ) > *emax ) *emax = e;
-    if( ( e = zMatElem(m,i,i) - ( ml + mr ) ) < *emin ) *emin = e;
+    mr = i < zMatRowSizeNC(m) ? fabs( zMatElemNC(m,i,i+1) ) : 0;
+    if( ( e = zMatElemNC(m,i,i) + ( ml + mr ) ) > *emax ) *emax = e;
+    if( ( e = zMatElemNC(m,i,i) - ( ml + mr ) ) < *emin ) *emin = e;
   }
 }
 
@@ -423,11 +423,11 @@ int _zEigSysBisecSturm(zMat a, double e)
   register int i, n = 0;
   double r, p1, p2;
 
-  p1 = e - zMatElem(a,0,0);
+  p1 = e - zMatBuf(a)[0];
   if( p1 <= 0 ) n++;
   for( i=1; i<zMatRowSizeNC(a); i++ ){
-    r = zMatElem(a,i,i-1);
-    p2 = e - zMatElem(a,i,i) - r*r / ( p1 == 0 ? zTOL : p1 );
+    r = zMatElemNC(a,i,i-1);
+    p2 = e - zMatElemNC(a,i,i) - r*r / ( p1 == 0 ? zTOL : p1 );
     if( p2 < 0 ) n++;
     p1 = p2;
   }
@@ -497,7 +497,7 @@ bool _zEigSymBisecR(zMat m, zVec eig, zMat r, int iter)
   for( i=0; i<zVecSizeNC(eig); i++ ){
     zMatCopyNC( m, ms );
     zVecRandUniform( eigv, -1, 1 );
-    zMatShift( ms, -zVecElem(eig,i)-shift );
+    zMatShift( ms, -zVecElemNC(eig,i)-shift );
     while( !zMatInv( ms, b ) )
       zMatShift( ms, -( shift*=10 ) );
     zEigPower( b, eigv, iter );
@@ -557,12 +557,12 @@ double _zEigSymJacobiShift(zMat m, double *shift)
   zComplex c_shift[2];
   double b, c;
 
-  b = - zMatElem(m,0,0) - zMatElem(m,1,1);
-  c = zMatElem(m,0,0) * zMatElem(m,1,1)
-      - zMatElem(m,1,0) * zMatElem(m,0,1);
+  b = - zMatBuf(m)[0] - zMatElemNC(m,1,1);
+  c = zMatBuf(m)[0] * zMatElemNC(m,1,1)
+      - zMatElemNC(m,1,0) * zMatElemNC(m,0,1);
   zQESolve( 1, b, c, c_shift );
-  c = fabs( c_shift[0].re - zMatElem(m,0,0) )
-    < fabs( c_shift[1].re - zMatElem(m,0,0) ) ?
+  c = fabs( c_shift[0].re - zMatBuf(m)[0] )
+    < fabs( c_shift[1].re - zMatBuf(m)[0] ) ?
     c_shift[0].re : c_shift[1].re;
   zMatShift( m, -c );
   return shift ? ( *shift = c ) : c;
@@ -578,31 +578,31 @@ void _zEigSymJacobiRot(zMat m, zMat r, int i, int j)
   double as, ad, ti, c, s;
   double tmp1, tmp2;
 
-  as = 0.5 * ( zMatElem(m,i,i) + zMatElem(m,j,j) );
-  ad = 0.5 * ( zMatElem(m,i,i) - zMatElem(m,j,j) );
-  ti = sqrt( ad*ad + zSqr( zMatElem(m,i,j) ) );
+  as = 0.5 * ( zMatElemNC(m,i,i) + zMatElemNC(m,j,j) );
+  ad = 0.5 * ( zMatElemNC(m,i,i) - zMatElemNC(m,j,j) );
+  ti = sqrt( ad*ad + zSqr( zMatElemNC(m,i,j) ) );
   if( ad < 0 ) ti = -ti;
   c = sqrt( 0.5 + 0.5*ad/ti );
-  s = 0.5 * zMatElem(m,i,j) / ( ti * c );
+  s = 0.5 * zMatElemNC(m,i,j) / ( ti * c );
 
-  zMatSetElem( m, i, i, as + ti );
-  zMatSetElem( m, j, j, as - ti );
-  zMatSetElem( m, i, j, 0 );
-  zMatSetElem( m, j, i, 0 );
+  zMatSetElemNC( m, i, i, as + ti );
+  zMatSetElemNC( m, j, j, as - ti );
+  zMatSetElemNC( m, i, j, 0 );
+  zMatSetElemNC( m, j, i, 0 );
   for( k=0; k<zMatRowSizeNC(m); k++ ){
     /* update of transformation matrix */
-    tmp1 = zMatElem( r, k, i );
-    tmp2 = zMatElem( r, k, j );
-    zMatSetElem( r, k, i, c * tmp1 + s * tmp2 );
-    zMatSetElem( r, k, j,-s * tmp1 + c * tmp2 );
+    tmp1 = zMatElemNC( r, k, i );
+    tmp2 = zMatElemNC( r, k, j );
+    zMatSetElemNC( r, k, i, c * tmp1 + s * tmp2 );
+    zMatSetElemNC( r, k, j,-s * tmp1 + c * tmp2 );
     /* update of eigenmatrix */
     if( k == i || k == j ) continue;
-    tmp1 = zMatElem( m, i, k );
-    tmp2 = zMatElem( m, j, k );
-    zMatSetElem( m, i, k, c * tmp1 + s * tmp2 );
-    zMatSetElem( m, j, k,-s * tmp1 + c * tmp2 );
-    zMatSetElem( m, k, i, zMatElem( m, i, k ) );
-    zMatSetElem( m, k, j, zMatElem( m, j, k ) );
+    tmp1 = zMatElemNC( m, i, k );
+    tmp2 = zMatElemNC( m, j, k );
+    zMatSetElemNC( m, i, k, c * tmp1 + s * tmp2 );
+    zMatSetElemNC( m, j, k,-s * tmp1 + c * tmp2 );
+    zMatSetElemNC( m, k, i, zMatElemNC( m, i, k ) );
+    zMatSetElemNC( m, k, j, zMatElemNC( m, j, k ) );
   }
 }
 
@@ -642,7 +642,7 @@ zVec zEigSymJacobi(zMat m, zVec eig, zMat r)
     is_complete = true;
     for( i=1; i<zMatRowSizeNC(d); i++ )
       for( j=0; j<i; j++ ){
-        if( zIsTiny( zMatElem(d,i,j) ) ) continue;
+        if( zIsTiny( zMatElemNC(d,i,j) ) ) continue;
 	is_complete = false;
 	/* iterative elimination of non-diagonal components */
         _zEigSymJacobiRot( d, r, i, j );
@@ -654,7 +654,7 @@ zVec zEigSymJacobi(zMat m, zVec eig, zMat r)
   } while( !is_complete );
  TERMINATE:
   for( i=0; i<zMatRowSizeNC(m); i++ )
-    zVecSetElem( eig, i, zMatElem(d,i,i) + shift );
+    zVecSetElemNC( eig, i, zMatElemNC(d,i,i) + shift );
   zMatFree( d );
   return eig;
 }
@@ -701,7 +701,7 @@ int zSVD(zMat m, zVec sv, zMat u, zMat v)
   zMulMatMatTNC( m, m, c );
   zEigSymJacobi( c, sv, u );
   for( i=0; i<zVecSizeNC(sv); i++ )
-    zVecSetElem( sv, i, ( zVecElem(sv,i) < zTOL ) ? 0 : sqrt(zVecElem(sv,i)) );
+    zVecSetElemNC( sv, i, ( zVecElemNC(sv,i) < zTOL ) ? 0 : sqrt(zVecElemNC(sv,i)) );
   rank = _zSVDSort( sv, u );
   if( !( w = zMatAlloc( zMatRowSizeNC(u), rank ) ) ){
     ZALLOCERROR();
@@ -712,9 +712,9 @@ int zSVD(zMat m, zVec sv, zMat u, zMat v)
 
   zMulMatTMatNC( w, m, v );
   for( i=0; i<rank; i++ ){
-    s = 1.0 / zVecElem(sv,i);
+    s = 1.0 / zVecElemNC(sv,i);
     for( j=0; j<zMatColSizeNC(m); j++ )
-      zMatElem(v,i,j) *= s;
+      zMatElemNC(v,i,j) *= s;
   }
  TERMINATE:
   zMatFree( w );

@@ -194,7 +194,7 @@ zPex _zPexExp(zVec factor)
       ZALLOCERROR();
       return NULL;
     }
-    zPexSetCoeff( p, 0,-zVecElem( factor, 0 ) );
+    zPexSetCoeff( p, 0,-zVecElemNC( factor, 0 ) );
     zPexSetCoeff( p, 1, 1 );
     return p;
   }
