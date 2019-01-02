@@ -8,7 +8,7 @@ zMat mat_create_rand(int row, int col)
   zMat m;
 
   m = zMatAlloc( ROW, COL );
-  zMatRand( m, -10, 10 );
+  zMatRandUniform( m, -10, 10 );
   return m;
 }
 
@@ -43,8 +43,9 @@ zMat mat_create_sym_rand(int row, int col)
 
   m = zMatAlloc( ROW, COL );
   for( i=0; i<row; i++ )
-    for( j=i; j<col; j++ )
+    for( j=i; j<col; j++ ){
       zMatSetElem( m, j, i, zMatSetElem( m, i, j, zRandF(-10,10) ) );
+    }
   return m;
 }
 

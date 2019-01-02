@@ -2,7 +2,7 @@
 
 #define STEP 100
 
-void test_weight(zNURBS *nurbs, int w)
+void test_weight(zNURBS1 *nurbs, int w)
 {
   double t;
   int i;
@@ -12,11 +12,11 @@ void test_weight(zNURBS *nurbs, int w)
 
   sprintf( filename, "w%d", w );
   fp = fopen( filename, "w" );
-  zNURBSWeight(nurbs,4) = (double)w;
-  v = zVecAlloc( zVecSizeNC( zNURBSCP(nurbs,0) ) );
+  zNURBS1Weight(nurbs,4) = (double)w;
+  v = zVecAlloc( zVecSizeNC( zNURBS1CP(nurbs,0) ) );
   for( i=0; i<=STEP; i++ ){
-    t = ( zNURBSKnotE(nurbs)-zNURBSKnot0(nurbs) ) * i / STEP + zNURBSKnot0(nurbs);
-    if( zNURBSVec( nurbs, t, v ) )
+    t = ( zNURBS1KnotE(nurbs)-zNURBS1Knot0(nurbs) ) * i / STEP + zNURBS1Knot0(nurbs);
+    if( zNURBS1Vec( nurbs, t, v ) )
       zVecDataFWrite( fp, v );
   }
   zVecFree( v );
@@ -38,7 +38,7 @@ void output_src(zSeq *seq)
 
 int main(int argc, char *argv[])
 {
-  zNURBS nurbs;
+  zNURBS1 nurbs;
   zSeq seq;
   zVec v;
   int dim, num, i;
@@ -57,11 +57,11 @@ int main(int argc, char *argv[])
   output_src( &seq );
 
   /* creation of spline interpolator */
-  if( zNURBSCreate( &nurbs, &seq, dim ) ){
-    zNURBSKnotFWrite( stdout, &nurbs );
+  if( zNURBS1Create( &nurbs, &seq, dim ) ){
+    zNURBS1KnotFWrite( stdout, &nurbs );
     for( i=0; i<5; i++ )
       test_weight( &nurbs, i );
-    zNURBSDestroy( &nurbs );
+    zNURBS1Destroy( &nurbs );
   }
   zSeqFree( &seq );
   return 0;  

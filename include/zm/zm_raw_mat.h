@@ -11,67 +11,65 @@
 
 __BEGIN_DECLS
 
-/* METHOD:
- * zRawMatClear, zRawMatTouchup, zRawMatCopy
- * - clear, touchup and copy raw matrix.
+/*! \brief clear, touchup and copy a raw matrix.
  *
- * 'zRawMatClear()' clears a matrix 'm', setting all
- * components for zeros.
- * #
- * 'zRawMatTouchup()' touches up 'm', namely, replace
- * all components which are less than zTOL for zeros.
- * #
- * 'zRawMatCopy()' copies a matrix 'src' to 'dest'.
- * 'row' and 'col' are the row and column size of matrices,
+ * zRawMatClear() sets all components of a raw matrix \a m
+ * for zeros.
+ *
+ * zRawMatTouchup() replaces all components less than zTOL
+ * (defined in zm_misc.h) of a raw matrix \a m for zeros.
+ *
+ * zRawMatCopy() copies a raw matrix \a src to another \a dest.
+ * \a row and \a col are the row and column sizes of the matrices,
  * respectively.
- * #
- * 'row' and 'col' are the row and column size of 'm',
- * respectively.
- * [RETURN VALUE]
- * Neither 'zRawMatClear()' nor 'zRawMatTouchup()' return
- * any values.
- * #
- * 'zRawMatCopy()' returns a pointer to 'dest'.
+ * \return
+ * zRawMatClear() and zRawMatTouchup() return no values.
+ * zRawMatCopy() returns a pointer \a dest.
  */
 #define zRawMatClear(m,r,c)      zRawVecClear( m, (r)*(c) )
 #define zRawMatTouchup(m,r,c)    zRawVecTouchup( m, (r)*(c) )
 #define zRawMatCopy(src,dst,r,c) zRawVecCopy( src, dst, (r)*(c) )
 
-/* METHOD:
- * zRawMatIdent, zRawMatDiag, zRawMatRand
- * - identity, diagonal and random raw matrices.
+/*! \brief make identity, diagonal and random raw matrices.
  *
- * 'zRawMatIdent()' creates an identity matrix 'm'.
- * #
- * 'zRawMatDiag()' creates a diagonal matrix 'm', referring
- * a raw-value array 'd' as the diagonal values.
- * 'm' does not have to be a squared matrix.
- * #
- * 'zRawMatRand()' sets all the components of 'm' randomly
- * within the range from 'min' to 'max'.
- * #
- * 'row' and 'col' are the row and column size of 'm',
- * respectively.
- * [RETURN VALUE]
- * These functions return no values.
+ * zRawMatIdent() creates an identity matrix \a m.
+ *
+ * zRawMatDiag() creates a diagonal matrix \a m, referring
+ * a raw-value array \a d as the diagonal values.
+ * \a m does not need to be a squared matrix.
+ *
+ * zRawMatRand() sets all components of \a m randomly within
+ * the range from \a min to \a max.
+ * \return
+ * zRawMatIdent(), zRawMatDiag()
  */
 __EXPORT void zRawMatIdent(double *m, int row, int col);
 __EXPORT void zRawMatDiag(double *m, int row, int col, double *d);
 #define zRawMatRandUniform(m,r,c,min,max) zRawVecRandUniform( m, (r)*(c), min, max )
 #define zRawMatRand(m,min,max,r,c) zRawVecRand( m, min, max, (r)*(c) )
 
-/* METHOD:
- * zRawMatGet, zRawMatPut
- * - partial copy of matrices.
+/*! \brief partially copy a matrix.
  *
- * 'zRawMatGet()' gets a submatrix of 'src' with the
- * size of 'dr' x 'dc' from ('pr', 'pc) to 'dest'.
- * 'dr' and 'dc' is also the size of 'dest'. The size
- * of 'src' is 'sr' x 'sc'.
- * 'zRawMatPut()' puts 'dest' to 'src' as a submatrix
- * with the size of 'sr' x 'sc' at ('pr', 'pc).
- * 'dr' and 'dc' is the size of 'dest'.
- * [RETURN VALUES]
+ * zRawMatGet() gets a submatrix of \a src from (\a pr, \a pc)
+ * to (\a pr + \a dr - 1, \a pc + \a dc - 1) and puts it into
+ * another matrix \a dest.
+ * The size of \a dest must be \a dr x \a dc.
+ * The size of \a src is specified as \a sr x \a sc.
+ *
+ * zRawMatTGet() gets a submatrix of \a src from (\a pr, \a pc)
+ * to (\a pr + \a dc - 1, \a pc + \a dr - 1) and puts its
+ * transpose into another matrix \a dest.
+ * The size of \a dest must be \a dr x \a dc.
+ * The size of \a src is specified as \a sr x \a sc.
+ *
+ * zRawMatPut() puts a \a sr x \a sc matrix \a src into another
+ * matrix \a dest from (\a pr, \a pc).
+ * The size of \a dest is specified as \a dr x \a dc.
+ *
+ * zRawMatTPut() puts the transpose of a \a sr x \a sc matrix
+ * \a src into another matrix \a dest from (\a pr, \a pc).
+ * The size of \a dest is specified as \a dr x \a dc.
+ * \return
  * These functions return no values.
  */
 __EXPORT void zRawMatGet(double *src, int sr, int sc, int pr, int pc, double *dest, int dr, int dc);
@@ -79,83 +77,72 @@ __EXPORT void zRawMatPut(double *dest, int dr, int dc, int pr, int pc, double *s
 __EXPORT void zRawMatTGet(double *src, int sr, int sc, int pr, int pc, double *dest, int dr, int dc);
 __EXPORT void zRawMatTPut(double *dest, int dr, int dc, int pr, int pc, double *src, int sr, int sc);
 
-/* METHOD:
- * zRawMatGetRow, zRawMatGetCol, zRawMatSetRow, zRawMatSetCol,
- * zRawMatSwapRow, zRawMatSwapCol
- * - abstraction, set and swap of row/column vector from raw matrix.
+/*! \brief abstract, set and swap row/column vectors from a raw matrix.
  *
- * 'zRawMatGetRow()' abstracts a row vector at 'sr' from a
- * matrix 'm'. 'zRawMatGetCol()' abstracts a column vector
- * at 'sc' from 'm'. Both put the result into 'v'.
- * 'zRawMatSetRow()' sets a row vector 'v' to 'm' at 'dr'.
- * 'zRawMatSetCol()' sets a column vector 'v' to 'm'
- * at 'dc'.
- * #
- * 'zRawMatSwapRow()' swaps 'r1'th row and 'r2'th row of
- * 'm'. 'zRawMatSwapCol()' swaps 'c1'th column and 'c2'th
- * column of 'm'.
- * #
- * 'row' and 'col' are the row and column size of matrices,
+ * zRawMatGetRow() abstracts the \a sr'th row vector of a matrix
+ * \a m. zRawMatGetCol() abstracts the \a sc'th column vector
+ * of a matrix \a m. Both functions put the result into \a v.
+ * zRawMatPutRow() sets a vector \a v to the \a dr'th row of
+ * a matrix \a m.
+ * zRawMatPutCol() sets a vector \a v to the \a dc'th column
+ * of a matrix \a m.
+ *
+ * zRawMatSwapRow() swaps the \a r1'th row and the \a r2'th row
+ * of a matrix \a m. zRawMatSwapCol() swaps the \a c1'th column
+ * and \a c2'th column of \a m.
+ * \a row and \a col are the row and column size of \a m,
  * respectively.
- * [RETURN VALUE]
+ * \return
  * These functions return no values.
- * [NOTES]
- * 'zRawMatSwapRow()' and 'zRawMatSwapCol()' are only
- * available in the user space.
  */
 __EXPORT void zRawMatGetRow(double *m, int row, int col, int sr, double *v);
 __EXPORT void zRawMatGetCol(double *m, int row, int col, int sc, double *v);
-__EXPORT void zRawMatSetRow(double *m, int row, int col, int dr, double *v);
-__EXPORT void zRawMatSetCol(double *m, int row, int col, int dc, double *v);
+__EXPORT void zRawMatPutRow(double *m, int row, int col, int dr, double *v);
+__EXPORT void zRawMatPutCol(double *m, int row, int col, int dc, double *v);
 __EXPORT void zRawMatSwapRow(double *m, int row, int col, int r1, int r2);
 __EXPORT void zRawMatSwapCol(double *m, int row, int col, int c1, int c2);
 
-/* METHOD:
- * zRawMatIsTol, zRawMatIsTiny - see if matrix is tiny.
+/*! \brief check if a matrix is tiny.
  *
- * 'zRawMatIsTol()' returns the true value if every components
- * of 'm' are smaller than 'e', or the false value, otherwise.
- * 'zRawMatIsTiny()' compares each component of 'm' with
- * zTOL(defined in "zm_misc.h"), and returns the same result
- * with 'zRawMatIsTol()'.
- * #
- * 'row' and 'col' are the row and column size of matrices,
+ * zRawMatIsTol() returns the true value if all elements of a
+ * matrix \a m are smaller than \a e, or the false value, otherwise.
+ * zRawMatIsTiny() returns the true value if all elements of
+ * \a m are smaller than zTOL (defined in zm_misc.h), or the
+ * false value, otherwise.
+ *
+ * \a row and \a col are the row and column size of \a m,
  * respectively.
- * [RETURN VALUE]
- * 'zRawMatIsTol()', 'zRawMatIsTiny()' return results
- * as boolean values.
+ * \return
+ * zRawMatIsTol() and zRawMatIsTiny() return results as boolean
+ * values.
  */
 #define zRawMatIsTol(m,r,c,t) zRawVecIsTol( m, (r)*(c), t )
 #define zRawMatIsTiny(m,r,c)  zRawMatIsTol( m, r, c, zTOL )
 
-/* METHOD:
- * zRawMatAdd, zRawMatSub, zRawMatRev,
- * zRawMatMul, zRawMatDiv, zRawMatCat,
- * zRawMatAddDRC, zRawMatSubDRC, zRawMatRevDRC,
- * zRawMatMulDRC, zRawMatDivDRC, zRawMatCatDRC
- * - basic arithmetics for matrix.
+/*! \brief basic arithmetics for matrix.
  *
- * 'zRawMatAdd()' adds two matrices 'm1' and 'm2'.
- * 'zRawMatSub()' subtracts 'm2' from 'm1'.
- * 'zRawMatRev()' reverses the sign of 'm1'.
- * 'zRawMatMul()' multiplies 'm1' by a scalar value 'k'.
- * 'zRawMatDiv()' divides 'm1' by 'k'.
- * 'zRawMatCat()' concatenates 'm1', adding multiplied
- * 'm2' by 'k'.
- * These functions put the result into 'm'.
- * #
- * 'zRawMatAddDRC()' adds 'm2' to 'm1' directly.
- * 'zRawMatSubDRC()' subtracts 'm2' from 'm1' directly.
- * 'zRawMatRevDRC()' reverses the sign of 'm' directly.
- * 'zRawMatMulDRC()' multiplies 'm' by a scalar value
- * 'k' directly.
- * 'zRawMatDivDRC()' divides 'm' by 'k' directly.
- * 'zRawMatCatDRC()' concatenates 'm1', adding multiplied
- * 'm2' by 'k'.
- * #
- * 'row' and 'col' are the row and column size of matrices,
- * respectively.
- * [RETURN VALUE]
+ * zRawMatAdd() adds two matrices \a m1 and \a m2.
+ * zRawMatSub() subtracts \a m2 from \a m1.
+ * zRawMatRev() reverses the sign of \a m1.
+ * zRawMatMul() multiplies \a m1 by a scalar value \a k.
+ * zRawMatDiv() divides \a m1 by \a k.
+ * zRawMatCat() concatenates \a m1 with \a m2 multiplied
+ * by \a k.
+ * For all the above functions, the result is put into
+ * \a m.
+ *
+ * zRawMatAddDRC() adds \a m2 to \a m1 directly.
+ * zRawMatSubDRC() subtracts \a m2 from \a m1 directly.
+ * zRawMatRevDRC() reverses the sign of \a m1 directly.
+ * zRawMatMulDRC() multiplies \a m1 by a scalar value
+ * \a k directly.
+ * zRawMatDivDRC() divides \a m1 by \a k directly.
+ * zRawMatCatDRC() concatenates \a m1 with \a m2 multiplied
+ * by \a k directly.
+ *
+ * \a row and \a col are the row and column size of
+ * the matrices, respectively.
+ * \return
  * These functions return no values.
  */
 #define zRawMatAdd(m1,m2,m,r,c)    zRawVecAdd( m1, m2, m, (r)*(c) )
@@ -172,113 +159,97 @@ __EXPORT void zRawMatSwapCol(double *m, int row, int col, int c1, int c2);
 #define zRawMatDivDRC(m,k,r,c)     zRawVecDivDRC( m, k, (r)*(c) )
 #define zRawMatCatDRC(m1,k,m2,r,c) zRawVecCatDRC( m1, k, m2, (r)*(c) )
 
-/* METHOD:
- * zRawMatSqrNorm, zRawMatNorm - calculation of matrix norm.
+/*! \brief calculate the norm of a raw matrix.
  *
- * 'zRawMatSqrNorm()' calculates the squared norm of 'm',
- * and 'zRawMatNorm()' calculates the norm of 'm'.
- * #
- * 'row' and 'col' are the row and column size of matrices,
+ * \return
+ * zRawMatSqrNorm() returns the squared norm of a raw
+ * matrix \a m.
+ * zRawMatNorm() returns the norm of \a m.
+ *
+ * \a row and \a col are the row and column size of \a m,
  * respectively.
- * [RETURN VALUE]
- * These functions return the norm calculated.
  */
 #define zRawMatSqrNorm(m,r,c) zRawVecSqrNorm( m, (r)*(c) )
 #define zRawMatNorm(m,r,c)    zRawVecNorm( m, (r)*(c) )
 
-/* METHOD:
- * zRawMatT, zRawMatTDST, zRawMatTr
- * - transpose of matrix.
+/*! \brief transpose a raw matrix.
  *
- * 'zRawMatT()' creates a transpose matrix of 'm'
- * and puts it into 'tm'. 'row' and 'col' are of 'tm'.
- * #
- * 'zRawMatTDST()' destructively modifies 'm' to
- * the transpose of itself. 'row' and 'col' are of 'm'.
- * #
- * 'zRawMatTr()' calculates the trace value of a
- * matrix 'm'.
- * #
- * 'row' and 'col' are the row and column size of matrices,
- * respectively.
- * [RETURN VALUES]
- *  'zRawMatT()' and 'zRawMatTDST()' return no values.
+ * zRawMatT() transposes a raw matrix \a m. The result
+ * is put into \a tm.
+ * The size of \a tm must be \a row x \a col.
+ *
+ * zRawMatTDRC() directly transposes \a m.
+ * The size of \a m must be\a row x \a col.
+ *
+ * zRawMatTr() calculates the trace value of \a m.
+ * The size of \a m must be \a row x \a col.
+ * \return
+ * zRawMatT() and zRawMatTDRC() return no values.
+ * zRawMatTr() returns the value calculated.
  */
 __EXPORT void zRawMatT(double *m, double *tm, int row, int col);
-__EXPORT void zRawMatTDST(double *m, int row, int col);
-__EXPORT double  zRawMatTr(double *m, int row, int col);
+__EXPORT void zRawMatTDRC(double *m, int row, int col);
+__EXPORT double zRawMatTr(double *m, int row, int col);
 
-/* METHOD:
- * zRawMulMatVec, zRawMulVecMat,
- * zRawMulMatMat, zRawMulMatMatT, zRawMulMatTMat
- * - multiplication of double-precision floating-point value
- *   vector and matrix.
+/*! \brief multiply a raw vector by a raw matrix.
  *
- * These multiplication functions are prepared for allowing
- * one to treat raw arrays as vectors or matrices.
- * #
- * 'zRawMulMatVec()' multiplies a matrix 'm' by a vector
- * 'v1'. 'zRawMulVecMat()' multiplies a row vector 'v1'
- * by 'm'. These two functions put the result into 'v'.
- * #
- * 'zRawMulMatMat()' multiplies a matrix 'm1' by another
- * matrix 'm2'. 'm1' is 'r1' x 'c1' matrix, and 'm2' is
- * 'c1' x 'c2' matrix.
- * 'zRawMulMatMatT()' multiplies 'm1' by the
- * transpose of 'm2'. 'm1' is 'r1' x 'c1' matrix, and 'm2' is
- * 'r2' x 'c1' matrix.
- * 'zRawMulMatTMat()' multiplies the transpose
- * of 'm1' by 'm2'. 'm1' is 'r1' x 'c1' matrix, and 'm2' is
- * 'r1' x 'c2' matrix.
- * These three functions put the result into 'm'.
- * [RETURN VALUE]
+ * zRawMulMatVec() multiplies a raw vector \a v1 by a raw
+ * matrix \a m.
+ * zRawMulMatTVec() multiplies a raw vector \a v1 by the
+ * transpose of a raw matrix \a m.
+ * For the both functions, the result is put into \a v.
+ *
+ * zRawMulMatMat() multiplies a raw matrix \a m1 by another
+ * raw matrix \a m2 from the right side. The sizes of \a m1
+ * and \a m2 must be \a r1 x \a c1 and \a c1 x \a c2, respectively.
+ * zRawMulMatMatT() multiplies \a m1 by the transpose of
+ * \a m2 from the right side. The sizes of \a m1 and \a m2
+ * must be \a r1 x \a c1 and \a r2 x \a c1, respectively.
+ * zRawMulMatTMat() multiplies \a m2 by the transpose of
+ * \a m1 from the left side. The sizes of \a m1 and \a m2
+ * are \a r1 x \a c1 and \a r1 x \a c2.
+ * For those functions, the result is put into \a m.
+ * \return
  * These functions return no values.
  */
 __EXPORT void zRawMulMatVec(double *m, double *v1, int row, int col, double *v);
-__EXPORT void zRawMulVecMat(double *v1, double *m, int row, int col, double *v);
+__EXPORT void zRawMulMatTVec(double *m, double *v1, int row, int col, double *v);
 __EXPORT void zRawMulMatMat(double *m1, int r1, int c1, double *m2, int r2, int c2, double *m);
 __EXPORT void zRawMulMatMatT(double *m1, int r1, int c1, double *m2, int r2, int c2, double *m);
 __EXPORT void zRawMulMatTMat(double *m1, int r1, int c1, double *m2, int r2, int c2, double *m);
 
-/* METHOD:
- * zRawVecDyad, zRawMatAddDyad, zRawMatSubDyad, zRawMatCatDyad
- * - dyadic product of double-precision floating-point value vectors.
+/*! \brief dyadic product of raw vectors.
  *
- * 'zRawVecDyad()' calculates dyadic product of
- * two vector 'v1' and 'v2', namely, 'v1' 'v2'^T.
- * The result will be put into 'dyad'.
- * #
- * 'zRawMatAddDyad()' adds dyadic products of 'v1'
- * and 'v2' to matrix 'm'.
- * 'zRawMatSubDyad()' subtracts dyadic products of 'v1'
- * and 'v2' to matrix 'm'.
- * 'zRawMatCatDyad()' adds a multiplied dyadic
- * products of 'v1' and 'v2' by 'k' to 'm'.
- * #
- * For those three functions, 'size1' and 'size2'
- * are the size of 'v1' and 'v2', respectively.
- * [RETURN VALUE]
- * 'zRawVecDyad()', 'zRawMatAddDyad()', 'zRawMatSubDyad()'
- * and 'zRawMatCatDyad()' return no value.
+ * zRawVecDyad() calculates the dyadic product of two raw
+ * vectors \a v1 and \a v2. Namely, \a v1 \a v2^T.
+ * The result is put into \a dyad.
+ *
+ * zRawMatAddDyad() adds the dyadic products of \a v1 and
+ * \a v2 to a raw matrix \a m.
+ * zRawMatSubDyad() subtracts the dyadic products of \a v1
+ * and \a v2 from a raw matrix \a m.
+ * zRawMatCatDyad() concatenates \a m with the dyadic
+ * product of \a v1 and \a v2 multiplied by a scalar value
+ * \a k.
+ * For those functions, \a size1 and \a size2 are the sizes
+ * of \a v1 and \a v2, respectively.
+ * \return
+ * These functions return no value.
  */
 __EXPORT void zRawVecDyad(double *v1, int size1, double *v2, int size2, double *dyad);
 __EXPORT void zRawMatAddDyad(double *m, double *v1, int size1, double *v2, int size2);
 __EXPORT void zRawMatSubDyad(double *m, double *v1, int size1, double *v2, int size2);
 __EXPORT void zRawMatCatDyad(double *m, double k, double *v1, int size1, double *v2, int size2);
 
-/* METHOD:
- * zRawMatFWrite, zRawMatWrite
- * - output raw matrix.
+/*! \brief output a raw matrix.
  *
- * 'zRawMatFWrite()' outputs all components of a given 2-D raw
- * array of floating-point values pointed  by 'm' with a row size
- * 'row' and a column size 'col' to the current position of file
- * 'fp'.
- * 'zRawMatWrite()' outputs all components of 'm' simply to
- * the standard output.
- * [RETURN VALUE]
- * Neither 'zRawMatFWrite()' nor 'zRawMatWrite()' return
- * any values.
+ * zRawMatFWrite() outputs all components of a raw matrix
+ * \a m to the current position of a file \a fp.
+ * The size of \a m is specified as \a row x \a col.
+ * zRawMatWrite() outputs all components of \a m to the
+ * standard output.
+ * \return
+ * These functions return no value.
  */
 __EXPORT void zRawMatFWrite(FILE *fp, double *m, int row, int col);
 #define zRawMatWrite(m,r,c) zRawMatFWrite( stdout, m, r, c )

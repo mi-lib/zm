@@ -44,7 +44,7 @@ typedef zVecStruct * zVec;
 /*! \brief set an element of a vector without checking size. */
 #define zVecSetElemNC(v,n,e) ( zVecElemNC(v,n) = (e) )
 /*! \brief set an element of a vector. */
-#define zVecSetElem(v,n,e) if( zVecPosIsValid(v,n) ) zVecSetElemNC(v,n,e)
+#define zVecSetElem(v,n,e) ( zVecPosIsValid(v,n) ? zVecSetElemNC(v,n,e) : 0 )
 
 /*! \brief set elements of a vector for values in the argument list.
  *

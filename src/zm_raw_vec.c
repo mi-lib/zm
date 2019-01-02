@@ -315,7 +315,7 @@ double *zRawVecNormalize(double *src, int size, double *dest)
     ZRUNERROR( ZM_ERR_ZERODIV );
     return NULL;
   }
-  zRawVecDiv( src, l, dest, size );
+  zRawVecMul( src, 1.0/l, dest, size );
   return dest;
 }
 
@@ -325,12 +325,10 @@ double *zRawVecNormalize(double *src, int size, double *dest)
 double zRawVecSqrDist(double *v1, double *v2, int size)
 {
   register int i;
-  double d, e;
+  double d;
 
-  for( d=0, i=0; i<size; i++ ){
-    e = v1[i] - v2[i];
-    d += zSqr(e);
-  }
+  for( d=0, i=0; i<size; i++ )
+    d += zSqr( v1[i] - v2[i] );
   return d;
 }
 

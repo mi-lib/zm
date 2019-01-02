@@ -12,14 +12,14 @@ int main(void)
   zRandInit();
   m = zMatAlloc( N, M );
   v = zVecAlloc( M );
-  zMatRand( m, -10, 10 );
+  zMatRandUniform( m, -10, 10 );
   zMatWrite( m );
   printf( "||m||_2 = %g\n", zMatNorm(m) );
   printf( "||m||_inf = %g\n", zMatInfNorm(m) );
   for( i=0; i<N; i++ ){
     for( j=0; j<M; j++ )
       zVecSetElem( v, j, zSgn(zMatElem(m,i,j)) );
-    printf( "[%d] %g\n", i, zRawVecInnerProd(zMatRowArray(m,i),zVecArray(v),M) );
+    printf( "[%d] %g\n", i, zRawVecInnerProd(zMatRowBuf(m,i),zVecBuf(v),M) );
   }
   zMatFree( m );
   zVecFree( v );

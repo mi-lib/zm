@@ -25,7 +25,7 @@ void zRawMatDiag(double *m, int row, int col, double *d)
 }
 
 /* zRawMatGet
- * - get submatrix.
+ * - get a submatrix from a raw matrix.
  */
 void zRawMatGet(double *src, int sr, int sc, int pr, int pc, double *dest, int dr, int dc)
 {
@@ -35,7 +35,7 @@ void zRawMatGet(double *src, int sr, int sc, int pr, int pc, double *dest, int d
 }
 
 /* zRawMatTGet
- * - get transpose of a submatrix.
+ * - get transpose of a submatrix from a raw matrix.
  */
 void zRawMatTGet(double *src, int sr, int sc, int pr, int pc, double *dest, int dr, int dc)
 {
@@ -44,7 +44,7 @@ void zRawMatTGet(double *src, int sr, int sc, int pr, int pc, double *dest, int 
 }
 
 /* zRawMatPut
- * - put submatrix.
+ * - put a submatrix into another raw matrix.
  */
 void zRawMatPut(double *dest, int dr, int dc, int pr, int pc, double *src, int sr, int sc)
 {
@@ -54,17 +54,17 @@ void zRawMatPut(double *dest, int dr, int dc, int pr, int pc, double *src, int s
 }
 
 /* zRawMatTPut
- * - put transpose of a submatrix.
+ * - put transpose of a submatrix into another matrix.
  */
 void zRawMatTPut(double *dest, int dr, int dc, int pr, int pc, double *src, int sr, int sc)
 {
   dest += pr*dc + pc;
   for( ; sr>0; src+=sc, dest++, sr-- )
-    zRawMatSetCol( dest, sc, dc, 0, src );
+    zRawMatPutCol( dest, sc, dc, 0, src );
 }
 
 /* zRawMatGetRow
- * - abstruction of a row vector from a raw matrix.
+ * - abstract a row vector from a raw matrix.
  */
 void zRawMatGetRow(double *m, int row, int col, int sr, double *v)
 {
@@ -72,29 +72,32 @@ void zRawMatGetRow(double *m, int row, int col, int sr, double *v)
 }
 
 /* zRawMatGetCol
- * - abstruction of a column vector from a raw matrix.
+ * - abstract a column vector from a raw matrix.
  */
 void zRawMatGetCol(double *m, int row, int col, int sc, double *v)
 {
   for( m+=sc; row>0; row--, v++, m+=col ) *v = *m;
 }
 
-/* zRawMatSetRow
- * - set of a row vector into a raw matrix.
+/* zRawMatPutRow
+ * - put a row vector into a raw matrix.
  */
-void zRawMatSetRow(double *m, int row, int col, int dr, double *v)
+void zRawMatPutRow(double *m, int row, int col, int dr, double *v)
 {
   zRawVecPut( m, col*dr, v, col );
 }
 
-/* zRawMatSetCol
- * - set of a column vector into a raw matrix.
+/* zRawMatPutCol
+ * - put a column vector into a raw matrix.
  */
-void zRawMatSetCol(double *m, int row, int col, int dc, double *v)
+void zRawMatPutCol(double *m, int row, int col, int dc, double *v)
 {
   for( m+=dc; row>0; row--, v++, m+=col ) *m = *v;
 }
 
+/* zRawMatSwapRow
+ * - swap two row vectors in a raw matrix.
+ */
 void zRawMatSwapRow(double *m, int row, int col, int r1, int r2)
 {
   register int i, _r1, _r2;
@@ -108,6 +111,9 @@ void zRawMatSwapRow(double *m, int row, int col, int r1, int r2)
     zRawVecSwap( m, 0, i );
 }
 
+/* zRawMatSwapCol
+ * - swap two column vectors in a raw matrix.
+ */
 void zRawMatSwapCol(double *m, int row, int col, int c1, int c2)
 {
   register int i, _c1, _c2;
@@ -122,7 +128,7 @@ void zRawMatSwapCol(double *m, int row, int col, int c1, int c2)
 }
 
 /* zRawMatT
- * - transpose of a raw array matrix.
+ * - transpose a raw matrix.
  */
 void zRawMatT(double *m, double *tm, int row, int col)
 {
@@ -133,10 +139,10 @@ void zRawMatT(double *m, double *tm, int row, int col)
     zRawMatGetCol( m, col, row, i, tm );
 }
 
-/* zRawMatTDST
- * - transpose of a raw array matrix (destructive).
+/* zRawMatTDRC
+ * - directly transpose a raw matrix.
  */
-void zRawMatTDST(double *mat, int row, int col)
+void zRawMatTDRC(double *mat, int row, int col)
 {
   register int r, c;
   long offset, offset_next, size;
@@ -164,7 +170,7 @@ void zRawMatTDST(double *mat, int row, int col)
 }
 
 /* zRawMatTr
- * - calculation of a trace value of a raw array as a matrix.
+ * - calculate the trace of a raw matrix.
  */
 double zRawMatTr(double *m, int row, int col)
 {
@@ -177,7 +183,7 @@ double zRawMatTr(double *m, int row, int col)
 }
 
 /* zRawMulMatVec
- * - multiplication of raw arrays as a matrix and a vector.
+ * - multiply a raw vector by a raw matrix.
  */
 void zRawMulMatVec(double *m, double *v1, int row, int col, double *v)
 {
@@ -185,10 +191,10 @@ void zRawMulMatVec(double *m, double *v1, int row, int col, double *v)
     *v = zRawVecInnerProd( m, v1, col );
 }
 
-/* zRawMulVecMat
- * - multiplication of raw arrays as a row vector and a matrix.
+/* zRawMulMatTVec
+ * - multiply a raw vector by transpose of a raw matrix.
  */
-void zRawMulVecMat(double *v1, double *m, int row, int col, double *v)
+void zRawMulMatTVec(double *m, double *v1, int row, int col, double *v)
 {
   register int i, j;
   double *vp, *mp;
@@ -200,18 +206,18 @@ void zRawMulVecMat(double *v1, double *m, int row, int col, double *v)
 }
 
 /* zRawMulMatMat
- * - multiplication of raw arrays as matrices.
+ * - multiply a raw matrix by another.
  */
 void zRawMulMatMat(double *m1, int r1, int c1, double *m2, int r2, int c2, double *m)
 {
   register int i;
 
   for( i=0; i<r1; i++, m1+=c1, m+=c2 )
-    zRawMulVecMat( m1, m2, c1, c2, m );
+    zRawMulMatTVec( m2, m1, c1, c2, m );
 }
 
 /* zRawMulMatMatT
- * - multiplication of raw arrays as a matrix and transpose of a matrix.
+ * - multiply a raw matrix by transpose of another.
  */
 void zRawMulMatMatT(double *m1, int r1, int c1, double *m2, int r2, int c2, double *m)
 {
@@ -224,7 +230,7 @@ void zRawMulMatMatT(double *m1, int r1, int c1, double *m2, int r2, int c2, doub
 }
 
 /* zRawMulMatMatT
- * - multiplication of raw arrays as transpose of a matrix and a matrix.
+ * - multiply transpose of a raw matrix by another raw matrix.
  */
 void zRawMulMatTMat(double *m1, int r1, int c1, double *m2, int r2, int c2, double *m)
 {
@@ -239,7 +245,7 @@ void zRawMulMatTMat(double *m1, int r1, int c1, double *m2, int r2, int c2, doub
 }
 
 /* zRawVecDyad
- * - dyad of raw vectors.
+ * - dyadic product of two raw vectors.
  */
 void zRawVecDyad(double *v1, int size1, double *v2, int size2, double *dyad)
 {
@@ -252,7 +258,7 @@ void zRawVecDyad(double *v1, int size1, double *v2, int size2, double *dyad)
 }
 
 /* zRawMatAddDyad
- * - add dyad of raw vectors to matrix.
+ * - add dyadic product of two raw vectors to a raw matrix.
  */
 void zRawMatAddDyad(double *m, double *v1, int size1, double *v2, int size2)
 {
@@ -265,7 +271,7 @@ void zRawMatAddDyad(double *m, double *v1, int size1, double *v2, int size2)
 }
 
 /* zRawMatSubDyad
- * - subtract dyad of raw vectors to matrix.
+ * - subtract dyadic product of two raw vectors from a raw matrix.
  */
 void zRawMatSubDyad(double *m, double *v1, int size1, double *v2, int size2)
 {
@@ -278,7 +284,7 @@ void zRawMatSubDyad(double *m, double *v1, int size1, double *v2, int size2)
 }
 
 /* zRawMatCatDyad
- * - add scalar-multiplied dyad of raw vectors to matrix.
+ * - concatenate a raw matrix with dyadic product of two raw vectors multiplied by a scalar value.
  */
 void zRawMatCatDyad(double *m, double k, double *v1, int size1, double *v2, int size2)
 {
@@ -291,7 +297,7 @@ void zRawMatCatDyad(double *m, double k, double *v1, int size1, double *v2, int 
 }
 
 /* zRawMatFWrite
- * - output raw matrix.
+ * - output a raw matrix.
  */
 void zRawMatFWrite(FILE *fp, double *m, int row, int col)
 {

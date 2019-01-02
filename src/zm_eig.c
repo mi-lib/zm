@@ -501,7 +501,7 @@ bool _zEigSymBisecR(zMat m, zVec eig, zMat r, int iter)
     while( !zMatInv( ms, b ) )
       zMatShift( ms, -( shift*=10 ) );
     zEigPower( b, eigv, iter );
-    zMatSetCol( r, i, eigv );
+    zMatPutCol( r, i, eigv );
   }
 
  TERMINATE:

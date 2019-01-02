@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[])
 {
-  zNURBS nurbs;
+  zNURBS1 nurbs;
   zSeq seq;
   zVec v;
   double t;
@@ -24,11 +24,11 @@ int main(int argc, char *argv[])
     v = zVecCreateList( 2, xp[i], yp[i] );
     zSeqEnqueue( &seq, v, 1.0 );
   }
-  zNURBSCreate( &nurbs, &seq, DIM );
+  zNURBS1Create( &nurbs, &seq, DIM );
   zSeqFree( &seq );
 
   for( i=0; i<num ; i++ )
-    zNURBSWeight(&nurbs, i) = weight[i];
+    zNURBS1Weight(&nurbs, i) = weight[i];
 
   zVecClear( nurbs.knot );
   for( i=0; i<zVecSize(nurbs.knot); i++ )
@@ -37,18 +37,18 @@ int main(int argc, char *argv[])
   /* creation of spline interpolator */
   v = zVecAlloc( 2 );
   for( i=0; i<=STEP; i++ ){
-    t = ( zNURBSKnotE(&nurbs)-zNURBSKnot0(&nurbs) ) * i / STEP + zNURBSKnot0(&nurbs);
+    t = ( zNURBS1KnotE(&nurbs)-zNURBS1Knot0(&nurbs) ) * i / STEP + zNURBS1Knot0(&nurbs);
     printf( "%1.2f ", t );
-    zNURBSVec( &nurbs, t, v );
+    zNURBS1Vec( &nurbs, t, v );
     printf( "%g %g ", zVecElem(v,0), zVecElem(v,1) );
-    zNURBSVecDiff( &nurbs, t, v, 0 );
+    zNURBS1VecDiff( &nurbs, t, v, 0 );
     printf( "%g %g ", zVecElem(v,0), zVecElem(v,1) );
-    zNURBSVecDiff( &nurbs, t, v, 1);
+    zNURBS1VecDiff( &nurbs, t, v, 1);
     printf( "%g %g ", zVecElem(v,0), zVecElem(v,1) );
-    zNURBSVecDiff( &nurbs, t, v, 2);
+    zNURBS1VecDiff( &nurbs, t, v, 2);
     printf( "%g %g\n", zVecElem(v,0), zVecElem(v,1) );
   }
   zVecFree( v );
-  zNURBSDestroy( &nurbs );
+  zNURBS1Destroy( &nurbs );
   return 0;
 }

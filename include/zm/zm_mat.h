@@ -70,7 +70,7 @@ typedef zMatStruct * zMat;
 /*! \brief set an alement at the specified row and column of a matrix without checking the size. */
 #define zMatSetElemNC(m,r,c,e) ( zMatElemNC(m,r,c) = (e) )
 /*! \brief set an alement at the specified row and column of a matrix. */
-#define zMatSetElem(m,r,c,e) if( zMatPosIsValid(m,r,c) ) zMatSetElemNC(m,r,c,e)
+#define zMatSetElem(m,r,c,e) ( zMatPosIsValid(m,r,c) ? zMatSetElemNC(m,r,c,e) : 0 )
 
 /*! \brief set elements of a matrix for values in the argument list.
  *
@@ -224,7 +224,7 @@ __EXPORT zMat zMatPut(zMat dest, int pr, int pc, zMat src);
 __EXPORT zMat zMatTPutNC(zMat dest, int pr, int pc, zMat src);
 __EXPORT zMat zMatTPut(zMat dest, int pr, int pc, zMat src);
 
-/*! \brief abstract, set and swap row/column vector of a matrix.
+/*! \brief abstract, put and swap row/column vector of a matrix.
  *
  * zMatRowNC() abstracts the \a row'th row vector of a matrix
  * \a m and puts it into a vector \a v without checking the size.
@@ -236,13 +236,13 @@ __EXPORT zMat zMatTPut(zMat dest, int pr, int pc, zMat src);
  * zMatCol() abstracts the \a col'th column vector of \a m and
  * puts it into \a v.
  *
- * zMatSetRowNC() sets the \a row'th row vector of \a m for
+ * zMatPutRowNC() puts the \a row'th row vector of \a m for
  * \a v without checking the size.
- * zMatSetRow() sets the \a row'th row vector of \a m for \a v.
+ * zMatPutRow() puts the \a row'th row vector of \a m for \a v.
  *
- * zMatSetColNC() sets the \a col'th column vector of \a m for
+ * zMatPutColNC() puts the \a col'th column vector of \a m for
  * \a v without checking the size.
- * zMatSetCol() sets the \a col'th column vector of \a m for \a v.
+ * zMatPutCol() puts the \a col'th column vector of \a m for \a v.
  *
  * zMatSwapRowNC() swaps \a r1'th row and \a r2'th row of \a m
  * without checking the size.
@@ -255,7 +255,7 @@ __EXPORT zMat zMatTPut(zMat dest, int pr, int pc, zMat src);
  * zMatRowNC(), zMatColNC(), zMatRow() and zMatCol() return a
  * pointer to the abstracted vector.
  *
- * zMatSetRowNC(), zMatSetColNC(), zMatSetRow(), zMatSetCol(),
+ * zMatPutRowNC(), zMatPutColNC(), zMatPutRow(), zMatPutCol(),
  * zMatSwapRow() and zMatSwapCol() return a pointer \a m.
  * \notes
  * If it is not urgent and you are not hasty, you'd better not
@@ -265,10 +265,10 @@ __EXPORT zVec zMatGetRowNC(zMat m, int row, zVec v);
 __EXPORT zVec zMatGetColNC(zMat m, int col, zVec v);
 __EXPORT zVec zMatGetRow(zMat m, int row, zVec v);
 __EXPORT zVec zMatGetCol(zMat m, int col, zVec v);
-__EXPORT zMat zMatSetRowNC(zMat m, int row, zVec v);
-__EXPORT zMat zMatSetColNC(zMat m, int col, zVec v);
-__EXPORT zMat zMatSetRow(zMat m, int row, zVec v);
-__EXPORT zMat zMatSetCol(zMat m, int col, zVec v);
+__EXPORT zMat zMatPutRowNC(zMat m, int row, zVec v);
+__EXPORT zMat zMatPutColNC(zMat m, int col, zVec v);
+__EXPORT zMat zMatPutRow(zMat m, int row, zVec v);
+__EXPORT zMat zMatPutCol(zMat m, int col, zVec v);
 __EXPORT zMat zMatSwapRowNC(zMat m, int r1, int r2);
 __EXPORT zMat zMatSwapColNC(zMat m, int c1, int c2);
 __EXPORT zMat zMatSwapRow(zMat m, int r1, int r2);
@@ -471,79 +471,66 @@ __EXPORT double zMatTr(zMat m);
 
 /*! \brief multiplication of a matrix and a vector, or of two matrices.
  *
- * 'zMulMatVecNC()' and 'zMulMatVec()' multiplies a
- * column vector 'v1' by matrix 'm' and put the result into 'v'.
- * 'zMulMatVecDRC()' directly multiplies 'v' by 'm'.
+ * zMulMatVecNC() and zMulMatVec() multiply a vector \a v1
+ * by a matrix \a m from the left side. The result is put
+ * into \a v.
+ * zMulMatVecDRC() directly multiplies \a v by \a m from
+ * the left side.
  *
- * 'zMulVecMatNC()' and 'zMulVecMat()' multiplies a
- * row vector 'v1' by matrix 'm' from rightside and put the
- * result into 'v'.
- * 'zMulVecMatDRC()' directly multiplies 'v' by 'm'.
- * It is obvious that the result done by these functions
- * exactly the same with 'zMulMatTVecNC()',
- * 'zMulMatTVec()', and 'zMulMatTVecDRC()'
- * by definition.
+ * zMulMatTVecNC() and zMulMatTVec() multiply a vector \a v1
+ * by transpose of a matrix \a m from the left side. The
+ * result is put into \a v.
+ * zMulVecMatDRC() directly multiplies \a v by transpose
+ * of \a m from the left side.
  *
- * 'zMulMatMatNC()' and 'zMulMatMat()' calculates
- * a multiplication 'm1 m2' and put it into 'm'.
- * 'zMulMatMatDRC()' directly multiplies 'm2' by 'm1'
- * from leftside. Note that 'm2' must be a square matrix.
+ * zMulMatMatNC() and zMulMatMat() calculate a multiplication
+ * \a m1 \a m2. The result is put into \a m.
  *
- * 'zMulMatMatTNC()' and 'zMulMatMatT()'
- * multiplies a transpose matrix of 'm2' by 'm1' and put the
- * result into 'm'.
- * 'zMulMatMatTDRC()' directly multiplies a
- * transpose matrix of 'm2' by 'm1' from leftside.
+ * zMulMatMatTNC() and zMulMatMatT() multiply transpose of
+ * \a m2 by \a m1 from the left side. The result is put into
+ * \a m.
  *
- * 'zMulMatTMatNC()' and 'zMulMatTMat()'
- * multiplies 'm2' by a transpose matrix of 'm1' and put the
- * result into 'm'.
- * 'zMulMatMatTDRC()' directly multiplies 'm2' by
- * a transpose matrix of 'm1' from leftside.
- * [NOTES]
- * zMuli...DRC family requires more time for calculation
- * because temporary buffer allocation would be done as
- * inner operation of them.
- * [RETURN VALUE]
- * Each of these functions returns a pointer to the result.
+ * zMulMatTMatNC() and zMulMatTMat() multiply \a m2 by
+ * transpose of \a m1. The result is put into \a m.
+ * \notes
+ * zMul...DRC family requires more time for calculation
+ * because temporary memory allocation is done inside.
+ * \return
+ * These functions return a pointer to the result.
  */
 __EXPORT zVec zMulMatVecNC(zMat m, zVec v1, zVec v);
-__EXPORT zVec zMulVecMatNC(zVec v1, zMat m, zVec v);
-#define zMulMatTVecNC(m,v1,v) zMulVecMatNC(v1,m,v)
+__EXPORT zVec zMulMatTVecNC(zMat m, zVec v1, zVec v);
 __EXPORT zMat zMulMatMatNC(zMat m1, zMat m2, zMat m);
 __EXPORT zMat zMulMatMatTNC(zMat m1, zMat m2, zMat m);
 __EXPORT zMat zMulMatTMatNC(zMat m1, zMat m2, zMat m);
 
 __EXPORT zVec zMulMatVec(zMat m, zVec v1, zVec v);
-__EXPORT zVec zMulVecMat(zVec v1, zMat m, zVec v);
-#define zMulMatTVec(m,v1,v) zMulVecMat(v1,m,v)
+__EXPORT zVec zMulMatTVec(zMat m, zVec v1, zVec v);
 __EXPORT zMat zMulMatMat(zMat m1, zMat m2, zMat m);
 __EXPORT zMat zMulMatMatT(zMat m1, zMat m2, zMat m);
 __EXPORT zMat zMulMatTMat(zMat m1, zMat m2, zMat m);
 
 __EXPORT zVec zMulMatVecDRC(zMat m, zVec v);
-__EXPORT zVec zMulVecMatDRC(zVec v, zMat m);
-#define zMulMatTVecDRC(m,v) zMulVecMatDRC(v,m)
-__EXPORT zMat zMulMatMatDRC(zMat m1, zMat m2);
-__EXPORT zMat zMulMatMatTDRC(zMat m1, zMat m2);
-__EXPORT zMat zMulMatTMatDRC(zMat m1, zMat m2);
+__EXPORT zVec zMulMatTVecDRC(zMat m, zVec v);
 
 /*! \brief quadratic multiplication of matrices.
  *
- * 'zMatQuadNC()' and 'zMatQuad()' calculate a quadratic
- * multiplication of a matrix 'a' amplified by a vector 'w'.
- * The resultant matrix 'q' forms as 'q = a diag{w} a^T'.
+ * zMatQuadNC() and zMatQuad() calculate a quadratic
+ * multiplication of a matrix \a a amplified by a vector
+ * \a w.
+ * The resultant matrix \a q forms as \a q = \a a diag{\a w} \a a^T.
  *
- * 'zMatTQuadNC()' and 'zMatTQuad()' calculate a quadratic
- * multiplication of the transpose of 'a' amplified by 'w'.
- * The resultant matrix 'q' forms as 'q = a^T diag{w} a'.
+ * zMatTQuadNC() and zMatTQuad() calculate a quadratic
+ * multiplication of the transpose of \a a amplified by
+ * \a w.
+ * The resultant matrix \a q forms as \a q = \a a^T diag{\a w} \a a.
  *
- * 'zMatQuad()' and 'zMatTQuad()' check if the sizes of 'a',
- * 'w' and 'q' are in consistent, while neither 'zMatQuadNC()'
- * nor 'zMatTQuadNC()' do.
- * [RETURN VALUE]
- * 'zMatQuadNC()' and 'zMatTQuadNC()'return a pointer 'q'.
- * 'zMatQuad()' and 'zMatTQuad()' also return a pointer 'q',
+ * zMatQuad() and zMatTQuad() check if the sizes of \a a, \a w
+ * and \a q are consistent, while neither zMatQuadNC() nor
+ * zMatTQuadNC() do.
+ * \return
+ * zMatQuadNC() and zMatTQuadNC()return a pointer \a q.
+ * zMatQuad() and zMatTQuad() also return a pointer \a q,
  * if succeeding. Otherwise, the null pointer is returned.
  */
 __EXPORT zMat zMatQuadNC(zMat a, zVec w, zMat q);
@@ -553,8 +540,8 @@ __EXPORT zMat zMatTQuad(zMat a, zVec w, zMat q);
 
 /*! \brief input/output of matrix.
  *
- * 'zMatFRead()' reads a 2-dim sequence of double floating-point
- * values from the current position of the file 'fp',
+ * zMatFRead() reads a 2-dim sequence of double floating-point
+ * values from the current position of the file \a fp,
  * and create a new matrix.
  * The format is as follows:
  *  (r, c) {
@@ -565,30 +552,30 @@ __EXPORT zMat zMatTQuad(zMat a, zVec w, zMat q);
  *    .   .    .  .
  *   xr1 xr2 ... xrc
  *  }
- * where 'r' and 'c' are row and column size of matrix respectively.
+ * where \a r and \a c are row and column size of matrix respectively.
  *
- * 'zMatRead()' reads a 2-dim sequence of double values according
- * to the above same format simply from the standard input.
+ * zMatRead() reads a 2-dim sequence of double values according
+ * to the above same format from the standard input.
  *
- * 'zMatReadFile()' reads a matrix from file 'filename' or
- * 'filename'.zm
+ * zMatReadFile() reads a matrix from file \a filename or
+ * \a filename.zm
  *
- * 'zMatFWrite()' writes the contents of the given matrix
- * 'm' to the current position of the file 'fp' in the above
+ * zMatFWrite() writes the contents of the given matrix
+ * \a m to the current position of the file 'fp' in the above
  * format.
  *
- * 'zMatWrite()' writes the contents of the given matrix
- * 'm' simply to the standard output.
+ * zMatWrite() writes the contents of the given matrix \a m
+ * to the standard output.
  *
- * 'zMatImg()' visualizes 'm' using one-charactor collage,
+ * zMatImg() visualizes \a m using one-charactor collage,
  * grading each component into nine groups represented by
  * '@Oo. ,x*M' in the ascent order.
  * This function is particularly for debug.
- * [RETURN VALUE]
- * Each of 'zMatReadFile()', 'zMatFRead()' and
- * 'zMatRead()' returns a pointer to the newly created matrix.
+ * \return
+ * zMatReadFile(), zMatFRead() and zMatRead() return a pointer
+ * to the newly created matrix.
  *
- * 'zMatFWrite()' and 'zMatWrite()' return no values.
+ * zMatFWrite() and zMatWrite() return no values.
  */
 #define ZMATRIX_SUFFIX "zm"
 __EXPORT zMat zMatReadFile(char filename[]);
