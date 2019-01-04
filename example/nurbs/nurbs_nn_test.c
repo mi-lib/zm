@@ -3,26 +3,26 @@
 #define STEP 100
 #define N     50
 
-void nn_test(zNURBS1 *nurbs)
+void nn_test(zNURBS *nurbs)
 {
   register int i;
   FILE *fp;
   zVec v, n, nn;
 
-  v = zVecAlloc( zVecSizeNC( zNURBS1CP(nurbs,0) ) );
-  n = zVecAlloc( zVecSizeNC( zNURBS1CP(nurbs,0) ) );
-  nn = zVecAlloc( zVecSizeNC( zNURBS1CP(nurbs,0) ) );
+  v = zVecAlloc( zVecSizeNC( zNURBSCP(nurbs,0) ) );
+  n = zVecAlloc( zVecSizeNC( zNURBSCP(nurbs,0) ) );
+  nn = zVecAlloc( zVecSizeNC( zNURBSCP(nurbs,0) ) );
 
   fp = fopen( "p", "w" );
   for( i=0; i<=STEP; i++ ){
-    if( zNURBS1Vec( nurbs, (double)i/STEP, v ) )
+    if( zNURBSVec( nurbs, (double)i/STEP, v ) )
       zVecDataFWrite( fp, v );
   }
   fclose( fp );
   fp = fopen( "nn", "w" );
   for( i=0; i<N; i++ ){
     zVecSetElemList( v, zRandF(-1,7), zRandF(-3,5) );
-    zNURBS1VecNN( nurbs, v, nn );
+    zNURBSVecNN( nurbs, v, nn );
     zVecDataFWrite( fp, v );
     zVecDataFWrite( fp, nn );
     fprintf( fp, "\n" );
@@ -46,7 +46,7 @@ void output_src(zSeq *seq)
 
 int main(int argc, char *argv[])
 {
-  zNURBS1 nurbs;
+  zNURBS nurbs;
   zSeq seq;
   zVec v;
   int num, i;
@@ -65,10 +65,10 @@ int main(int argc, char *argv[])
   output_src( &seq );
 
   /* creation of spline interpolator */
-  if( zNURBS1Create( &nurbs, &seq, DIM ) ){
-    zNURBS1KnotNormalize( &nurbs );
+  if( zNURBSCreate( &nurbs, &seq, DIM ) ){
+    zNURBSKnotNormalize( &nurbs );
     nn_test( &nurbs );
-    zNURBS1Destroy( &nurbs );
+    zNURBSDestroy( &nurbs );
   }
   zSeqFree( &seq );
   return 0;  
