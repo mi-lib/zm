@@ -1,3 +1,6 @@
+2019. 1. 5. Added zNURBSKnotSlice. [zm_nurbs]
+2019. 1. 5. Added zNURBSSetKnot, zNURBSSetWeight and zNURBSSetCP. [zm_nurbs]
+2019. 1. 5. Modified interface of zNURBSVecDiff. [zm_nurbs]
 2019. 1. 4. Renamed zNURBS1 back to zNURBS. [zm_nurbs]
 2019. 1. 2. Reimplemented zVecSetElem and zMatSetElem. [zm_vec, zm_mat]
 2018.12.28. Abolished zMulMatMatDRC, zMulMatMatTDRC and zMulMatTMatDRC. [zm_mat]

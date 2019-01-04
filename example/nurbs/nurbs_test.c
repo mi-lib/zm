@@ -12,10 +12,10 @@ void test_weight(zNURBS *nurbs, int w)
 
   sprintf( filename, "w%d", w );
   fp = fopen( filename, "w" );
-  zNURBSWeight(nurbs,4) = (double)w;
+  zNURBSSetWeight( nurbs, 4, (double)w );
   v = zVecAlloc( zVecSizeNC( zNURBSCP(nurbs,0) ) );
   for( i=0; i<=STEP; i++ ){
-    t = ( zNURBSKnotE(nurbs)-zNURBSKnot0(nurbs) ) * i / STEP + zNURBSKnot0(nurbs);
+    t = zNURBSKnotSlice( nurbs, i, STEP );
     if( zNURBSVec( nurbs, t, v ) )
       zVecDataFWrite( fp, v );
   }
@@ -30,7 +30,7 @@ void output_src(zSeq *seq)
 
   fp = fopen( "src", "w" );
   zListForEach( seq, cp )
-    fprintf( fp, "%f %f\n", zVecElem(cp->data.v,0), zVecElem(cp->data.v,1) );
+    fprintf( fp, "%f %f\n", zVecElemNC(cp->data.v,0), zVecElemNC(cp->data.v,1) );
   fclose( fp );
 }
 

@@ -38,7 +38,7 @@ void output_src(zSeq *seq)
 
   fp = fopen( "src", "w" );
   zListForEach( seq, cp )
-    fprintf( fp, "%f %f\n", zVecElem(cp->data.v,0), zVecElem(cp->data.v,1) );
+    fprintf( fp, "%f %f\n", zVecElemNC(cp->data.v,0), zVecElemNC(cp->data.v,1) );
   fclose( fp );
 }
 

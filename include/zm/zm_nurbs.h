@@ -51,12 +51,17 @@ typedef struct{
 #define zNURBSKnot(n,i)    zVecElemNC((n)->knot,i)
 #define zNURBSWeight(n,i)  ( zArrayElemNC(&(n)->cparray,i)->w )
 #define zNURBSCP(n,i)      ( zArrayElemNC(&(n)->cparray,i)->cp )
+#define zNURBSCPNum(n)     zArraySize( &(n)->cparray )
+
+#define zNURBSSetKnot(n,i,v)   ( zNURBSKnot(n,i) = (v) )
+#define zNURBSSetWeight(n,i,v) ( zNURBSWeight(n,i) = (v) )
+#define zNURBSSetCP(n,i,v)     zVecCopy( v, zNURBSCP(n,i) )
 
 #define zNURBSKnotNum(n)   ( zVecSizeNC((n)->knot) - 1 )
 #define zNURBSKnot0(n)     zNURBSKnot(n,0)
 #define zNURBSKnotE(n)     zNURBSKnot(n,zNURBSKnotNum(n)-1)
 
-#define zNURBSCPNum(n)     zArraySize( &(n)->cparray )
+#define zNURBSKnotSlice(n,k,s) ( ( zNURBSKnotE(n) - zNURBSKnot0(n) ) * k / s + zNURBSKnot0(n) )
 
 /*! \brief create a NURBS curve.
  *
@@ -103,13 +108,13 @@ __EXPORT zVec zNURBSVec(zNURBS *nurbs, double t, zVec v);
  *
  * zNURBSVecDiff() computes the derivative of a NURBS curve \a nurbs
  * at a given parameter \a t and puts it into \a v.
- * \a diff is the number of differential.
+ * \a diff is the order of derivative.
  * \return
  * zNURBSVecDiff() returns a pointer \a v if it succeeds to compute
  * the derivative. If \a diff is invalid or it fails to allocate the
  * internal workspace, the false value is returned.
  */
-__EXPORT zVec zNURBSVecDiff(zNURBS *nurbs, double t, zVec v, int diff);
+__EXPORT zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v);
 
 /*! \brief nearest neighbor on a NURBS curve.
  *

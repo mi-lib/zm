@@ -36,18 +36,18 @@ bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int dim)
   }
   /* set knots & assign control points & initialize weight uniformly */
   for( j=0; j<dim/2+1; j++ )
-    zNURBSKnot(nurbs,j) = 0;
+    zNURBSSetKnot( nurbs, j, 0 );
   i = 0;
   zListForEachRew( seq, cp ){
-    zNURBSWeight(nurbs,i) = 1.0;
+    zNURBSSetWeight( nurbs, i, 1.0 );
     if( !( zNURBSCP(nurbs,i) = zVecClone( cp->data.v ) ) )
       ret = false;
-    zNURBSKnot(nurbs,j) = zNURBSKnot(nurbs,j-1) + cp->data.dt;
+    zNURBSSetKnot( nurbs, j, zNURBSKnot(nurbs,j-1) + cp->data.dt );
     j++;
     i++;
   }
   for( ; j<zNURBSKnotNum(nurbs); j++ )
-    zNURBSKnot(nurbs,j) = zNURBSKnot(nurbs,j-1);
+    zNURBSSetKnot( nurbs, j, zNURBSKnot(nurbs,j-1) );
   if( !ret )
     zNURBSDestroy( nurbs );
   return ret;
@@ -190,7 +190,7 @@ double _zNURBSDenDiff(zNURBS *nurbs, double t, int s, int e, int diff)
 /* zNURBSVecDiff
  * - compute the derivative a NURBS curve.
  */
-zVec zNURBSVecDiff(zNURBS *nurbs, double t, zVec v, int diff)
+zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v)
 {
   register int s, e, i;
   double den, b;
@@ -219,7 +219,7 @@ zVec zNURBSVecDiff(zNURBS *nurbs, double t, zVec v, int diff)
     zVecCatNCDRC( v, b, zNURBSCP(nurbs,i) );
   }
   for( i=1; i<diff+1; i++ ){
-    if( !zNURBSVecDiff( nurbs, t, tmp, diff-i ) ) break;
+    if( !zNURBSVecDiff( nurbs, t, diff-i, tmp ) ) break;
     zVecCatNCDRC( v, -zCombi(diff,i)*_zNURBSDenDiff(nurbs,t,s,e,i), tmp );
   }
   zVecFree( tmp );
