@@ -12,9 +12,7 @@ static double _zNURBSBasis(zNURBS *nurbs, double t, int i, int r, int k);
 static double _zNURBSBasisDiff(zNURBS *nurbs, double t, int i, int r, int k, int diff);
 static double _zNURBSDenDiff(zNURBS *nurbs, double t, int s, int e, int diff);
 
-/* zNURBSCreate
- * - create a NURBS curve.
- */
+/* create a NURBS curve. */
 bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int dim)
 {
   register int i, j;
@@ -53,9 +51,7 @@ bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int dim)
   return ret;
 }
 
-/* zNURBSDestroy
- * - destroy a NURBS curve.
- */
+/* destroy a NURBS curve. */
 void zNURBSDestroy(zNURBS *nurbs)
 {
   register int i;
@@ -68,19 +64,14 @@ void zNURBSDestroy(zNURBS *nurbs)
   zArrayFree( &nurbs->cparray );
 }
 
-/* zNURBSKnotNormalize
- * - normalize knot vector of a NURBS curve.
- */
+/* normalize knot vector of a NURBS curve. */
 void zNURBSKnotNormalize(zNURBS *nurbs)
 {
   zVecShift( nurbs->knot, -zNURBSKnot0(nurbs) );
   zVecDivDRC( nurbs->knot, zNURBSKnotE(nurbs) );
 }
 
-/* (static)
- * _zNURBSSeg
- * - find a knot segment that includes the given parameter.
- */
+/* find a knot segment that includes the given parameter. */
 int _zNURBSSeg(zNURBS *nurbs, double t)
 {
   register int i, j, k;
@@ -99,10 +90,7 @@ int _zNURBSSeg(zNURBS *nurbs, double t)
   return i;
 }
 
-/* (static)
- * _zNURBSBasis
- * - basis function of NURBS.
- */
+/* basis function of NURBS. */
 double _zNURBSBasis(zNURBS *nurbs, double t, int i, int r, int k)
 {
   double t1, tr1, b=0;
@@ -124,9 +112,7 @@ double _zNURBSBasis(zNURBS *nurbs, double t, int i, int r, int k)
   return b;
 }
 
-/* zNURBSVec
- * - compute a vector on a NURBS curve.
- */
+/* compute a vector on a NURBS curve. */
 zVec zNURBSVec(zNURBS *nurbs, double t, zVec v)
 {
   register int s, e, i;
@@ -148,13 +134,10 @@ zVec zNURBSVec(zNURBS *nurbs, double t, zVec v)
     zVecCopy( zNURBSCP(nurbs,0), v ) : zVecDivDRC( v, den );
 }
 
-/* (static)
- * _zNURBSBasisDiff
- * - derivative of the basis function of NURBS.
- */
+/* derivative of the basis function of NURBS. */
 double _zNURBSBasisDiff(zNURBS *nurbs, double t, int i, int r, int k, int diff)
 {
-  double dt, b=0;
+  double dt, b = 0;
 
   if( diff == 0 )
     return _zNURBSBasis( nurbs, t, i, r, k );
@@ -162,21 +145,14 @@ double _zNURBSBasisDiff(zNURBS *nurbs, double t, int i, int r, int k, int diff)
     ZRUNERROR( ZM_ERR_NURBS_INVODR );
     return NAN;
   }
-  if( i > k - r + 1 ){
-    if( !zIsTiny( ( dt = zNURBSKnot(nurbs,i+r-1) - zNURBSKnot(nurbs,i) ) ) )
-      b += _zNURBSBasisDiff(nurbs,t,i,r-1,k,diff-1) / dt;
-  }
-  if( i <= k ){
-    if( !zIsTiny( ( dt = zNURBSKnot(nurbs,i+r) - zNURBSKnot(nurbs,i+1) ) ) )
-      b -= _zNURBSBasisDiff(nurbs,t,i+1,r-1,k,diff-1) / dt;
-  }
+  if( i > k - r + 1 && !zIsTiny( ( dt = zNURBSKnot(nurbs,i+r-1) - zNURBSKnot(nurbs,i) ) ) )
+    b += _zNURBSBasisDiff(nurbs,t,i,r-1,k,diff-1) / dt;
+  if( i <= k && !zIsTiny( ( dt = zNURBSKnot(nurbs,i+r) - zNURBSKnot(nurbs,i+1) ) ) )
+    b -= _zNURBSBasisDiff(nurbs,t,i+1,r-1,k,diff-1) / dt;
   return b * ( r - 1 );
 }
 
-/* (static)
- * _zNURBSDenDiff
- * - derivative of the denominator of NURBS.
- */
+/* derivative of the denominator of NURBS. */
 double _zNURBSDenDiff(zNURBS *nurbs, double t, int s, int e, int diff)
 {
   register int i;
@@ -187,9 +163,7 @@ double _zNURBSDenDiff(zNURBS *nurbs, double t, int s, int e, int diff)
   return den;
 }
 
-/* zNURBSVecDiff
- * - compute the derivative a NURBS curve.
- */
+/* compute the derivative a NURBS curve. */
 zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v)
 {
   register int s, e, i;
@@ -227,9 +201,7 @@ zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v)
     zVecCopy( zNURBSCP(nurbs,0), v ) : zVecDivDRC( v, den );
 }
 
-/* zNURBSVecNN
- * - nearest neighbor on a NURBS curve.
- */
+/* nearest neighbor on a NURBS curve. */
 #define ZNURBS_NN_DIV 30
 double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn)
 {
@@ -270,9 +242,7 @@ double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn)
 
 /* for debug */
 
-/* zNURBSKnotFWrite
- * - output knots of a NURBS curve.
- */
+/* output knots of a NURBS curve. */
 void zNURBSKnotFWrite(FILE *fp, zNURBS *nurbs)
 {
   register int i;
@@ -284,9 +254,7 @@ void zNURBSKnotFWrite(FILE *fp, zNURBS *nurbs)
   fprintf( fp, " ]\n" );
 }
 
-/* zNURBSCPFWrite
- * - outpu control points of a NURBS curve.
- */
+/* output control points of a NURBS curve. */
 void zNURBSCPFWrite(FILE *fp, zNURBS *nurbs)
 {
   register int i;
