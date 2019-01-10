@@ -11,44 +11,42 @@
 
 __BEGIN_DECLS
 
-/* METHOD:
- * zBalancingColDST, zBalancingDST, zBalancing
- * - make a pair of matrix and vector balanced.
+/*! \brief make a pair of matrix and vector balanced.
  *
- * 'zBalancingColDST()' destructively makes a matrix
- * column-balanced. Namely, each column of 'm' is divided
- * by the absolute-maximum component in the same column.
- * #
- * 'zBalancingDST()' destructively makes a pair of matrix
- * 'm' and vector 'v' balanced. Namely, each column of 'm'
- * is primarily divided by the absolute-maximum component
- * in the same column, and then each row of 'm' and the
- * corresponding component of 'v' by the absolute-maximum
- * value in the row.
- * #
+ * zBalancingColDST() destructively makes a matrix column-
+ * balanced. Namely, each column of \a m is divided by the
+ * absolute-maximum component in the same column.
+ *
+ * zBalancingDST() destructively makes a pair of matrix
+ * \a m and vector \a v balanced. Namely, each column of
+ * \a m is primarily divided by the absolute-maximum
+ * component in the same column, and then each row of
+ * \a m and the corresponding component of \a v by the
+ * absolute-maximum value in the row.
+ *
  * Scalings are skipped when the balancing factor with
  * respect to the working column or row is zero.
- * #
- * 'zBalancing()' makes 'morg' and 'vorg' balanced, and
- * puts the result into 'm' and 'v'.
- * #
+ *
+ * zBalancing() makes \a morg and \a vorg balanced, and
+ * puts the result into \a m and \a v.
+ *
  * They work as preprocesses of a linear equation solver.
- * Actually, 'zLESolveGaussDST()' internally calls
- * 'zBalancingDST()'.
- * #
- * The column-balancing factors are stored in 's' for all
+ * Actually, zLESolveGaussDST() internally calls
+ * zBalancingDST().
+ *
+ * The column-balancing factors are stored in \a s for all
  * the functions if it is not the null pointer. It is used
- * for re-balancing. For the original equation 'morg x = vorg',
- * the balanced equation is 'm s x = v'. Thus, the solution
- * 'y' of 'm y = v' has to be amplified by 's' in such a
- * way as 'zVecAmpDRC( y, s )'.
- * [RETURN VALUES]
- * 'zBalancingColDST()' and 'zBalancingDST()' return no values.
- * #
- * 'zBalancing()' returns the false value if size-mismatch
+ * for re-balancing. For the original equation \a morg x = \a vorg,
+ * the balanced equation is \a m \a s x = v. Thus, the solution
+ * \a y of \a m y = v has to be amplified by \a s in such a
+ * way as zVecAmpDRC( y, s ).
+ * \return
+ * zBalancingColDST() and zBalancingDST() return no values.
+ *
+ * zBalancing() returns the false value if size-mismatch
  * happens among arguments. Otherwise, it returns the true
  * value.
- * [SEE ALSO]
+ * \sa
  * zLESolveGaussDST
  */
 __EXPORT void zBalancingColDST(zMat m, zVec s);
@@ -62,88 +60,81 @@ __EXPORT bool zBalancing(zMat morg, zVec vorg, zMat m, zVec v, zVec s);
  */
 __EXPORT zVec zLEResidual(zMat a, zVec b, zVec x, zVec res);
 
-/* METHOD:
- * zLESolveGaussDST, zLESolveGauss
- * - linear equation solver by Gauss elimination method.
+/*! \brief linear equation solver by Gauss elimination method.
  *
- * 'zLESolveGauss()' solves linear equation 'a x = b' based
+ * zLESolveGauss() solves linear equation \a a x = \a b based
  * on Gaussian elimination.
- * The answer is put into 'ans'.
- * 's' is used for column-balancing, if it is not the null
+ * The answer is put into \a ans.
+ * \a s is used for column-balancing, if it is not the null
  * pointer.
- * #
- * 'zLESolveGaussDST()' destructively modifies 'a' and 'b'
+ *
+ * zLESolveGaussDST() destructively modifies \a a and \a b
  * while calculating.
- * [RETURN VALUE]
- * 'zLESolveGaussDST()' returns a pointer 'ans' if succeeds.
- * When 'a' is a singular matrix, the equation does not have
+ * \return
+ * zLESolveGaussDST() returns a pointer \a ans if succeeds.
+ * When \a a is a singular matrix, the equation does not have
  * a unique answer and the null pointer is returned.
  */
 __EXPORT zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex index, zVec s);
 __EXPORT zVec zLESolveGauss(zMat a, zVec b, zVec ans);
 
-/* METHOD:
- * zLESolve_L, zLESolve_U, zLESolve_L_U, zLESolveLU
- * - linear equation solver by LU decomposition method.
+/*! \brief linear equation solver by LU decomposition method.
  *
- * 'zLESolve_LE()' solves linear equation 'a x = b' based on
- * LU decomposition. The answer is put into 'ans'.
- * #
- * 'zLESolve_L_U()' solves the linear equation 'lmat umat x = b'.
- * 'lmat' and 'umat' are a lower and upper triangular matrix,
+ * zLESolveLU() solves linear equation \a a x = \a b based on
+ * LU decomposition. The answer is put into \a ans.
+ *
+ * zLESolve_LU() solves the linear equation \a lmat \a umat x = \a b.
+ * \a lmat and \a umat are a lower and upper triangular matrix,
  * respectively.
- * 'index' is an index vector for order discription.
- * Each of 'lmat y = b' and 'umat x = y' is solved by
- * 'zLESolve_L()' and 'zLESolve_U()', respectively.
- * while the latter solves for 'x'.
- * #
- * Since 'zLUDecomp()' pivots the original coefficient
- * matrix, 'zLESolve_L()' needs the pivot index.
- * [RETURN VALUE]
- * 'zLESolveLU()' family functions return a pointer 'ans'
- * if succeeds.
- * When 'a' is a singular matrix, the equation does not have
+ * \a index is an index vector for order discription.
+ * \a lmat y = \a b and \a umat x = y are solved by zLESolve_L()
+ * and zLESolve_U(), respectively.
+ *
+ * Since zLUDecomp() pivots the original coefficient matrix,
+ * zLESolve_L() needs the pivot index.
+ * \return
+ * zLESolveLU() family functions return a pointer \a ans, if
+ * succeeds.
+ * When \a a is a singular matrix, the equation does not have
  * a unique answer and these functions return the null pointer.
  */
 __EXPORT zVec zLESolve_L(zMat lmat, zVec b, zVec ans, zIndex idx);
 __EXPORT zVec zLESolve_U(zMat umat, zVec b, zVec ans);
-__EXPORT zVec zLESolve_L_U(zMat lmat, zMat umat, zVec b, zVec ans, zIndex index);
+__EXPORT zVec zLESolve_LU(zMat lmat, zMat umat, zVec b, zVec ans, zIndex index);
 __EXPORT zVec zLESolveLU(zMat a, zVec b, zVec ans);
 
-/*\brief linear equation solver by residual iteration.
+/*! \brief linear equation solver by residual iteration.
  *
- * 'zLESolveRI()' solves linear equation 'a x = b' based on
+ * zLESolveRI() solves linear equation \a a x = \a b based on
  * LU decomposition and improves the accuracy by residual
- * iteration. The answer is put into 'ans'.
+ * iteration. The answer is put into \a ans.
  * \return \a ans if succeeds.
  * When \a a is a singular matrix, the equation does not have
  * a unique answer and the null pointer is returned.
  */
 __EXPORT zVec zLESolveRI(zMat a, zVec b, zVec ans);
 
-/* METHOD:
- * zLESolveGS - linear equation solver by Gauss-Seidel method.
+/*! \brief linear equation solver by Gauss-Seidel method.
  *
- * 'zLESolveGS()' solves linear equation 'a x = b'
- * based on Gauss-Seidel's method.
- * The answer ('x' in the equation) is put into 'ans'.
+ * zLESolveGS() solves linear equation \a a x = \a b based on
+ * Gauss-Seidel's method.
+ * The answer (x in the equation) is put into \a ans.
  * It is typically utilized for sparse equation, namely,
- * an equation with a sparse coefficient matrix 'a'.
- * [RETURN VALUE]
- * 'zLESolveGS()' returns a pointer 'ans' if succeeds
- * or the iteration does not converge within ZM_MAX_ITER_NUM
- * times (defined in 'zm_misc.h').
- * #
- * When the size mismatch occurs between 'a', 'b' and 'ans',
+ * an equation with a sparse coefficient matrix \a a.
+ * \return
+ * zLESolveGS() returns a pointer \a ans if succeeds or the
+ * iteration does not converge within ZM_MAX_ITER_NUM times
+ * (defined in zm_misc.h).
+ *
+ * When the size mismatch occurs between \a a, \a b and \a ans,
  * or it fails to allocate working memory, the null pointer
  * is returned.
- * [NOTES]
+ * \notes
  * Since Gauss-Seidel's method is an iterating computation,
  * it might not converge to a certain vector.
  * Iteration is executed up to Z_MAX_ITER_NUM times.
- * If the iteration does not finish even after trying
- * over Z_MAX_ITER_NUM times, the function gives it up
- * to calculate.
+ * If the iteration does not finish even after trying over
+ * Z_MAX_ITER_NUM times, the function gives it up to calculate.
  */
 __EXPORT zVec zLESolveGS(zMat a, zVec b, zVec ans);
 

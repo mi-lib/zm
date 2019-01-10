@@ -6,9 +6,7 @@
 
 #include <zm/zm_le.h>
 
-/* zBalancingColDST
- * - directly make a matrix column-balanced.
- */
+/* directly make a matrix column-balanced. */
 void zBalancingColDST(zMat m, zVec s)
 {
   register int i, j;
@@ -28,9 +26,7 @@ void zBalancingColDST(zMat m, zVec s)
   }
 }
 
-/* zBalancingDST
- * - directly make a pair of matrix and vector balanced.
- */
+/* directly make a pair of matrix and vector balanced. */
 void zBalancingDST(zMat m, zVec v, zVec s)
 {
   register int i;
@@ -46,9 +42,7 @@ void zBalancingDST(zMat m, zVec v, zVec s)
   }
 }
 
-/* zBalancing
- * - make a pair of matrix and vector balanced.
- */
+/* make a pair of matrix and vector balanced. */
 bool zBalancing(zMat morg, zVec vorg, zMat m, zVec v, zVec s)
 {
   if( !zMatSizeIsEqual( morg, m ) ){
@@ -70,19 +64,14 @@ bool zBalancing(zMat morg, zVec vorg, zMat m, zVec v, zVec s)
   return true;
 }
 
-/* zLEResidual
- * - residual b - a x.
- */
+/* residual b - a x. */
 zVec zLEResidual(zMat a, zVec b, zVec x, zVec res)
 {
   zMulMatVecNC( a, x, res );
   return zVecSubNC( b, res, res );
 }
 
-/* zLESolveGaussDST
- * - linear equation solver based on Gaussian elimination method
- *   (destructive).
- */
+/* linear equation solver based on Gauss's elimination method (destructive). */
 zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
 {
   register int i, j, k;
@@ -126,9 +115,7 @@ zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
   return ans;
 }
 
-/* zLESolveGauss
- * - linear equation solver based on Gaussian elimination method.
- */
+/* linear equation solver based on Gauss's elimination method. */
 zVec zLESolveGauss(zMat a, zVec b, zVec ans)
 {
   int n;
@@ -160,9 +147,7 @@ zVec zLESolveGauss(zMat a, zVec b, zVec ans)
   return ans;
 }
 
-/* zLESolve_L
- * - inner solver of zLUSolve for L matrix.
- */
+/* internal solver of zLUSolve for L matrix. */
 zVec zLESolve_L(zMat lmat, zVec b, zVec ans, zIndex idx)
 {
   register int i, j;
@@ -178,9 +163,7 @@ zVec zLESolve_L(zMat lmat, zVec b, zVec ans, zIndex idx)
   return ans;
 }
 
-/* zLESolve_U
- * - inner solver of zLUSolve for U matrix.
- */
+/* internal solver of zLUSolve for U matrix. */
 zVec zLESolve_U(zMat umat, zVec b, zVec ans)
 {
   register int i, j;
@@ -195,10 +178,8 @@ zVec zLESolve_U(zMat umat, zVec b, zVec ans)
   return ans;
 }
 
-/* zLESolve_L_U
- * - inner solver of zLESolveLU.
- */
-zVec zLESolve_L_U(zMat lmat, zMat umat, zVec b, zVec ans, zIndex idx)
+/* internal solver of zLESolveLU for decomposed L/U matrices. */
+zVec zLESolve_LU(zMat lmat, zMat umat, zVec b, zVec ans, zIndex idx)
 {
   zVec c;
 
@@ -220,9 +201,7 @@ zVec zLESolve_L_U(zMat lmat, zMat umat, zVec b, zVec ans, zIndex idx)
   return ans;
 }
 
-/* zLESolveLU
- * - linear equation solver based on LU decomposition method.
- */
+/* linear equation solver based on LU decomposition method. */
 zVec zLESolveLU(zMat a, zVec b, zVec ans)
 {
   int n;
@@ -240,7 +219,7 @@ zVec zLESolveLU(zMat a, zVec b, zVec ans)
     ans = NULL;
     goto TERMINATE;
   }
-  zLESolve_L_U( lmat, umat, b, ans, idx );
+  zLESolve_LU( lmat, umat, b, ans, idx );
 
  TERMINATE:
   zMatFree( lmat );
@@ -249,9 +228,7 @@ zVec zLESolveLU(zMat a, zVec b, zVec ans)
   return ans;
 }
 
-/* zLESolveRI
- * - linear equation solver: Residual iteration on LU decomposition.
- */
+/* linear equation solver: Residual iteration on LU decomposition. */
 zVec zLESolveRI(zMat a, zVec b, zVec ans)
 {
   register int i;
@@ -274,13 +251,13 @@ zVec zLESolveRI(zMat a, zVec b, zVec ans)
     ans = NULL;
     goto TERMINATE;
   }
-  zLESolve_L_U( lmat, umat, b, ans, idx );
+  zLESolve_LU( lmat, umat, b, ans, idx );
   for( i=0; i<Z_MAX_ITER_NUM; i++ ){
     zLEResidual( a, b, ans, res );
     err_norm = zVecNorm( res );
     if( err_norm >= err_norm_old ) goto TERMINATE;
     err_norm_old = err_norm;
-    zLESolve_L_U( lmat, umat, res, err, idx );
+    zLESolve_LU( lmat, umat, res, err, idx );
     zVecAddNCDRC( ans, err );
   }
   ZITERWARN( Z_MAX_ITER_NUM );
@@ -294,9 +271,7 @@ zVec zLESolveRI(zMat a, zVec b, zVec ans)
   return ans;
 }
 
-/* zLESolveGS
- * - linear equation solver: Gauss-Seidel's method.
- */
+/* linear equation solver: Gauss-Seidel's method. */
 zVec zLESolveGS(zMat a, zVec b, zVec ans)
 {
   register int i, j, k;

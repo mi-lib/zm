@@ -1,3 +1,4 @@
+2019. 1.10. Renamed zLESolve_L_U to zLESolve_LU. [zm_le, zm_opt_lp_pdip]
 2019. 1. 8. Modified _zNURBSBasisDiff. [zm_nurbs]
 2019. 1. 5. Added zNURBSKnotSlice. [zm_nurbs]
 2019. 1. 5. Added zNURBSSetKnot, zNURBSSetWeight and zNURBSSetCP. [zm_nurbs]
