@@ -8,9 +8,7 @@
 
 /* Householder transformation to Hessian matrices */
 
-/* zHouseholder
- * - Householder transformation (destructive).
- */
+/* Householder transformation (destructive). */
 void zHouseholder(zMat m, zMat p, int from, int to, zVec u, zVec v, zVec w)
 {
   register int i, j;
@@ -54,10 +52,7 @@ void zHouseholder(zMat m, zMat p, int from, int to, zVec u, zVec v, zVec w)
       zMatElemNC(p,i,j) -= zVecElemNC(v,i)*zVecElemNC(u,j);
 }
 
-/* (static)
- * zHouseholderVec
- * - projection vector of Householder transformation.
- */
+/* projection vector of Householder transformation. */
 zVec zHouseholderVec(zMat m, int col, int from, int to, zVec u)
 {
   register int i;
@@ -71,9 +66,7 @@ zVec zHouseholderVec(zMat m, int col, int from, int to, zVec u)
   return u;
 }
 
-/* zHess
- * - Hessenberg matrix using Householder transformation.
- */
+/* Hessenberg matrix using Householder transformation. */
 zMat zHess(zMat m, zMat h, zMat p)
 {
   register int n, n2, i;
@@ -126,11 +119,7 @@ static void _zEigDQRHouseholder(zMat a, int r, int c, double g1, double g2, doub
 static int _zEigVecReal(zMat m, double eig, zCVec eigv, int iter);
 static int _zEigVecComplex(zMat m, zComplex *eig, zCVec eigv1, zCVec eigv2, int iter);
 
-/* (static)
- * _zEigDQRHouseholder
- * - Householder's method to transform a Hesseian matrix to
- *   a block uppertriangle matrix.
- */
+/* Householder's method to transform a Hesseian matrix to a block uppertriangle matrix. */
 void _zEigDQRHouseholder(zMat a, int r, int c, double g1, double g2, double g3)
 {
   double s, den, alpha;
@@ -159,9 +148,7 @@ void _zEigDQRHouseholder(zMat a, int r, int c, double g1, double g2, double g3)
   }
 }
 
-/* zEigDQR
- * - double QR method.
- */
+/* double QR method. */
 bool zEigDQR(zMat m, zComplex z[], int iter)
 {
   int  i, j, r, r1;
@@ -214,9 +201,7 @@ bool zEigDQR(zMat m, zComplex z[], int iter)
   return true;
 }
 
-/* zEigPower
- * - calculate the dominant eigenvalue.
- */
+/* calculate the dominant eigenvalue. */
 double zEigPower(zMat a, zVec evec, int iter)
 {
   zVec ev, err;
@@ -245,9 +230,7 @@ double zEigPower(zMat a, zVec evec, int iter)
   return eig;
 }
 
-/* zEigPowerInv
- * - calculate the minimal eigenvalue.
- */
+/* calculate the minimal eigenvalue. */
 double zEigPowerInv(zMat a, zVec evec, int iter)
 {
   zMat ai;
@@ -268,10 +251,7 @@ double zEigPowerInv(zMat a, zVec evec, int iter)
   return 1.0 / eig;
 }
 
-/* (static)
- * _zEigVecReal
- * - compute an eigenvector for a real-number eigenvalue.
- */
+/* compute an eigenvector for a real-number eigenvalue. */
 int _zEigVecReal(zMat m, double eig, zCVec eigv, int iter)
 {
   zMat ms, b;
@@ -302,10 +282,7 @@ int _zEigVecReal(zMat m, double eig, zCVec eigv, int iter)
   return ret;
 }
 
-/* (static)
- * _zEigVecComplex
- * - compute eigenvectors for complex-number eigenvalues.
- */
+/* compute eigenvectors for complex-number eigenvalues. */
 int _zEigVecComplex(zMat m, zComplex *eig, zCVec eigv1, zCVec eigv2, int iter)
 {
   zMat ms, b;
@@ -355,9 +332,7 @@ int _zEigVecComplex(zMat m, zComplex *eig, zCVec eigv1, zCVec eigv2, int iter)
   return ret;
 }
 
-/* zEigSystem
- * - compute eigenvalue and eigenvector sets of a square matrix.
- */
+/* compute eigenvalue and eigenvector sets of a square matrix. */
 #define Z_EIGSYS_ITER_NUM 10
 int zEigSystem(zMat m, zComplex eig[], zCVec eigv[], int iter)
 {
@@ -396,11 +371,7 @@ static void _zEigSymBisecOne(zMat a, double emin, int nmin, double emax, int nma
 static void _zEigSymBisecRec(zMat a, double emin, int nmin, double emax, int nmax, double *eig);
 static bool _zEigSymBisecR(zMat m, zVec eig, zMat r, int iter);
 
-/* (static)
- * _zEigSymBisecRange
- * - compute the range in which all eigenvalues exist
- *   based on Gerschgorin's theorem.
- */
+/* compute the range in which all eigenvalues exist based on Gerschgorin's theorem. */
 void _zEigSymBisecRange(zMat m, double *emin, double *emax)
 {
   register int i;
@@ -414,10 +385,7 @@ void _zEigSymBisecRange(zMat m, double *emin, double *emax)
   }
 }
 
-/* (static)
- * _zEigSysBisecSturm
- * - Sturm's function series.
- */
+/* Sturm's function series. */
 int _zEigSysBisecSturm(zMat a, double e)
 {
   register int i, n = 0;
@@ -434,10 +402,7 @@ int _zEigSysBisecSturm(zMat a, double e)
   return n;
 }
 
-/* (static)
- * _zEigSymBisecOne
- * - compute one eigenvalue by bisection shooting.
- */
+/* compute one eigenvalue by bisection shooting. */
 void _zEigSymBisecOne(zMat a, double emin, int nmin, double emax, int nmax, double *eig)
 {
   double e, d, d_old;
@@ -453,10 +418,7 @@ void _zEigSymBisecOne(zMat a, double emin, int nmin, double emax, int nmax, doub
   *eig = e;
 }
 
-/* (static)
- * _zEigSymBisecRec
- * - compute all eigenvalues recursively by bisection method.
- */
+/* compute all eigenvalues recursively by bisection method. */
 void _zEigSymBisecRec(zMat a, double emin, int nmin, double emax, int nmax, double *eig)
 {
   int n;
@@ -472,11 +434,7 @@ void _zEigSymBisecRec(zMat a, double emin, int nmin, double emax, int nmax, doub
     _zEigSymBisecRec( a, emin, nmin, e, n, &eig[n-nmax] );
 }
 
-/* (static)
- * _zEigSymBisecR
- * - compute a unitary matrix consisting of eigenvectors
- *   for real-number eigenvalues.
- */
+/* compute a unitary matrix consisting of eigenvectors for real-number eigenvalues. */
 bool _zEigSymBisecR(zMat m, zVec eig, zMat r, int iter)
 {
   register int i;
@@ -511,9 +469,8 @@ bool _zEigSymBisecR(zMat m, zVec eig, zMat r, int iter)
   return ret;
 }
 
-/* zEigSymBisec
- * - compute eigenvalues and eigenvectors based on bisection method
- *   (by J. W. Givens 1954).
+/* compute eigenvalues and eigenvectors based on bisection method
+ * (by J. W. Givens 1954).
  */
 zVec zEigSymBisec(zMat m, zVec eig, zMat r)
 {
@@ -548,10 +505,7 @@ zVec zEigSymBisec(zMat m, zVec eig, zMat r)
 static void _zEigSymJacobiRot(zMat m, zMat r, int i, int j);
 static double _zEigSymJacobiShift(zMat m, double *shift);
 
-/* (static)
- * _zEigSymJacobiShift
- * - shift diagonal values of a matrix to accelerate diagonalization.
- */
+/* shift diagonal values of a matrix to accelerate diagonalization. */
 double _zEigSymJacobiShift(zMat m, double *shift)
 {
   zComplex c_shift[2];
@@ -568,10 +522,7 @@ double _zEigSymJacobiShift(zMat m, double *shift)
   return shift ? ( *shift = c ) : c;
 }
 
-/* (static)
- * _zEigSymJacobiRot
- * - transform a matrix by Jacobi's rotation based on Wilkinson's formula.
- */
+/* transform a matrix by Jacobi's rotation based on Wilkinson's formula. */
 void _zEigSymJacobiRot(zMat m, zMat r, int i, int j)
 {
   register int k;
@@ -606,9 +557,8 @@ void _zEigSymJacobiRot(zMat m, zMat r, int i, int j)
   }
 }
 
-/* zEigSymJacobi
- * - diagonalize a symmetric matrix by Jacobi's method.
- *   when 'm' is not symmetric, it doesn't work validly.
+/* diagonalize a symmetric matrix by Jacobi's method.
+ * when m is not symmetric, it doesn't work as expected.
  */
 zVec zEigSymJacobi(zMat m, zVec eig, zMat r)
 {
@@ -663,10 +613,7 @@ zVec zEigSymJacobi(zMat m, zVec eig, zMat r)
 
 static int _zSVDSort(zVec sv, zMat u);
 
-/* (static)
- * _zSVDSort
- * - sort singular values and corresponding bases.
- */
+/* sort singular values and corresponding bases. */
 int _zSVDSort(zVec sv, zMat u)
 {
   register int i;
@@ -682,9 +629,7 @@ int _zSVDSort(zVec sv, zMat u)
   return i;
 }
 
-/* zSVD
- * - singular value decomposition.
- */
+/* singular value decomposition. */
 int zSVD(zMat m, zVec sv, zMat u, zMat v)
 {
   register int i, j;
@@ -724,10 +669,7 @@ int zSVD(zMat m, zVec sv, zMat u, zMat v)
 
 static bool _zSVMat(zMat m, zMat *r, zVec *e);
 
-/* (static)
- * _zSVMat
- * - allocate internal matrix and vector for workspace.
- */
+/* allocate internal matrix and vector for workspace. */
 bool _zSVMat(zMat m, zMat *r, zVec *e)
 {
   if( zMatRowSizeNC(m) > zMatColSizeNC(m) ){
@@ -751,9 +693,7 @@ bool _zSVMat(zMat m, zMat *r, zVec *e)
   return true;
 }
 
-/* zSVMax
- * - maximum singular value of a matrix.
- */
+/* maximum singular value of a matrix. */
 double zSVMax(zMat m)
 {
   zMat r;
@@ -767,9 +707,7 @@ double zSVMax(zMat m)
   return s;
 }
 
-/* zSVMin
- * - minimum singular value of a matrix.
- */
+/* minimum singular value of a matrix. */
 double zSVMin(zMat m)
 {
   zMat r;
@@ -783,15 +721,17 @@ double zSVMin(zMat m)
   return s;
 }
 
-/* zMatCondNum
- * - condition number of a matrix.
- */
+/* condition number of a matrix. */
 double zMatCondNum(zMat m)
 {
+  zMat r;
+  zVec e;
   double smax, smin;
 
-  smax = zSVMax( m );
-  smin = zSVMin( m );
-  if( smin/smin < zTOL ) return HUGE_VAL;
-  return smax / smin;
+  if( !_zSVMat( m, &r, &e ) ) return NAN;
+  smax = sqrt( zEigPower( r, e, 0 ) );
+  smin = sqrt( zEigPowerInv( r, e, 0 ) );
+  zMatFree( r );
+  zVecFree( e );
+  return smin > zTOL ? smax / smin : HUGE_VAL;
 }
