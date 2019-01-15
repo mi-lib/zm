@@ -48,20 +48,18 @@ typedef struct{
   /*! \endcond */
 } zNURBS;
 
-#define zNURBSKnot(n,i)    zVecElemNC((n)->knot,i)
-#define zNURBSWeight(n,i)  ( zArrayElemNC(&(n)->cparray,i)->w )
-#define zNURBSCP(n,i)      ( zArrayElemNC(&(n)->cparray,i)->cp )
-#define zNURBSCPNum(n)     zArraySize( &(n)->cparray )
-
+#define zNURBSKnotNum(n)       zVecSizeNC((n)->knot)
+#define zNURBSKnot(n,i)        zVecElemNC((n)->knot,i)
 #define zNURBSSetKnot(n,i,v)   ( zNURBSKnot(n,i) = (v) )
+#define zNURBSKnotS(n)         zNURBSKnot(n,(n)->dim)
+#define zNURBSKnotE(n)         zNURBSKnot(n,zNURBSCPNum(n))
+#define zNURBSKnotSlice(n,k,s) ( ( zNURBSKnotE(n) - zNURBSKnotS(n) ) * k / s + zNURBSKnotS(n) )
+
+#define zNURBSCPNum(n)         zArraySize( &(n)->cparray )
+#define zNURBSWeight(n,i)      ( zArrayElemNC(&(n)->cparray,i)->w )
 #define zNURBSSetWeight(n,i,v) ( zNURBSWeight(n,i) = (v) )
+#define zNURBSCP(n,i)          ( zArrayElemNC(&(n)->cparray,i)->cp )
 #define zNURBSSetCP(n,i,v)     zVecCopy( v, zNURBSCP(n,i) )
-
-#define zNURBSKnotNum(n)   ( zVecSizeNC((n)->knot) - 1 )
-#define zNURBSKnot0(n)     zNURBSKnot(n,0)
-#define zNURBSKnotE(n)     zNURBSKnot(n,zNURBSKnotNum(n)-1)
-
-#define zNURBSKnotSlice(n,k,s) ( ( zNURBSKnotE(n) - zNURBSKnot0(n) ) * k / s + zNURBSKnot0(n) )
 
 /*! \brief create a NURBS curve.
  *

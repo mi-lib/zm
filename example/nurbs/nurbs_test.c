@@ -58,7 +58,6 @@ int main(int argc, char *argv[])
 
   /* creation of spline interpolator */
   if( zNURBSCreate( &nurbs, &seq, dim ) ){
-    zNURBSKnotFWrite( stdout, &nurbs );
     for( i=0; i<5; i++ )
       test_weight( &nurbs, i );
     zNURBSDestroy( &nurbs );

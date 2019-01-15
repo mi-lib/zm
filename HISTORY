@@ -1,3 +1,7 @@
+2019. 1.15. Abolished zNURBSKnotFWrite. [zm_nurbs]
+2019. 1.15. Debugged _zNURBSSeg, _zNURBSBasis, _zNURBSBasisDiff, _zNURBSDenDiff, zNURBSVec and zNURBSVecDiff. [zm_nurbs]
+2019. 1.15. Added _zNURBSKnotInit, and modified zNURBSCreate and zNURBSKnotNormalize. [zm_nurbs]
+2019. 1.15. Modified specification of zNURBSKnotS and zNURBSKnotE. [zm_nurbs]
 2019. 1.10. Debugged zMatCondNum. [zm_eig]
 2019. 1.10. Renamed zLESolve_L_U to zLESolve_LU. [zm_le, zm_opt_lp_pdip]
 2019. 1. 8. Modified _zNURBSBasisDiff. [zm_nurbs]
