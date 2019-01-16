@@ -557,9 +557,6 @@ __EXPORT zMat zMatTQuad(zMat a, zVec w, zMat q);
  * zMatRead() reads a 2-dim sequence of double values according
  * to the above same format from the standard input.
  *
- * zMatReadFile() reads a matrix from file \a filename or
- * \a filename.zm
- *
  * zMatFWrite() writes the contents of the given matrix
  * \a m to the current position of the file 'fp' in the above
  * format.
@@ -572,13 +569,11 @@ __EXPORT zMat zMatTQuad(zMat a, zVec w, zMat q);
  * '@Oo. ,x*M' in the ascent order.
  * This function is particularly for debug.
  * \return
- * zMatReadFile(), zMatFRead() and zMatRead() return a pointer
- * to the newly created matrix.
+ * zMatFRead() and zMatRead() return a pointer to the newly created
+ * matrix.
  *
  * zMatFWrite() and zMatWrite() return no values.
  */
-#define ZMATRIX_SUFFIX "zm"
-__EXPORT zMat zMatReadFile(char filename[]);
 __EXPORT zMat zMatFRead(FILE *fp);
 __EXPORT void zMatFWrite(FILE *fp, zMat m);
 #define zMatRead()   zMatFRead( stdin )

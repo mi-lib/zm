@@ -14,9 +14,7 @@
 static int _zVecSortCmp(void *p1, void *p2, void *priv);
 static void _zVecCats(zVec v, int n, va_list args);
 
-/* zVecSetElemVList
- * - set vector components from variable argument list.
- */
+/* set vector components from variable argument list. */
 zVec zVecSetElemVList(zVec v, va_list args)
 {
   register int i;
@@ -26,9 +24,7 @@ zVec zVecSetElemVList(zVec v, va_list args)
   return v;
 }
 
-/* zVecSetElemList
- * - set vector components from value list.
- */
+/* set vector components from argument list. */
 zVec zVecSetElemList(zVec v, ... )
 {
   va_list args;
@@ -39,9 +35,7 @@ zVec zVecSetElemList(zVec v, ... )
   return v;
 }
 
-/* zVecAlloc
- * - allocate vector.
- */
+/* allocate memory for a vector. */
 zVec zVecAlloc(int size)
 {
   zVec v;
@@ -59,9 +53,7 @@ zVec zVecAlloc(int size)
   return v;
 }
 
-/* zVecCreateList
- * create vector from value list.
- */
+/* create a vector from argument list. */
 zVec zVecCreateList(int size, ... )
 {
   zVec v;
@@ -74,9 +66,7 @@ zVec zVecCreateList(int size, ... )
   return v;
 }
 
-/* zVecFree
- * - free vector.
- */
+/* free memory for a vector. */
 void zVecFree(zVec v)
 {
   if( !v ) return;
@@ -84,9 +74,7 @@ void zVecFree(zVec v)
   free( v );
 }
 
-/* zVecFreeAO
- * - free vectors at once.
- */
+/* free memory for multiple vectors at once. */
 void zVecFreeAO(int n, ...)
 {
   va_list arg;
@@ -101,46 +89,35 @@ void zVecFreeAO(int n, ...)
   va_end( arg );
 }
 
-/* zVecClear
- * - cleanup vector.
- */
+/* cleanup a vector. */
 zVec zVecClear(zVec v)
 {
   zRawVecClear( zVecBuf(v), zVecSizeNC(v) );
   return v;
 }
 
-/* zVecTouchup
- * - touchup vector.
- */
+/* touchup a vector. */
 zVec zVecTouchup(zVec v)
 {
   zRawVecTouchup( zVecBuf(v), zVecSizeNC(v) );
   return v;
 }
 
-/* zVecCopyNC
- * - copy vector without checking size consistency.
- */
+/* copy a vector without checking size consistency. */
 zVec zVecCopyNC(zVec src, zVec dest)
 {
   zRawVecCopy( zVecBuf(src), zVecBuf(dest), zVecSizeNC(dest) );
   return dest;
 }
 
-/* zVecCopy
- * - copy vector.
- */
+/* copy a vector. */
 zVec zVecCopy(zVec src, zVec dest)
 {
   return zVecSizeIsEqual( src, dest ) ?
     zVecCopyNC( src, dest ) : NULL;
 }
 
-/* zVecCopyArray
- * - copy vector from an array of double precision
- *   floating point values.
- */
+/* copy a vector from an array of double-precision floating-point values. */
 zVec zVecCopyArray(double array[], int s, zVec v)
 {
   if( zVecSizeNC(v) != s ) return NULL;
@@ -148,9 +125,7 @@ zVec zVecCopyArray(double array[], int s, zVec v)
   return v;
 }
 
-/* zVecClone
- * - clone vector.
- */
+/* clone a vector. */
 zVec zVecClone(zVec src)
 {
   zVec dest;
@@ -160,10 +135,7 @@ zVec zVecClone(zVec src)
   return dest;
 }
 
-/* zVecCloneArray
- * - create vector from an array of double precision
- *   floating point values.
- */
+/* create a vector from an array of double-precision floating-point values. */
 zVec zVecCloneArray(double array[], int s)
 {
   zVec v;
@@ -173,18 +145,14 @@ zVec zVecCloneArray(double array[], int s)
   return v;
 }
 
-/* zVecGetNC
- * - get a part of vector without checking the size validity.
- */
+/* get a partial vector without checking the size validity. */
 zVec zVecGetNC(zVec src, int pos, zVec dest)
 {
   zRawVecGet( zVecBuf(src), pos, zVecBuf(dest), zVecSize(dest) );
   return dest;
 }
 
-/* zVecGet
- * - get a part of vector.
- */
+/* get a parttial vector. */
 zVec zVecGet(zVec src, int pos, zVec dest)
 {
   if( pos+zVecSize(dest) > zVecSize(src) ){
@@ -194,18 +162,14 @@ zVec zVecGet(zVec src, int pos, zVec dest)
   return zVecGetNC( src, pos, dest );
 }
 
-/* zVecPutNC
- * - put a part of vector without checking the size validity.
- */
+/* put a partial vector without checking the size validity. */
 zVec zVecPutNC(zVec dest, int pos, zVec src)
 {
   zRawVecPut( zVecBuf(dest), pos, zVecBuf(src), zVecSize(src) );
   return dest;
 }
 
-/* zVecPut
- * - put a part of vector.
- */
+/* put a partial vector. */
 zVec zVecPut(zVec dest, int pos, zVec src)
 {
   if( pos+zVecSize(src) > zVecSize(dest) ){
@@ -215,63 +179,49 @@ zVec zVecPut(zVec dest, int pos, zVec src)
   return zVecPutNC( dest, pos, src );
 }
 
-/* zVecSetAll
- * - create uniform vector.
- */
+/* create a uniform vector. */
 zVec zVecSetAll(zVec v, double val)
 {
   zRawVecSetAll( zVecBuf(v), zVecSizeNC(v), val );
   return v;
 }
 
-/* zVecLinSpace
- * - create linear space in vector.
- */
+/* create a linear space vector. */
 zVec zVecLinSpace(zVec v, double from, double to)
 {
   zRawVecLinSpace( zVecBuf(v), zVecSizeNC(v), from, to );
   return v;
 }
 
-/* zVecRandUniform
- * - create a random vector with a uniform range.
- */
+/* create a random vector with a uniform range. */
 zVec zVecRandUniform(zVec v, double min, double max)
 {
   zRawVecRandUniform( zVecBuf(v), zVecSizeNC(v), min, max );
   return v;
 }
 
-/* zVecRand
- * - create random vector with range vectors.
- */
+/* create a random vector with range vectors. */
 zVec zVecRand(zVec v, zVec min, zVec max)
 {
   zRawVecRand( zVecBuf(v), zVecBuf(min), zVecBuf(max), zVecSizeNC(v) );
   return v;
 }
 
-/* zVecShift
- * - shift vector by a scalar constant.
- */
+/* shift vector by a constant scalar value. */
 zVec zVecShift(zVec v, double shift)
 {
   zRawVecShift( zVecBuf(v), zVecSizeNC(v), shift );
   return v;
 }
 
-/* zVecSwapNC
- * - swap vector components without checking size.
- */
+/* swap vector components without checking size. */
 zVec zVecSwapNC(zVec v, int i1, int i2)
 {
   zRawVecSwap( zVecBuf(v), i1, i2 );
   return v;
 }
 
-/* zVecSwap
- * - swap vector components.
- */
+/* swap vector components. */
 zVec zVecSwap(zVec v, int i1, int i2)
 {
   if( i1 > zVecSizeNC(v) || i2 > zVecSizeNC(v) ){
@@ -281,10 +231,7 @@ zVec zVecSwap(zVec v, int i1, int i2)
   return zVecSwapNC( v, i1, i2 );
 }
 
-/* (static)
- * _zVecSortCmp
- * - comparison function for zVecSort.
- */
+/* comparison function for zVecSort. */
 int _zVecSortCmp(void *p1, void *p2, void *priv)
 {
   double d;
@@ -295,9 +242,7 @@ int _zVecSortCmp(void *p1, void *p2, void *priv)
   return 0;
 }
 
-/* zVecSort
- * - rearrange index so as to sort vector.
- */
+/* rearrange index so as to sort vector. */
 void zVecSort(zVec v, zIndex idx)
 {
   if( zVecSizeNC(v) != zArraySize(idx) ){
@@ -307,9 +252,7 @@ void zVecSort(zVec v, zIndex idx)
   zQuickSort( zArrayBuf(idx), zArraySize(idx), sizeof(int), _zVecSortCmp, zVecBuf(v) );
 }
 
-/* zVecIsEqual
- * - see if two vectors are equal.
- */
+/* check if two vectors are equal. */
 bool zVecIsEqual(zVec v1, zVec v2)
 {
   register int i;
@@ -320,93 +263,70 @@ bool zVecIsEqual(zVec v1, zVec v2)
   return true;
 }
 
-/* zVecIsTol
- * - test if vector is tiny.
- */
+/* check if a vector is tiny. */
 bool zVecIsTol(zVec v, double tol)
 {
   return zRawVecIsTol( zVecBuf(v), zVecSizeNC(v), tol );
 }
 
-/* zVecIsNan
- * - test if vector includes NaN.
- */
+/* check if a vector includes NaN. */
 bool zVecIsNan(zVec v)
 {
   return zRawVecIsNan( zVecBuf(v), zVecSizeNC(v) );
 }
 
-/* zVecAddNC
- * - add two vectors without checking size consistency.
- */
+/* add two vectors without checking size consistency. */
 zVec zVecAddNC(zVec v1, zVec v2, zVec v)
 {
   zRawVecAdd( zVecBuf(v1), zVecBuf(v2), zVecBuf(v), zVecSizeNC(v) );
   return v;
 }
 
-/* zVecSubNC
- * - subtract vectors without checking size consistency.
- */
+/* subtract a vector from another without checking size consistency. */
 zVec zVecSubNC(zVec v1, zVec v2, zVec v)
 {
   zRawVecSub( zVecBuf(v1), zVecBuf(v2), zVecBuf(v), zVecSizeNC(v) );
   return v;
 }
 
-/* zVecRevNC
- * - reverse vector without checking size consistency.
- */
+/* reverse a vector without checking size consistency. */
 zVec zVecRevNC(zVec v1, zVec v)
 {
   zRawVecRev( zVecBuf(v1), zVecBuf(v), zVecSizeNC(v) );
   return v;
 }
 
-/* zVecMulNC
- * - multiply vector by double value without checking
- *   size consistency.
- */
+/* multiply a vector by a scalar value without checking size consistency. */
 zVec zVecMulNC(zVec v1, double k, zVec v)
 {
   zRawVecMul( zVecBuf(v1), k, zVecBuf(v), zVecSizeNC(v) );
   return v;
 }
 
-/* zVecDivNC
- * - divide vector by double value without checking size
- *   consistency.
- */
+/* divide a vector by a scalar value without checking size consistency. */
 zVec zVecDivNC(zVec v1, double k, zVec v)
 {
   zRawVecDiv( zVecBuf(v1), k, zVecBuf(v), zVecSizeNC(v) );
   return v;
 }
 
-/* zVecAmpNC
- * - amplify each component of a vector by the corresponding
- *   component of another vector without checking size consistency.
- */
+/* amplify each component of a vector by the corresponding component of
+ * another vector without checking size consistency. */
 zVec zVecAmpNC(zVec v1, zVec amp, zVec v)
 {
   zRawVecAmp( zVecBuf(v1), zVecBuf(amp), zVecBuf(v), zVecSizeNC(v) );
   return v;
 }
 
-/* zVecDemNC
- * - demagnify each component of a vector by the corresponding
- *   component of another vector without checking size consistency.
- */
+/* demagnify each component of a vector by the corresponding component of
+ * another vector without checking size consistency. */
 zVec zVecDemNC(zVec v1, zVec dem, zVec v)
 {
   zRawVecDem( zVecBuf(v1), zVecBuf(dem), zVecBuf(v), zVecSizeNC(v) );
   return v;
 }
 
-/* zVecCatNC
- * - concatenate vector by multiplied vector without checking
- *   size consistency.
- */
+/* concatenate a vector with another vector multiplied by a scalar value without checking size consistency. */
 zVec zVecCatNC(zVec v1, double k, zVec v2, zVec v)
 {
   zRawVecCat( zVecBuf(v1), k, zVecBuf(v2), zVecBuf(v), zVecSizeNC(v) );
@@ -424,45 +344,35 @@ zVec zVecCatNC(zVec v1, double k, zVec v2, zVec v)
     return NULL;\
   }
 
-/* zVecAdd
- * - add two vectors.
- */
+/* add two vectors. */
 zVec zVecAdd(zVec v1, zVec v2, zVec v)
 {
   __z_vec_size_check_3( v1, v2, v );
   return zVecAddNC( v1, v2, v );
 }
 
-/* zVecSub
- * - subtract vectors.
- */
+/* subtract a vector from another. */
 zVec zVecSub(zVec v1, zVec v2, zVec v)
 {
   __z_vec_size_check_3( v1, v2, v );
   return zVecSubNC( v1, v2, v );
 }
 
-/* zVecRev
- * - reverse vector.
- */
+/* reverse a vector. */
 zVec zVecRev(zVec v1, zVec v)
 {
   __z_vec_size_check_2( v1, v );
   return zVecRevNC( v1, v );
 }
 
-/* zVecMul
- * - multiply vector by value.
- */
+/* multiply a vector by a scalar value. */
 zVec zVecMul(zVec v1, double k, zVec v)
 {
   __z_vec_size_check_2( v1, v );
   return zVecMulNC( v1, k, v );
 }
 
-/* zVecDiv
- * - divide vector by value.
- */
+/* divide a vector by a scalar value. */
 zVec zVecDiv(zVec v1, double k, zVec v)
 {
   __z_vec_size_check_2( v1, v );
@@ -473,39 +383,29 @@ zVec zVecDiv(zVec v1, double k, zVec v)
   return zVecDivNC( v1, k, v );
 }
 
-/* zVecAmp
- * - amplify each component of a vector by the corresponding
- *   component of another vector.
- */
+/* amplify each component of a vector by the corresponding component of another vector. */
 zVec zVecAmp(zVec v1, zVec amp, zVec v)
 {
   __z_vec_size_check_3( v1, amp, v );
   return zVecAmpNC( v1, amp, v );
 }
 
-/* zVecDem
- * - demagnify each component of a vector by the corresponding
- *   component of another vector.
- */
+/* demagnify each component of a vector by the corresponding component of another vector. */
 zVec zVecDem(zVec v1, zVec dem, zVec v)
 {
   __z_vec_size_check_3( v1, dem, v );
   return zVecDemNC( v1, dem, v );
 }
 
-/* zVecCat
- * - concatenate vector by multiplied vector.
- */
+/* concatenate a vector with another vector multiplied by a scalar value. */
 zVec zVecCat(zVec v1, double k, zVec v2, zVec v)
 {
   __z_vec_size_check_3( v1, v2, v );
   return zVecCatNC( v1, k, v2, v );
 }
 
-/* (static)
- * zVecCats
- * - concatenate multiple sets of a scalar and a vector.
- *   (internally called to mange variable arguments.)
+/* concatenate multiple vectors multiplied by scalar values.
+ * this function is internally called to mange variable arguments.
  */
 void _zVecCats(zVec v, int n, va_list args)
 {
@@ -522,9 +422,7 @@ void _zVecCats(zVec v, int n, va_list args)
   }
 }
 
-/* zVecCats
- * - concatenate multiple sets of a scalar and a vector.
- */
+/* concatenate multiple vectors multiplied by scalar values. */
 zVec zVecCats(zVec v, int n, ...)
 {
   va_list args;
@@ -535,9 +433,7 @@ zVec zVecCats(zVec v, int n, ...)
   return v;
 }
 
-/* zVecLS
- * - linear sum of multiple sets of a scalar and a vector.
- */
+/* linear sum of multiple vectors multiplied by scalar values. */
 zVec zVecLS(zVec v, int n, ...)
 {
   va_list args;
@@ -549,17 +445,13 @@ zVec zVecLS(zVec v, int n, ...)
   return v;
 }
 
-/* zVecInnerProdNC
- * - inner products of vector without checking size consistency.
- */
+/* inner product of two vectors without checking size consistency. */
 double zVecInnerProdNC(zVec v1, zVec v2)
 {
   return zRawVecInnerProd( zVecBuf(v1), zVecBuf(v2), zVecSizeNC(v1) );
 }
 
-/* zVecInnerProd
- * - inner products of vector.
- */
+/* inner product of two vectors. */
 double zVecInnerProd(zVec v1, zVec v2)
 {
   if( !zVecSizeIsEqual(v1,v2) ){
@@ -569,25 +461,19 @@ double zVecInnerProd(zVec v1, zVec v2)
   return zVecInnerProdNC( v1, v2 );
 }
 
-/* zVecSqrNorm
- * - squared norm of vector.
- */
+/* squared norm of a vector. */
 double zVecSqrNorm(zVec v)
 {
   return zVecInnerProdNC( v, v );
 }
 
-/* zVecWSqrNorm
- * - weighted squared norm of vector without checking size consistency.
- */
+/* weighted squared norm of a vector without checking size consistency. */
 double zVecWSqrNormNC(zVec v, zVec w)
 {
   return zRawVecWSqrNorm( zVecBuf(v), zVecBuf(w), zVecSizeNC(v) );
 }
 
-/* zVecWSqrNorm
- * - weighted squared norm of vector.
- */
+/* weighted squared norm of a vector. */
 double zVecWSqrNorm(zVec v, zVec w)
 {
   if( !zVecSizeIsEqual(v,w) ){
@@ -597,40 +483,19 @@ double zVecWSqrNorm(zVec v, zVec w)
   return zVecWSqrNormNC( v, w );
 }
 
-/* zVecInfNorm
- * - infinity norm of vector.
- */
+/* infinity norm of a vector. */
 double zVecInfNorm(zVec v)
 {
   return zDataAbsMax( zVecBuf(v), zVecSizeNC(v), NULL );
 }
 
-/* zVecNormalize
- * - normalization of vector.
- */
+/* normalize a vector. */
 zVec zVecNormalize(zVec src, zVec dest)
 {
   return zRawVecNormalize( zVecBuf(src), zVecSizeNC(src), zVecBuf(dest) ) ? dest : NULL;
 }
 
-/* zVecReadFile
- * - input of vector from file.
- */
-zVec zVecReadFile(char filename[])
-{
-  FILE *fp;
-  zVec v;
-
-  if( !( fp = zOpenFile( filename, ZVECTOR_SUFFIX, "r" ) ) )
-    return NULL;
-  v = zVecFRead( fp );
-  fclose( fp );
-  return v;
-}
-
-/* zVecFRead
- * - input of vector from file.
- */
+/* read information of a vector from file. */
 zVec zVecFRead(FILE *fp)
 {
   register int i, size;
@@ -638,15 +503,12 @@ zVec zVecFRead(FILE *fp)
 
   size = zFInt( fp );
   if( !( v = zVecAlloc( size ) ) ) return NULL;
-
   for( i=0; i<size; i++ )
     zVecSetElemNC( v, i, zFDouble( fp ) );
   return v;
 }
 
-/* zVecFWrite
- * - output of vector to file.
- */
+/* output information of a vector to file. */
 void zVecFWrite(FILE *fp, zVec v)
 {
   register int i;
@@ -661,9 +523,7 @@ void zVecFWrite(FILE *fp, zVec v)
   }
 }
 
-/* zVecDataFWrite
- * - output of vector to file.
- */
+/* output information of a vector to file. */
 void zVecDataFWrite(FILE *fp, zVec v)
 {
   register int i;

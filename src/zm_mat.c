@@ -421,26 +421,20 @@ bool zMatIsEqual(zMat m1, zMat m2)
   return true;
 }
 
-/* zMatIsTol
- * - test for tiny matrix.
- */
+/* test if a matrix is tiny. */
 bool zMatIsTol(zMat m, double tol)
 {
   return zRawMatIsTol( zMatBuf(m), zMatRowSizeNC(m), zMatColSizeNC(m), tol );
 }
 
-/* zMatRowReg
- * - row regression of matrix.
- */
+/* row regression of a matrix. */
 zMat zMatRowReg(zMat m, int rank)
 {
   if( rank < zMatRowSizeNC(m) ) zMatSetRowSize( m, rank );
   return m;
 }
 
-/* zMatColReg
- * - column regression of matrix.
- */
+/* column regression of a matrix. */
 zMat zMatColReg(zMat m, int rank)
 {
   register int i;
@@ -454,9 +448,7 @@ zMat zMatColReg(zMat m, int rank)
   return m;
 }
 
-/* zMatAddNC
- * - add matrix without checking size consistency.
- */
+/* add matrices without checking size consistency. */
 zMat zMatAddNC(zMat m1, zMat m2, zMat m)
 {
   zRawMatAdd( zMatBuf(m1), zMatBuf(m2),
@@ -464,9 +456,7 @@ zMat zMatAddNC(zMat m1, zMat m2, zMat m)
   return m;
 }
 
-/* zMatSubNC
- * - subtract matrix without checking size consistency.
- */
+/* subtract a matrix from nother without checking size consistency. */
 zMat zMatSubNC(zMat m1, zMat m2, zMat m)
 {
   zRawMatSub( zMatBuf(m1), zMatBuf(m2),
@@ -474,45 +464,35 @@ zMat zMatSubNC(zMat m1, zMat m2, zMat m)
   return m;
 }
 
-/* zMatRevNC
- * - reverse matrix without checking size consistency.
- */
+/* reverse a matrix without checking size consistency. */
 zMat zMatRevNC(zMat m1, zMat m)
 {
   zRawMatRev( zMatBuf(m1), zMatBuf(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;
 }
 
-/* zMatMulNC
- * - multiply matrix without checking size consistency.
- */
+/* multiply a matrix by a scalar value without checking size consistency. */
 zMat zMatMulNC(zMat m1, double k, zMat m)
 {
   zRawMatMul( zMatBuf(m1), k, zMatBuf(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;
 }
 
-/* zMatDivNC
- * - divide matrix without checking size consistency.
- */
+/* divide a matrix by a scalar value rwithout checking size consistency. */
 zMat zMatDivNC(zMat m1, double k, zMat m)
 {
   zRawMatDiv( zMatBuf(m1), k, zMatBuf(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;
 }
 
-/* zMatCatNC
- * - concatenate matrix without checking size consistency.
- */
+/* concatenate a matrix with another without checking size consistency. */
 zMat zMatCatNC(zMat m1, double k, zMat m2, zMat m)
 {
   zRawMatCat( zMatBuf(m1), k, zMatBuf(m2), zMatBuf(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;
 }
 
-/* zMatAdd
- * - add matrix.
- */
+/* add matrices. */
 zMat zMatAdd(zMat m1, zMat m2, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m2) || !zMatSizeIsEqual(m1,m) ){
@@ -522,9 +502,7 @@ zMat zMatAdd(zMat m1, zMat m2, zMat m)
   return zMatAddNC( m1, m2, m );
 }
 
-/* zMatSub
- * - substraction of matrix.
- */
+/* substract a matrix from another. */
 zMat zMatSub(zMat m1, zMat m2, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m2) || !zMatSizeIsEqual(m1,m) ){
@@ -534,9 +512,7 @@ zMat zMatSub(zMat m1, zMat m2, zMat m)
   return zMatSubNC( m1, m2, m );
 }
 
-/* zMatRev
- * - reverse matrix.
- */
+/* reverse a matrix. */
 zMat zMatRev(zMat m1, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m) ){
@@ -546,9 +522,7 @@ zMat zMatRev(zMat m1, zMat m)
   return zMatRevNC( m1, m );
 }
 
-/* zMatMul
- * - multiply matrix.
- */
+/* multiply a matrix by a scalar value. */
 zMat zMatMul(zMat m1, double k, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m) ){
@@ -558,9 +532,7 @@ zMat zMatMul(zMat m1, double k, zMat m)
   return zMatMulNC( m1, k, m );
 }
 
-/* zMatDiv
- * - divide matrix.
- */
+/* divide a matrix by a scalar value. */
 zMat zMatDiv(zMat m1, double k, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m) ){
@@ -574,9 +546,7 @@ zMat zMatDiv(zMat m1, double k, zMat m)
   return zMatDivNC( m1, k, m );
 }
 
-/* zMatCat
- * - concatenate matrix.
- */
+/* concatenate a matrix with another. */
 zMat zMatCat(zMat m1, double k, zMat m2, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m2) || !zMatSizeIsEqual(m1,m) ){
@@ -586,17 +556,13 @@ zMat zMatCat(zMat m1, double k, zMat m2, zMat m)
   return zMatCatNC( m1, k, m2, m );
 }
 
-/* zMatSqrNorm
- * - squared norm of matrix.
- */
+/* squared norm of a matrix. */
 double zMatSqrNorm(zMat m)
 {
   return zRawMatSqrNorm( zMatBuf(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
 }
 
-/* zMatInfNorm
- * - infinity norm of matrix.
- */
+/* infinity norm of a matrix. */
 double zMatInfNorm(zMat m)
 {
   double *mp, rs, rsmax = 0;
@@ -611,32 +577,24 @@ double zMatInfNorm(zMat m)
   return rsmax;
 }
 
-/* zMatTNC
- * - transpose of matrix without checking size consistency.
- */
+/* transpose a matrix without checking size consistency. */
 zMat zMatTNC(zMat m, zMat tm)
 {
-  zRawMatT( zMatBuf(m), zMatBuf(tm),
-    zMatRowSizeNC(tm), zMatColSizeNC(tm) );
+  zRawMatT( zMatBuf(m), zMatBuf(tm), zMatRowSizeNC(tm), zMatColSizeNC(tm) );
   return tm;
 }
 
-/* zMatT
- * - transpose of matrix.
- */
+/* transpose a matrix. */
 zMat zMatT(zMat m, zMat tm)
 {
-  if( !zMatColRowSizeIsEqual( tm, m ) ||
-      !zMatColRowSizeIsEqual( m, tm ) ){
+  if( !zMatColRowSizeIsEqual( tm, m ) || !zMatColRowSizeIsEqual( m, tm ) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MAT );
     return NULL;
   }
   return zMatTNC( m, tm );
 }
 
-/* zMatTDRC
- * - transpose of matrix (destructive).
- */
+/* transpose a matrix directly. */
 zMat zMatTDRC(zMat m)
 {
   int row, col;
@@ -648,9 +606,7 @@ zMat zMatTDRC(zMat m)
   return m;
 }
 
-/* zMatTClone
- * - clone transpose of a matrix.
- */
+/* clone transpose of a matrix. */
 zMat zMatTClone(zMat src)
 {
   zMat dest;
@@ -660,110 +616,81 @@ zMat zMatTClone(zMat src)
   return dest;
 }
 
-/* zVecDyadNC
- * - dyadic product of vectors without checking size
- *   consistency.
- */
+/* dyadic product of vectors without checking size consistency. */
 zMat zVecDyadNC(zVec v1, zVec v2, zMat dyad)
 {
   zRawVecDyad( zVecBuf(v1), zVecSizeNC(v1), zVecBuf(v2), zVecSizeNC(v2), zMatBuf(dyad) );
   return dyad;
 }
 
-/* zVecDyad
- * - dyadic product of vectors.
- */
+/* dyadic product of vectors. */
 zMat zVecDyad(zVec v1, zVec v2, zMat dyad)
 {
-  if( zVecSize(v1) != zMatRowSize(dyad) ||
-      zVecSize(v2) != zMatColSize(dyad) ){
+  if( zVecSize(v1) != zMatRowSize(dyad) || zVecSize(v2) != zMatColSize(dyad) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return NULL;
   }
   return zVecDyadNC( v1, v2, dyad );
 }
 
-/* zMatAddDyadNC
- * - add dyadic matrix of vectors to matrix without checking
- *   size consistency.
- */
+/* add dyadic product of vectors to a matrix without checking size consistency. */
 zMat zMatAddDyadNC(zMat m, zVec v1, zVec v2)
 {
   zRawMatAddDyad( zMatBuf(m), zVecBuf(v1), zVecSizeNC(v1), zVecBuf(v2), zVecSizeNC(v2) );
   return m;
 }
 
-/* zMatAddDyad
- * - add dyadic matrix of vectors to matrix.
- */
+/* add dyadic product of vectors to a matrix. */
 zMat zMatAddDyad(zMat m, zVec v1, zVec v2)
 {
-  if( zVecSize(v1) != zMatRowSize(m) ||
-      zVecSize(v2) != zMatColSize(m) ){
+  if( zVecSize(v1) != zMatRowSize(m) || zVecSize(v2) != zMatColSize(m) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return NULL;
   }
   return zMatAddDyadNC( m, v1, v2 );
 }
 
-/* zMatSubDyadNC
- * - subtract dyadic matrix of vectors to matrix without checking
- *   size consistency.
- */
+/* subtract dyadic product of vectors from a matrix without checking size consistency. */
 zMat zMatSubDyadNC(zMat m, zVec v1, zVec v2)
 {
   zRawMatSubDyad( zMatBuf(m), zVecBuf(v1), zVecSizeNC(v1), zVecBuf(v2), zVecSizeNC(v2) );
   return m;
 }
 
-/* zMatSubDyad
- * - subtract dyadic matrix of vectors to matrix.
- */
+/* subtract dyadic product of vectors from a matrix. */
 zMat zMatSubDyad(zMat m, zVec v1, zVec v2)
 {
-  if( zVecSize(v1) != zMatRowSize(m) ||
-      zVecSize(v2) != zMatColSize(m) ){
+  if( zVecSize(v1) != zMatRowSize(m) || zVecSize(v2) != zMatColSize(m) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return NULL;
   }
   return zMatSubDyadNC( m, v1, v2 );
 }
 
-/* zMatCatDyadNC
- * - add multiplied dyadic matrix of vectors by scalor to matrix
- *   without checking size consistency.
- */
+/* add dyadic product of vectors multiplied by a scalar value to a matrix without checking size consistency. */
 zMat zMatCatDyadNC(zMat m, double k, zVec v1, zVec v2)
 {
   zRawMatCatDyad( zMatBuf(m), k, zVecBuf(v1), zVecSizeNC(v1), zVecBuf(v2), zVecSizeNC(v2) );
   return m;
 }
 
-/* zMatCatDyad
- * - add multiplied dyadic matrix of vectors by scalor to matrix.
- */
+/* add dyadic product of vectors multiplied by a scalar to a matrix. */
 zMat zMatCatDyad(zMat m, double k, zVec v1, zVec v2)
 {
-  if( zVecSize(v1) != zMatRowSize(m) ||
-      zVecSize(v2) != zMatColSize(m) ){
+  if( zVecSize(v1) != zMatRowSize(m) || zVecSize(v2) != zMatColSize(m) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return NULL;
   }
   return zMatCatDyadNC( m, k, v1, v2 );
 }
 
-/* zMatTrNC
- * - calculation of trace value of matrix without checking
- *   size consistency.
- */
+/* trace of a matrix without checking size consistency. */
 double zMatTrNC(zMat m)
 {
   return zRawMatTr( zMatBuf(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
 }
 
-/* zMatTr
- * - calculation of trace value of matrix.
- */
+/* trace of a matrix. */
 double zMatTr(zMat m)
 {
   if( !zMatIsSqr( m ) ){
@@ -773,10 +700,7 @@ double zMatTr(zMat m)
   return zMatTrNC( m );
 }
 
-/* zMulMatVecNC
- * - multiply a vector by a matrix from the left side without
- *   checking size consistency.
- */
+/* multiply a vector by a matrix from the left side without checking size consistency. */
 zVec zMulMatVecNC(zMat m, zVec v1, zVec v)
 {
   zRawMulMatVec( zMatBuf(m), zVecBuf(v1),
@@ -784,10 +708,7 @@ zVec zMulMatVecNC(zMat m, zVec v1, zVec v)
   return v;
 }
 
-/* zMulMatTVecNC
- * - multiply a vector by transpose of a matrix from the
- *   left side without checking size consistency.
- */
+/* multiply a vector by transpose of a matrix from the left side without checking size consistency. */
 zVec zMulMatTVecNC(zMat m, zVec v1, zVec v)
 {
   zRawMulMatTVec( zMatBuf(m), zVecBuf(v1),
@@ -795,10 +716,7 @@ zVec zMulMatTVecNC(zMat m, zVec v1, zVec v)
   return v;
 }
 
-/* zMulMatMatNC
- * - multiply two matrices without checking
- *   size consistency.
- */
+/* multiply two matrices without checking size consistency. */
 zMat zMulMatMatNC(zMat m1, zMat m2, zMat m)
 {
   zRawMulMatMat( zMatBuf(m1),zMatRowSizeNC(m1), zMatColSizeNC(m1),
@@ -806,10 +724,7 @@ zMat zMulMatMatNC(zMat m1, zMat m2, zMat m)
   return m;
 }
 
-/* zMulMatMatTNC
- * - multiply a matrix and transpose of a matrix
- *   ('m = m1 m2^T') without checking size consistency.
- */
+/* multiply a matrix and transpose of a matrix ('m = m1 m2^T') without checking size consistency. */
 zMat zMulMatMatTNC(zMat m1, zMat m2, zMat m)
 {
   zRawMulMatMatT( zMatBuf(m1), zMatRowSizeNC(m1), zMatColSizeNC(m1),
@@ -817,10 +732,7 @@ zMat zMulMatMatTNC(zMat m1, zMat m2, zMat m)
   return m;
 }
 
-/* zMulMatTMatNC
- * - multiply transpose of a matrix and a matrix
- *   'm = m1^T m2' without checking size consistency.
- */
+/* multiply transpose of a matrix and a matrix 'm = m1^T m2' without checking size consistency. */
 zMat zMulMatTMatNC(zMat m1, zMat m2, zMat m)
 {
   zRawMulMatTMat( zMatBuf(m1), zMatRowSizeNC(m1), zMatColSizeNC(m1),
@@ -828,9 +740,7 @@ zMat zMulMatTMatNC(zMat m1, zMat m2, zMat m)
   return m;
 }
 
-/* zMulMatVec
- * - multiply a matrix and a column vector.
- */
+/* multiply a vector by a matrix from the left side. */
 zVec zMulMatVec(zMat m, zVec v1, zVec v)
 {
   if( !zMatColVecSizeIsEqual( m, v1 ) || !zMatRowVecSizeIsEqual( m, v ) ){
@@ -840,9 +750,7 @@ zVec zMulMatVec(zMat m, zVec v1, zVec v)
   return zMulMatVecNC( m, v1, v );
 }
 
-/* zMulMatTVec
- * - multiply a vector by transpose of a matrix.
- */
+/* multiply a vector by transpose of a matrix from the left side. */
 zVec zMulMatTVec(zMat m, zVec v1, zVec v)
 {
   if( !zMatRowVecSizeIsEqual( m, v1 ) || !zMatColVecSizeIsEqual( m, v ) ){
@@ -852,9 +760,7 @@ zVec zMulMatTVec(zMat m, zVec v1, zVec v)
   return zMulMatTVecNC( m, v1, v );
 }
 
-/* zMulMatMat
- * - multiply two matrices.
- */
+/* multiply two matrices. */
 zMat zMulMatMat(zMat m1, zMat m2, zMat m)
 {
   if( !zMatColRowSizeIsEqual( m1, m2 ) ||
@@ -865,9 +771,7 @@ zMat zMulMatMat(zMat m1, zMat m2, zMat m)
   return zMulMatMatNC( m1, m2, m );
 }
 
-/* zMulMatMatT
- * - multiply a matrix by transpose of another matrix from the right side.
- */
+/* multiply a matrix by transpose of another matrix from the right side. */
 zMat zMulMatMatT(zMat m1, zMat m2, zMat m)
 {
   if( !zMatColSizeIsEqual( m1, m2 ) || !zMatRowSizeIsEqual( m1, m ) ||
@@ -878,22 +782,18 @@ zMat zMulMatMatT(zMat m1, zMat m2, zMat m)
   return zMulMatMatTNC( m1, m2, m );
 }
 
-/* zMulMatTMat
- * - multiply a matrix by transpose of another matrix from the left side.
- */
+/* multiply a matrix by transpose of another matrix from the left side. */
 zMat zMulMatTMat(zMat m1, zMat m2, zMat m)
 {
   if( !zMatRowSizeIsEqual( m1, m2 ) ||
-      !zMatColRowSizeIsEqual( m1, m ) ||
-      !zMatColSizeIsEqual( m2, m ) ){
+      !zMatColRowSizeIsEqual( m1, m ) || !zMatColSizeIsEqual( m2, m ) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MAT );
     return NULL;
   }
   return zMulMatTMatNC( m1, m2, m );
 }
 
-/* zMulMatVecDRC
- * - multiply a vector by a matrix directly.
+/* multiply a vector by a matrix directly.
  */
 zVec zMulMatVecDRC(zMat m, zVec v)
 {
@@ -906,9 +806,7 @@ zVec zMulMatVecDRC(zMat m, zVec v)
   return v;
 }
 
-/* zMulMatTVecDRC
- * - multiply a vector by transpose of a matrix directly.
- */
+/* multiply a vector by transpose of a matrix directly. */
 zVec zMulMatTVecDRC(zMat m, zVec v)
 {
   zVec tmp;
@@ -920,10 +818,7 @@ zVec zMulMatTVecDRC(zMat m, zVec v)
   return v;
 }
 
-/* zMatQuadNC
- * - quadratic multiplication of matrices ('q = a diag{w} a^T')
- *   without checking size consistency.
- */
+/* quadratic multiplication of matrices ('q = a diag{w} a^T') without checking size consistency. */
 zMat zMatQuadNC(zMat a, zVec w, zMat q)
 {
   register int i, j, k;
@@ -942,9 +837,7 @@ zMat zMatQuadNC(zMat a, zVec w, zMat q)
   return q;
 }
 
-/* zMatQuad
- * - quadratic multiplication of matrices ('q = a diag{w} a^T').
- */
+/* quadratic multiplication of matrices ('q = a diag{w} a^T'). */
 zMat zMatQuad(zMat a, zVec w, zMat q)
 {
   if( w && !zMatColVecSizeIsEqual( a, w ) ){
@@ -962,10 +855,7 @@ zMat zMatQuad(zMat a, zVec w, zMat q)
   return zMatQuadNC( a, w, q );
 }
 
-/* zMatTQuadNC
- * - quadratic multiplication of matrices ('q = a^T diag{w} a')
- *   without checking size consistency.
- */
+/* quadratic multiplication of matrices ('q = a^T diag{w} a') without checking size consistency. */
 zMat zMatTQuadNC(zMat a, zVec w, zMat q)
 {
   register int i, j, k;
@@ -984,9 +874,7 @@ zMat zMatTQuadNC(zMat a, zVec w, zMat q)
   return q;
 }
 
-/* zMatTQuad
- * - quadratic multiplication of matrices ('q = a^T diag{w} a').
- */
+/* quadratic multiplication of matrices ('q = a^T diag{w} a'). */
 zMat zMatTQuad(zMat a, zVec w, zMat q)
 {
   if( w && !zMatRowVecSizeIsEqual( a, w ) ){
@@ -1004,24 +892,7 @@ zMat zMatTQuad(zMat a, zVec w, zMat q)
   return zMatTQuadNC( a, w, q );
 }
 
-/* zMatReadFile
- * - input of matrix from file.
- */
-zMat zMatReadFile(char filename[])
-{
-  FILE *fp;
-  zMat m;
-
-  if( !( fp = zOpenFile( filename, ZMATRIX_SUFFIX, "r" ) ) )
-    return NULL;
-  m = zMatFRead( fp );
-  fclose( fp );
-  return m;
-}
-
-/* zMatFRead
- * - input of matrix from file.
- */
+/* read information of a matrix from file. */
 zMat zMatFRead(FILE *fp)
 {
   register unsigned i, j, row, col;
@@ -1037,9 +908,7 @@ zMat zMatFRead(FILE *fp)
   return m;
 }
 
-/* zMatFWrite
- * - output of matrix to file.
- */
+/* write information of a matrix to file. */
 void zMatFWrite(FILE *fp, zMat m)
 {
   register int i, j;
@@ -1058,9 +927,7 @@ void zMatFWrite(FILE *fp, zMat m)
   }
 }
 
-/* zMatImg
- * - visualize matrix using one-charactor collage for debug.
- */
+/* visualize a matrix using one-charactor collage for debug. */
 void zMatImg(zMat m)
 {
   double max, min, d;

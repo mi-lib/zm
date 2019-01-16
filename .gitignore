@@ -1,0 +1,7 @@
+config
+src/*.o
+app
+!app/*.c
+!app/makefile
+lib/*
+!lib/.gitkeep

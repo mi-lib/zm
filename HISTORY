@@ -1,3 +1,5 @@
+2019. 1.16. Abolished ZVECTOR_SUFFIX and zVecReadFile. [zm_vec]
+2019. 1.16. Abolished ZMATRIX_SUFFIX and zMatReadFile. [zm_mat]
 2019. 1.15. Abolished zNURBSKnotFWrite. [zm_nurbs]
 2019. 1.15. Debugged _zNURBSSeg, _zNURBSBasis, _zNURBSBasisDiff, _zNURBSDenDiff, zNURBSVec and zNURBSVecDiff. [zm_nurbs]
 2019. 1.15. Added _zNURBSKnotInit, and modified zNURBSCreate and zNURBSKnotNormalize. [zm_nurbs]

@@ -209,20 +209,18 @@ __EXPORT void zVecSort(zVec v, zIndex idx);
 
 /*! \brief maximum, minimum, average and variance of vector elements.
  *
- * 'zVecMax()' and 'zVecMin()' gets the maximum and minimum
- * component of all components of the vector 'v', respectively.
- * 'zVecAbsMax()' and 'zVecAbsMin()' gets the component
- * of 'v' whose absolute value is the maximum and minimum,
- * respectively.
- * When 'im' is not a null pointer, the index which gives
- * the maximum/minimum is stored where pointed by it.
+ * zVecMax() and zVecMin() gets the maximum and minimum component
+ * of all components of the vector \a v, respectively.
+ * zVecAbsMax() and zVecAbsMin() gets the component of \a v whose
+ * absolute value is the maximum and minimum, respectively.
+ * The index which gives the maximum/minimum is stored where pointed
+ * by \a im, unless it is the null pointer.
  *
- * 'zVecSum()', 'zVecAve()' and 'zVecVar()' calculates
- * the summation, the avarage and the variance of all components
- * of 'v'.
- * [RETURN VALUE]
- * 'zVecMax()', 'zVecMin()', 'zVecAbsMax()', 'zVecAbsMin()',
- * 'zVecSum()', 'zVecAve()' and 'zVecVar()' return the results.
+ * zVecSum(), zVecAve() and zVecVar() calculates the summation, the
+ * avarage and the variance of all components of \a v.
+ * \return
+ * zVecMax(), zVecMin(), zVecAbsMax(), zVecAbsMin(), zVecSum(),
+ * zVecAve() and zVecVar() return the results.
  */
 #define zVecMax(v,i)    zDataMax( zVecBuf(v), zVecSizeNC(v), i )
 #define zVecMin(v,i)    zDataMin( zVecBuf(v), zVecSizeNC(v), i )
@@ -258,77 +256,73 @@ __EXPORT bool zVecIsTol(zVec v, double tol);
 
 __EXPORT bool zVecIsNan(zVec v);
 
-/* METHOD:
- * zVecAddNC, zVecSubNC, zVecRevNC, zVecMulNC, zVecDivNC,
- * zVecAmpNC, zVecDemNC, zVecCatNC, zVecAddNCDRC, zVecSubNCDRC,
- * zVecRevNCDRC, zVecMulNCDRC, zVecDivNCDRC, zVecAmpNCDRC,
- * zVecDemNCDRC, zVecCatNCDRC, zVecAdd, zVecSub, zVecRev,
- * zVecMul, zVecDiv, zVecAmp, zVecDem, zVecCat, zVecAddDRC,
- * zVecSubDRC, zVecRevDRC, zVecMulDRC, zVecDivDRC, zVecAmpDRC,
- * zVecDemDRC, zVecCatDRC, zVecCats, zVecLS
- * - basic arithmetics for vector.
+/*! \brief basic arithmetics for vector.
  *
- * zVecAddNC() and zVecAdd() add the two vectors,
- * 'v1' and 'v2', and put the result into 'v'.
+ * zVecAddNC() and zVecAdd() add the two vectors, \a v1 and
+ * \a v2, and put the result into \a v.
  *
- * zVecSubNC() and zVecSub() subtract 'v2' from
- * 'v1', and put the result into 'v'.
+ * zVecSubNC() and zVecSub() subtract \a v2 from \a v1, and
+ * put the result into \a v.
  *
- * zVecRevNC() and zVecRev() reverse 'v1', and put
- * the result into 'v'.
+ * zVecRevNC() and zVecRev() reverse \a v1, and put the result
+ * into \a v.
  *
- * zVecMulNC() and zVecMul() multiply 'v1' by a
- * scalar value 'k', and put the result into 'v'.
+ * zVecMulNC() and zVecMul() multiply \a v1 by a scalar value
+ * \a k, and put the result into \a v.
  *
- * zVecDivNC() and zVecDiv() divide 'v1' by 'k',
- * and put the result into 'v'.
+ * zVecDivNC() and zVecDiv() divide \a v1 by \a k, and puts
+ * the result into \a v.
  *
- * zVecAmpNC() and zVecAmp() amplify each component
- * of 'v1' by the corresponding component of a vector
- * 'amp', and put the result into 'v'.
+ * zVecAmpNC() and zVecAmp() amplify each component of \a v1
+ * by the corresponding component of a vector \a amp, and puts
+ * the result into \a v.
  *
- * zVecDemNC() and zVecDem() demamgnify each component
- * of 'v1' by the corresponding component of a vector
- * 'dem', and put the result into 'v'.
+ * zVecDemNC() and zVecDem() demamgnify each component of
+ * \a v1 by the corresponding component of a vector \a dem,
+ * and put the result into \a v.
  *
- * zVecCatNC() and zVecCat() concatenate 'v1' by adding multiplied
- * 'v2' by 'k', and put the result into 'v'.
+ * zVecCatNC() and zVecCat() concatenate \a v1 by adding
+ * multiplied \a v2 by \a k, and puts the result into \a v.
  *
- * zVecAddNCDRC() and zVecAddDRC() directly add 'v2' to 'v1'.
+ * zVecAddNCDRC() and zVecAddDRC() directly add \a v2 to \a v1.
  *
- * zVecSubNCDRC() and zVecSubDRC() directly subtract 'v2' from 'v1'.
+ * zVecSubNCDRC() and zVecSubDRC() directly subtract \a v2
+ * from \a v1.
  *
- * zVecRevNCDRC() and zVecRevDRC() directly reverse 'v'.
+ * zVecRevNCDRC() and zVecRevDRC() directly reverse \a v.
  *
- * zVecMulNCDRC() and zVecMulDRC() directly multiply 'v' by 'k'.
+ * zVecMulNCDRC() and zVecMulDRC() directly multiply \a v
+ * by \a k.
  *
- * zVecDivNCDRC() and zVecDivDRC() directly divide 'v' by 'k'.
+ * zVecDivNCDRC() and zVecDivDRC() directly divide \a v by
+ * \a k.
  *
- * zVecAmpNCDRC() and zVecAmpDRC() directly amplify 'v' by 'amp'.
+ * zVecAmpNCDRC() and zVecAmpDRC() directly amplify \a v by
+ * \a amp.
  *
- * zVecDemNCDRC() and zVecDemDRC() directly demagnify 'v' by 'dem'.
+ * zVecDemNCDRC() and zVecDemDRC() directly demagnify \a v
+ * by \a dem.
  *
- * zVecCatNCDRC() and zVecCatDRC() directly concatenate 'v1' by
- * adding multiplied 'v2' by 'k'.
+ * zVecCatNCDRC() and zVecCatDRC() directly concatenate \a v1
+ * by adding multiplied \a v2 by \a k.
  *
- * zVecCats() concatenates 'n' vectors directly to 'v'.
- * Arguments follow 'n' as:
- *   'k1', 'v1', 'k2', 'v2', ...
- * where 'kx's are scalar values and 'vx' are vectors.
- * Then, the resultant 'v' will be:
- *   'v' + 'k1'*'v1' + 'k2'*'v2' + ...
- * zVecLS() computes linear sum of 'n' vectors.
- * Arguments follow 'n' as:
- *   'k1', 'v1', 'k2', 'v2', ...
- * The resultant 'v' will be:
- *   'k1'*'v1' + 'k2'*'v2' + ...
+ * zVecCats() concatenates \a n vectors directly with \a v.
+ * Arguments follow \a n as:
+ *   \a k1, \a v1, \a k2, \a v2, ...
+ * where \a kx s are scalar values and \a vx are vectors.
+ * Then, the result \a v will be:
+ *   \a v + \a k1 *\a v1 + \a k2 * \a v2 + ...
+ * zVecLS() computes linear sum of \a n vectors.
+ * Arguments follow \a n as:
+ *   \a k1, \a v1, \a k2, \a v2, ...
+ * The result \a v will be:
+ *   \a k1 * \a v1 + \a k2 * \a v2 + ...
  * \return
- * Each of all these functions returns a pointer to
- * the result.
+ * Each of all these functions returns a pointer to the result.
  * \notes
- * The type of NC functions do not check the size
- * consistency. If it is not urgent and you are not
- * hasty, you should not use them.
+ * The type of NC functions do not check the size consistency.
+ * If it is not urgent and you are not hasty, you should not
+ * use them.
  */
 __EXPORT zVec zVecAddNC(zVec v1, zVec v2, zVec v);
 __EXPORT zVec zVecSubNC(zVec v1, zVec v2, zVec v);
@@ -384,30 +378,25 @@ __EXPORT zVec zVecLS(zVec v, int n, ...);
 __EXPORT double zVecInnerProdNC(zVec v1, zVec v2);
 __EXPORT double zVecInnerProd(zVec v1, zVec v2);
 
-/* METHOD:
- * zVecSqrNorm, zVecNorm, zVecNormalize, zVecNormalizeDRC,
- * zVecSqrDist, zVecDist
- * - normalize vector.
+/*! \brief normalize a vector.
  *
- * 'zVecSqrNorm()' calculates the squared norm of the
- * vector 'v'. And 'zVecNorm()' calculates the norm
- * of 'v'.
+ * zVecSqrNorm() calculates the squared norm of the vector
+ * \a v. zVecNorm() calculates the norm of \a v.
  *
- * 'zVecNormalize()' normalizes the vector 'src',
- * dividing by the norm of itself, and put the result
- * into 'dest'.
- * 'zVecNormalizeDRC()' directly normalizes the
- * vector 'v'.
+ * zVecNormalize() normalizes the vector \a src, namely,
+ * \a src is divided by the norm of itself. The result is
+ * put into \a dest.
+ * zVecNormalizeDRC() directly normalizes the vector \a v.
  *
- * 'zVecSqrDist()' calculates the squared distance
- * between 'v1' and 'v2', and 'zVecDist()' calculates
- * the distance between the two.
- * [RETURN VALUE]
- * 'zVecSqrNorm()', 'zVecNorm()', 'zVecSqrDist()' and
- * 'zVecDist()' return the value calculated.
+ * zVecSqrDist() calculates the squared distance between
+ * \a v1 and \a v2. zVecDist() calculates the distance
+ * between the two.
+ * \return
+ * zVecSqrNorm(), zVecNorm(), zVecSqrDist() and zVecDist()
+ * return the value calculated.
  *
- * Each of 'zVecNormalize()' and 'zVecNormalizeDRC()'
- * returns the pointer to the result.
+ * zVecNormalize() and zVecNormalizeDRC() return the
+ * pointer to the result.
  */
 __EXPORT double zVecSqrNorm(zVec v);
 #define zVecNorm(v)         sqrt( zVecSqrNorm(v) )
@@ -421,45 +410,37 @@ __EXPORT zVec zVecNormalize(zVec src, zVec dest);
 #define zVecSqrDist(v1,v2)  zRawVecSqrDist(zVecBuf(v1),zVecBuf(v2),zVecSizeNC(v1))
 #define zVecDist(v1,v2)     sqrt( zVecSqrDist( v1, v2 ) )
 
-/* METHOD:
- * zVecReadFile, zVecFRead, zVecRead,
- * zVecFWrite, zVecWrite, zVecDataFWrite, zVecDataWrite
- * - input/output vector.
+/*! \brief input/output vector.
  *
- * 'zVecFRead()' reads a sequence of double floating-point
- * values from the current position of the file 'fp',
- * and create a new vector.
+ * zVecFRead() reads a sequence of double-precision
+ * floating-point values from the current position of a
+ * file \a fp, and creates a new vector.
  * The format is as follows:
- *  n ( x1 x2 x3 ... xn )
- * where 'n' is the size of vector.
- * 'zVecRead()' reads a sequence of double values according
- * to the above same format simply from the standard input.
+ *  \a n ( \a x1 \a x2 \a x3 ... \a xn )
+ * where \a n is the size of vector.
+ * zVecRead() reads a sequence of double-precision
+ * floating-point values according to the above format
+ * from the standard input.
  *
- * 'zVecReadFile()' reads a vector from file 'filename' or
- * 'filename'.zv.
+ * zVecFWrite() writes the components of a vector \a v to
+ * the current position of a file \a fp in the same format
+ * with the above.
+ * zVecWrite() writes the components of \a v in the same
+ * format to the standard output.
  *
- * 'zVecFWrite()' writes the components of the given vector
- * 'v' to the current position of the file 'fp' in the following
- * format.
- *  n ( x1 x2 x3 ... xn )
- * 'zVecWrite()' writes the components of 'v' in the same
- * format simply to the standard output.
+ * zVecDataFWrite() writes the components of a given vector
+ * \a v to the current position of a file \a fp in the
+ * following format.
+ *  \a x1 \a x2 \a x3 ... \a xn
+ * zVecDataWrite() writes the components of \a v in the
+ * above format to the standard output.
+ * \return
+ * zVecFRead() and zVecRead() return a pointer to the newly
+ * created vector.
  *
- * 'zVecDataFWrite()' writes the components of the given vector
- * 'v' to the current position of the file 'fp' in the following
- * format.
- *  x1 x2 x3 ... xn
- * 'zVecDataWrite()' writes the components of 'v' in the
- * same format simply to the standard output.
- * [RETURN VALUE]
- * Each of 'zVecReadFile()', 'zVecFRead()' and
- * 'zVecRead()' returns a pointer to the newly created vector.
- *
- * 'zVecFWrite()', 'zVecWrite()', 'zVecDataFWrite()'
- * and 'zVecDataWrite()' return no values.
+ * zVecFWrite(), zVecWrite(), zVecDataFWrite() and
+ * zVecDataWrite() return no values.
  */
-#define ZVECTOR_SUFFIX "zv"
-__EXPORT zVec zVecReadFile(char filename[]);
 __EXPORT zVec zVecFRead(FILE *fp);
 #define zVecRead()       zVecFRead( stdin )
 __EXPORT void zVecFWrite(FILE *fp, zVec v);
