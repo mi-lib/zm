@@ -48,19 +48,19 @@ int main(void)
 
   printf( "MP solve (LU)\n" );
   zLESolveMP_LU( a, b, w1, w2, ans );
-  printf( "A: " ); zMatWrite( a );
-  printf( "b: " ); zVecWrite( b );
-  printf( "x: " ); zVecWrite( ans );
+  printf( "A: " ); zMatPrint( a );
+  printf( "b: " ); zVecPrint( b );
+  printf( "x: " ); zVecPrint( ans );
   zMulMatVec( a, ans, b );
-  printf( "A x: " ); zVecWrite( b );
+  printf( "A x: " ); zVecPrint( b );
 
   printf( "MP solve (QR)\n" );
   zLESolveMP( a, b, w1, w2, ans );
-  printf( "A: " ); zMatWrite( a );
-  printf( "b: " ); zVecWrite( b );
-  printf( "x: " ); zVecWrite( ans );
+  printf( "A: " ); zMatPrint( a );
+  printf( "b: " ); zVecPrint( b );
+  printf( "x: " ); zVecPrint( ans );
   zMulMatVec( a, ans, b );
-  printf( "A x: " ); zVecWrite( b );
+  printf( "A x: " ); zVecPrint( b );
 
   return 0;
 }

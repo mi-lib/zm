@@ -147,9 +147,9 @@ __EXPORT double zOptGAReproduce(zOptGA *ga, void *util);
  */
 __EXPORT double zOptGASolve(zOptGA *ga, zVec ans, void *util, int generation);
 
-/*! \brief output a genetic population to a file.
+/*! \brief print a genetic population out to a file.
  */
-__EXPORT void zOptGAFWrite(FILE *fp, zOptGA *ga);
+__EXPORT void zOptGAFPrint(FILE *fp, zOptGA *ga);
 
 __END_DECLS
 

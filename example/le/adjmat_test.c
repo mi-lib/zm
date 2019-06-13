@@ -12,14 +12,14 @@ int main(int argc, char *argv[])
   zMatRandUniform( m, -10, 10 );
   ma = zMatAllocSqr( s );
   testm = zMatAllocSqr( s );
-  printf( "matrix: " ); zMatWrite( m );
+  printf( "matrix: " ); zMatPrint( m );
 
   zMatAdj( m, ma );
-  printf( "adjoint matrix: " ); zMatWrite( ma );
+  printf( "adjoint matrix: " ); zMatPrint( ma );
 
   zMulMatMat( m, ma, testm );
   zMatTouchup( testm );
-  printf( "org x adj: " ); zMatWrite( testm );
+  printf( "org x adj: " ); zMatPrint( testm );
   printf( "det = %.10g\n", zMatDet( m ) );
 
   zMatFree( m );

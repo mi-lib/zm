@@ -14,7 +14,7 @@ bool test_equal(void *d1, void *d2)
   return *(int *)d1 == *(int *)d2;
 }
 
-void test_fwrite(FILE *fp, void *data)
+void test_fprint(FILE *fp, void *data)
 {
   fprintf( fp, "[%d]", *(int *)data );
 }
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
   zGraphInit( &graph );
   graph.dup = test_dup;
   graph.equal = test_equal;
-  graph.fwrite = test_fwrite;
+  graph.fprint = test_fprint;
   graph.destroy = test_destroy;
   /* test graph */
   switch( argc > 1 ? atoi(argv[1]) : 0 ){
@@ -171,13 +171,13 @@ int main(int argc, char *argv[])
   case 3:  cost_a = test3( &graph, &s, &g, &answer ); break;
   default: cost_a = test4( &graph, &s, &g, &answer );
   }
-  zGraphFWrite( stdout, &graph );
+  zGraphFPrint( stdout, &graph );
 
   cost = zGraphDijkstra( &graph, &s, &g, &path );
   printf( ">> path\n" );
   zListForEach( &path, gc ){
     printf( " -> node" );
-    graph.fwrite( stdout, gc->data->data );
+    graph.fprint( stdout, gc->data->data );
     printf( " ... %f\n", gc->data->val );
   }
   printf( "cost = %f\n", cost );

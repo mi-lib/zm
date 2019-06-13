@@ -6,11 +6,11 @@ int main(void)
   zSeqListCell *cp;
   register int i;
 
-  zSeqReadFile( &seq, "test" );
+  zSeqScanFile( &seq, "test" );
   for( i=0; i<zListNum(&seq)+1; i++ ){
     if( !( cp = zSeqJump( &seq, i ) ) ) continue;
     printf( "jump to->%2d : %f ", i, cp->data.dt );
-    zVecWrite( cp->data.v );
+    zVecPrint( cp->data.v );
   }
   zSeqFree( &seq );
   return 0;

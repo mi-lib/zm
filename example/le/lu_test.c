@@ -57,11 +57,11 @@ int main(void)
 
   a = zMatCloneArray( marray, r, c );
   rank = zLUDecompAlloc( a, &l, &u, &index );
-  printf( "L: " ); zMatWrite( l );
-  printf( "U: " ); zMatWrite( u );
-  printf( "A: " ); zMatWrite( a );
+  printf( "L: " ); zMatPrint( l );
+  printf( "U: " ); zMatPrint( u );
+  printf( "A: " ); zMatPrint( a );
   zMulMatMat( l, u, a );
-  printf( "LxU: " ); zMatWrite( a );
+  printf( "LxU: " ); zMatPrint( a );
   printf( "(rank = %d)\n", rank );
 
   zMatFree( a );

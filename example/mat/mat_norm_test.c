@@ -13,7 +13,7 @@ int main(void)
   m = zMatAlloc( N, M );
   v = zVecAlloc( M );
   zMatRandUniform( m, -10, 10 );
-  zMatWrite( m );
+  zMatPrint( m );
   printf( "||m||_2 = %g\n", zMatNorm(m) );
   printf( "||m||_inf = %g\n", zMatInfNorm(m) );
   for( i=0; i<N; i++ ){

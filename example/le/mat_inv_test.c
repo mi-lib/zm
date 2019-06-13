@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
   m1 = zMatAllocSqr( n );
   m2 = zMatAllocSqr( n );
   m  = zMatAllocSqr( n );
-  zMatRand( m1, -10, 10 );
+  zMatRandUniform( m1, -10, 10 );
 
   printf( "m2 = m1^-1\n" );
   c1 = clock();
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
   c2 = clock();
   zMulMatMat( m1, m2, m );
   zMatTouchup( m );
-  zMatWrite( m );
+  zMatPrint( m );
   printf( "err=%g, clk = %ld\n", zMatSqrNorm(m)/n, c2-c1 );
 
   zMatFree( m1 );

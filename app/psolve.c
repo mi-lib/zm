@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
   }
-  if( !( pex = zPexFRead( fp ) ) ){
+  if( !( pex = zPexFScan( fp ) ) ){
     ZALLOCERROR();
     return EXIT_FAILURE;
   }
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
   zPexDKA( pex, ans, zTOL, 0 );
   printf( "Answer(s):\n" );
   for( i=0; i<dim; i++ ){
-    zComplexWrite( &ans[i] );
+    zComplexPrint( &ans[i] );
     zEndl();
   }
   zFree( ans );

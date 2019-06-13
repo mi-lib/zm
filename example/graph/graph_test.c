@@ -14,7 +14,7 @@ bool test_equal(void *d1, void *d2)
   return *(int *)d1 == *(int *)d2;
 }
 
-void test_fwrite(FILE *fp, void *data)
+void test_fprint(FILE *fp, void *data)
 {
   fprintf( fp, "[%d]", *(int *)data );
 }
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
   zGraphInit( &graph );
   graph.dup = test_dup;
   graph.equal = test_equal;
-  graph.fwrite = test_fwrite;
+  graph.fprint = test_fprint;
   graph.destroy = test_destroy;
   val = 1; zGraphAddNode( &graph, &val );
   val = 4; zGraphAddNode( &graph, &val );
@@ -42,10 +42,10 @@ int main(int argc, char *argv[])
   i1 = 1; i2 = 3; zGraphBiconnect( &graph, &i1, &i2, 20 );
   i1 = 2; i2 = 4; zGraphBiconnect( &graph, &i1, &i2, 10 );
   i1 = 3; i2 = 4; zGraphConnect( &graph, &i1, &i2,  5 );
-  zGraphFWrite( stdout, &graph );
+  zGraphFPrint( stdout, &graph );
 
   printf( ">> destroying\n" );
   zGraphDestroy( &graph );
-  zGraphFWrite( stdout, &graph );
+  zGraphFPrint( stdout, &graph );
   return 0;
 }

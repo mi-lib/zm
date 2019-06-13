@@ -13,11 +13,11 @@ int main(void)
   idx = zIndexCreate(N);
   for( i=0; i<N; i++ )
     zVecSetElem( v, i, zRandF(-100,100) );
-  zVecWrite( v );
-  zIndexWrite( idx );
+  zVecPrint( v );
+  zIndexPrint( idx );
   zVecSort( v, idx );
   printf( "+++ sorted. +++\n" );
-  zIndexWrite( idx );
+  zIndexPrint( idx );
   for( i=0; i<N; i++ )
     printf( "%g ", zVecElem(v,zIndexElem(idx,i)) );
   zEndl();

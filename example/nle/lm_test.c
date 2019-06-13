@@ -60,10 +60,10 @@ int main(int argc, char *argv[])
 
   NLESolveLM( var, f1, jac1, zTOL, 0, util );
   printf( " answer  : " );
-  zVecWrite( var );
+  zVecPrint( var );
   f1( var, r, NULL );
   printf( " residual: " );
-  zVecWrite( r );
+  zVecPrint( r );
 
   zNLEDestroy( &nle );
   zVecFree( var );

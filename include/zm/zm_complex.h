@@ -39,9 +39,9 @@ extern const zComplex zcomplexzero;
  */
 __EXPORT zComplex *zComplexCreate(zComplex *c, double r, double i);
 
-/*! \brief create a complex number from a polar expression.
+/*! \brief create a complex number from the polar expression.
  *
- * zComplexPolar() creates a complex number from a polar
+ * zComplexPolar() creates a complex number from the polar
  * expression with radius \a r and argument angle \a t
  * in Gaussian plane, where \a t is given in radians.
  * The result is put where \a c points.
@@ -72,28 +72,27 @@ __EXPORT zComplex *zComplexPolar(zComplex *c, double r, double t);
 /*! \brief test if a complex nubmer is under the default tolerance. */
 #define zComplexIsTiny(c)    zComplexIsTol( c, zTOL )
 
-/*! \brief write a complex number.
+/*! \brief primt a complex number.
  *
- * zComplexFWrite() writes a complex number \a c to
- * the current position of a file \a fp in the following
- * style:
+ * zComplexFPrint() prints a complex number \a c to the
+ * current position of a file \a fp in the following style:
  *  x + y i
  */
-__EXPORT void zComplexFWrite(FILE *fp, zComplex *c);
-/*! \brief write a complex number to the standard output. */
-#define zComplexWrite(c) zComplexFWrite( stdout, (c) )
+__EXPORT void zComplexFPrint(FILE *fp, zComplex *c);
+/*! \brief print a complex number to the standard output. */
+#define zComplexPrint(c) zComplexFPrint( stdout, (c) )
 
-/*! \brief write the coordinates of a complex number.
+/*! \brief print the coordinates of a complex number.
  *
- * zComplexCoordFWrite() writes the coordinates of a
+ * zComplexCoordFPrint() prints the coordinates of a
  * complex number \a c on Gaussian plane to the current
  * position of \a file \a fp in the following style.
  *  x y
  */
-__EXPORT void zComplexCoordFWrite(FILE *fp, zComplex *c);
-/*! \brief writes the coordinates of a complex number
+__EXPORT void zComplexCoordFPrint(FILE *fp, zComplex *c);
+/*! \brief prints the coordinates of a complex number
  * to the standard output. */
-#define zComplexCoordWrite(c) zComplexCoordFWrite( stdout, (c) )
+#define zComplexCoordPrint(c) zComplexCoordFPrint( stdout, (c) )
 
 /*! \} */
 

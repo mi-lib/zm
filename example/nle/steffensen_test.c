@@ -15,13 +15,13 @@ zVec zSSSolveSteffensen(zVec (* f)(zVec,zVec,void*), zVec x, void *util, int ite
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){
     zVecCopyNC( x, f0 );
-zVecWrite(x);
+zVecPrint(x);
     for( j=0; ; j++ ){
       f( f0, f1, util );
-printf("f1: "); zVecWrite(f1); getchar();
+printf("f1: "); zVecPrint(f1); getchar();
       if( j == zVecSizeNC(x) ) break;
-      zRawVecSub( zVecArray(f1), zVecArray(f0), zMatRowArray(dx,j), zVecSizeNC(x) );
-      if( zRawVecIsTiny( zMatRowArray(dx,j), zVecSizeNC(x) ) ){
+      zRawVecSub( zVecBuf(f1), zVecBuf(f0), zMatRowBuf(dx,j), zVecSizeNC(x) );
+      if( zRawVecIsTiny( zMatRowBuf(dx,j), zVecSizeNC(x) ) ){
         zVecCopyNC( f1, x );
         goto TERMINATE;
       }
@@ -32,17 +32,17 @@ printf("f1: "); zVecWrite(f1); getchar();
       goto TERMINATE;
     }
     l = zVecSqrNorm( f1 );
-    for( j=0; j<_zMatRowSize(dx)-1; j++ ){
-      zRawVecSub( zMatRowArray(dx,j+1), zMatRowArray(dx,j), zVecArray(f0), zVecSizeNC(f0) );
-      zMatSetCol( ddx, j, f0 );
-      zMatElem(ddx,j,j) += 1.0;
+    for( j=0; j<zMatRowSizeNC(dx)-1; j++ ){
+      zRawVecSub( zMatRowBuf(dx,j+1), zMatRowBuf(dx,j), zVecBuf(f0), zVecSizeNC(f0) );
+      zMatPutCol( ddx, j, f0 );
+      zMatElemNC(ddx,j,j) += 1.0;
     }
-    zRawVecSubDRC( zVecArray(f1), zMatRowArray(dx,j), zVecSizeNC(f1) );
-    zMatSetCol( ddx, j, f1 );
-    zMatElem(ddx,j,j) += 1.0;
+    zRawVecSubDRC( zVecBuf(f1), zMatRowBuf(dx,j), zVecSizeNC(f1) );
+    zMatPutCol( ddx, j, f1 );
+    zMatElemNC(ddx,j,j) += 1.0;
 
     zMatGetCol( dx, 0, f1 );
-zMatWrite(dx); zMatWrite(ddx); getchar();
+zMatPrint(dx); zMatPrint(ddx); getchar();
     if( !zLESolveGauss( ddx, f1, f0 ) ){
       zVecCopyNC( f1, x );
       continue;
@@ -79,17 +79,17 @@ int main(void)
 
   zVecSetAll( x, 0.1 );
   zSSSolve( f, x, NULL, 0 );
-  zVecWrite( x );
+  zVecPrint( x );
   printf( ">> assertion <<\n" );
   f( x, x, NULL );
-  zVecWrite( x );
+  zVecPrint( x );
 
   zVecSetAll( x, 0.1 );
   zSSSolveSteffensen( f, x, NULL, 0 );
-  zVecWrite( x );
+  zVecPrint( x );
   printf( ">> assertion <<\n" );
   f( x, x, NULL );
-  zVecWrite( x );
+  zVecPrint( x );
 
   zVecFree( x );
   return 0;

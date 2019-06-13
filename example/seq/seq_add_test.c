@@ -13,7 +13,7 @@ int main(void)
     v = zVecCreateList( 1, (double)i );
     zSeqEnqueue( &seq, v, DT );
   }
-  zSeqWriteFile( &seq, "dummy" );
+  zSeqPrintFile( &seq, "dummy" );
   zSeqFree( &seq );
   return 0;
 }

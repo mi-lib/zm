@@ -14,9 +14,7 @@
 /* zero of the complex number */
 const zComplex zcomplexzero = { 0, 0 };
 
-/* zComplexCreate
- * - creation of a complex number.
- */
+/* create a complex number. */
 zComplex *zComplexCreate(zComplex *c, double r, double i)
 {
   c->re = r;
@@ -24,18 +22,14 @@ zComplex *zComplexCreate(zComplex *c, double r, double i)
   return c;
 }
 
-/* zComplexPolar
- * - creation of a complex number from a polar expression.
- */
+/* create a complex number based on the polar expression. */
 zComplex *zComplexPolar(zComplex *c, double r, double t)
 {
   return zComplexCreate( c, r*cos(t), r*sin(t) );
 }
 
-/* zComplexFWrite
- * - output of complex number to file.
- */
-void zComplexFWrite(FILE *fp, zComplex *c)
+/* print a complex number to a file. */
+void zComplexFPrint(FILE *fp, zComplex *c)
 {
   fprintf( fp, "%.10g", c->re );
   if( c->im > 0 )
@@ -44,11 +38,9 @@ void zComplexFWrite(FILE *fp, zComplex *c)
     fprintf( fp, " - %.10g i",-c->im );
 }
 
-/* zComplexCoordFWrite
- * - output of the coordinates of complex number on the
- * Gaussian plane to file.
- */
-void zComplexCoordFWrite(FILE *fp, zComplex *c)
+/* print the coordinates of a complex number on the
+ * Gaussian plane to a file. */
+void zComplexCoordFPrint(FILE *fp, zComplex *c)
 {
   fprintf( fp, "%.10g %.10g", c->re, c->im );
 }

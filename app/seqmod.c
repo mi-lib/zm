@@ -36,7 +36,7 @@ bool seqmodLoadSequence(char *name)
 {
   char buf[BUFSIZ];
 
-  if( !zSeqReadFile( &seq, name ) )
+  if( !zSeqScanFile( &seq, name ) )
     return false;
   zGetBasename( name, buf, BUFSIZ );
   zCutSuffix( buf );
@@ -83,7 +83,7 @@ void seqmodInterpolate(double dt)
   /* output */
   sprintf( filename, "%s.i", seqfile );
   zAddSuffix( filename, ZSEQ_SUFFIX, filename, BUFSIZ );
-  zSeqWriteFile( &ipseq, filename );
+  zSeqPrintFile( &ipseq, filename );
   zSeqFree( &ipseq );
   zIPDestroy( &ip );
 }
@@ -101,7 +101,7 @@ void seqmodReverse(void)
   }
   sprintf( filename, "%s.r", seqfile );
   zAddSuffix( filename, ZSEQ_SUFFIX, filename, BUFSIZ );
-  zSeqWriteFile( &revseq, filename );
+  zSeqPrintFile( &revseq, filename );
   zSeqFree( &revseq );
 }
 
@@ -117,11 +117,11 @@ bool seqmodAppend(zStrList *arglist)
     return false;
   cell = zListCellNext(cell);
   zListToHead( arglist, cell ){
-    if( !zSeqReadFile( &subseq, cell->data ) ) continue;
+    if( !zSeqScanFile( &subseq, cell->data ) ) continue;
     zListAppend( &seq, &subseq );
   }
   sprintf( filename, "%s.a.%s", seqfile, ZSEQ_SUFFIX );
-  zSeqWriteFile( &seq, filename );
+  zSeqPrintFile( &seq, filename );
   return true;
 }
 

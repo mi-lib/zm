@@ -538,10 +538,10 @@ __EXPORT zMat zMatQuad(zMat a, zVec w, zMat q);
 __EXPORT zMat zMatTQuadNC(zMat a, zVec w, zMat q);
 __EXPORT zMat zMatTQuad(zMat a, zVec w, zMat q);
 
-/*! \brief input/output of matrix.
+/*! \brief scan and print a matrix.
  *
- * zMatFRead() reads a 2-dim sequence of double floating-point
- * values from the current position of the file \a fp,
+ * zMatFScan() scans a 2-dim sequence of double floating-point
+ * values from the current position of a file \a fp,
  * and create a new matrix.
  * The format is as follows:
  *  (r, c) {
@@ -554,30 +554,28 @@ __EXPORT zMat zMatTQuad(zMat a, zVec w, zMat q);
  *  }
  * where \a r and \a c are row and column size of matrix respectively.
  *
- * zMatRead() reads a 2-dim sequence of double values according
+ * zMatScan() scans a 2-dim sequence of double values according
  * to the above same format from the standard input.
  *
- * zMatFWrite() writes the contents of the given matrix
- * \a m to the current position of the file 'fp' in the above
- * format.
+ * zMatFPrint() prints a matrix \a m to the current position
+ * of a file \a fp in the above format.
  *
- * zMatWrite() writes the contents of the given matrix \a m
- * to the standard output.
+ * zMatPrint() prints \a m to the standard output.
  *
  * zMatImg() visualizes \a m using one-charactor collage,
  * grading each component into nine groups represented by
  * '@Oo. ,x*M' in the ascent order.
  * This function is particularly for debug.
  * \return
- * zMatFRead() and zMatRead() return a pointer to the newly created
+ * zMatFScan() and zMatScan() return a pointer to the newly created
  * matrix.
  *
- * zMatFWrite() and zMatWrite() return no values.
+ * zMatFPrint() and zMatPrint() return no values.
  */
-__EXPORT zMat zMatFRead(FILE *fp);
-__EXPORT void zMatFWrite(FILE *fp, zMat m);
-#define zMatRead()   zMatFRead( stdin )
-#define zMatWrite(m) zMatFWrite( stdout, (m) )
+__EXPORT zMat zMatFScan(FILE *fp);
+__EXPORT void zMatFPrint(FILE *fp, zMat m);
+#define zMatScan()   zMatFScan( stdin )
+#define zMatPrint(m) zMatFPrint( stdout, (m) )
 __EXPORT void zMatImg(zMat m);
 
 __END_DECLS

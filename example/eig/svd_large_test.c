@@ -16,11 +16,11 @@ int main(void)
 
   zRandInit();
   zMatRandUniform( ma, -10, 10 );
-  zMatWrite( ma );
+  zMatPrint( ma );
   rank = zSVD( ma, sv, u, v );
-  zVecWrite( sv );
-  zMatWrite( u );
-  zMatWrite( v );
+  zVecPrint( sv );
+  zMatPrint( u );
+  zMatPrint( v );
 
   printf( ">>ensurance\n" );
   l = zMatAlloc( ROW, rank );

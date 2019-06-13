@@ -16,13 +16,13 @@ int main(void)
   zPexModulo( p1, a, p2 );
   zPexExprX( p1 );
   printf( "modulo: x%c%f\n", a>0?'+':'-', fabs(a) );
-  zVecWrite( p2 );
+  zVecPrint( p2 );
 
   zComplexCreate( &arg, -a, 0 );
   zPexCVal( p1, &arg, &c );
   printf( "check: P(-a) = " );
-  zComplexWrite( &c );
-  printf( " = %g\n", zPexCoeff(p2,0) );
+  zComplexPrint( &c );
+  printf( " = %.10g\n", zPexCoeff(p2,0) );
 
   zPexFree( p1 );
   zPexFree( p2 );

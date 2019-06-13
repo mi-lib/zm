@@ -241,18 +241,18 @@ __EXPORT void zRawMatAddDyad(double *m, double *v1, int size1, double *v2, int s
 __EXPORT void zRawMatSubDyad(double *m, double *v1, int size1, double *v2, int size2);
 __EXPORT void zRawMatCatDyad(double *m, double k, double *v1, int size1, double *v2, int size2);
 
-/*! \brief output a raw matrix.
+/*! \brief print a raw matrix.
  *
- * zRawMatFWrite() outputs all components of a raw matrix
- * \a m to the current position of a file \a fp.
- * The size of \a m is specified as \a row x \a col.
- * zRawMatWrite() outputs all components of \a m to the
- * standard output.
+ * zRawMatFPrint() prints a raw matrix \a m to the current
+ * position of a file \a fp. The size of \a m is specified
+ * as \a row x \a col.
+ *
+ * zRawMatPrint() prints \a m out to the standard output.
  * \return
  * These functions return no value.
  */
-__EXPORT void zRawMatFWrite(FILE *fp, double *m, int row, int col);
-#define zRawMatWrite(m,r,c) zRawMatFWrite( stdout, m, r, c )
+__EXPORT void zRawMatFPrint(FILE *fp, double *m, int row, int col);
+#define zRawMatPrint(m,r,c) zRawMatFPrint( stdout, m, r, c )
 
 __END_DECLS
 

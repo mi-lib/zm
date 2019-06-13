@@ -12,9 +12,7 @@
  * NOTES: each element of matrix(size=r*c) is at (0 - r-1,0 - c-1).
  * ********************************************************** */
 
-/* zCMatAlloc
- * - allocate matrix.
- */
+/* allocate a complex matrix. */
 zCMat zCMatAlloc(int row, int col)
 {
   zCMat m;
@@ -32,9 +30,7 @@ zCMat zCMatAlloc(int row, int col)
   return m;
 }
 
-/* zCMatFree
- * - free matrix.
- */
+/* free a complex matrix. */
 void zCMatFree(zCMat m)
 {
   if( m ){
@@ -43,9 +39,7 @@ void zCMatFree(zCMat m)
   }
 }
 
-/* zCMatClear
- * - cleanup matrix.
- */
+/* clear a complex matrix. */
 zCMat zCMatClear(zCMat m)
 {
   register int i, n;
@@ -56,9 +50,7 @@ zCMat zCMatClear(zCMat m)
   return m;
 }
 
-/* zCMatCopyNC
- * - copy matrix without checking size consistency.
- */
+/* copy a complex matrix to another without checking size consistency. */
 zCMat zCMatCopyNC(zCMat src, zCMat dest)
 {
   register int i, n;
@@ -69,9 +61,7 @@ zCMat zCMatCopyNC(zCMat src, zCMat dest)
   return dest;
 }
 
-/* zCMatCopy
- * - copy matrix.
- */
+/* copy a complex matrix. */
 zCMat zCMatCopy(zCMat src, zCMat dest)
 {
   if( !zCMatSizeIsEqual( src, dest ) ){
@@ -81,9 +71,7 @@ zCMat zCMatCopy(zCMat src, zCMat dest)
   return zCMatCopyNC( src, dest );
 }
 
-/* zCMatClone
- * - clone matrix.
- */
+/* clone a complex matrix. */
 zCMat zCMatClone(zCMat src)
 {
   zCMat dest;
@@ -93,9 +81,7 @@ zCMat zCMatClone(zCMat src)
   return dest;
 }
 
-/* zMat2CMat
- * - convert real matrix to complex matrix.
- */
+/* convert a real matrix to a complex matrix. */
 zCMat zMat2CMat(zMat m, zCMat cm)
 {
   register int i, n;
@@ -106,9 +92,7 @@ zCMat zMat2CMat(zMat m, zCMat cm)
   return cm;
 }
 
-/* zCMatIsTol
- * - test for tiny matrix.
- */
+/* check if a complex matrix is tiny. */
 bool zCMatIsTol(zCMat m, double tol)
 {
   register int i, n;
@@ -119,9 +103,7 @@ bool zCMatIsTol(zCMat m, double tol)
   return true;
 }
 
-/* zCMatAddNC
- * - add matrix without checking size consistency.
- */
+/* add two complex matrices without checking size consistency. */
 zCMat zCMatAddNC(zCMat m1, zCMat m2, zCMat m)
 {
   register int i, n;
@@ -132,9 +114,8 @@ zCMat zCMatAddNC(zCMat m1, zCMat m2, zCMat m)
   return m;
 }
 
-/* zCMatSubNC
- * - subtract matrix without checking size consistency.
- */
+/* subtract a complex matrix from another
+ * without checking size consistency. */
 zCMat zCMatSubNC(zCMat m1, zCMat m2, zCMat m)
 {
   register int i, n;
@@ -145,9 +126,7 @@ zCMat zCMatSubNC(zCMat m1, zCMat m2, zCMat m)
   return m;
 }
 
-/* zCMatRevNC
- * - reverse matrix without checking size consistency.
- */
+/* reverse a complex matrix without checking size consistency. */
 zCMat zCMatRevNC(zCMat m1, zCMat m)
 {
   register int i, n;
@@ -158,9 +137,8 @@ zCMat zCMatRevNC(zCMat m1, zCMat m)
   return m;
 }
 
-/* zCMatMulNC
- * - multiply matrix without checking size consistency.
- */
+/* multiply a complex matrix by a complex scalar
+ * without checking size consistency. */
 zCMat zCMatMulNC(zCMat m1, zComplex *z, zCMat m)
 {
   register int i, n;
@@ -171,9 +149,8 @@ zCMat zCMatMulNC(zCMat m1, zComplex *z, zCMat m)
   return m;
 }
 
-/* zCMatDivNC
- * - divide matrix without checking size consistency.
- */
+/* divide a complex matrix by a complex scalar
+ * without checking size consistency. */
 zCMat zCMatDivNC(zCMat m1, zComplex *z, zCMat m)
 {
   register int i, n;
@@ -189,9 +166,7 @@ zCMat zCMatDivNC(zCMat m1, zComplex *z, zCMat m)
   return m;
 }
 
-/* zCMatAdd
- * - add matrix.
- */
+/* add two complex matrices. */
 zCMat zCMatAdd(zCMat m1, zCMat m2, zCMat m)
 {
   if( !zCMatSizeIsEqual(m1,m2) || !zCMatSizeIsEqual(m1,m) ){
@@ -201,9 +176,7 @@ zCMat zCMatAdd(zCMat m1, zCMat m2, zCMat m)
   return zCMatAddNC( m1, m2, m );
 }
 
-/* zCMatSub
- * - substraction of matrix.
- */
+/* substract a complex matrix from another. */
 zCMat zCMatSub(zCMat m1, zCMat m2, zCMat m)
 {
   if( !zCMatSizeIsEqual(m1,m2) || !zCMatSizeIsEqual(m1,m) ){
@@ -213,9 +186,7 @@ zCMat zCMatSub(zCMat m1, zCMat m2, zCMat m)
   return zCMatSubNC( m1, m2, m );
 }
 
-/* zCMatRev
- * - reverse matrix.
- */
+/* reverse a complex matrix. */
 zCMat zCMatRev(zCMat m1, zCMat m)
 {
   if( !zCMatSizeIsEqual(m1,m) ){
@@ -225,9 +196,7 @@ zCMat zCMatRev(zCMat m1, zCMat m)
   return zCMatRevNC( m1, m );
 }
 
-/* zCMatMul
- * - multiply matrix.
- */
+/* multiply a complex matrix by a complex scalar. */
 zCMat zCMatMul(zCMat m1, zComplex *z, zCMat m)
 {
   if( !zCMatSizeIsEqual(m1,m) ){
@@ -237,9 +206,7 @@ zCMat zCMatMul(zCMat m1, zComplex *z, zCMat m)
   return zCMatMulNC( m1, z, m );
 }
 
-/* zCMatDiv
- * - divide matrix.
- */
+/* divide a complex matrix by a complex scalar. */
 zCMat zCMatDiv(zCMat m1, zComplex *z, zCMat m)
 {
   if( !zCMatSizeIsEqual(m1,m) ){
@@ -253,10 +220,8 @@ zCMat zCMatDiv(zCMat m1, zComplex *z, zCMat m)
   return zCMatDivNC( m1, z, m );
 }
 
-/* zCMulMatVecNC
- * - multiply a matrix and a column vector without
- *   checking size consistency.
- */
+/* multiply a complex matrix and a complex column vector
+ * without checking size consistency. */
 zCVec zCMulMatVecNC(zCMat m, zCVec v1, zCVec v)
 {
   register int i, j;
@@ -273,9 +238,7 @@ zCVec zCMulMatVecNC(zCMat m, zCVec v1, zCVec v)
   return v;
 }
 
-/* zCMulMatVec
- * - multiply a matrix and a column vector.
- */
+/* multiply a complex matrix and a complex column vector. */
 zCVec zCMulMatVec(zCMat m, zCVec v1, zCVec v)
 {
   if( zCMatColSize(m) != zCVecSize(v1) ||
@@ -286,10 +249,8 @@ zCVec zCMulMatVec(zCMat m, zCVec v1, zCVec v)
   return zCMulMatVecNC( m, v1, v );
 }
 
-/* zCMatFWrite
- * - output of matrix to file.
- */
-void zCMatFWrite(FILE *fp, zCMat m)
+/* print a complex matrix out to a file. */
+void zCMatFPrint(FILE *fp, zCMat m)
 {
   register int i, j;
 
@@ -300,7 +261,7 @@ void zCMatFWrite(FILE *fp, zCMat m)
       _zCMatRowSize(m), _zCMatColSize(m) );
     for( i=0; i<_zCMatRowSize(m); i++ ){
       for( j=0; j<_zCMatColSize(m); j++ ){
-        zComplexFWrite( fp, zCMatElem(m,i,j) );
+        zComplexFPrint( fp, zCMatElem(m,i,j) );
         fprintf( fp, ", " );
       }
       fprintf( fp, "\n" );

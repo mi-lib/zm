@@ -95,15 +95,15 @@ int main(void)
   c = zVecCloneArray( carray, d );
   a = zMatCloneArray( aarray, dc, d );
   b = zVecCloneArray( barray, dc );
-  zMatWrite( q );
-  zVecWrite( c );
-  zMatWrite( a );
-  zVecWrite( b );
-  printf( "true ans =\n%d | ", sizeof(ans)/sizeof(double) );
-  zRawVecWrite( ans, sizeof(ans)/sizeof(double) );
+  zMatPrint( q );
+  zVecPrint( c );
+  zMatPrint( a );
+  zVecPrint( b );
+  printf( "true ans =\n%ld | ", sizeof(ans)/sizeof(double) );
+  zRawVecPrint( ans, sizeof(ans)/sizeof(double) );
   printf( "\n*** result ***\n" );
   zQPSolveIP( q, c, a, b, x, &cost );
   printf( "\nresult = %f\n", cost );
-  zVecWrite( x );
+  zVecPrint( x );
   return 0;
 }

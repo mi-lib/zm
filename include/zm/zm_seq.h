@@ -68,45 +68,44 @@ __EXPORT zSeqListCell *zSeqDequeue(zSeq *seq);
  */
 __EXPORT zSeqListCell *zSeqJump(zSeq *seq, int step);
 
-/*! \brief input/output a sequence to a file.
+/*! \brief scan and print a sequence to a file.
  *
- * zSeqReadFile() reads the file named \a filename or \a filename.zvs
- * and creates a sequence \a seq.
+ * These functions scan/print a sequence from/to a file.
  * The format written in ASCII charactors is as follows.
  *   DT DIM v0_1 v0_2 v0_3 ... v0_DIM
  *   ...
  *   DT DIM vN_1 vN_2 vN_3 ... vN_DIM
  *
- * zSeqFRead() reads the sequence from the current position
- * of the file \a fp and puts it into the sequence pointed by
- * \a seq. zSeqRead() simply reads the sequence from the
- * standard input.
+ * zSeqScanFile() scans a file named \a filename or \a filename.zvs
+ * and creates a sequence \a seq.
+ * zSeqFScan() scans a sequence from the current position
+ * of a file \a fp and puts it into a sequence pointed by
+ * \a seq. zSeqScan() scans a sequence from the standard
+ * input.
  *
- * zSeqWriteFile() writes a sequence \a seq to the file named
- * \a filename or \a filename.zvs.
- * The format is the same with one for zSeqReadFile().
- *
- * zSeqFWrite() writes a sequence \a seq to the current
- * position of the file \a fp in the same rule of the format
- * with zSeqFRead().
- *
- * zSeqWrite() writes the sequence to the standard output.
+ * zSeqPrintFile() prints a sequence \a seq out to a file
+ * named \a filename or \a filename.zvs.
+ * zSeqFPrint() prints a sequence \a seq out to the current
+ * position of a file \a fp.
+ * zSeqPrint() prints a sequence out to the standard output.
  * \return
- * zSeqReadFile() and zSeqWriteFile() return the true value
+ * zSeqScanFile() and zSeqPrintFile() return the true value
  * if succeeds, or the false value otherwise.
  *
- * Other zSeqRead() family functions return a pointer to \a seq
- * if succeeds, or the null pointer otherwise. Other functions
- * of zSeqWrite() family return no values.
+ * zSeqFScan() and zSeqScan() return a pointer to \a seq if
+ * succeeds, or the null pointer otherwise.
+ *
+ * zSeqPrintFile(), zSeqFPrint() and zSeqPrint() return no
+ * values.
  */
 #define ZSEQ_SUFFIX "zvs"
-__EXPORT bool zSeqReadFile(zSeq *seq, char filename[]);
-__EXPORT zSeq *zSeqFRead(FILE *fp, zSeq *seq);
-#define zSeqRead(s)  zSeqFRead( stdin, (s) )
+__EXPORT bool zSeqScanFile(zSeq *seq, char filename[]);
+__EXPORT zSeq *zSeqFScan(FILE *fp, zSeq *seq);
+#define zSeqScan(s)  zSeqFScan( stdin, (s) )
 
-__EXPORT bool zSeqWriteFile(zSeq *seq, char filename[]);
-__EXPORT void zSeqFWrite(FILE *fp, zSeq *seq);
-#define zSeqWrite(s) zSeqFWrite( stdout, (s) )
+__EXPORT bool zSeqPrintFile(zSeq *seq, char filename[]);
+__EXPORT void zSeqFPrint(FILE *fp, zSeq *seq);
+#define zSeqPrint(s) zSeqFPrint( stdout, (s) )
 
 __END_DECLS
 

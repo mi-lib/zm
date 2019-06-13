@@ -38,19 +38,19 @@ int main(void)
   x = zVecAlloc( s );
   index = zIndexCreate( s );
 
-  zMatWrite( a );
-  zVecWrite( b );
+  zMatPrint( a );
+  zVecPrint( b );
 
   printf( "LU decomposition method.\n" );
   zLUDecomp( a, l, u, index );
-  zMatWrite( l );
-  zMatWrite( u );
+  zMatPrint( l );
+  zMatPrint( u );
   zLESolveLU( a, b, x );
-  zVecWrite( x );
+  zVecPrint( x );
 
   printf( "Gauss's elimination method.\n" );
   zLESolveGauss( a, b, x );
-  zVecWrite( x );
+  zVecPrint( x );
 
   zMatFree( a );
   zMatFree( l );

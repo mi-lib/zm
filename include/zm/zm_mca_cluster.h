@@ -28,9 +28,9 @@ __EXPORT zCluster *zClusterCreate(zCluster *c, int meansize);
 /*! \brief destroy a vector cluster */
 __EXPORT void zClusterDestroy(zCluster *c);
 
-/*! \brief output a vector cluster to a file */
-__EXPORT void zClusterFWrite(FILE *fp, zCluster *c);
-__EXPORT void zClusterDataFWrite(FILE *fp, zCluster *c);
+/*! \brief print a vector cluster to a file */
+__EXPORT void zClusterFPrint(FILE *fp, zCluster *c);
+__EXPORT void zClusterDataFPrint(FILE *fp, zCluster *c);
 
 /* ********************************************************** */
 /*! \brief methods for mean and error computation
@@ -75,10 +75,10 @@ __EXPORT zMCluster *zMClusterAlloc(zMCluster *mc, int n);
 /*! \brief destroy a set of vector clusters */
 __EXPORT void zMClusterDestroy(zMCluster *mc);
 
-/*! \brief output vectors in a set of vector clusters */
-__EXPORT void zMClusterFWrite(FILE *fp, zMCluster *mc);
-__EXPORT void zMClusterDataFWrite(FILE *fp[], zMCluster *mc);
-__EXPORT void zMClusterMeanFWrite(FILE *fp[], zMCluster *mc);
+/*! \brief print vectors in a set of vector clusters */
+__EXPORT void zMClusterFPrint(FILE *fp, zMCluster *mc);
+__EXPORT void zMClusterDataFPrint(FILE *fp[], zMCluster *mc);
+__EXPORT void zMClusterMeanFPrint(FILE *fp[], zMCluster *mc);
 
 /* ********************************************************** */
 /*! \brief clustering based on K-means family

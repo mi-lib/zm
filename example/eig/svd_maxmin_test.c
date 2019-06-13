@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   printf( "minimum singular value = %.10g\n", zSVMin( m ) );
 
   rank = zSVD( m, sv, u, v );
-  zVecWrite( sv );
+  zVecPrint( sv );
 
   printf( ">>ensurance\n" );
   l = zMatAlloc( N, rank );

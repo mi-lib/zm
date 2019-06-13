@@ -50,24 +50,24 @@ int main(void)
   x1 = zVecAlloc( COL );
   x2 = zVecAlloc( COL );
 
-  zMatWrite( a );
-  zVecWrite( b );
-  zVecWrite( we );
+  zMatPrint( a );
+  zVecPrint( b );
+  zVecPrint( we );
   for( v=1; v>0.0000000001; v*=0.1 ){
     set_weight( wn, v );
     MEASURE_EXEC_CLOCK( &clk, zLESolveSR( a, b, wn, we, x1 ) );
     printf( "(direct solution) ... %ld\n", clk );
-    zVecWrite( x1 );
+    zVecPrint( x1 );
 
     MEASURE_EXEC_CLOCK( &clk, zLESolveSRCG( a, b, wn, we, x2 ) );
     printf( "(indirect solution with CG method) ... %ld\n", clk );
-    zVecWrite( x2 );
+    zVecPrint( x2 );
 
     if( zVecDist( x1, x2 ) > zTOL )
       ZRUNWARN( "possibly a bug inside of zLESolveSR" );
     getchar();
   }
   zLESolveNormMin( a, b, wn, x1 );
-  zVecWrite( x1 );
+  zVecPrint( x1 );
   return 0;
 }

@@ -5,13 +5,13 @@ void test(zMat m, zVec eig, zMat r, int n)
   register int i;
   zVec e, ev;
 
-  e = zVecAlloc( _zMatRowSize(m) );
-  ev= zVecAlloc( _zMatRowSize(r) );
+  e = zVecAlloc( zMatRowSizeNC(m) );
+  ev= zVecAlloc( zMatRowSizeNC(r) );
   for( i=0; i<zVecSizeNC(eig); i++ ){
     zMatGetCol( r, i, ev );
     printf( "eig#%d:\n", i );
     printf( " eig-value = %g\n", zVecElem(eig,i) );
-    printf( " eig-vec   = " ); zVecWrite(ev);
+    printf( " eig-vec   = " ); zVecPrint(ev);
     zMulMatVec( m, ev, e );
     zVecCatDRC( e, -zVecElem(eig,i), ev );
     printf( " err = %g\n", zVecNorm(e) );
@@ -39,7 +39,7 @@ int main(void)
   eig = zVecAlloc( N );
 
   printf( "original matrix\n" );
-  zMatWrite( m );
+  zMatPrint( m );
 
   zEigSymJacobi( m, eig, r );
   test( m, eig, r, N );

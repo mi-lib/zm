@@ -102,13 +102,13 @@ int main(void)
   z = zVecAlloc( d );
   m = zMatCloneArray( marray, d, d );
   q = zVecCloneArray( qarray, d );
-  zMatWrite( m );
-  zVecWrite( q );
-  printf( "true ans =\n%d ( ", sizeof(ans)/sizeof(double) );
-  zRawVecWrite( ans, sizeof(ans)/sizeof(double) );
+  zMatPrint( m );
+  zVecPrint( q );
+  printf( "true ans =\n%ld ( ", sizeof(ans)/sizeof(double) );
+  zRawVecPrint( ans, sizeof(ans)/sizeof(double) );
   printf( "\n*** result ***\n" );
   zLCPSolveIP( m, q, NULL, z );
-  zVecWrite( z );
+  zVecPrint( z );
   zMatFree( m );
   zVecFree( q );
   return 0;

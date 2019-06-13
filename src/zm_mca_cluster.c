@@ -11,9 +11,7 @@
 /* vector cluster class.
  * ********************************************************** */
 
-/* zClusterCreate
- * - create and initialize a vector cluster.
- */
+/* create and initialize a vector cluster. */
 zCluster *zClusterCreate(zCluster *c, int meansize)
 {
   zListInit( &c->vl );
@@ -25,19 +23,15 @@ zCluster *zClusterCreate(zCluster *c, int meansize)
   return c;
 }
 
-/* zClusterDestroy
- * - destroy a vector cluster.
- */
+/* destroy a vector cluster. */
 void zClusterDestroy(zCluster *c)
 {
   zVecListDestroy( &c->vl, false );
   zVecFree( c->mean );
 }
 
-/* zClusterFWrite
- * - output a vector cluster to a file.
- */
-void zClusterFWrite(FILE *fp, zCluster *c)
+/* print a vector cluster to a file. */
+void zClusterFPrint(FILE *fp, zCluster *c)
 {
   register int i = 0;
   zVecListCell *vc;
@@ -45,18 +39,16 @@ void zClusterFWrite(FILE *fp, zCluster *c)
   fprintf( fp, "%d members\n", zListNum(&c->vl) );
   zListForEach( &c->vl, vc ){
     fprintf( fp, " %d: ", i++ );
-    zVecFWrite( fp, vc->data );
+    zVecFPrint( fp, vc->data );
   }
   fprintf( fp, " mean: " );
-  zVecFWrite( fp, c->mean );
+  zVecFPrint( fp, c->mean );
 }
 
-/* zClusterFWrite
- * - output data of vectors of a vector cluster to a file.
- */
-void zClusterDataFWrite(FILE *fp, zCluster *c)
+/* print data of vectors of a vector cluster to a file. */
+void zClusterDataFPrint(FILE *fp, zCluster *c)
 {
-  zVecListFWrite( fp, &c->vl );
+  zVecListFPrint( fp, &c->vl );
 }
 
 /* ********************************************************** */
@@ -68,27 +60,21 @@ static zVec _zClusterMeanDefault(zVecList *pl, void *dummy, zVec mean);
 static zVec _zClusterMeanLoadedDefault(zVecList *pl, double load[], double n, void *dummy, zVec mean);
 
 /* (static)
- * _zClusterErrorDefault
- * - a default error function for clustering.
- */
+ * a default error function for clustering. */
 zVec _zClusterErrorDefault(zVec p, zVec mean, void *dummy, zVec err)
 {
   return zVecSub( p, mean, err );
 }
 
 /* (static)
- * _zClusterMeanDefault
- * - a default mean computation function for clustering.
- */
+ * a default mean computation function for clustering. */
 zVec _zClusterMeanDefault(zVecList *pl, void *dummy, zVec mean)
 {
   return zVecListAve( pl, mean );
 }
 
 /* (static)
- * _zClusterMeanLoadedDefault
- * - a default loaded mean computation function for clustering.
- */
+ * a default loaded mean computation function for clustering. */
 zVec _zClusterMeanLoadedDefault(zVecList *pl, double load[], double n, void *dummy, zVec mean)
 {
   zVecListCell *vc;
@@ -102,9 +88,7 @@ zVec _zClusterMeanLoadedDefault(zVecList *pl, double load[], double n, void *dum
   return zVecDivDRC( mean, n );
 }
 
-/* zClusterMethodInit
- * - initialize methods for clustering.
- */
+/* initialize methods for clustering. */
 void zClusterMethodInit(zClusterMethod *met)
 {
   met->_meansize = 0;
@@ -116,9 +100,7 @@ void zClusterMethodInit(zClusterMethod *met)
   met->_err_l = NULL;
 }
 
-/* zClusterMethodCreate
- * - create methods for clustering.
- */
+/* create methods for clustering. */
 zClusterMethod *zClusterMethodCreate(zClusterMethod *met, int meansize, zVec (* mean_fp)(zVecList*,void*,zVec), int errorsize, zVec (* error_fp)(zVec,zVec,void*,zVec))
 {
   zClusterMethodInit( met );
@@ -133,9 +115,7 @@ zClusterMethod *zClusterMethodCreate(zClusterMethod *met, int meansize, zVec (* 
   return met;
 }
 
-/* zClusterMethodCreateMeanLoaded
- * - assign a loaded mean computation function.
- */
+/* assign a loaded mean computation function. */
 zClusterMethod *zClusterMethodLoadedCreate(zClusterMethod *met, zVec (* mean_l_fp)(zVecList*,double[],double,void*,zVec))
 {
   if( met->_mean_fp == NULL ){
@@ -150,9 +130,7 @@ zClusterMethod *zClusterMethodLoadedCreate(zClusterMethod *met, zVec (* mean_l_f
   return met;
 }
 
-/* zClusterMethodDestroy
- * - destroy methods for clustering.
- */
+/* destroy methods for clustering. */
 void zClusterMethodDestroy(zClusterMethod *met)
 {
   zVecFree( met->_err );
@@ -163,18 +141,14 @@ void zClusterMethodDestroy(zClusterMethod *met)
 /* multiple vecter clusters class.
  * ********************************************************** */
 
-/* zMClusterInit
- * - initialize multiple vector clusters.
- */
+/* initialize multiple vector clusters. */
 zMCluster *zMClusterInit(zMCluster *mc, int meansize, zVec (* mean_fp)(zVecList*,void*,zVec), int errorsize, zVec (* error_fp)(zVec,zVec,void*,zVec))
 {
   zListInit( &mc->cl );
   return zClusterMethodCreate( &mc->met, meansize, mean_fp, errorsize, error_fp ) != NULL ? mc : NULL;
 }
 
-/* zMClusterAlloc
- * - allocate multiple vector clusters.
- */
+/* allocate multiple vector clusters. */
 zMCluster *zMClusterAlloc(zMCluster *mc, int n)
 {
   zClusterListCell *cc;
@@ -200,9 +174,7 @@ zMCluster *zMClusterAlloc(zMCluster *mc, int n)
   return NULL;
 }
 
-/* zMClusterDestroy
- * - destroy multiple vector clusters.
- */
+/* destroy multiple vector clusters. */
 void zMClusterDestroy(zMCluster *mc)
 {
   zClusterListCell *cc;
@@ -215,42 +187,36 @@ void zMClusterDestroy(zMCluster *mc)
   zClusterMethodDestroy( &mc->met );
 }
 
-/* zMClusterFWrite
- * - output multiple vector clusters to a file.
- */
-void zMClusterFWrite(FILE *fp, zMCluster *mc)
+/* print multiple vector clusters to a file. */
+void zMClusterFPrint(FILE *fp, zMCluster *mc)
 {
   register int i = 0;
   zClusterListCell *cc;
 
   zListForEach( &mc->cl, cc ){
     fprintf( fp, "#cluster[%d] : ", i++ );
-    zClusterFWrite( fp, &cc->data );
+    zClusterFPrint( fp, &cc->data );
   }
 }
 
-/* zMClusterDataFWrite
- * - output data of multiple vector clusters to files.
- */
-void zMClusterDataFWrite(FILE *fp[], zMCluster *mc)
+/* print data of multiple vector clusters to files. */
+void zMClusterDataFPrint(FILE *fp[], zMCluster *mc)
 {
   zClusterListCell *cc;
   int i = 0;
 
   zListForEach( &mc->cl, cc )
-    zClusterDataFWrite( fp[i++], &cc->data );
+    zClusterDataFPrint( fp[i++], &cc->data );
 }
 
-/* zMClusterMeanFWrite
- * - output means of each cluster of multiple vector clusters to files.
- */
-void zMClusterMeanFWrite(FILE *fp[], zMCluster *mc)
+/* print means of each cluster of multiple vector clusters to files. */
+void zMClusterMeanFPrint(FILE *fp[], zMCluster *mc)
 {
   zClusterListCell *cc;
   int i = 0;
 
   zListForEach( &mc->cl, cc )
-    zVecDataFWrite( fp[i++], cc->data.mean );
+    zVecDataFPrint( fp[i++], cc->data.mean );
 }
 
 /* ********************************************************** */
@@ -263,8 +229,8 @@ void zMClusterMeanFWrite(FILE *fp[], zMCluster *mc)
 
 #if DEBUG
 /* for debug */
-static void _zMClusterKMeansDataWriteFile(zMCluster *mc, int step);
-void _zMClusterKMeansDataWriteFile(zMCluster *mc, int step)
+static void _zMClusterKMeansDataPrintFile(zMCluster *mc, int step);
+void _zMClusterKMeansDataPrintFile(zMCluster *mc, int step)
 {
   FILE *fp;
   char filename[BUFSIZ];
@@ -275,11 +241,11 @@ void _zMClusterKMeansDataWriteFile(zMCluster *mc, int step)
   zListForEach( &mc->cl, cc ){
     sprintf( filename, "%d_%d", step, i );
     fp = fopen( filename, "w" );
-    zClusterDataFWrite( fp, &cc->data );
+    zClusterDataFPrint( fp, &cc->data );
     fclose( fp );
     sprintf( filename, "%d_%dm", step, i );
     fp = fopen( filename, "w" );
-    zVecDataFWrite( fp, cc->data.mean );
+    zVecDataFPrint( fp, cc->data.mean );
     fclose( fp );
   }
 }
@@ -290,9 +256,7 @@ static void _zMClusterKMeansInit(zMCluster *mc, zVecList *points);
 static int _zMClusterKMeansRecluster(zMCluster *mc, void *mean_util, void *err_util);
 
 /* (static)
- * _zMClusterVar
- * - compute variance of a vector cluster.
- */
+ * compute variance of a vector cluster. */
 double _zMClusterVar(zCluster *c, zMCluster *mc, void *err_util)
 {
   zVecListCell *pc;
@@ -306,9 +270,7 @@ double _zMClusterVar(zCluster *c, zMCluster *mc, void *err_util)
 }
 
 /* (static)
- * _zMClusterKMeansInit
- * - arrange initial candidates of clusters.
- */
+ * arrange initial candidates of clusters. */
 void _zMClusterKMeansInit(zMCluster *mc, zVecList *points)
 {
   zClusterListCell *cc, *ccnn;
@@ -365,9 +327,7 @@ void _zMClusterKMeansInit(zMCluster *mc, zVecList *points)
 }
 
 /* (static)
- * _zMClusterKMeansRecluster
- * - recluster tentative clusters.
- */
+ * recluster tentative clusters. */
 int _zMClusterKMeansRecluster(zMCluster *mc, void *mean_util, void *err_util)
 {
   zClusterListCell *cc1, *cc2, *cc;
@@ -415,9 +375,7 @@ int _zMClusterKMeansRecluster(zMCluster *mc, void *mean_util, void *err_util)
   return iter;
 }
 
-/* zMClusterKMeans
- * - clustering of vectors by K-means.
- */
+/* clustering of vectors by K-means. */
 int zMClusterKMeans(zMCluster *mc, zVecList *points, int k, void *mean_util, void *err_util)
 {
   if( zMClusterAlloc( mc, k ) == NULL ) return -1;
@@ -443,9 +401,7 @@ static bool _zMClusterXMeansBICTest(zMCluster *mc, zCluster *c, zMCluster *submc
 static int _zMClusterXMeansBIC(zMCluster *mc, zClusterListCell *cc, void *mean_util, void *err_util);
 
 /* (static)
- * _zMClusterMerge
- * - merge subclusters with original.
- */
+ * merge subclusters with original. */
 void _zMClusterMerge(zMCluster *mc, zClusterListCell *vc, zMCluster *submc)
 {
   zClusterListCell *prev, *next;
@@ -462,9 +418,7 @@ void _zMClusterMerge(zMCluster *mc, zClusterListCell *vc, zMCluster *submc)
 }
 
 /* (static)
- * _zMClusterXMeansInit
- * - initialize clusters for X-means.
- */
+ * initialize clusters for X-means. */
 void _zMClusterXMeansInit(zMCluster *mc, zVecList *points, void *mean_util, void *err_util)
 {
   zClusterListCell *vc;
@@ -480,9 +434,7 @@ void _zMClusterXMeansInit(zMCluster *mc, zVecList *points, void *mean_util, void
 }
 
 /* (static)
- * _zClusterMaxError
- * - find maximum error in a cluster from mean.
- */
+ * find maximum error in a cluster from the mean value. */
 double _zClusterMaxError(zCluster *c, zVec (* error_fp)(zVec,zVec,void*,zVec), void *err_util, zVec err)
 {
   zVecListCell *vc;
@@ -496,9 +448,7 @@ double _zClusterMaxError(zCluster *c, zVec (* error_fp)(zVec,zVec,void*,zVec), v
 }
 
 /* (static)
- * _zMClusterXMeansTest
- * - test if the subclusters better classify the original cluster.
- */
+ * test if the subclusters better classify the original cluster. */
 bool _zMClusterXMeansTest(zMCluster *mc, zCluster *org, zMCluster *submc, void *err_util)
 {
   zCluster *c1, *c2;
@@ -523,9 +473,7 @@ bool _zMClusterXMeansTest(zMCluster *mc, zCluster *org, zMCluster *submc, void *
 }
 
 /* (static)
- * _zMClusterXMeans
- * - cluster vectors by X-means in a recursive way based on filling rate.
- */
+ * cluster vectors by X-means in a recursive way based on filling rate. */
 int _zMClusterXMeans(zMCluster *mc, zClusterListCell *cc, void *mean_util, void *err_util)
 {
   zMCluster submc;
@@ -548,9 +496,7 @@ int _zMClusterXMeans(zMCluster *mc, zClusterListCell *cc, void *mean_util, void 
   return iter + iter1 + iter2;
 }
 
-/* zMClusterXMeans
- * - cluster vectors by X-means based on filling rate.
- */
+/* cluster vectors by X-means based on filling rate. */
 int zMClusterXMeans(zMCluster *mc, zVecList *points, void *mean_util, void *err_util)
 {
   if( zMClusterAlloc( mc, 1 ) == NULL ) return -1;
@@ -559,9 +505,7 @@ int zMClusterXMeans(zMCluster *mc, zVecList *points, void *mean_util, void *err_
 }
 
 /* (static)
- * _zClusterXMeansPDF
- * - probability density function based on Gaussian distribution.
- */
+ * probability density function based on Gaussian distribution. */
 double _zClusterXMeansPDF(zCluster *c, zMCluster *mc, void *err_util, zVec x)
 {
   mc->met._error_fp( x, c->mean, err_util, mc->met._err );
@@ -569,9 +513,7 @@ double _zClusterXMeansPDF(zCluster *c, zMCluster *mc, void *err_util, zVec x)
 }
 
 /* (static)
- * _zMClusterXMeansBICTest
- * - test if the subclusters better classify the original based on BIC.
- */
+ * test if the subclusters better classify the original based on BIC. */
 bool _zMClusterXMeansBICTest(zMCluster *mc, zCluster *c, zMCluster *submc, void *err_util)
 {
   zCluster *c1, *c2;
@@ -597,9 +539,7 @@ bool _zMClusterXMeansBICTest(zMCluster *mc, zCluster *c, zMCluster *submc, void 
 }
 
 /* (static)
- *_zMClusterXMeansBIC
- * - cluster vectors by X-means based on BIC.
- */
+ * cluster vectors by X-means based on BIC. */
 int _zMClusterXMeansBIC(zMCluster *mc, zClusterListCell *cc, void *mean_util, void *err_util)
 {
   zMCluster submc;
@@ -620,9 +560,7 @@ int _zMClusterXMeansBIC(zMCluster *mc, zClusterListCell *cc, void *mean_util, vo
   return iter + iter1 + iter2;
 }
 
-/* zMClusterXMeansBIC
- * - cluster vectors based on BIC.
- */
+/* cluster vectors based on BIC. */
 int zMClusterXMeansBIC(zMCluster *mc, zVecList *points, void *mean_util, void *err_util)
 {
   if( zMClusterAlloc( mc, 1 ) == NULL ) return -1;

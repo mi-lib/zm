@@ -495,8 +495,8 @@ zVec zVecNormalize(zVec src, zVec dest)
   return zRawVecNormalize( zVecBuf(src), zVecSizeNC(src), zVecBuf(dest) ) ? dest : NULL;
 }
 
-/* read information of a vector from file. */
-zVec zVecFRead(FILE *fp)
+/* scan a vector from a file. */
+zVec zVecFScan(FILE *fp)
 {
   register int i, size;
   zVec v;
@@ -508,8 +508,8 @@ zVec zVecFRead(FILE *fp)
   return v;
 }
 
-/* output information of a vector to file. */
-void zVecFWrite(FILE *fp, zVec v)
+/* print a vector out to a file. */
+void zVecFPrint(FILE *fp, zVec v)
 {
   register int i;
 
@@ -523,8 +523,8 @@ void zVecFWrite(FILE *fp, zVec v)
   }
 }
 
-/* output information of a vector to file. */
-void zVecDataFWrite(FILE *fp, zVec v)
+/* print a vector out to a file. */
+void zVecDataFPrint(FILE *fp, zVec v)
 {
   register int i;
 

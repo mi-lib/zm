@@ -31,11 +31,11 @@ int main(void)
   b = zMatCloneArray( br, n, n );
   x = zMatAllocSqr( n );
   zLyapnovSolve( a, b, x );
-  printf( "A = " ); zMatWrite( a );
-  printf( "B = " ); zMatWrite( b );
+  printf( "A = " ); zMatPrint( a );
+  printf( "B = " ); zMatPrint( b );
   zMatTouchup( x );
-  zMatWrite( x );
+  zMatPrint( x );
   zMatCopyArray( xr, n, n, x );
-  printf( "X(true) = " ); zMatWrite( x );
+  printf( "X(true) = " ); zMatPrint( x );
   return 0;
 }

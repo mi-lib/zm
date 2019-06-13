@@ -39,10 +39,10 @@ __EXPORT void zVecListDestroy(zVecList *list, bool flag);
  */
 __EXPORT zVec zVecListNN(zVecList *list, zVec v, double *dmin);
 
-/*! \brief output a vector list to a file.
+/*! \brief print a vector list out to a file.
  */
-__EXPORT void zVecListFWrite(FILE *fp, zVecList *list);
-#define zVecListWrite(l) zVecListFWrite( stdout, l )
+__EXPORT void zVecListFPrint(FILE *fp, zVecList *list);
+#define zVecListPrint(l) zVecListFPrint( stdout, l )
 
 __END_DECLS
 

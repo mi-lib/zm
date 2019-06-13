@@ -9,9 +9,7 @@
 static zVecListCell *_zVecListCellCreate(zVec v, bool flag);
 
 /* (static)
- * _zVecListCellCreate
- * - create a vector list cell.
- */
+ * create a vector list cell. */
 zVecListCell *_zVecListCellCreate(zVec v, bool flag)
 {
   zVecListCell *cell;
@@ -32,9 +30,7 @@ zVecListCell *_zVecListCellCreate(zVec v, bool flag)
   return cell;
 }
 
-/* zVecListInsertHead
- * - insert a vector list cell at the head of a list.
- */
+/* insert a vector list cell at the head of a list. */
 zVecListCell *zVecListInsertHead(zVecList *list, zVec v, bool flag)
 {
   zVecListCell *cell;
@@ -44,9 +40,7 @@ zVecListCell *zVecListInsertHead(zVecList *list, zVec v, bool flag)
   return cell;
 }
 
-/* zVecListInsertTail
- * - insert a vector list cell at the tail of a list.
- */
+/* insert a vector list cell at the tail of a list. */
 zVecListCell *zVecListInsertTail(zVecList *list, zVec v, bool flag)
 {
   zVecListCell *cell;
@@ -56,9 +50,7 @@ zVecListCell *zVecListInsertTail(zVecList *list, zVec v, bool flag)
   return cell;
 }
 
-/* zVecListDestroy
- * - destroy a vector list.
- */
+/* destroy a vector list. */
 void zVecListDestroy(zVecList *list, bool flag)
 {
   zVecListCell *cell;
@@ -77,9 +69,7 @@ void zVecListDestroy(zVecList *list, bool flag)
   }
 }
 
-/* zVecListNN
- * - find the nearest neighbor of a vector by a naive algorithm.
- */
+/* find the nearest neighbor of a vector by a naive algorithm. */
 zVec zVecListNN(zVecList *list, zVec v, double *dmin)
 {
   zVecListCell *cell;
@@ -97,13 +87,11 @@ zVec zVecListNN(zVecList *list, zVec v, double *dmin)
   return nn;
 }
 
-/* zVecListFWrite
- * - output vectors in a list.
- */
-void zVecListFWrite(FILE *fp, zVecList *list)
+/* print vectors in a list to a file. */
+void zVecListFPrint(FILE *fp, zVecList *list)
 {
   zVecListCell *cp;
 
   zListForEach( list, cp )
-    zVecDataFWrite( fp, cp->data );
+    zVecDataFPrint( fp, cp->data );
 }

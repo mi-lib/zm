@@ -107,13 +107,13 @@ int main(void)
   z = zVecAlloc( d );
   m = zMatCloneArray( marray, d, d );
   q = zVecCloneArray( qarray, d );
-  zMatWrite( m );
-  zVecWrite( q );
+  zMatPrint( m );
+  zVecPrint( q );
   printf( "true ans =\n" );
-  zVecWrite( &ansvec );
+  zVecPrint( &ansvec );
   printf( "\n*** result ***\n" );
   zLCPSolveLemke( m, q, NULL, z );
-  zVecWrite( z );
+  zVecPrint( z );
   zMatFree( m );
   zVecFree( q );
   return 0;

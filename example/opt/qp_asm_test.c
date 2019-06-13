@@ -21,11 +21,11 @@ int main(void)
   zMatCopyArray( qarray, 2, 2, q );
   zMatCopyArray( aarray, 1, 2, a );
   zVecSetElem( b, 0, 3 );
-  zMatWrite( q );
-  zMatWrite( a );
-  zVecWrite( b );
+  zMatPrint( q );
+  zMatPrint( a );
+  zVecPrint( b );
   zQPSolveASM( q, z, a, b, x, &cost, NULL, NULL );
-  zVecWrite( x );
+  zVecPrint( x );
 
   zMatFree( q );
   zMatFree( a );

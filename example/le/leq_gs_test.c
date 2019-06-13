@@ -15,8 +15,8 @@ int main(void)
   x = zVecAlloc( N );
   index = zIndexCreate( N );
 
-  zMatRand( a, -10, 10 );
-  zVecRand( b, -10, 10 );
+  zMatRandUniform( a, -10, 10 );
+  zVecRandUniform( b, -10, 10 );
   for( i=0; i<N; i++ ){
     zPivoting( a, index, i, i );
     zMatSetElem( a, zIndexElem(index,i), i, zRandF(2*N,3*N) );
@@ -26,16 +26,16 @@ int main(void)
 
   printf( "Gauss's elimination method.\n" );
   zLESolveGauss( a, b, x );
-  zVecWrite( x );
+  zVecPrint( x );
 
   printf( "Gauss-Seidel's method.\n" );
   zVecClear( x );
   zLESolveGS( a, b, x );
-  zVecWrite( x );
+  zVecPrint( x );
   printf( "(confirmation) A x\n" );
-  zVecWrite( b );
+  zVecPrint( b );
   zMulMatVec( a, x, b );
-  zVecWrite( b );
+  zVecPrint( b );
 
   zMatFree( a );
   zVecFree( b );

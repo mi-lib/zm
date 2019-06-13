@@ -17,22 +17,22 @@ void test1(void)
 
   printf( "m1^-1 m2\n" );
   zMulInvMatMat( m1, m2, m );
-  zMatWrite( m1 );
-  zMatWrite( m2 );
-  zMatWrite( m );
+  zMatPrint( m1 );
+  zMatPrint( m2 );
+  zMatPrint( m );
 
   printf( "m1 m2^-1\n" );
   zMulMatInvMat( m1, m2, m );
-  zMatWrite( m1 );
-  zMatWrite( m2 );
-  zMatWrite( m );
+  zMatPrint( m1 );
+  zMatPrint( m2 );
+  zMatPrint( m );
 
   printf( "m2 = m1^-1\n" );
   zMatInv( m1, m2 );
-  zMatWrite( m2 );
+  zMatPrint( m2 );
   zMulMatMat( m1, m2, m );
   zMatTouchup( m );
-  zMatWrite( m );
+  zMatPrint( m );
 
   zMatFree( m1 );
   zMatFree( m2 );
@@ -55,11 +55,11 @@ void test2(void)
 
   printf( "m^-1 m2\n" );
   zMulInvMatMat( m, m2, m3 );
-  zMatWrite( m1 );
-  zMatWrite( m3 );
+  zMatPrint( m1 );
+  zMatPrint( m3 );
   zMatSub( m1, m3, m2 );
   printf( "+++ error +++\n" );
-  zMatWrite( m2 );
+  zMatPrint( m2 );
 
   zMatFreeAO( 4, m, m1, m2, m3 );
 }

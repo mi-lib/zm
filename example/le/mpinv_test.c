@@ -36,29 +36,37 @@ int main(void)
     0, 2, 1, 3, 3, 7 };
   unsigned r = 5, c = 6;
 #endif
-  zMat a, ai, b;
+  zMat a, ai, b, d, e;
 
   a = zMatCloneArray( marray, r, c );
   ai = zMatAlloc( c, r );
   zMPInv( a, ai );
   printf( "A: " );
-  zMatWrite( a );
+  zMatPrint( a );
   printf( "A^+: " );
-  zMatWrite( ai );
+  zMatPrint( ai );
 
   b = zMatAllocSqr( r );
+  d = zMatAlloc( r, c );
+  e = zMatAlloc( r, c );
   zMulMatMat( a, ai, b );
-  zMulMatMatDRC( b, a );
-  printf( "AA^+A: " );
-  zMatWrite( a );
+  zMulMatMat( b, a, d );
+  zMatSub( a, d, e );
+  printf( "|| A - AA^+A || = %.10f\n", zMatNorm(e) );
   zMatFree( b );
+  zMatFree( d );
+  zMatFree( e );
 
   b = zMatAllocSqr( c );
+  d = zMatAlloc( c, r );
+  e = zMatAlloc( c, r );
   zMulMatMat( ai, a, b );
-  zMulMatMatDRC( b, ai );
-  printf( "A^+AA^+: " );
-  zMatWrite( ai );
+  zMulMatMat( b, ai, d );
+  zMatSub( ai, d, e );
+  printf( "|| A^+ - A^+AA^+ || = %.10f\n", zMatNorm(e) );
   zMatFree( b );
+  zMatFree( d );
+  zMatFree( e );
 
   zMatFree( a );
   zMatFree( ai );

@@ -27,10 +27,10 @@ int main(int argc, char *argv[])
     zODEAssign( &ode, RKF45, NULL, NULL );
   zODEInit( &ode, 2, 0, dp );
   x = zVecCreateList( 2, 1.0, 0.0 );
-  zVecDataWrite( x );
+  zVecDataPrint( x );
   for( t=0; t<T; t+=DT ){
     zODEUpdate( &ode, t, x, DT, NULL );
-    zVecDataWrite( x );
+    zVecDataPrint( x );
   }
   zVecFree( x );
   zODEDestroy( &ode );

@@ -27,15 +27,15 @@ int main(void)
 
   printf( "<original matrix/vector>\n" );
   printf( "Ax<=b, x>=0, c^T x -> min.\n" );
-  printf( "A: " ); zMatWrite( a );
-  printf( "b: " ); zVecWrite( b );
-  printf( "c: " ); zVecWrite( c );
+  printf( "A: " ); zMatPrint( a );
+  printf( "b: " ); zVecPrint( b );
+  printf( "c: " ); zVecPrint( c );
   zLPIneq2Std( a, c, x, &as, &cs, &xs );
   printf( "standardized form <original matrix/vector>\n" );
   printf( "Ax=b, x>=0, c^T x -> min.\n" );
-  printf( "A: " ); zMatWrite( as );
-  printf( "b: " ); zVecWrite( b );
-  printf( "c: " ); zVecWrite( cs );
+  printf( "A: " ); zMatPrint( as );
+  printf( "b: " ); zVecPrint( b );
+  printf( "c: " ); zVecPrint( cs );
 
   printf( "<result (by simplex method)>\n" );
   if( !zLPSolveSimplex( as, b, cs, xs, &cost ) ){
@@ -43,7 +43,7 @@ int main(void)
     return 0;
   }
   zVecGet( xs, 0, x );
-  zVecWrite( x );
+  zVecPrint( x );
   printf( "cost=%f\n", cost );
 
   printf( "<result (by primal-dual interior-point method)>\n" );
@@ -52,7 +52,7 @@ int main(void)
     return 0;
   }
   zVecGet( xs, 0, x );
-  zVecWrite( x );
+  zVecPrint( x );
   printf( "cost=%f\n", cost );
 
   zMatFree( a );

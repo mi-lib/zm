@@ -58,11 +58,11 @@ int main(void)
   v = zMatAlloc( n, m );
   sv = zVecAlloc( n );
 
-  zMatWrite( ma );
+  zMatPrint( ma );
   rank = zSVD( ma, sv, u, v );
-  zVecWrite( sv );
-  zMatWrite( u );
-  zMatWrite( v );
+  zVecPrint( sv );
+  zMatPrint( u );
+  zMatPrint( v );
 
   printf( ">>ensurance\n" );
   l = zMatAlloc( n, rank );

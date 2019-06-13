@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
   fp = fopen( "a", "w" );
   zListForEach( &rrt.slist, rc ){
     if( !rc->data.parent ) continue;
-    zVecDataFWrite( fp, rc->data.parent->v );
-    zVecDataFWrite( fp, rc->data.v );
+    zVecDataFPrint( fp, rc->data.parent->v );
+    zVecDataFPrint( fp, rc->data.v );
     fprintf( fp, "\n" );
   }
   fclose( fp );
@@ -65,19 +65,19 @@ int main(int argc, char *argv[])
   fp = fopen( "b", "w" );
   zListForEach( &rrt.glist, rc ){
     if( !rc->data.parent ) continue;
-    zVecDataFWrite( fp, rc->data.parent->v );
-    zVecDataFWrite( fp, rc->data.v );
+    zVecDataFPrint( fp, rc->data.parent->v );
+    zVecDataFPrint( fp, rc->data.v );
     fprintf( fp, "\n" );
   }
   fclose( fp );
 
   fp = fopen( "c", "w" );
-  zVecListFWrite( fp, &path );
+  zVecListFPrint( fp, &path );
   fclose( fp );
 
   zRRTPathShortcut( &rrt, NULL, &path );
   fp = fopen( "d", "w" );
-  zVecListFWrite( fp, &path );
+  zVecListFPrint( fp, &path );
   fclose( fp );
 
   fp = fopen( "e", "w" );

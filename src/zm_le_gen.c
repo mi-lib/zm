@@ -7,9 +7,7 @@
 #include <zm/zm_le.h>
 #include <zm/zm_eig.h> /* for MP-inverse and SVD */
 
-/* zLEAllocWork
- * - allocate working memory for generalized linear equation solvers.
- */
+/* allocate working memory for generalized linear equation solvers. */
 bool zLEAllocWork(zMat *m, zVec *v, zVec *s, zIndex *idx, int size)
 {
   *m = zMatAllocSqr( size );
@@ -19,9 +17,7 @@ bool zLEAllocWork(zMat *m, zVec *v, zVec *s, zIndex *idx, int size)
   return *m && *v && *s && *idx;
 }
 
-/* zLEFreeWork
- * - free working memory for generalized linear equation solvers.
- */
+/* free working memory for generalized linear equation solvers. */
 void zLEFreeWork(zMat m, zVec v, zVec s, zIndex idx)
 {
   zMatFree( m );
@@ -30,10 +26,8 @@ void zLEFreeWork(zMat m, zVec v, zVec s, zIndex idx)
   zIndexFree( idx );
 }
 
-/* zLESolveNormMinDST
- * - weighted-norm-minimizing redundant linear equation solver
- *   without checking size consistency.
- */
+/* weighted-norm-minimizing redundant linear equation solver
+ * without checking size consistency. */
 zVec zLESolveNormMinDST(zMat a, zVec b, zVec w, zVec ans, zMat m, zVec v, zIndex idx, zVec s)
 {
   w ? zMatQuadNC( a, w, m ) : zMulMatMatTNC( a, a, m );
@@ -42,9 +36,7 @@ zVec zLESolveNormMinDST(zMat a, zVec b, zVec w, zVec ans, zMat m, zVec v, zIndex
   return w ? zVecAmpNCDRC( ans, w ) : ans;
 }
 
-/* zLESolveNormMin
- * - norm-minimizing redundant linear equation solver.
- */
+/* norm-minimizing redundant linear equation solver. */
 zVec zLESolveNormMin(zMat a, zVec b, zVec w, zVec ans)
 {
   zMat m;
@@ -73,10 +65,8 @@ zVec zLESolveNormMin(zMat a, zVec b, zVec w, zVec ans)
   return ans;
 }
 
-/* zLESolveErrorMinDST
- * - error-minimizing inferior linear equation solver
- *   without checking size consistency.
- */
+/* error-minimizing inferior linear equation solver
+ * without checking size consistency. */
 zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zMat m, zVec v, zIndex idx, zVec s)
 {
   if( w ) zVecAmpNCDRC( b, w );
@@ -85,9 +75,7 @@ zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zMat m, zVec v, zInde
   return zLESolveGaussDST( m, v, ans, idx, s );
 }
 
-/* zLESolveErrorMin
- * - error-minimizing inferior linear equation solver.
- */
+/* error-minimizing inferior linear equation solver. */
 zVec zLESolveErrorMin(zMat a, zVec b, zVec w, zVec ans)
 {
   zMat m;
@@ -116,10 +104,8 @@ zVec zLESolveErrorMin(zMat a, zVec b, zVec w, zVec ans)
   return ans;
 }
 
-/* zLESolveRefMinDST
- * - weighted-referred-norm-minimizing redundant linear
- *   equation solver without checking size consistency.
- */
+/* weighted-referred-norm-minimizing redundant linear
+ * equation solver without checking size consistency. */
 zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zMat m, zVec v1, zVec v2, zIndex idx, zVec s)
 {
   w ? zMatQuadNC( a, w, m ) : zMulMatMatTNC( a, a, m );
@@ -130,9 +116,7 @@ zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zMat m, zVec 
   return zVecAddNCDRC( ans, ref );
 }
 
-/* zLESolveRefMin
- * - referred-norm-minimizing redundant linear equation solver.
- */
+/* referred-norm-minimizing redundant linear equation solver. */
 zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans)
 {
   zMat m;
@@ -165,9 +149,7 @@ zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans)
 }
 
 /* (static)
- * _zLEAllocWorkMP
- * - allocate working memory for a lienar equation solver with Moore=Penrose's inverse matrix.
- */
+ * allocate working memory for a lienar equation solver with Moore=Penrose's inverse matrix. */
 static bool _zLEAllocWorkMP(zMat a, zVec b, zMat *l, zMat *u, zVec *bcp, zIndex *idx);
 bool _zLEAllocWorkMP(zMat a, zVec b, zMat *l, zMat *u, zVec *bcp, zIndex *idx)
 {
@@ -179,9 +161,7 @@ bool _zLEAllocWorkMP(zMat a, zVec b, zMat *l, zMat *u, zVec *bcp, zIndex *idx)
 }
 
 /* (static)
- * _zLEFreeWorkMP
- * - free working memory for a lienar equation solver with Moore=Penrose's inverse matrix.
- */
+ * free working memory for a lienar equation solver with Moore=Penrose's inverse matrix. */
 static void _zLEFreeWorkMP(zMat *l, zMat *u, zVec *bcp, zIndex *idx);
 void _zLEFreeWorkMP(zMat *l, zMat *u, zVec *bcp, zIndex *idx)
 {
@@ -191,9 +171,7 @@ void _zLEFreeWorkMP(zMat *l, zMat *u, zVec *bcp, zIndex *idx)
 }
 
 /* (static)
- * _zLESolveMP1
- * - compute left-lower part of the linear equation.
- */
+ * compute left-lower part of the linear equation. */
 static void _zLESolveMP1(zMat l, zMat u, zVec b, zVec c, zVec we, zMat m, zVec v, zVec s, zIndex idx1, zIndex idx2, int rank);
 void _zLESolveMP1(zMat l, zMat u, zVec b, zVec c, zVec we, zMat m, zVec v, zVec s, zIndex idx1, zIndex idx2, int rank)
 {
@@ -205,10 +183,8 @@ void _zLESolveMP1(zMat l, zMat u, zVec b, zVec c, zVec we, zMat m, zVec v, zVec 
     zLESolve_L( l, b, c, idx1 );
 }
 
-/* zLESolveMP
- * - generalized linear equation solver using Moore-Penrose's
- *   inverse (MP-inverse, pseudoinverse) based on LQ decomposition.
- */
+/* generalized linear equation solver using Moore-Penrose's
+ * inverse (MP-inverse, pseudoinverse) based on LQ decomposition. */
 zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 {
   int rank;
@@ -236,10 +212,8 @@ zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans)
   return ans;
 }
 
-/* zLESolveMP_LU
- * - generalized linear equation solver with MP-inverse
- *   based on LU decomposition.
- */
+/* generalized linear equation solver with MP-inverse
+ * based on LU decomposition. */
 zVec zLESolveMP_LU(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 {
   int rank;
@@ -267,10 +241,8 @@ zVec zLESolveMP_LU(zMat a, zVec b, zVec wn, zVec we, zVec ans)
   return ans;
 }
 
-/* zLESolveMP_SVD
- * - generalized linear equation solver with MP-inverse
- *   based on singular value decomposition.
- */
+/* generalized linear equation solver with MP-inverse
+ * based on singular value decomposition. */
 zVec zLESolveMP_SVD(zMat a, zVec b, zVec ans)
 {
   int rank;
@@ -301,11 +273,8 @@ zVec zLESolveMP_SVD(zMat a, zVec b, zVec ans)
   return ans;
 }
 
-/* zLESolveMPNull
- * - generalized linear equation solver using Moore-Penrose's
- *   inverse (MP-inverse, pseudoinverse) based on LQ decomposition
- *   with the null space.
- */
+/* generalized linear equation solver using Moore-Penrose's inverse
+ * (MP-inverse, pseudoinverse) based on LQ decomposition with the null space. */
 zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn)
 {
   int rank;
@@ -340,10 +309,8 @@ zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn)
   return ans;
 }
 
-/* zLESolveMPAux
- * - generalized linear equation solver using MP-inverse
- *   biasing a vector in the null space.
- */
+/* generalized linear equation solver using MP-inverse
+ * biasing a vector in the null space. */
 zVec zLESolveMPAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
 {
   zVec bb;
@@ -359,9 +326,7 @@ zVec zLESolveMPAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
 }
 
 /* (static)
- * _zLESolveSRSizeIsEqual
- * - check sizes of vectors and matrices for a linear equation solver with SR-inverse matrix.
- */
+ * check sizes of vectors and matrices for a linear equation solver with SR-inverse matrix. */
 static bool _zLESolveSRSizeIsEqual(zMat a, zVec b, zVec wn, zVec we, zVec ans);
 bool _zLESolveSRSizeIsEqual(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 {
@@ -378,10 +343,8 @@ bool _zLESolveSRSizeIsEqual(zMat a, zVec b, zVec wn, zVec we, zVec ans)
   return true;
 }
 
-/* zLESolveSRDST
- * - linear equation solver using singularity-robust inverse
- *   (SR-inverse) matrix (destructive).
- */
+/* linear equation solver using singularity-robust inverse
+ * (SR-inverse) matrix (destructive). */
 zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat m, zVec v, zIndex index, zVec s)
 {
   register int i;
@@ -394,10 +357,8 @@ zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat m, zVec v, z
   return zLESolveGaussDST( m, v, ans, index, s );
 }
 
-/* zLESolveSR
- * - linear equation solver using singularity-robust inverse
- *   (SR-inverse) matrix, proposed by Y. Nakamura(1991).
- */
+/* linear equation solver using singularity-robust inverse
+ * (SR-inverse) matrix, proposed by Y. Nakamura(1991). */
 zVec zLESolveSR(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 {
   zMat m;
@@ -418,10 +379,8 @@ zVec zLESolveSR(zMat a, zVec b, zVec wn, zVec we, zVec ans)
   return ans;
 }
 
-/* zLESolveMPAuxDST
- * - generalized linear equation solver using SR-inverse
- *   biasing a vector in the null space (destructive).
- */
+/* generalized linear equation solver using SR-inverse
+ * biasing a vector in the null space (destructive). */
 zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zMat m, zVec v, zIndex idx, zVec s, zVec bb)
 {
   zLEResidual( a, b, aux, bb );
@@ -429,10 +388,8 @@ zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zMat
   return zVecAddNCDRC( ans, aux );
 }
 
-/* zLESolveMPAux
- * - generalized linear equation solver using SR-inverse
- *   biasing a vector in the null space.
- */
+/* generalized linear equation solver using SR-inverse
+ * biasing a vector in the null space. */
 zVec zLESolveSRAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
 {
   zVec bb;
@@ -447,10 +404,8 @@ zVec zLESolveSRAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
   return zVecAddNCDRC( ans, aux );
 }
 
-/* zLESolveRSRDST
- * - linear equation solver using referred singularity-robust
- *   inverse matrix (destructive).
- */
+/* linear equation solver using referred singularity-robust
+ * inverse matrix (destructive). */
 zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zMat m, zVec v, zIndex index, zVec s)
 {
   register int i;
@@ -465,10 +420,7 @@ zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zMat m
   return zLESolveGaussDST( m, v, ans, index, s );
 }
 
-/* zLESolveRSR
- * - linear equation solver using referred singularity robust
- *   inverse matrix.
- */
+/* linear equation solver using referred singularity robust inverse matrix. */
 zVec zLESolveRSR(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans)
 {
   zMat m;

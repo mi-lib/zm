@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
   }
-  if( !( fact = zVecFRead( fp ) ) ){
+  if( !( fact = zVecFScan( fp ) ) ){
     ZALLOCERROR();
     return EXIT_FAILURE;
   }
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
   }
 
   printf( "Factor(s):\n" );
-  zVecWrite( fact );
+  zVecPrint( fact );
   printf( "Expr:\n" );
   zPexExprX( pex );
   zVecFree( fact );

@@ -16,11 +16,11 @@ int main(void)
   for( i=0; i<N; i++ ){
     val = i + 1;
     zVecSetElemList( *zRingElem(&v,i), val, val, val );
-    printf( "v_%d: ", i ); zVecWrite( *zRingElem(&v,i) );
+    printf( "v_%d: ", i ); zVecPrint( *zRingElem(&v,i) );
   }
-  printf( "k: " ); zVecWrite( k );
+  printf( "k: " ); zVecPrint( k );
   zVecRingLS( s, k, &v );
-  zVecWrite( s );
+  zVecPrint( s );
   zVecRingFree( &v );
   return 0;
 }

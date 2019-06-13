@@ -6,9 +6,9 @@ void cardano(double a, double b, double c, double d)
 
   printf( "%f x^3 + %f x^2 + %f x + %f = 0\n", a, b, c, d );
   if( !zCardano( a, b, c, d, ans ) ) return;
-  printf( "answer->[0] " ); zComplexWrite( &ans[0] ); zEndl();
-  printf( "        [1] " ); zComplexWrite( &ans[1] ); zEndl();
-  printf( "        [2] " ); zComplexWrite( &ans[2] ); zEndl();
+  printf( "answer->[0] " ); zComplexPrint( &ans[0] ); zEndl();
+  printf( "        [1] " ); zComplexPrint( &ans[1] ); zEndl();
+  printf( "        [2] " ); zComplexPrint( &ans[2] ); zEndl();
 }
 
 int main(void)

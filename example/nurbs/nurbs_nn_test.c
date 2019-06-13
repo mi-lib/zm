@@ -16,15 +16,15 @@ void nn_test(zNURBS *nurbs)
   fp = fopen( "p", "w" );
   for( i=0; i<=STEP; i++ ){
     if( zNURBSVec( nurbs, (double)i/STEP, v ) )
-      zVecDataFWrite( fp, v );
+      zVecDataFPrint( fp, v );
   }
   fclose( fp );
   fp = fopen( "nn", "w" );
   for( i=0; i<N; i++ ){
     zVecSetElemList( v, zRandF(-1,7), zRandF(-3,5) );
     zNURBSVecNN( nurbs, v, nn );
-    zVecDataFWrite( fp, v );
-    zVecDataFWrite( fp, nn );
+    zVecDataFPrint( fp, v );
+    zVecDataFPrint( fp, nn );
     fprintf( fp, "\n" );
   }
   fclose( fp );

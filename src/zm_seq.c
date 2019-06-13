@@ -11,9 +11,7 @@
  * motion sequence class for multiple dimension system.
  * ********************************************************** */
 
-/* zSeqInit
- * - initialize sequence.
- */
+/* initialize a sequence. */
 zSeq *zSeqInit(zSeq *seq)
 {
   zListInit( seq );
@@ -22,9 +20,7 @@ zSeq *zSeqInit(zSeq *seq)
   return seq;
 }
 
-/* zSeqFree
- * - free sequence.
- */
+/* free a sequence. */
 void zSeqFree(zSeq *seq)
 {
   zSeqListCell *cp;
@@ -34,9 +30,7 @@ void zSeqFree(zSeq *seq)
       zSeqListCellFree( cp );
 }
 
-/* zSeqEnqueue
- * - enqueue of a vector.
- */
+/* enqueue a vector to a sequence. */
 zSeqListCell *zSeqEnqueue(zSeq *seq, zVec v, double dt)
 {
   zSeqListCell *cp;
@@ -55,9 +49,7 @@ zSeqListCell *zSeqEnqueue(zSeq *seq, zVec v, double dt)
   return cp;
 }
 
-/* zSeqDequeue
- * - dequeue of a vector.
- */
+/* dequeue a vector from a sequence. */
 zSeqListCell *zSeqDequeue(zSeq *seq)
 {
   zSeqListCell *cp;
@@ -70,9 +62,7 @@ zSeqListCell *zSeqDequeue(zSeq *seq)
   return cp;
 }
 
-/* zSeqJump
- * - jump to the frame of a sequence.
- */
+/* jump to the specified frame of a sequence. */
 zSeqListCell *zSeqJump(zSeq *seq, int step)
 {
   zSeqListCell *cp;
@@ -87,24 +77,20 @@ zSeqListCell *zSeqJump(zSeq *seq, int step)
   return cp;
 }
 
-/* zSeqReadFile
- * - input of sequence.
- */
-bool zSeqReadFile(zSeq *seq, char filename[])
+/* scan a sequence from a file. */
+bool zSeqScanFile(zSeq *seq, char filename[])
 {
   FILE *fp;
 
   if( !( fp = zOpenFile( filename, ZSEQ_SUFFIX, "r" ) ) )
     return false;
-  zSeqFRead( fp, seq );
+  zSeqFScan( fp, seq );
   fclose( fp );
   return true;
 }
 
-/* zSeqFRead
- * - input of sequence.
- */
-zSeq *zSeqFRead(FILE *fp, zSeq *seq)
+/* scan a sequence from a file. */
+zSeq *zSeqFScan(FILE *fp, zSeq *seq)
 {
   zSeqListCell *cp;
 
@@ -116,7 +102,7 @@ zSeq *zSeqFRead(FILE *fp, zSeq *seq)
       break;
     }
     cp->data.dt = zFDouble(fp);
-    if( !( cp->data.v = zVecFRead(fp) ) ){
+    if( !( cp->data.v = zVecFScan(fp) ) ){
       ZALLOCERROR();
       free( cp );
       break;
@@ -126,10 +112,8 @@ zSeq *zSeqFRead(FILE *fp, zSeq *seq)
   return seq;
 }
 
-/* zSeqWriteFile
- * - output of sequence.
- */
-bool zSeqWriteFile(zSeq *seq, char filename[])
+/* print a sequence to a file. */
+bool zSeqPrintFile(zSeq *seq, char filename[])
 {
   char fname[BUFSIZ];
   FILE *fp;
@@ -139,20 +123,18 @@ bool zSeqWriteFile(zSeq *seq, char filename[])
     ZOPENERROR( fname );
     return false;
   }
-  zSeqFWrite( fp, seq );
+  zSeqFPrint( fp, seq );
   fclose( fp );
   return true;
 }
 
-/* zSeqFWrite
- * - output of sequence on .zvs format.
- */
-void zSeqFWrite(FILE *fp, zSeq *seq)
+/* print a sequence to a file. */
+void zSeqFPrint(FILE *fp, zSeq *seq)
 {
   zSeqListCell *cp;
 
   zListForEachRew( seq, cp ){
     fprintf( fp, "%.10g ", cp->data.dt );
-    zVecFWrite( fp, cp->data.v );
+    zVecFPrint( fp, cp->data.v );
   }
 }

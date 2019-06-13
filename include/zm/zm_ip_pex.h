@@ -25,34 +25,34 @@ typedef struct{
 
 /*! \brief allocate and free polynomial curve with designable coefficients.
  *
- * 'zPexIP' is a class for the polynomial curve, which is
+ * zPexIP is a class for the polynomial curve, which is
  * mathematically expressed as:
  *   f(x) = c0 + c1*t/T + c2*(t/T)^2 + c3*(t/T)^3 + ...
  *
- * 'zPexIPAlloc()' creates the polynomial curve 'pc' as 'dim'
- * dimension polynomial expression. 'term' is the terminal time.
+ * zPexIPAlloc() allocates a new polynomial curve \a pc as \a dim
+ * dimension polynomial expression. \a term is the terminal time.
  *
- * 'zPexIPAllocBoundary()' creates 'pc' from the boundary
- * condition. 'x1', 'v1' and 'a1' are the initial condition for
- * position, velocity and acceleration, respectively, while
- * 'x2', 'v2' and 'a2' are for the terminal condition at the time
- * 'term'.
- * 'v' is for the coefficients of the third-order to n-3 order
- * terms, where n is the dimension of 'pc', which is the size of
- * 'v' plus 5. When 'v' is the null vector, it is ignored.
+ * zPexIPAllocBoundary() allocates \a pc from the boundary
+ * condition. \a x1, \a v1 and \a a1 are for the initial condition
+ * of position, velocity and acceleration, respectively, while
+ * \a x2, \a v2 and \a a2 are for the terminal condition at the time
+ * \a term.
+ * \a v is for the coefficients of the third-order to n-3 order
+ * terms, where n is the dimension of \a pc, which is the size of
+ * \a v +5. When \a v is the null vector, it is ignored.
  * The remainder of coefficients are calculated from the boundary
  * condition.
  *
- * 'zPexIPCreateLSM()' creates 'pc' based on the least square
+ * zPexIPCreateLSM() creates \a pc based on the least square
  * method, making it fit to a point set given as (t_i, x_i), where
- * t_i and x_i are the i th components of 't' and 'x', respectively.
+ * t_i and x_i are the i th components of \a t and \a x, respectively.
  *
- * 'zPexIPFree()' frees the inner parameters the polynomial curve
+ * zPexIPFree() frees the inner parameters of a polynomial curve
  * \a pc.
  * \return
- * 'zPexIPAlloc()', 'zPexIPAllocBoundary()' and
- * 'zPexIPCreateLSM()' return the true value if they succeed
- * to allocate the internal vector, or the false value, otherwize.
+ * zPexIPAlloc(), zPexIPAllocBoundary() and zPexIPCreateLSM()
+ * return the true value if they succeed to allocate the internal
+ * vector, or the false value otherwize.
  *
  * zPexIPFree() returns no value.
  */
@@ -71,23 +71,24 @@ __EXPORT void zPexIPFree(zPexIP *pc);
 
 /*! \brief value of polynomial curve.
  *
- * zPexIPVal() calculates the value of the polynomial curve
+ * zPexIPVal() calculates the value of a polynomial curve
  * \a pc at the time \a t.
  * \return
  * zPexIPVal() returns the value calculated.
  */
 __EXPORT double zPexIPVal(zPexIP *pc, double t);
 
-/*! \brief output of polynomial curve.
+/*! \brief print a polynomial curve.
  *
- * zPexIPFWrite() prints out the polynomial curve \a pc in
- * the expression form with polynomial terms. zPexIPWrite()
- * outputs \a pc to the standerd output.
+ * zPexIPFPrint() prints out a polynomial curve \a pc in
+ * the expression form with polynomial terms.
+ *
+ * zPexIPPrint() prints \a pc to the standerd output.
  * \return
- * zPexIPFWrite() and zPexIPWrite() return no value.
+ * zPexIPFPrint() and zPexIPPrint() return no value.
  */
-__EXPORT void zPexIPFWrite(FILE *fp, zPexIP *pc);
-#define zPexIPWrite(p) zPexIPFWrite( stdout, (p) )
+__EXPORT void zPexIPFPrint(FILE *fp, zPexIP *pc);
+#define zPexIPPrint(p) zPexIPFPrint( stdout, (p) )
 
 __END_DECLS
 

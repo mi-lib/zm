@@ -892,8 +892,8 @@ zMat zMatTQuad(zMat a, zVec w, zMat q)
   return zMatTQuadNC( a, w, q );
 }
 
-/* read information of a matrix from file. */
-zMat zMatFRead(FILE *fp)
+/* scan information of a matrix from file. */
+zMat zMatFScan(FILE *fp)
 {
   register unsigned i, j, row, col;
   zMat m;
@@ -908,8 +908,8 @@ zMat zMatFRead(FILE *fp)
   return m;
 }
 
-/* write information of a matrix to file. */
-void zMatFWrite(FILE *fp, zMat m)
+/* print information of a matrix to file. */
+void zMatFPrint(FILE *fp, zMat m)
 {
   register int i, j;
 

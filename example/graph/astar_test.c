@@ -24,7 +24,7 @@ bool test_equal(void *d1, void *d2)
   return ((data_t *)d1)->id == ((data_t *)d2)->id;
 }
 
-void test_fwrite(FILE *fp, void *data)
+void test_fprint(FILE *fp, void *data)
 {
   fprintf( fp, "[%d](%g,%g)", ((data_t *)data)->id, ((data_t *)data)->x, ((data_t *)data)->y );
 }
@@ -195,7 +195,7 @@ void output_path(zGraph *graph, zGraphNodeList *path, double cost)
 
   zListForEach( path, gc ){
     printf( " -> node" );
-    graph->fwrite( stdout, gc->data->data );
+    graph->fprint( stdout, gc->data->data );
     printf( " ... %f\n", gc->data->val );
   }
   printf( "cost = %f\n", cost );
@@ -211,11 +211,11 @@ int main(int argc, char *argv[])
   zGraphInit( &graph );
   graph.dup = test_dup;
   graph.equal = test_equal;
-  graph.fwrite = test_fwrite;
+  graph.fprint = test_fprint;
   graph.destroy = test_destroy;
   /* test graph */
   test( &graph, &s, &g );
-  zGraphFWrite( stdout, &graph );
+  zGraphFPrint( stdout, &graph );
 
   graph.h = test_h;
   cost = zGraphAStar( &graph, &s, &g, NULL, &path );

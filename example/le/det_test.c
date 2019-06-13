@@ -70,7 +70,7 @@ int main(void)
   zIndex idx;
 
   m = zMatCloneArray( marray, s, s );
-  printf( "matrix: " ); zMatWrite( m );
+  printf( "matrix: " ); zMatPrint( m );
   printf( "determinant = %f\n", zMatDet( m ) );
 
   /* confirmation */
@@ -78,7 +78,7 @@ int main(void)
   u = zMatAllocSqr( s );
   idx = zIndexCreate( s );
   zLUDecomp( m, l, u, idx );
-  printf( "L: " ); zMatWrite( l );
+  printf( "L: " ); zMatPrint( l );
   zMatFree( l );
   zMatFree( u );
   zIndexFree( idx );

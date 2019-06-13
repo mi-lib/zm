@@ -17,14 +17,14 @@ int main(int argc, char *argv[])
     ZOPENERROR( argv[1] );
     return 1;
   }
-  if( !( a = zMatFRead( fp ) ) ||
-      !( b = zVecFRead( fp ) ) ||
+  if( !( a = zMatFScan( fp ) ) ||
+      !( b = zVecFScan( fp ) ) ||
       !( ans = zVecAlloc( zMatColSize(a) ) ) ){
     ZALLOCERROR();
     goto TERMINATE;
   }
   zLESolveGauss( a, b, ans );
-  zVecWrite( ans );
+  zVecPrint( ans );
 
  TERMINATE:
   zMatFree( a );

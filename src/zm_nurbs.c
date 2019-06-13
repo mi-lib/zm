@@ -239,13 +239,13 @@ double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn)
 
 /* for debug */
 
-/* output control points of a NURBS curve. */
-void zNURBSCPFWrite(FILE *fp, zNURBS *nurbs)
+/* print control points of a NURBS curve out to a file. */
+void zNURBSCPFPrint(FILE *fp, zNURBS *nurbs)
 {
   register int i;
 
   for( i=0; i<zNURBSCPNum(nurbs); i++ ){
     fprintf( fp, "[%03d] (%g) ", i, zNURBSWeight(nurbs,i) );
-    zVecFWrite( fp, zNURBSCP(nurbs,i) );
+    zVecFPrint( fp, zNURBSCP(nurbs,i) );
   }
 }

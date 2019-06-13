@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
   a2 = zMatClone( a1 );
   printf( ">>> LQ decomposition <<<\n" );
   rank = zLQDecompAlloc( a1, &l, &q, &idx );
-  tq= zMatAllocSqr( _zMatRowSize(q) );
+  tq= zMatAllocSqr( zMatRowSizeNC(q) );
 
   zMatTouchup( l );
   zMatTouchup( q );
@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
   printf( "Q Q^T=\n" );
   zMulMatMatT( q, q, tq );
   zMatTouchup( tq );
-  zMatWrite( tq );
+  zMatPrint( tq );
 
   zMulMatMat( l, q, a2 );
   printf( "%s.\n", zMatIsEqual(a1,a2) ? "ok" : "error" );

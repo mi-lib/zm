@@ -12,18 +12,18 @@ void test1(void)
   x = zVecAlloc( 3 );
   y = zVecAlloc( 1 );
 
-  printf( "A: " ); zMatWrite( a );
-  printf( "b: " ); zVecWrite( b );
+  printf( "A: " ); zMatPrint( a );
+  printf( "b: " ); zVecPrint( b );
 
   zLESolveNormMin( a, b, NULL, x );
-  printf( "x(no-weight)= " ); zVecWrite( x );
+  printf( "x(no-weight)= " ); zVecPrint( x );
   zMulMatVec( a, x, y );
-  printf( "A x = " ); zVecWrite( y );
+  printf( "A x = " ); zVecPrint( y );
 
   zLESolveNormMin( a, b, w, x );
-  printf( "x(with weight)= " ); zVecWrite( x );
+  printf( "x(with weight)= " ); zVecPrint( x );
   zMulMatVec( a, x, y );
-  printf( "A x = " ); zVecWrite( y );
+  printf( "A x = " ); zVecPrint( y );
 }
 
 void test2(void)
@@ -38,42 +38,40 @@ void test2(void)
   x = zVecAlloc( 1 );
   y = zVecAlloc( 3 );
 
-  printf( "A: " ); zMatWrite( a );
-  printf( "b: " ); zVecWrite( b );
+  printf( "A: " ); zMatPrint( a );
+  printf( "b: " ); zVecPrint( b );
 
   zLESolveErrorMin( a, b, NULL, x );
-  printf( "x(no-weight)= " ); zVecWrite( x );
+  printf( "x(no-weight)= " ); zVecPrint( x );
   zMulMatVec( a, x, y );
-  printf( "A x = " ); zVecWrite( y );
+  printf( "A x = " ); zVecPrint( y );
 
   zLESolveErrorMin( a, b, w, x );
-  printf( "x(with weight)= " ); zVecWrite( x );
+  printf( "x(with weight)= " ); zVecPrint( x );
   zMulMatVec( a, x, y );
-  printf( "A x = " ); zVecWrite( y );
+  printf( "A x = " ); zVecPrint( y );
 }
 
 void test3(void)
 {
   double a_arr[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1 };
   double b_arr[] = { 2, 3, 4 };
-  double w_arr[] = { 1, 1, 1 };
   zMat a;
-  zVec b, w, x;
+  zVec b, x;
 
   printf( "+++ test 3 +++\n" );
   a = zMatCloneArray( a_arr, 3, 3 );
   b = zVecCloneArray( b_arr, 3 );
-  w = zVecCloneArray( w_arr, 3 );
   x = zVecAlloc( 3 );
 
-  zMatWrite( a );
-  zVecWrite( b );
+  zMatPrint( a );
+  zVecPrint( b );
   printf( "norm minimization\n" );
   zLESolveNormMin( a, b, NULL, x );
-  zVecWrite( x );
+  zVecPrint( x );
   printf( "squared error minimization\n" );
   zLESolveErrorMin( a, b, NULL, x );
-  zVecWrite( x );
+  zVecPrint( x );
 }
 
 int main(void)

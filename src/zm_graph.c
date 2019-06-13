@@ -11,9 +11,7 @@
  * graph node class
  * ********************************************************** */
 
-/* zGraphNodeInit
- * - initialize a graph node.
- */
+/* initialize a graph node. */
 void zGraphNodeInit(zGraphNode *node)
 {
   node->val = node->hval = HUGE_VAL;
@@ -21,9 +19,7 @@ void zGraphNodeInit(zGraphNode *node)
   node->to = NULL;
 }
 
-/* zGraphNodeConnect
- * - connect two graph nodes.
- */
+/* connect two graph nodes. */
 bool zGraphNodeConnect(zGraphNode *from, zGraphNode *to, double cost)
 {
   zGraphArcListCell *ac;
@@ -45,9 +41,7 @@ bool zGraphNodeConnect(zGraphNode *from, zGraphNode *to, double cost)
   return true;
 }
 
-/* zGraphNodeBiconnect
- * - connect two graph nodes bidirectionally.
- */
+/* connect two graph nodes bidirectionally. */
 bool zGraphNodeBiconnect(zGraphNode *n1, zGraphNode *n2, double cost)
 {
   return zGraphNodeConnect( n1, n2, cost ) &&
@@ -61,32 +55,28 @@ bool zGraphNodeBiconnect(zGraphNode *n1, zGraphNode *n2, double cost)
 
 static void *_zGraphDupDummy(void *data);
 static bool _zGraphEqualDummy(void *d1, void *d2);
-static void _zGraphFWriteDummy(FILE *fp, void *data);
+static void _zGraphFPrintDummy(FILE *fp, void *data);
 static void _zGraphDestroyDummy(void *data);
 static double _zGraphEvalHDummy(void *d1, void *d2, void *util);
 
 void *_zGraphDupDummy(void *data){ return data; }
 bool _zGraphEqualDummy(void *d1, void *d2){ return true; }
-void _zGraphFWriteDummy(FILE *fp, void *data){}
+void _zGraphFPrintDummy(FILE *fp, void *data){}
 void _zGraphDestroyDummy(void *data){ zFree( data ); }
 double _zGraphEvalHDummy(void *d1, void *d2, void *util){ return 0; }
 
-/* zGraphInit
- * - initialize a graph.
- */
+/* initialize a graph. */
 void zGraphInit(zGraph *graph)
 {
   zListInit( &graph->list );
   graph->dup = _zGraphDupDummy;
   graph->equal = _zGraphEqualDummy;
-  graph->fwrite = _zGraphFWriteDummy;
+  graph->fprint = _zGraphFPrintDummy;
   graph->destroy = _zGraphDestroyDummy;
   graph->h = _zGraphEvalHDummy;
 }
 
-/* zGraphDestroy
- * - destroy a graph.
- */
+/* destroy a graph. */
 void zGraphDestroy(zGraph *graph)
 {
   zGraphCell *gc;
@@ -99,9 +89,7 @@ void zGraphDestroy(zGraph *graph)
   }
 }
 
-/* zGraphAddNode
- * - add a node to a graph.
- */
+/* add a node to a graph. */
 bool zGraphAddNode(zGraph *graph, void *data)
 {
   zGraphCell *gc;
@@ -126,9 +114,7 @@ bool zGraphAddNode(zGraph *graph, void *data)
   return true;
 }
 
-/* zGraphFindNode
- * - find a node from a graph.
- */
+/* find a node from a graph. */
 zGraphNode *zGraphFindNode(zGraph *graph, void *data)
 {
   zGraphCell *gc;
@@ -139,9 +125,7 @@ zGraphNode *zGraphFindNode(zGraph *graph, void *data)
   return NULL;
 }
 
-/* zGraphConnect
- * - connect two graph nodes.
- */
+/* connect two graph nodes. */
 bool zGraphConnect(zGraph *graph, void *from, void *to, double cost)
 {
   zGraphNode *fromnode, *tonode;
@@ -152,9 +136,7 @@ bool zGraphConnect(zGraph *graph, void *from, void *to, double cost)
   return zGraphNodeConnect( fromnode, tonode, cost );
 }
 
-/* zGraphBiconnect
- * - connect two graph nodes bidirectionally.
- */
+/* connect two graph nodes bidirectionally. */
 bool zGraphBiconnect(zGraph *graph, void *n1, void *n2, double cost)
 {
   zGraphNode *node1, *node2;
@@ -165,10 +147,8 @@ bool zGraphBiconnect(zGraph *graph, void *n1, void *n2, double cost)
   return zGraphNodeBiconnect( node1, node2, cost );
 }
 
-/* zGraphFWrite
- * - output information of a graph.
- */
-void zGraphFWrite(FILE *fp, zGraph *graph)
+/* print information of a graph. */
+void zGraphFPrint(FILE *fp, zGraph *graph)
 {
   zGraphCell *gc;
   zGraphArcListCell *ac;
@@ -176,16 +156,16 @@ void zGraphFWrite(FILE *fp, zGraph *graph)
   fprintf( fp, "number of nodes = %d\n", zListNum(&graph->list) );
   zListForEach( &graph->list, gc ){
     fprintf( fp, "node" );
-    graph->fwrite( fp, gc->data.data );
+    graph->fprint( fp, gc->data.data );
     fprintf( fp, " ... value=%g (H=%g)\n", gc->data.val, gc->data.hval );
     zListForEach( &gc->data.arc, ac ){
       fprintf( fp, " --> node" );
-      graph->fwrite( fp, ac->data.node->data );
+      graph->fprint( fp, ac->data.node->data );
       fprintf( fp, " ... cost=%g\n", ac->data.cost );
     }
     if( gc->data.to ){
       fprintf( fp, " *min. cost providing to node" );
-      graph->fwrite( fp, gc->data.to->data );
+      graph->fprint( fp, gc->data.to->data );
       fprintf( fp, "\n" );
     }
   }
@@ -196,9 +176,7 @@ void zGraphFWrite(FILE *fp, zGraph *graph)
  * graph path class
  * ********************************************************** */
 
-/* zGraphNodeListAdd
- * - add a node to a node list.
- */
+/* add a node to a node list. */
 bool zGraphNodeListAdd(zGraphNodeList *list, zGraphNode *node)
 {
   zGraphNodeListCell *cp;

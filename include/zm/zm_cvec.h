@@ -27,7 +27,7 @@ typedef zCVecStruct * zCVec;
 #define zCVecSetSize(v,s)       ( _zCVecSize(v) = (s) )
 #define zCVecSizeIsEqual(v1,v2) ( _zCVecSize(v1) == _zCVecSize(v2) )
 
-/*! \brief abstract and set vector element.
+/*! \brief abstract and set an element of a complex vector.
  *
  * zCVecElem() returns the \a i th component of a vector \a v.
  * zCVecSetElem() sets the \a i th component of \a v for a
@@ -38,47 +38,40 @@ typedef zCVecStruct * zCVec;
 #define zCVecElem(v,n)      ( &(v)->elem[n] )
 #define zCVecSetElem(v,n,e) zComplexCopy( (e), zCVecElem(v,n) )
 
-/* METHOD:
- * zCVecAlloc, zCVecFree, zCVecClear,
- * zCVecCopyNC, zCVecCopy, zCVecClone
- * - allocate, free, cleanup and copy vector.
+/*! \brief allocate, free, zero and copy a complex vector.
  *
- * 'zCVecAlloc()' allocates memory for a new vector with 'size' components.
+ * zCVecAlloc() allocates memory for a new vector with \a size.
  *
- * 'zCVecFree()' destroys the given vector 'v', freeing
- * the memory allocated.
+ * zCVecFree() frees memory allocated for a complex vector \a v.
  *
- * 'zCVecClear()' clears the vector 'v', set all of the
- * components for zero.
+ * zCVecClear() sets all components of a complex vector \a v
+ * for zero.
  *
- * 'zCVecCopyNC()' copies the vector 'src' to the other
- * 'dest' without checking the size consistency between 'src'
- * and 'dest'.
+ * zCVecCopyNC() copies a complex vector \a src to another
+ * \a dest without checking the size consistency between them.
  *
- * 'zCVecCopy()' copies the vector 'src' to the other 'dest'.
+ * zCVecCopy() copies a complex vector \a src to another \a dest.
  *
- * 'zCVecClone()' creates a clone of the vector 'src'.
- * 's' is the size of the array.
+ * zCVecClone() creates a clone of a complex vector \a src.
  * \return
- * 'zCVecAlloc()' and 'zCVecClone()' return a pointer to the newly
- * created vector.
+ * zCVecAlloc() and zCVecClone() return a pointer to the newly
+ * allocated vector.
  *
- * 'zCVecFree()' returns no values.
+ * zCVecFree() returns no values.
  *
- * 'zCVecClear()' returns a pointer 'v'.
+ * zCVecClear() returns a pointer \a v.
  *
- * 'zCVecCopyNC()' returns a pointer 'dest'.
+ * zCVecCopyNC() returns a pointer \a dest.
  *
- * 'zCVecCopy()' returns a pointer 'dest', or the null
- * pointer if the size of 'src' and 'dest' do not coincide.
+ * zCVecCopy() returns a pointer \a dest, or the null pointer
+ * if the sizes of \a src and \a dest do not coincide.
  * \notes
- * Since 'zCVecCopyNC()' does not check the size
- * consistency, when the size of 'src' and 'dest' are
- * different from each other, anything might happen.
- * If it is not urgent and you are not hasty, you should
- * use 'zCVecCopy()' for safety.
+ * Since zCVecCopyNC() does not check the size consistency,
+ * anything might happen if the sizes of \a src and \a dest
+ * are different. If it is not urgent and you are not hasty,
+ * you should use zCVecCopy() for safety.
  */
-__EXPORT zCVec zCVecAlloc(int s);
+__EXPORT zCVec zCVecAlloc(int size);
 __EXPORT void zCVecFree(zCVec v);
 __EXPORT zCVec zCVecClear(zCVec v);
 __EXPORT zCVec zCVecCopyNC(zCVec src, zCVec dest);
@@ -87,76 +80,66 @@ __EXPORT zCVec zCVecClone(zCVec src);
 
 __EXPORT zCVec zVec2CVec(zVec v, zCVec cv);
 
-/* METHOD:
- * zCVecIsEqual - compare two vectors.
+/*! \brief compare two complex vectors.
  *
- * 'zCVecIsEqual()' sees if the given two vector 'v1' and
- * 'v2' are equal to each other.
+ * zCVecIsEqual() checks if two complex vectors \a v1 and
+ * \a v2 are equal.
  * \return
- * 'zCVecIsEqual()' returns the true value if 'v1' equals
- * to 'v2', or the false value otherwise.
+ * zCVecIsEqual() returns the true value if \a v1 equals
+ * to \a v2, or the false value otherwise.
  */
 __EXPORT bool zCVecIsEqual(zCVec v1, zCVec v2);
 
-/* METHOD:
- * zCVecIsTol, zCVecIsTiny
- * - test if tiny vector.
+/*! \brief check if a complex vector is tiny.
  *
- * 'zCVecIsTol()' returns the true value if all the
- * components of the vector 'v' are less than 'tol', or the
+ * zCVecIsTol() returns the true value if all components
+ * of a complex vector \a v are less than \a tol, or the
  * false value otherwise.
- * 'zCVecIsTiny()' is the same with 'zCVecIsTol()'
- * except it compares each component with zTOL(defined in
- * 'zeda_misc.h') instead of 'tol'.
+ *
+ * zCVecIsTiny() is the same with zCVecIsTol() except that
+ * it uses zTOL (defined in "zeda_misc.h") for the tolerance.
  * \return
- * 'zCVecIsTol()' and 'zCVecIsTiny()' return results as a boolean value.
+ * zCVecIsTol() and zCVecIsTiny() return a boolean value.
  */
 __EXPORT bool zCVecIsTol(zCVec v, double tol);
 #define zCVecIsTiny(v) zCVecIsTol( v, zTOL )
 
-/* METHOD:
- * zCVecAddNC, zCVecSubNC, zCVecRevNC, zCVecMulNC, zCVecDivNC,
- * zCVecAddNCDRC, zCVecSubNCDRC, zCVecRevNCDRC, zCVecMulNCDRC, zCVecDivNCDRC,
- * zCVecAdd, zCVecSub, zCVecRev, zCVecMul, zCVecDiv,
- * zCVecAddDRC, zCVecSubDRC, zCVecRevDRC, zCVecMulDRC, zCVecDivDRC,
- * - basic arithmetics for vector.
+/*! \brief basic arithmetics for the complex vector.
  *
- * 'zCVecAddNC()' and 'zCVecAdd()' add the two vectors,
- * 'v1' and 'v2', and put the result into 'v'.
+ * zCVecAddNC() and zCVecAdd() add two complex vectors \a v1
+ * and \a v2, and puts the result into \a v.
  *
- * 'zCVecSubNC()' and 'zCVecSub()' subtract 'v2' from
- * 'v1', and put the result into 'v'.
+ * zCVecSubNC() and zCVecSub() subtract \a v2 from \a v1,
+ * and puts the result into \a v.
  *
- * 'zCVecRevNC()' and 'zCVecRev()' reverse 'v1', and put
- * the result into 'v'.
+ * zCVecRevNC() and zCVecRev() reverse \a v1, and puts the
+ * result into \a v.
  *
- * 'zCVecMulNC()' and 'zCVecMul()' multiply 'v1' by a
- * scalar value 'k', and put the result into 'v'.
+ * zCVecMulNC() and zCVecMul() multiply \a v1 by a scalar
+ * value \a k, and puts the result into \a v.
  *
- * 'zCVecDivNC()' and 'zCVecDiv()' divide 'v1' by 'k',
- * and put the result into 'v'.
+ * zCVecDivNC() and zCVecDiv() divide \a v1 by \a k, and
+ * puts the result into \a v.
  *
- * 'zCVecAddNCDRC()' and 'zCVecAddDRC()' directly add
- * 'v2' to 'v1'.
+ * zCVecAddNCDRC() and zCVecAddDRC() directly add \a v2 to
+ * \a v1.
  *
- * 'zCVecSubNCDRC()' and 'zCVecSubDRC()' directly
- * subtract 'v2' from 'v1'.
+ * zCVecSubNCDRC() and zCVecSubDRC() directly subtract \a v2
+ * from \a v1.
  *
- * 'zCVecRevNCDRC()' and 'zCVecRevDRC()' directly reverse
- * 'v'.
+ * zCVecRevNCDRC() and zCVecRevDRC() directly reverse \a v.
  *
- * 'zCVecMulNCDRC()' and 'zCVecMulDRC()' directly
- * multiply 'v' by 'k'.
+ * zCVecMulNCDRC() and zCVecMulDRC() directly multiply \a v
+ * by \a k.
  *
- * 'zCVecDivNCDRC()' and 'zCVecDivDRC()' directly divide
- * 'v' by 'k'.
+ * zCVecDivNCDRC() and zCVecDivDRC() directly divide \a v
+ * by \a k.
  * \return
- * Each of all these functions returns a pointer to
- * the result.
+ * These functions return a pointer to the result.
  * \notes
- * The type of NC functions do not check the size
- * consistency. If it is not urgent and you are not
- * hasty, you should not use them.
+ * The NC-type functions do not check the size consistency.
+ * If it is not urgent and you are not hasty, you should not
+ * use them.
  */
 __EXPORT zCVec zCVecAddNC(zCVec v1, zCVec v2, zCVec v);
 __EXPORT zCVec zCVecSubNC(zCVec v1, zCVec v2, zCVec v);
@@ -165,19 +148,19 @@ __EXPORT zCVec zCVecMulNC(zCVec v1, zComplex *z, zCVec v);
 __EXPORT zCVec zCVecDivNC(zCVec v1, zComplex *z, zCVec v);
 __EXPORT zCVec zCVecCatNC(zCVec v1, zComplex *z, zCVec v2, zCVec v);
 
-#define zCVecAddNCDRC(v1,v2)   zCVecAddNC( v1, v2, v1 )
-#define zCVecSubNCDRC(v1,v2)   zCVecSubNC( v1, v2, v1 )
-#define zCVecRevNCDRC(v)       zCVecRevNC( v, v )
-#define zCVecMulNCDRC(v,z)     zCVecMulNC( v, z, v )
-#define zCVecDivNCDRC(v,z)     zCVecDivNC( v, z, v )
-#define zCVecCatNCDRC(v1,z,v2) zCVecCatNC( v1, z, v2, v1 )
-
 __EXPORT zCVec zCVecAdd(zCVec v1, zCVec v2, zCVec v);
 __EXPORT zCVec zCVecSub(zCVec v1, zCVec v2, zCVec v);
 __EXPORT zCVec zCVecRev(zCVec v1, zCVec v);
 __EXPORT zCVec zCVecMul(zCVec v1, zComplex *z, zCVec v);
 __EXPORT zCVec zCVecDiv(zCVec v1, zComplex *z, zCVec v);
 __EXPORT zCVec zCVecCat(zCVec v1, zComplex *z, zCVec v2, zCVec v);
+
+#define zCVecAddNCDRC(v1,v2)   zCVecAddNC( v1, v2, v1 )
+#define zCVecSubNCDRC(v1,v2)   zCVecSubNC( v1, v2, v1 )
+#define zCVecRevNCDRC(v)       zCVecRevNC( v, v )
+#define zCVecMulNCDRC(v,z)     zCVecMulNC( v, z, v )
+#define zCVecDivNCDRC(v,z)     zCVecDivNC( v, z, v )
+#define zCVecCatNCDRC(v1,z,v2) zCVecCatNC( v1, z, v2, v1 )
 
 #define zCVecAddDRC(v1,v2)   zCVecAdd( v1, v2, v1 )
 #define zCVecSubDRC(v1,v2)   zCVecSub( v1, v2, v1 )
@@ -186,63 +169,55 @@ __EXPORT zCVec zCVecCat(zCVec v1, zComplex *z, zCVec v2, zCVec v);
 #define zCVecDivDRC(v,z)     zCVecDiv( v, z, v )
 #define zCVecCatDRC(v1,z,v2) zCVecCat( v1, z, v2, v1 )
 
-/* METHOD:
- * zCVecInnerProdNC, zCVecInnerProd
- * - inner product of vector.
+/*! \brief inner product of two complex vectors.
  *
- * 'zCVecInnerProdNC()' and 'zCVecInnerProd()'
- * calculates the inner products of the two vector,
- * 'v1' and 'v2'.
  * \return
- * 'zCVecInnerProdNC()' and 'zCVecInnerProd()'
- * return the inner products calculated.
+ * zCVecInnerProdNC() and zCVecInnerProd() calculates
+ * the inner products of two complex vectors \a v1 and \a v2.
  * \notes
- * 'zCVecInnerProdNC()' does not check the size
- * consistency between 'v1' and 'v2'. If it is not urgent
- * and you are not hasty, you should use 'zCVecInnerProd()'.
+ * zCVecInnerProdNC() does not check the size consistency
+ * between \a v1 and \a v2. If it is not urgent and you are
+ * not hasty, you should use zCVecInnerProd().
  */
 __EXPORT zComplex *zCVecInnerProdNC(zCVec v1, zCVec v2, zComplex *z);
 __EXPORT zComplex *zCVecInnerProd(zCVec v1, zCVec v2, zComplex *z);
 
-/* METHOD:
- * zCVecSqrNorm, zCVecNorm, zCVecNormalize, zCVecNormalizeDRC,
- * - normalize vector.
+/*! \brief normalize vector.
  *
- * 'zCVecSqrNorm()' calculates the squared norm of the
- * vector 'v'. And 'zCVecNorm()' calculates the norm
- * of 'v'.
+ * zCVecSqrNorm() calculates the squared norm of a complex
+ * vector \a v. zCVecNorm() calculates the norm of \a v.
  *
- * 'zCVecNormalize()' normalizes the vector 'src',
- * dividing by the norm of itself, and put the result
- * into 'dest'.
- * 'zCVecNormalizeDRC()' directly normalizes the
- * vector 'v'.
+ * zCVecNormalize() normalizes a complex vector \a src,
+ * namely, divides it by the norm of itself, and puts the
+ * result into \a dest.
+ *
+ * zCVecNormalizeDRC() directly normalizes a complex vector
+ * \a v.
  * \return
- * 'zCVecSqrNorm()' and 'zCVecNorm()' return the value calculated.
+ * zCVecSqrNorm() and zCVecNorm() return the calculated value.
  *
- * Each of 'zCVecNormalize()' and 'zCVecNormalizeDRC()'
- * returns the pointer to the result.
+ * zCVecNormalize() and zCVecNormalizeDRC() return a pointer
+ * to the result.
  */
 __EXPORT double zCVecSqrNorm(zCVec v);
 #define zCVecNorm(v)         sqrt( zCVecSqrNorm(v) )
 __EXPORT zCVec zCVecNormalize(zCVec src, zCVec dest);
 #define zCVecNormalizeDRC(v) zCVecNormalize(v,v)
 
-/* METHOD:
- * zCVecFWrite, zCVecWrite
- * - output vector.
+/*! \brief print a complex vector.
  *
- * 'zCVecFWrite()' writes the components of the given vector
- * 'v' to the current position of the file 'fp' in the following
+ * zCVecFPrint() prints components of a complex vector \a v
+ * to the current position of a file \a fp in the following
  * format.
  *  n ( z1 z2 z3 ... zn )
- * 'zCVecWrite()' writes the components of 'v' in the same
- * format simply to the standard output.
- * [RETURN VALUE]
- * 'zCVecFWrite()' and 'zCVecWrite()' return no values.
+ *
+ * zCVecPrint() prints components of \a v in the same format
+ * to the standard output.
+ * \return
+ * zCVecFPrint() and zCVecPrint() return no values.
  */
-__EXPORT void zCVecFWrite(FILE *fp, zCVec v);
-#define zCVecWrite(v) zCVecFWrite( stdout, v )
+__EXPORT void zCVecFPrint(FILE *fp, zCVec v);
+#define zCVecPrint(v) zCVecFPrint( stdout, v )
 
 __END_DECLS
 

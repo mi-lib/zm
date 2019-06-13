@@ -18,10 +18,10 @@ int main(void)
   x = zVecAlloc( 6 );
   zVecSetAll( x, 2.0 );
   zSSSolve( f, x, NULL, 0 );
-  zVecWrite( x );
+  zVecPrint( x );
   printf( ">> assertion <<\n" );
   f( x, x, NULL );
-  zVecWrite( x );
+  zVecPrint( x );
   zVecFree( x );
   return 0;
 }

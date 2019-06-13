@@ -112,10 +112,10 @@ int main(void)
   vt = zCVecAlloc( n );
   for( i=0; i<n; i++ ){
     printf( "eig.#%d val= ", i );
-    zComplexWrite( &z[i] );
+    zComplexPrint( &z[i] );
     printf( "\n" );
     printf( "eig.#%d vec.\n", i );
-    zCVecWrite( ve[i] );
+    zCVecPrint( ve[i] );
     zCMulMatVec( cma, ve[i], vt );
     zComplexRev( &z[i], &z[i] );
     zCVecCatDRC( vt, &z[i], ve[i] );

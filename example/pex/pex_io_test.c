@@ -7,11 +7,11 @@ int main(void)
 
   if( !( fp = fopen( "pex_test.zpx", "r" ) ) )
     return 1;
-  p = zPexFRead( fp );
+  p = zPexFScan( fp );
   fclose( fp );
 
   zPexExprX( p );
-  zPexWrite( p );
+  zPexPrint( p );
   zPexFree( p );
   return 0;
 }

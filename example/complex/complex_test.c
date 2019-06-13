@@ -5,38 +5,38 @@ int main(void)
   zComplex c1, c2, c3, c;
 
   zComplexCreate( &c1, 1, 0 );
-  printf( "C1 = " ); zComplexWrite( &c1 ); zEndl();
+  printf( "C1 = " ); zComplexPrint( &c1 ); zEndl();
   printf( " abs = %f\n", zComplexAbs(&c1) );
   printf( " arg = %f\n", zRad2Deg(zComplexArg(&c1)) );
 
   zComplexPolar( &c2, 1, zDeg2Rad(45) );
-  printf( "C2 = " ); zComplexWrite( &c2 ); zEndl();
+  printf( "C2 = " ); zComplexPrint( &c2 ); zEndl();
   printf( " abs = %f\n", zComplexAbs(&c2) );
   printf( " arg = %f\n", zRad2Deg(zComplexArg(&c2)) );
 
   zComplexConj( &c2, &c3 );
-  printf( "C2* = " ); zComplexWrite( &c3 ); zEndl();
+  printf( "C2* = " ); zComplexPrint( &c3 ); zEndl();
   zComplexCMul( &c2, &c3, &c );
-  printf( "C2.C3 = " ); zComplexWrite( &c ); zEndl();
+  printf( "C2.C3 = " ); zComplexPrint( &c ); zEndl();
   zComplexCDiv( &c2, &c3, &c );
-  printf( "C2/C3 = " ); zComplexWrite( &c ); zEndl();
+  printf( "C2/C3 = " ); zComplexPrint( &c ); zEndl();
 
   zComplexCreate( &c1, 0.5, 0.5*sqrt(3) );
-  printf( "C1 = " ); zComplexWrite( &c1 ); zEndl();
+  printf( "C1 = " ); zComplexPrint( &c1 ); zEndl();
 
   zComplexPow( &c1, 6, &c3 );
-  printf( "C1^6 = " ); zComplexWrite( &c3 ); zEndl();
+  printf( "C1^6 = " ); zComplexPrint( &c3 ); zEndl();
 
   zComplexCreate( &c, 1, 1 );
-  printf( "C = " ); zComplexWrite( &c ); zEndl();
+  printf( "C = " ); zComplexPrint( &c ); zEndl();
   zComplexCPow( &c1, &c, &c2 );
-  printf( "C1^C = " ); zComplexWrite( &c2 ); zEndl();
+  printf( "C1^C = " ); zComplexPrint( &c2 ); zEndl();
 
   zComplexCLog( &c2, &c1, &c3 );
-  printf( "log_C1 C2 = " ); zComplexWrite( &c3 ); zEndl();
+  printf( "log_C1 C2 = " ); zComplexPrint( &c3 ); zEndl();
 
   zComplexNormalize( &c, &c );
-  printf( "C/|C| = " ); zComplexWrite( &c ); zEndl();
+  printf( "C/|C| = " ); zComplexPrint( &c ); zEndl();
 
   return 0;
 }

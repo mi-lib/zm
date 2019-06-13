@@ -410,43 +410,47 @@ __EXPORT zVec zVecNormalize(zVec src, zVec dest);
 #define zVecSqrDist(v1,v2)  zRawVecSqrDist(zVecBuf(v1),zVecBuf(v2),zVecSizeNC(v1))
 #define zVecDist(v1,v2)     sqrt( zVecSqrDist( v1, v2 ) )
 
-/*! \brief input/output vector.
+/*! \brief scan and print a vector.
  *
- * zVecFRead() reads a sequence of double-precision
- * floating-point values from the current position of a
- * file \a fp, and creates a new vector.
+ * These functions scan/print a vector from/to a file.
  * The format is as follows:
  *  \a n ( \a x1 \a x2 \a x3 ... \a xn )
  * where \a n is the size of vector.
- * zVecRead() reads a sequence of double-precision
- * floating-point values according to the above format
- * from the standard input.
  *
- * zVecFWrite() writes the components of a vector \a v to
- * the current position of a file \a fp in the same format
- * with the above.
- * zVecWrite() writes the components of \a v in the same
- * format to the standard output.
+ * zVecFScan() scans a sequence of double-precision
+ * floating-point values from the current position of a
+ * file \a fp, and creates a new vector.
+ * zVecScan() scans a sequence of double-precision
+ * floating-point values from the standard input.
  *
- * zVecDataFWrite() writes the components of a given vector
- * \a v to the current position of a file \a fp in the
- * following format.
- *  \a x1 \a x2 \a x3 ... \a xn
- * zVecDataWrite() writes the components of \a v in the
- * above format to the standard output.
+ * zVecFPrint() prints the components of a vector \a v
+ * out to the current position of a file \a fp.
+ * zVecPrint() prints the components of \a v out to the
+ * standard output.
  * \return
- * zVecFRead() and zVecRead() return a pointer to the newly
+ * zVecFScan() and zVecScan() return a pointer to the newly
  * created vector.
  *
- * zVecFWrite(), zVecWrite(), zVecDataFWrite() and
- * zVecDataWrite() return no values.
+ * zVecFPrint() and zVecPrint() return no values.
  */
-__EXPORT zVec zVecFRead(FILE *fp);
-#define zVecRead()       zVecFRead( stdin )
-__EXPORT void zVecFWrite(FILE *fp, zVec v);
-#define zVecWrite(v)     zVecFWrite( stdout, v )
-__EXPORT void zVecDataFWrite(FILE *fp, zVec v);
-#define zVecDataWrite(v) zVecDataFWrite( stdout, v )
+__EXPORT zVec zVecFScan(FILE *fp);
+#define zVecScan()       zVecFScan( stdin )
+__EXPORT void zVecFPrint(FILE *fp, zVec v);
+#define zVecPrint(v)     zVecFPrint( stdout, v )
+
+/*! \brief print only components of a vector.
+ *
+ * zVecDataFPrint() prints only components of a vector
+ * \a v out to the current position of a file \a fp
+ * in the following format:
+ *  \a x1 \a x2 \a x3 ... \a xn
+ * zVecDataPrint() prints components of \a v out to
+ * the standard output.
+ * \return
+ * zVecDataFPrint() and zVecDataPrint() return no values.
+ */
+__EXPORT void zVecDataFPrint(FILE *fp, zVec v);
+#define zVecDataPrint(v) zVecDataFPrint( stdout, v )
 
 __END_DECLS
 

@@ -18,11 +18,11 @@ int main(void)
   zPexBH( pex, ans, zTOL, 0 );
   for( i=0; i<dim-1; i++ ){
     printf( "z=" );
-    zComplexWrite( &ans[i] );
+    zComplexPrint( &ans[i] );
     /* verification */
     zPexCVal( pex, &ans[i], &c );
     printf( "  P(z)=" );
-    zComplexWrite( &c );
+    zComplexPrint( &c );
     printf( " ... %s\n", zBoolExpr( zComplexIsTiny(&c) ) );
     zEndl();
   }

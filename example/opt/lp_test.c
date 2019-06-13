@@ -8,7 +8,8 @@ bool zLPFRead(FILE *fp, zMat *a, zVec *b, zVec *c, zVec *ans)
 int main(int argc, char *argv[])
 {
   zMat a;
-  zVec b, c, x, ans;
+  zVec b, c, x;
+  zVecStruct ans;
   double cost;
   FILE *fp;
 
@@ -31,18 +32,18 @@ int main(int argc, char *argv[])
 
   printf( "revised two-phase simplex method\n" );
   printf( "minimize c^T x subject to Ax=b and x>=0, where:\n" );
-  printf( "c: " ); zVecWrite( c );
-  printf( "A: " ); zMatWrite( a );
-  printf( "b: " ); zVecWrite( b );
+  printf( "c: " ); zVecPrint( c );
+  printf( "A: " ); zMatPrint( a );
+  printf( "b: " ); zVecPrint( b );
   printf( "<result>\n" );
   if( !zLPSolveSimplex( a, b, c, x, &cost ) ){
     printf( "failed.\n" );
     return 0;
   }
-  zVecWrite( x );
+  zVecPrint( x );
   printf( "cost=%f\n", cost );
   printf( "<true answer>\n" );
-  zVecWrite( &ans );
+  zVecPrint( &ans );
   printf( "cost=%f\n", zRawVecInnerProd( answer, zVecBuf(c), zVecSizeNC(&ans) ) );
 
   zMatFree( a );

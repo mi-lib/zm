@@ -20,21 +20,21 @@ int main(void)
   x = zVecAlloc( col );
 
   printf( "<original matrix/vector>\n" );
-  printf( "A: " ); zMatWrite( a );
-  printf( "c: " ); zVecWrite( c );
+  printf( "A: " ); zMatPrint( a );
+  printf( "c: " ); zVecPrint( c );
 
   printf( "<inequality case>\n" );
   zLPIneq2Std( a, c, x, &as, &cs, &xs );
-  printf( "A: " ); zMatWrite( as );
-  printf( "c: " ); zVecWrite( cs );
+  printf( "A: " ); zMatPrint( as );
+  printf( "c: " ); zVecPrint( cs );
   zMatFree( as );
   zVecFree( cs );
   zVecFree( xs );
 
   printf( "<unbound case>\n" );
   zLPUnb2Std( a, c, x, &as, &cs, &xs );
-  printf( "A: " ); zMatWrite( as );
-  printf( "c: " ); zVecWrite( cs );
+  printf( "A: " ); zMatPrint( as );
+  printf( "c: " ); zVecPrint( cs );
   zMatFree( as );
   zVecFree( cs );
   zVecFree( xs );

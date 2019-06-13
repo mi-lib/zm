@@ -87,7 +87,7 @@ typedef struct{
   /* methods */
   void *(* dup)(void*);
   bool (* equal)(void*,void*);
-  void (* fwrite)(FILE*,void*);
+  void (* fprint)(FILE*,void*);
   void (* destroy)(void*);
   double (* h)(void*,void*,void*);
 } zGraph;
@@ -151,12 +151,12 @@ __EXPORT bool zGraphConnect(zGraph *graph, void *from, void *to, double cost);
  */
 __EXPORT bool zGraphBiconnect(zGraph *graph, void *n1, void *n2, double cost);
 
-/*! \brief output information of a graph.
+/*! \brief print information of a graph.
  *
- * zGraphFWrite() outputs information of \a graph to a stream
+ * zGraphFPrint() prints information of \a graph to a stream
  * pointed by \a fp.
  */
-__EXPORT void zGraphFWrite(FILE *fp, zGraph *graph);
+__EXPORT void zGraphFPrint(FILE *fp, zGraph *graph);
 
 /* ********************************************************** */
 /*! \brief graph node list class.

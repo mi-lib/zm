@@ -216,18 +216,18 @@ __EXPORT double *zRawVecNormalize(double *src, int size, double *dest);
 __EXPORT double zRawVecSqrDist(double *v1, double *v2, int size);
 #define zRawVecDist(v1,v2,siz)     sqrt( zRawVecSqrDist( v1, v2, siz ) )
 
-/*! \brief output a raw vector.
+/*! \brief print a raw vector.
  *
- * zRawVecFWrite() outputs all components of a raw vector
- * \a v to the current position of file \a fp.
+ * zRawVecFPrint() prints all components of a raw vector
+ * \a v to the current position of a file \a fp.
  * \a size is the size of the vector.
- * zRawVecWrite() outputs all components of \a v to the
- * standard output.
+ * zRawVecPrint() prints all components of \a v out to
+ * the standard output.
  * \return
- * zRawVecFWrite() and zRawVecWrite() return no values.
+ * zRawVecFPrint() and zRawVecPrint() return no values.
  */
-__EXPORT void zRawVecFWrite(FILE *fp, double *v, int size);
-#define zRawVecWrite(v,s) zRawVecFWrite( stdout, v, s )
+__EXPORT void zRawVecFPrint(FILE *fp, double *v, int size);
+#define zRawVecPrint(v,s) zRawVecFPrint( stdout, v, s )
 
 __END_DECLS
 

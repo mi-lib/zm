@@ -17,12 +17,12 @@ void heboQEsolve(double a, double b, double c, zComplex ans[])
   }
 }
 
-void write_ans(zComplex ans[])
+void print_ans(zComplex ans[])
 {
   printf( " -> x = " );
-  zComplexWrite( &ans[0] );
+  zComplexPrint( &ans[0] );
   printf( ", " );
-  zComplexWrite( &ans[1] );
+  zComplexPrint( &ans[1] );
   printf( "\n" );
 }
 
@@ -34,11 +34,11 @@ void examine(double a, zComplex ans[])
   printf( "%f x^2 + ", a );
   zComplexAdd( &ans[0], &ans[1], &p );
   zComplexMul( &p, -a, &p );
-  zComplexWrite( &p );
+  zComplexPrint( &p );
   printf( " x + " );
   zComplexCMul( &ans[0], &ans[1], &p );
   zComplexMul( &p, a, &p );
-  zComplexWrite( &p );
+  zComplexPrint( &p );
   printf( " = 0\n\n" );
 }
 
@@ -50,12 +50,12 @@ void qe_solve(double a, double b, double c)
 
   printf( "<fine>\n" );
   zQESolve( a, b, c, ans );
-  write_ans( ans );
+  print_ans( ans );
   examine( a, ans );
 
   printf( "<hebo>\n" );
   heboQEsolve( a, b, c, ans );
-  write_ans( ans );
+  print_ans( ans );
   examine( a, ans );
 }
 

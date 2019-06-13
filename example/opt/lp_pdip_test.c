@@ -114,12 +114,12 @@ int main(void)
 
   printf( "Primal-dual Interior-point method\n" );
   printf( "minimize c^T x subject to Ax<=b and x>=0, where:\n" );
-  printf( "c: " ); zVecWrite( c );
-  printf( "A: " ); zMatWrite( a );
-  printf( "b: " ); zVecWrite( b );
+  printf( "c: " ); zVecPrint( c );
+  printf( "A: " ); zMatPrint( a );
+  printf( "b: " ); zVecPrint( b );
   printf( "<result>\n" );
   zLPSolvePDIP_PC( a, b, c, x, &cost );
-  zVecWrite( x );
+  zVecPrint( x );
   printf( "%f\n", cost );
   return 0;
 }

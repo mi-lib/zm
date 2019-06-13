@@ -22,7 +22,7 @@ bool test_equal(void *d1, void *d2)
       && ((data_t *)d1)->y == ((data_t *)d2)->y;
 }
 
-void test_fwrite(FILE *fp, void *data)
+void test_fprint(FILE *fp, void *data)
 {
   fprintf( fp, "(%g,%g)", ((data_t *)data)->x, ((data_t *)data)->y );
 }
@@ -82,7 +82,7 @@ void output_path(zGraph *graph, zGraphNodeList *path, double cost)
 
   zListForEach( path, gc ){
     printf( " -> node" );
-    graph->fwrite( stdout, gc->data->data );
+    graph->fprint( stdout, gc->data->data );
     printf( " ... %f\n", gc->data->val );
   }
   printf( "cost = %f\n", cost );
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
   zGraphInit( &graph );
   graph.dup = test_dup;
   graph.equal = test_equal;
-  graph.fwrite = test_fwrite;
+  graph.fprint = test_fprint;
   graph.destroy = test_destroy;
   graph.h = test_h;
 
@@ -106,13 +106,13 @@ int main(int argc, char *argv[])
   node_create( &graph, &s, 0, 0 );
   node_create( &graph, &g, 5, 10 );
   printf( ">> initial graph\n" );
-  zGraphFWrite( stdout, &graph );
+  zGraphFPrint( stdout, &graph );
 
   printf( ">> start computing the shortest path...\n" );
   cost = zGraphAStar( &graph, &s, &g, &graph, &path );
   printf( "   done.\n" );
   printf( ">> final graph\n" );
-  zGraphFWrite( stdout, &graph );
+  zGraphFPrint( stdout, &graph );
   printf( ">> path\n" );
   output_path( &graph, &path, cost );
 

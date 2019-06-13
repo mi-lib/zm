@@ -75,7 +75,7 @@ int main(void)
   ma = zMatCloneArray(a,n,n);
   zEigDQR( ma, z, 0 );
   for( i=0; i<n; i++ ){
-    zComplexWrite(&z[i]);
+    zComplexPrint(&z[i]);
     printf( "\n" );
   }
   zMatFree( ma );

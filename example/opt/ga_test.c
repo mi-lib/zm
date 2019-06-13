@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 #if 1
     sprintf( filename, "log/000" );
     fp = fopen( filename, "w" );
-    zOptGAFWrite( fp, &ga );
+    zOptGAFPrint( fp, &ga );
     fclose( fp );
 #endif
   zVecFree( min );
@@ -42,17 +42,17 @@ int main(int argc, char *argv[])
 #if 1
   for( i=1; i<=GENERATION; i++ ){
     zOptGAReproduce( &ga, NULL );
-    zVecWrite( ga.individual[0].gene );
+    zVecPrint( ga.individual[0].gene );
 #if 1
     sprintf( filename, "log/%03d", i );
     fp = fopen( filename, "w" );
-    zOptGAFWrite( fp, &ga );
+    zOptGAFPrint( fp, &ga );
     fclose( fp );
 #endif
   }
 #else
   zOptGASolve( &ga, ans, NULL, GENERATION );
-  zVecWrite( ga.individual[0].gene );
+  zVecPrint( ga.individual[0].gene );
 #endif
 
   zOptGADestroy( &ga );

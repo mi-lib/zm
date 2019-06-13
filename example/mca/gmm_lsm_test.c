@@ -6,10 +6,10 @@ zVec errorLSM(zVec p, zVec mean, void *dummy, zVec err)
   double xm, e;
 
   xm = zVecElem(p,zVecSizeNC(p)-1);
-  zVecElem(p,zVecSizeNC(p)-1) = 1;
+  zVecSetElem( p, zVecSizeNC(p)-1, 1 );
   e = zVecInnerProd(mean,p) - xm;
-  zVecElem(p,zVecSizeNC(p)-1) = xm;
-  zVecElem(err,0) = e;
+  zVecSetElem( p, zVecSizeNC(p)-1, xm );
+  zVecSetElem( err, 0, e );
   return err;
 }
 
@@ -29,10 +29,10 @@ zVec meanLSM(zVecList *pl, void *dummy, zVec mean)
   }
   zListForEach( pl, vc ){
     xm = zVecElem(vc->data,zVecSizeNC(vc->data)-1);
-    zVecElem(vc->data,zVecSizeNC(vc->data)-1) = 1;
+    zVecSetElem( vc->data, zVecSizeNC(vc->data)-1, 1 );
     zMatAddDyadNC( c, vc->data, vc->data );
     zVecCatNCDRC( b, xm, vc->data );
-    zVecElem(vc->data,zVecSizeNC(vc->data)-1) = xm;
+    zVecSetElem( vc->data, zVecSizeNC(vc->data)-1, xm );
   }
   zLESolveGauss( c, b, mean );
  TERMINATE:
@@ -59,11 +59,11 @@ zVec meanlLSM(zVecList *pl, double load[], double n, void *dummy, zVec mean)
   }
   zListForEach( pl, vc ){
     xm = zVecElem(vc->data,zVecSizeNC(vc->data)-1);
-    zVecElem(vc->data,zVecSizeNC(vc->data)-1) = 1;
+    zVecSetElem( vc->data, zVecSizeNC(vc->data)-1, 1 );
     zVecMulNC( vc->data, load[i], g );
     zMatAddDyadNC( c, g, vc->data );
     zVecCatNCDRC( b, load[i]*xm, vc->data );
-    zVecElem(vc->data,zVecSizeNC(vc->data)-1) = xm;
+    zVecSetElem( vc->data, zVecSizeNC(vc->data)-1, xm );
     i++;
   }
   zLESolveGauss( c, b, mean );
@@ -98,9 +98,9 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double zmin
       y = zRandF( ymin, ymax );
       z = a*x + b*y + c;
       e = zRandFND(0,1.0);
-      zVecElem(vc,0) = x + e * a;
-      zVecElem(vc,1) = y + e * b;
-      zVecElem(vc,2) = z + e;
+      zVecSetElem( vc, 0, x + e * a );
+      zVecSetElem( vc, 1, y + e * b );
+      zVecSetElem( vc, 2, z + e );
       zVecListInsertHead( vl, vc, true );
     }
   }
@@ -114,7 +114,7 @@ void vec_output(zVecList *points)
 
   fp = fopen( "src", "w" );
   zListForEach( points, vp )
-    zVecDataFWrite( fp, vp->data );
+    zVecDataFPrint( fp, vp->data );
   fclose( fp );
 }
 

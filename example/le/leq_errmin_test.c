@@ -2,11 +2,11 @@
 
 void test(zMat a, zVec b, zVec w, zVec x, zVec _b)
 {
-  zMatWrite( a );
-  zVecWrite( b );
+  zMatPrint( a );
+  zVecPrint( b );
   zLESolveErrorMin( a, b, w, x );
   printf( "ans: " );
-  zVecWrite( x );
+  zVecPrint( x );
   zMulMatVec( a, x, _b );
   zVecSub( b, _b, _b );
   printf( "err=%g\n", zVecNorm( _b ) );

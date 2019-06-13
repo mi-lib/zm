@@ -224,10 +224,10 @@ void test(zOptDM *opt, zVec var, const char* label)
   getchar();
   zVecSetAll( var, 1.0 );
   eprintf( " - initial vec = " );
-  zVecFWrite( stderr, var );
+  zVecFPrint( stderr, var );
   zOptDMSolve( opt, var, NULL, zTOL, 0, NULL );
   eprintf( " + result vec = " );
-  zVecFWrite( stderr, var );
+  zVecFPrint( stderr, var );
 }
 
 int main(int argc, char *argv[])

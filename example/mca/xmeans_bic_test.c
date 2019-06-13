@@ -17,8 +17,8 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
     for( j=0; j<np; j++ ){
       r = zRandFND(0,0.5*rmax);
       t = zRandF(0,zPIx2);
-      zVecElem(vc,0) = xc + r * cos(t);
-      zVecElem(vc,1) = yc + r * sin(t);
+      zVecSetElem( vc, 0, xc + r * cos(t) );
+      zVecSetElem( vc, 1, yc + r * sin(t) );
       zVecListInsertHead( vl, vc, true );
     }
   }
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
   zListForEach( &mc.cl, vcc ){
     sprintf( filename, "%d", i++ );
     fp = fopen( filename, "w" );
-    zClusterDataFWrite( fp, &vcc->data );
+    zClusterDataFPrint( fp, &vcc->data );
     fclose( fp );
   }
   zMClusterDestroy( &mc );

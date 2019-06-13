@@ -8,7 +8,7 @@ int main(void)
   fact = zVecCreateList( 3, 1.0, 2.0, 3.0 );
   p = zPexExp( fact );
 
-  zVecWrite( fact );
+  zVecPrint( fact );
   zPexExprX( p );
 
   zPexFree( p );

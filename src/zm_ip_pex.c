@@ -11,9 +11,7 @@
  * polynomial curve class with designable coefficients.
  * ********************************************************** */
 
-/* zPexIPAlloc
- * - allocate polynomial curve.
- */
+/* allocate a polynomial curve. */
 bool zPexIPAlloc(zPexIP *pc, double term, int dim)
 {
   if( term == 0 ){
@@ -25,9 +23,7 @@ bool zPexIPAlloc(zPexIP *pc, double term, int dim)
   return true;
 }
 
-/* zPexIPAllocBoundary
- * - allocate a polynomial curve from boundary condition.
- */
+/* allocate a polynomial curve from the boundary condition. */
 bool zPexIPAllocBoundary(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, zVec v)
 {
   double k1, k2, k3; /* internal working variables */
@@ -60,9 +56,7 @@ bool zPexIPAllocBoundary(zPexIP *pc, double term, double x1, double v1, double a
   return true;
 }
 
-/* zPexIPCreateLSM
- * - creation of polynomial curve based on the least square method.
- */
+/* create a polynomial curve based on the least square method. */
 bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, zVec t, zVec x)
 {
   register uint i, j, k, n, m;
@@ -102,18 +96,14 @@ bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, zVec t, zVec x)
   return result;
 }
 
-/* zPexIPFree
- * - destruction of polynomial curve.
- */
+/* free a polynomial curve. */
 void zPexIPFree(zPexIP *pc)
 {
   zPexFree( pc->c );
   zPexIPSetTerm( pc, 1 ); /* dummy */
 }
 
-/* zPexIPVal
- * - value of polynomial curve.
- */
+/* value of a polynomial curve. */
 double zPexIPVal(zPexIP *pc, double t)
 {
   register int i, n;
@@ -131,10 +121,8 @@ double zPexIPVal(zPexIP *pc, double t)
   return value;
 }
 
-/* zPexIPFWrite
- * - expression of polynomial curve.
- */
-void zPexIPFWrite(FILE *fp, zPexIP *pc)
+/* print expression of a polynomial curve. */
+void zPexIPFPrint(FILE *fp, zPexIP *pc)
 {
   register int i;
 

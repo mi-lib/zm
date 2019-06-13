@@ -3,7 +3,7 @@
 void invmat(void)
 {
   register int i;
-  zMat m1, m2, m;
+  zMat m1, m2, m3, m;
   zIndex index;
   double marray[] = {
     1, 1, 0, 1,-1,
@@ -19,22 +19,24 @@ void invmat(void)
   index = zIndexCreate( 5 );
   zMatIdent( m2 );
   printf( "before sweeped out\n" );
-  zMatWrite( m1 );
-  zMatWrite( m2 );
+  zMatPrint( m1 );
+  zMatPrint( m2 );
 
   for( i=0; i<zMatRowSize(m1); i++ )
     zSweepOutMat( m1, m2, zIndexElem(index,i), i );
   printf( "after sweeped out\n" );
-  zMatWrite( m1 );
-  zMatWrite( m2 );
+  zMatPrint( m1 );
+  zMatPrint( m2 );
 
   printf( "m1 * m2 (have to be identity matrix):\n" );
-  zMulMatMatDRC( m, m2 );
-  zMatWrite( m2 );
+  m3 = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m2) );
+  zMulMatMat( m, m2, m3 );
+  zMatPrint( m3 );
 
   zMatFree( m );
   zMatFree( m1 );
   zMatFree( m2 );
+  zMatFree( m3 );
   zIndexFree( index );
 }
 
@@ -58,9 +60,9 @@ void leq(void)
   v = zVecCloneArray( varray, 4 );
   x = zVecAlloc( 4 );
   index = zIndexCreate( 4 );
-  zIndexWrite( index );
-  zMatWrite( m );
-  zVecWrite( v );
+  zIndexPrint( index );
+  zMatPrint( m );
+  zVecPrint( v );
   zLESolveGauss( m, v, x );
 
   for( i=0; i<zMatRowSize(m); i++ ){
@@ -68,9 +70,9 @@ void leq(void)
     zSweepOutVec( m, v, zIndexElem(index,i), i );
   }
   printf( "m v =:" );
-  zVecWrite( v );
-  zIndexWrite( index );
-  zVecWrite( x );
+  zVecPrint( v );
+  zIndexPrint( index );
+  zVecPrint( x );
 
   zMatFree( m );
   zVecFree( v );

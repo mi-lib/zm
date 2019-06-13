@@ -35,14 +35,14 @@ int main(int argc, char *argv[])
   gettimeofday( &tv1, NULL );
   dmin1 = zVecTreeNN( &tree, v, &node );
   gettimeofday( &tv2, NULL );
-  eprintf( "kd-tree: %g - ", dmin1 ); zVecFWrite( stderr, node->v );
+  eprintf( "kd-tree: %g - ", dmin1 ); zVecFPrint( stderr, node->v );
   printf( "%d T=%d ", n, deltatime(&tv1,&tv2) );
 
   /* for comparison */
   gettimeofday( &tv1, NULL );
   nn = zVecListNN( &list, v, &dmin2 );
   gettimeofday( &tv2, NULL );
-  eprintf( "naive  : %g - ", dmin2 ); zVecFWrite( stderr, nn );
+  eprintf( "naive  : %g - ", dmin2 ); zVecFPrint( stderr, nn );
   printf( "Tn=%d\n", deltatime(&tv1,&tv2) );
 
   zVecListDestroy( &list, true );
