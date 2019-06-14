@@ -1,3 +1,4 @@
+2019. 6.19. Renamed _*Write to _*Print. [zm_opt_lp_simplex, zm_opt_lcp_lemke, zm_mca_gmm, zm_parse]
 2019. 6.13. Renamed *Read and *Write to *Scan and *Print, respectively. [zm_complex, zm_raw_vec, zm_raw_mat, zm_vec, zm_vec_list, zm_mat, zm_cvec, zm_cmat, zm_opt_ga, zm_pex, zm_seq, zm_ip_pex, zm_nurbs, zm_mca_cluster, zm_graph]
 2019. 1.16. Abolished ZVECTOR_SUFFIX and zVecReadFile. [zm_vec]
 2019. 1.16. Abolished ZMATRIX_SUFFIX and zMatReadFile. [zm_mat]

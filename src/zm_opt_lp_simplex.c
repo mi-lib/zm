@@ -28,14 +28,12 @@ static bool _zLPTableauSimplex(_zLPTableau *tab);
 static bool _zLPTableauReset(_zLPTableau *tab, zVec c);
 static void _zLPTableauAns(_zLPTableau *tab, zVec ans);
 #ifdef DEBUG
-static void _zLPTableauWrite(_zLPTableau *tab);
-static void _zLPTableauFWrite(FILE *fp, _zLPTableau *tab);
+static void _zLPTableauPrint(_zLPTableau *tab);
+static void _zLPTableauFPrint(FILE *fp, _zLPTableau *tab);
 #endif /* DEBUG */
 
 /* (static)
- * _zLPTableauCreate
- * - create initial simplex tableau with slack variables.
- */
+ * create initial simplex tableau with slack variables. */
 bool _zLPTableauCreate(_zLPTableau *tab, zMat a, zVec b)
 {
   register int i;
@@ -66,9 +64,7 @@ bool _zLPTableauCreate(_zLPTableau *tab, zMat a, zVec b)
 }
 
 /* (static)
- * _zLPTableauDestroy
- * - destroy simplex tableau.
- */
+ * destroy simplex tableau. */
 void _zLPTableauDestroy(_zLPTableau *tab)
 {
   zMatFree( tab->a );
@@ -79,10 +75,7 @@ void _zLPTableauDestroy(_zLPTableau *tab)
 }
 
 /* (static)
- * _zLPTableauSweepC1
- * - sweep-out one coefficient of cost function
- *   corresponding to old bases.
- */
+ * sweep-out one coefficient of cost function corresponding to old bases. */
 void _zLPTableauSweepC1(_zLPTableau *tab, int p)
 {
   register int i;
@@ -97,9 +90,7 @@ void _zLPTableauSweepC1(_zLPTableau *tab, int p)
 }
 
 /* (static)
- * _zLPTableauSweepC
- * - sweep-out coefficients of cost function corresponding to bases.
- */
+ * sweep-out coefficients of cost function corresponding to bases. */
 void _zLPTableauSweepC(_zLPTableau *tab)
 {
   register int i;
@@ -109,9 +100,7 @@ void _zLPTableauSweepC(_zLPTableau *tab)
 }
 
 /* (static)
- * _zLPTableauFindNA
- * - find next axis column of tableau to be sweeped-out.
- */
+ * find next axis column of tableau to be sweeped-out. */
 int _zLPTableauFindNA(_zLPTableau *tab)
 { /* next axis for normal case */
   register int i, na;
@@ -125,9 +114,7 @@ int _zLPTableauFindNA(_zLPTableau *tab)
 }
 
 /* (static)
- * _zLPTableauFindNA_deg
- * - find next axis column of tableau in degenerate case.
- */
+ * find next axis column of tableau in degenerate case. */
 int _zLPTableauFindNA_deg(_zLPTableau *tab)
 { /* next axis for degenerated case */
   register int i;
@@ -139,9 +126,7 @@ int _zLPTableauFindNA_deg(_zLPTableau *tab)
 }
 
 /* (static)
- * _zLPTableauFindNP
- * - find next pivot in axis column to be sweeped-out.
- */
+ * find next pivot in axis column to be sweeped-out. */
 int _zLPTableauFindNP(_zLPTableau *tab, int *na)
 { /* next pivot */
   register int i, np;
@@ -167,9 +152,7 @@ int _zLPTableauFindNP(_zLPTableau *tab, int *na)
 }
 
 /* (static)
- * _zLPTableauSweepA
- * - sweep-out tabeau matrix of constraint equation.
- */
+ * sweep-out tabeau matrix of constraint equation. */
 void _zLPTableauSweepA(_zLPTableau *tab, int np, int na)
 {
   register int i, j;
@@ -195,9 +178,7 @@ void _zLPTableauSweepA(_zLPTableau *tab, int np, int na)
 }
 
 /* (static)
- * _zLPTableauSwapPivot
- * - swap base/non-base pivot.
- */
+ * swap base/non-base pivot. */
 void _zLPTableauSwapPivot(_zLPTableau *tab, int np, int na)
 {
   int tmp;
@@ -208,8 +189,7 @@ void _zLPTableauSwapPivot(_zLPTableau *tab, int np, int na)
 }
 
 /* (static)
- * _zLPTableauSimplex
- * - simplex method for initialized tableau.
+ * simplex method for initialized tableau.
  *      1  0 a_1(m+1) ... a_1n     b_0
  *   A=  .    .             .   b=  .
  *        .   .             .       .
@@ -238,9 +218,7 @@ bool _zLPTableauSimplex(_zLPTableau *tab)
 }
 
 /* (static)
- * _zLPTableauReset
- * - reset tableau to the second stage.
- */
+ * reset tableau to the second stage. */
 bool _zLPTableauReset(_zLPTableau *tab, zVec c)
 {
   register int i, j, n, m;
@@ -274,9 +252,7 @@ bool _zLPTableauReset(_zLPTableau *tab, zVec c)
 }
 
 /* (static)
- * _zLPTableauAns
- * - arrange answer vector.
- */
+ * arrange answer vector. */
 void _zLPTableauAns(_zLPTableau *tab, zVec ans)
 {
   register int i;
@@ -288,37 +264,31 @@ void _zLPTableauAns(_zLPTableau *tab, zVec ans)
 
 #ifdef DEBUG
 /* (static)
- * _zLPTableauWrite
- * - output tableau contents (for debug).
- */
-void _zLPTableauWrite(_zLPTableau *tab)
+ * print out tableau contents (for debug). */
+void _zLPTableauPrint(_zLPTableau *tab)
 { /* for debug. */
-  printf( "A: " ); zMatWrite( tab->a );
-  printf( "b: " ); zVecWrite( tab->b );
-  printf( "c: " ); zVecWrite( tab->c );
+  printf( "A: " ); zMatPrint( tab->a );
+  printf( "b: " ); zVecPrint( tab->b );
+  printf( "c: " ); zVecPrint( tab->c );
   printf( "d: = %f\n", tab->d );
-  printf( "(Ib): " ); zIndexWrite( tab->ib );
-  printf( "(In): " ); zIndexWrite( tab->in );
+  printf( "(Ib): " ); zIndexPrint( tab->ib );
+  printf( "(In): " ); zIndexPrint( tab->in );
 }
 
 /* (static)
- * _zLPTableauFWrite
- * - output tableau contents to a file (for debug).
- */
-void _zLPTableauFWrite(FILE *fp, _zLPTableau *tab)
+ * print out tableau contents to a file (for debug). */
+void _zLPTableauFPrint(FILE *fp, _zLPTableau *tab)
 {
-  fprintf( fp, "A: " ); zMatFWrite( fp, tab->a );
-  fprintf( fp, "b: " ); zVecFWrite( fp, tab->b );
-  fprintf( fp, "c: " ); zVecFWrite( fp, tab->c );
+  fprintf( fp, "A: " ); zMatFPrint( fp, tab->a );
+  fprintf( fp, "b: " ); zVecFPrint( fp, tab->b );
+  fprintf( fp, "c: " ); zVecFPrint( fp, tab->c );
   fprintf( fp, "d: = %f\n", tab->d );
-  fprintf( fp, "(Ib): " ); zIndexFWrite( fp, tab->ib );
-  fprintf( fp, "(In): " ); zIndexFWrite( fp, tab->in );
+  fprintf( fp, "(Ib): " ); zIndexFPrint( fp, tab->ib );
+  fprintf( fp, "(In): " ); zIndexFPrint( fp, tab->in );
 }
 #endif /* DEBUG */
 
-/* zLPSolveSimplex
- * - dual-phase simplex method for linear programming.
- */
+/* dual-phase simplex method for linear programming. */
 bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost)
 {
   _zLPTableau tab;
@@ -356,9 +326,7 @@ bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost)
   return ret;
 }
 
-/* zLPFeasibleBase
- * - find a feasible base under Ax=b and x>=0 based on simplex method.
- */
+/* find a feasible base under Ax=b and x>=0 based on simplex method. */
 bool zLPFeasibleBase(zMat a, zVec b, zVec base)
 {
   _zLPTableau tab;

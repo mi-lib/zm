@@ -19,7 +19,7 @@ static bool _zmParseVarAssoc(zmParseVarList *list, char *str, zmParseCell *cell)
 static bool _zmParseVarBuiltin(zmParseVarList *list);
 static double _zmParseVarEval(zmParseVar *var);
 #ifdef DEBUG
-static void _zmParseVarListWrite(zmParseVarList *list);
+static void _zmParseVarListPrint(zmParseVarList *list);
 #endif
 
 static zmParseFunc *_zmParseFuncListReg(zmParseFuncList *list, char *str, zmParseFuncID id, int argc);
@@ -28,7 +28,7 @@ static bool _zmParseFuncBuiltin(zmParseFuncList *list);
 static int _zmParseFuncGetArg(zmParseCell *arg, int argc, double *argv);
 static double _zmParseFuncEval(zmParseFunc *func, zmParseCell *arg);
 #ifdef DEBUG
-static void _zmParseFuncListWrite(zmParseFuncList *list);
+static void _zmParseFuncListPrint(zmParseFuncList *list);
 #endif
 
 static zmParseOp *_zmParseOpFind(char *str);
@@ -39,7 +39,7 @@ static void _zmParseCellFree(zmParseCell *cell);
 static double _zmParseCellEval(zmParseCell *cell);
 static char *_zmParseCellStr(zmParseCell *cell);
 #ifdef DEBUG
-static void _zmParseCellWrite(zmParseCell *cell, int indent);
+static void _zmParseCellPrint(zmParseCell *cell, int indent);
 #endif
 
 static char _zmParseParChar(zmParseStatus status);
@@ -50,13 +50,13 @@ static int _zmParseTokOpSpec(zmParseTok *tok);
 static int _zmParseTokPriority(zmParseTok *tok);
 static char *_zmParseTokStr(zmParseTok *tok);
 #ifdef DEBUG
-static void _zmParseTokWrite(zmParseTok *tok);
+static void _zmParseTokPrint(zmParseTok *tok);
 #endif
 
 static void _zmParseStackInit(zmParseTok *stack);
 static void _zmParseStackDestroy(zmParseTok *stack);
 #ifdef DEBUG
-static void _zmParseStackWrite(zmParseTok *stack);
+static void _zmParseStackPrint(zmParseTok *stack);
 #endif
 
 static zmParseTok *_zmParseTokAlloc(zmParser *parser, zmParseCellType type, char *str);
@@ -203,7 +203,7 @@ double _zmParseVarEval(zmParseVar *var)
 }
 
 #ifdef DEBUG
-void _zmParseVarListWrite(zmParseVarList *list) /* for debug */
+void _zmParseVarListPrint(zmParseVarList *list) /* for debug */
 {
   zmParseVarCell *cp;
 
@@ -331,14 +331,14 @@ double _zmParseFuncEval(zmParseFunc *func, zmParseCell *arg)
 }
 
 #ifdef DEBUG
-void _zmParseFuncListWrite(zmParseFuncList *list) /* for debug */
+void _zmParseFuncListPrint(zmParseFuncList *list) /* for debug */
 {
   zmParseFuncCell *cp;
 
   zListForEach( list, cp ){
     printf( "[#%d] %s <%d>\n", cp->data.id, zName(&cp->data), cp->data.argc );
     if( cp->data.cell )
-      _zmParseCellWrite( cp->data.cell, 0 );
+      _zmParseCellPrint( cp->data.cell, 0 );
   }
 }
 #endif
@@ -456,7 +456,7 @@ char *_zmParseCellStr(zmParseCell *cell)
 }
 
 #ifdef DEBUG
-void _zmParseCellWrite(zmParseCell *cell, int indent) /* for debug */
+void _zmParseCellPrint(zmParseCell *cell, int indent) /* for debug */
 {
   zIndent( indent );
   printf( "type: " );
@@ -480,12 +480,12 @@ void _zmParseCellWrite(zmParseCell *cell, int indent) /* for debug */
   if( cell->arg1 ){
     zIndent( indent+2 );
     printf( "<arg1>\n" );
-    _zmParseCellWrite( cell->arg1, indent+2 );
+    _zmParseCellPrint( cell->arg1, indent+2 );
   }
   if( cell->arg2 ){
     zIndent( indent+2 );
     printf( "<arg2>\n" );
-    _zmParseCellWrite( cell->arg2, indent+2 );
+    _zmParseCellPrint( cell->arg2, indent+2 );
   }
 }
 #endif
@@ -551,7 +551,7 @@ char *_zmParseTokStr(zmParseTok *tok)
 }
 
 #ifdef DEBUG
-void _zmParseTokWrite(zmParseTok *tok) /* for debug */
+void _zmParseTokPrint(zmParseTok *tok) /* for debug */
 {
   printf( "status = " );
   switch( tok->status ){
@@ -576,7 +576,7 @@ void _zmParseTokWrite(zmParseTok *tok) /* for debug */
   case ZM_PARSE_OP_POSTFIX:  printf( "postfix\n" );   break;
   }
   printf( " priority = %d\n", _zmParseTokPriority(tok) );
-  _zmParseCellWrite( tok->cell, 1 );
+  _zmParseCellPrint( tok->cell, 1 );
 }
 #endif
 
@@ -600,12 +600,12 @@ void _zmParseStackDestroy(zmParseTok *stack)
 }
 
 #ifdef DEBUG
-void _zmParseStackWrite(zmParseTok *stack) /* for debug */
+void _zmParseStackPrint(zmParseTok *stack) /* for debug */
 {
   zmParseTok *tok;
 
   for( tok=stack->prev; tok; tok=tok->prev )
-    _zmParseTokWrite( tok );
+    _zmParseTokPrint( tok );
 }
 #endif
 

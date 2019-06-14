@@ -15,9 +15,7 @@ static void _zGMMUnitEstim(zGMMUnit *gu, zVecList *points, zClusterMethod *met, 
 static double _zGMMUnitPDF(zGMMUnit *gu, zVec p, zClusterMethod *met, void *err_util);
 static zMat _zGMMUnitLoadedCov(zGMMUnit *gu, zVecList *points, double load[], double nk, zClusterMethod *met, void *err_util);
 
-/* zGMMUnitAlloc
- * - allocate internal vectors and matrices of a unit Gaussian function.
- */
+/* allocate internal vectors and matrices of a unit Gaussian function. */
 zGMMUnit *zGMMUnitAlloc(zGMMUnit *gu, int meansize, int errorsize)
 {
   gu->mean = zVecAlloc( meansize );
@@ -33,9 +31,7 @@ zGMMUnit *zGMMUnitAlloc(zGMMUnit *gu, int meansize, int errorsize)
   return gu;
 }
 
-/* zGMMUnitFree
- * - free internal vectors and matrices of a unit Gaussian function.
- */
+/* free internal vectors and matrices of a unit Gaussian function. */
 void zGMMUnitFree(zGMMUnit *gu)
 {
   zVecFree( gu->mean );
@@ -45,9 +41,7 @@ void zGMMUnitFree(zGMMUnit *gu)
 }
 
 /* (static)
- * _zGMMUnitEstim
- * - estimate a unit Gaussian function from a cluster of points.
- */
+ * estimate a unit Gaussian function from a cluster of points. */
 void _zGMMUnitEstim(zGMMUnit *gu, zVecList *points, zClusterMethod *met, void *mean_util, void *err_util)
 {
   zVecListCell *pc;
@@ -66,9 +60,7 @@ void _zGMMUnitEstim(zGMMUnit *gu, zVecList *points, zClusterMethod *met, void *m
 }
 
 /* (static)
- * _zGMMUnitPDF
- * - Gaussian probability density function.
- */
+ * Gaussian probability density function. */
 double _zGMMUnitPDF(zGMMUnit *gu, zVec p, zClusterMethod *met, void *err_util)
 {
   met->_error_fp( p, gu->mean, err_util, met->_err );
@@ -79,9 +71,7 @@ double _zGMMUnitPDF(zGMMUnit *gu, zVec p, zClusterMethod *met, void *err_util)
 }
 
 /* (static)
- * _zGMMUnitLoadedCov
- * - a loaded covariance matrix of a Gaussian mixture model
- */
+ * a loaded covariance matrix of a Gaussian mixture model. */
 zMat _zGMMUnitLoadedCov(zGMMUnit *gu, zVecList *points, double load[], double nk, zClusterMethod *met, void *err_util)
 {
   zVecListCell *pc;
@@ -108,9 +98,7 @@ static bool _zGMMCreateEMExpect(zGMM *gmm, zVecList *points, zMat pdf, zMat load
 static bool _zGMMLogLikelihood(zGMM *gmm, zVec load_det);
 static void _zGMMCreateEMMaximize(zGMM *gmm, zVecList *points, zMat load, zVec nk, void *mean_util, void *err_util);
 
-/* zGMMInit
- * - initialize a Gaussian mixture model.
- */
+/* initialize a Gaussian mixture model. */
 zGMM *zGMMInit(zGMM *gmm, int k, int meansize, zVec (* mean_fp)(zVecList*,void*,zVec), zVec (* mean_l_fp)(zVecList*,double[],double,void*,zVec), int errorsize, zVec (* error_fp)(zVec,zVec,void*,zVec))
 {
   register int i;
@@ -142,9 +130,7 @@ zGMM *zGMMInit(zGMM *gmm, int k, int meansize, zVec (* mean_fp)(zVecList*,void*,
   return NULL;
 }
 
-/* zGMMDestroy
- * - destroy a Gaussian mixture model.
- */
+/* destroy a Gaussian mixture model. */
 void zGMMDestroy(zGMM *gmm)
 {
   zGMMListCell *gc;
@@ -159,26 +145,22 @@ void zGMMDestroy(zGMM *gmm)
 
 #ifdef DEBUG
 /* (static)
- * _zGMMFWrite
- * - output a Gaussian mixture model to a file.
- */
-static void _zGMMFWrite(FILE *fp, zGMM *gmm);
-void _zGMMFWrite(FILE *fp, zGMM *gmm)
+ * print a Gaussian mixture model out to a file. */
+static void _zGMMFPrint(FILE *fp, zGMM *gmm);
+void _zGMMFPrint(FILE *fp, zGMM *gmm)
 {
   zGMMListCell *gc;
 
   zListForEach( &gmm->gl, gc ){
-    zVecFWrite( fp, gc->data.mean );
-    zMatFWrite( fp, gc->data.cov );
+    zVecFPrint( fp, gc->data.mean );
+    zMatFPrint( fp, gc->data.cov );
     printf( "%g\n", gc->data.weight );
   }
 }
 #endif /* DEBUG */
 
 /* (static)
- * _zGMMCreateEMExpect
- * - expectation phase of EM algorithm to estimate a Gaussian mixture model.
- */
+ * expectation phase of EM algorithm to estimate a Gaussian mixture model. */
 bool _zGMMCreateEMExpect(zGMM *gmm, zVecList *points, zMat pdf, zMat load, zVec load_det, zVec nk, void *err_util)
 {
   register int i, j;
@@ -222,9 +204,7 @@ bool _zGMMCreateEMExpect(zGMM *gmm, zVecList *points, zMat pdf, zMat load, zVec 
 }
 
 /* (static)
- * _zGMMLogLikelihood
- * - log-likelihood of a Gaussian mixture model.
- */
+ * log-likelihood of a Gaussian mixture model. */
 bool _zGMMLogLikelihood(zGMM *gmm, zVec load_det)
 {
   double l = 0;
@@ -238,9 +218,7 @@ bool _zGMMLogLikelihood(zGMM *gmm, zVec load_det)
 }
 
 /* (static)
- * _zGMMCreateEMMaximize
- * - maximization phase of EM algorithm to estimate a Gaussian mixture model.
- */
+ * maximization phase of EM algorithm to estimate a Gaussian mixture model. */
 void _zGMMCreateEMMaximize(zGMM *gmm, zVecList *points, zMat load, zVec nk, void *mean_util, void *err_util)
 {
   zGMMListCell *gc;
@@ -257,9 +235,7 @@ void _zGMMCreateEMMaximize(zGMM *gmm, zVecList *points, zMat load, zVec nk, void
   }
 }
 
-/* zGMMCreateEM
- * - create a Gaussian mixture model based on EM algorithm.
- */
+/* create a Gaussian mixture model based on EM algorithm. */
 zGMM *zGMMCreateEM(zGMM *gmm, zVecList *points, int k, void *mean_util, void *err_util)
 {
   zMCluster mc;
