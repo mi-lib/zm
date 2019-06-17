@@ -89,10 +89,10 @@ void zVecFreeAO(int n, ...)
   va_end( arg );
 }
 
-/* cleanup a vector. */
-zVec zVecClear(zVec v)
+/* zero a vector. */
+zVec zVecZero(zVec v)
 {
-  zRawVecClear( zVecBuf(v), zVecSizeNC(v) );
+  zRawVecZero( zVecBuf(v), zVecSizeNC(v) );
   return v;
 }
 
@@ -438,7 +438,7 @@ zVec zVecLS(zVec v, int n, ...)
 {
   va_list args;
 
-  zVecClear( v );
+  zVecZero( v );
   va_start( args, n );
   _zVecCats( v, n, args );
   va_end( args );

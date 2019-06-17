@@ -97,9 +97,9 @@ __EXPORT zMat zMatSetElemList(zMat m, ... );
  * zMatFreeAO() frees multiple matrices given by the argument
  * list at once. \a n is the number of matrices to be freed.
  *
- * zMatClear() sets all elements of the matrix \a m for zero.
+ * zMatZero() sets all components of a matrix \a m for zeros.
  *
- * zMatTouchup() replaces all elements which are less than zTOL
+ * zMatTouchup() replaces all components less than zTOL of \a m
  * for zeros.
  * \return
  * zMatAlloc() and zMatAllocSqr() return a pointer to the newly
@@ -107,7 +107,7 @@ __EXPORT zMat zMatSetElemList(zMat m, ... );
  *
  * zMatFree() and zMatFreeAO() return no values.
  *
- * zMatClear() and zMatTouchup() return a pointer \a m.
+ * zMatZero() and zMatTouchup() return a pointer \a m.
  * \notes
  * Because of a bug in glibc, the following call does not
  * work as expected.
@@ -120,7 +120,7 @@ __EXPORT zMat zMatAlloc(int row, int col);
 __EXPORT zMat zMatCreateList(int row, int col, ...);
 __EXPORT void zMatFree(zMat m);
 __EXPORT void zMatFreeAO(int n, ...);
-__EXPORT zMat zMatClear(zMat m);
+__EXPORT zMat zMatZero(zMat m);
 __EXPORT zMat zMatTouchup(zMat m);
 
 /*! \brief identity matrix, diagonal matrix and random matrix.

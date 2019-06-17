@@ -19,7 +19,7 @@ zVec zIPVecTchebychev(zIPData *dat, double t, zVec v)
   register int i;
   double x, f1, f2, f;
 
-  zVecClear( v );
+  zVecZero( v );
   x = _zIPScaleTchebychev( t, zIPTime(dat,0), zIPTime(dat,zIPSize(dat)-1) );
   f1 = 1;
   f2 = x;

@@ -25,12 +25,6 @@ typedef struct{
   double im; /*!< \brief imaginary part */
 } zComplex;
 
-/*! \brief zero of the complex number */
-/*! \cond */
-extern const zComplex zcomplexzero;
-/*! \endcond */
-#define ZCOMPLEXZERO ( (zComplex *)&zcomplexzero )
-
 /*! \brief create a complex number.
  *
  * zComplexCreate() creates a complex number whose real part
@@ -55,9 +49,9 @@ __EXPORT zComplex *zComplexPolar(zComplex *c, double r, double t);
 
 /*! \brief create a zero complex number.
  *
- * zComplexClear() creates a zero complex number \a c,
- * setting both real and imaginary parts for zero. */
-#define zComplexClear(c) zComplexCreate(c,0,0)
+ * zComplexZero() creates a zero complex number \a c by
+ * setting both real and imaginary parts for zeros. */
+#define zComplexZero(c) zComplexCreate(c,0,0)
 
 /*! \brief test if a complex number is under the tolerance.
  *

@@ -257,7 +257,7 @@ void _zLPTableauAns(_zLPTableau *tab, zVec ans)
 {
   register int i;
 
-  zVecClear( ans );
+  zVecZero( ans );
   for( i=0; i<zArraySize(tab->ib); i++ )
     zVecSetElemNC( ans, zIndexElemNC(tab->ib,i), zVecElemNC(tab->b,i) );
 }

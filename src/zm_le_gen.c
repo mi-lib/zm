@@ -293,7 +293,7 @@ zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn)
   _zLESolveMP1( l, q, bcp, c, we, m, v, s, idx1, idx2, rank );
   if( zMatIsSqr(q) ){
     zMulMatTVec( q, c, ans );
-    zMatClear( mn );
+    zMatZero( mn );
   } else{
     zLESolveNormMinDST( q, c, wn, ans, m, v, idx2, s );
     zMulMatTMat( q, q, mn );

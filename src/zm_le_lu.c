@@ -6,17 +6,15 @@
 
 #include <zm/zm_le.h>
 
-/* zLUDecompDST
- * - LU decomposition of matrix (destructive).
- */
+/* LU decomposition of a matrix (destructive). */
 int zLUDecompDST(zMat m, zMat l, zMat u, zIndex idx)
 {
   register int r, c, i, j;
   int p, q;
   double ahead;
 
-  zMatClear( l );
-  zMatClear( u );
+  zMatZero( l );
+  zMatZero( u );
   for( r=c=0; r<zMatRowSizeNC(m) && c<zMatColSizeNC(m); c++ ){
     p = zPivoting( m, idx, r, c );
     if( zIsTiny( ( ahead = zMatElemNC( m, p, c ) ) ) ) continue;
@@ -39,9 +37,7 @@ int zLUDecompDST(zMat m, zMat l, zMat u, zIndex idx)
   return r; /* rank */
 }
 
-/* zLUDecomp
- * - LU decomposition of matrix.
- */
+/* LU decomposition of a matrix. */
 int zLUDecomp(zMat m, zMat l, zMat u, zIndex idx)
 {
   int n, rank;
@@ -68,9 +64,7 @@ int zLUDecomp(zMat m, zMat l, zMat u, zIndex idx)
   return rank;
 }
 
-/* zLUDecompReg
- * - LU decomposition and regression.
- */
+/* LU decomposition and regression of a matrix. */
 int zLUDecompReg(zMat m, zMat l, zMat u, zIndex idx)
 {
   int rank;
@@ -82,9 +76,7 @@ int zLUDecompReg(zMat m, zMat l, zMat u, zIndex idx)
   return rank;
 }
 
-/* zLUDecompAlloc
- * - LU decomposition with an automatic matrix allocation and resize.
- */
+/* LU decomposition with an automatic matrix allocation and resize. */
 int zLUDecompAlloc(zMat m, zMat *l, zMat *u, zIndex *idx)
 {
   *l = zMatAllocSqr( zMatRowSizeNC(m) );
@@ -99,9 +91,7 @@ int zLUDecompAlloc(zMat m, zMat *l, zMat *u, zIndex *idx)
   return zLUDecompReg( m, *l, *u, *idx );
 }
 
-/* zCholeskyDecompDST
- * - Cholesky decomposition of matrix (destructive).
- */
+/* Cholesky decomposition of a matrix (destructive). */
 int zCholeskyDecompDST(zMat m, zMat l, zIndex idx)
 {
   register int i, j, k;
@@ -109,7 +99,7 @@ int zCholeskyDecompDST(zMat m, zMat l, zIndex idx)
   double a;
 
   n = zArraySize( idx );
-  zMatClear( l );
+  zMatZero( l );
   for( rank=0, i=0; i<n; i++ ){
     p = zPivotingDiag( m, idx, i );
     if( zIsTiny( ( a = zMatElemNC(m,p,p) ) ) ){
@@ -142,9 +132,7 @@ int zCholeskyDecompDST(zMat m, zMat l, zIndex idx)
   return rank;
 }
 
-/* zCholeskyDecomp
- * - Cholesky decomposition of matrix
- */
+/* Cholesky decomposition of a matrix */
 int zCholeskyDecomp(zMat m, zMat l, zIndex idx)
 {
   int rank;
@@ -166,9 +154,7 @@ int zCholeskyDecomp(zMat m, zMat l, zIndex idx)
   return rank;
 }
 
-/* zCholeskyDecompReg
- * - Cholesky decomposition and regression.
- */
+/* Cholesky decomposition and regression of a matrix. */
 int zCholeskyDecompReg(zMat m, zMat l, zIndex idx)
 {
   int rank;
@@ -179,9 +165,7 @@ int zCholeskyDecompReg(zMat m, zMat l, zIndex idx)
   return rank;
 }
 
-/* zCholeskyDecompAlloc
- * - Cholesky decomposition with an automatic matrix allocation and resize.
- */
+/* Cholesky decomposition with an automatic matrix allocation and resize. */
 int zCholeskyDecompAlloc(zMat m, zMat *l, zIndex *idx)
 {
   *l = zMatAllocSqr( zMatRowSizeNC(m) );

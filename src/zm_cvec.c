@@ -38,12 +38,12 @@ void zCVecFree(zCVec v)
 }
 
 /* zero a complex vector. */
-zCVec zCVecClear(zCVec v)
+zCVec zCVecZero(zCVec v)
 {
   register int i;
 
-  for( i=0; i<_zCVecSize(v); i++ )
-    zCVecSetElem( v, i, ZCOMPLEXZERO );
+  for( i=0; i<zCVecSizeNC(v); i++ )
+    zComplexZero( zCVecElem( v, i ) );
   return v;
 }
 
@@ -52,7 +52,7 @@ zCVec zCVecCopyNC(zCVec src, zCVec dest)
 {
   register int i;
 
-  for( i=0; i<_zCVecSize(dest); i++ )
+  for( i=0; i<zCVecSizeNC(dest); i++ )
     zComplexCopy( zCVecElem(src,i), zCVecElem(dest,i) );
   return dest;
 }
@@ -79,7 +79,7 @@ zCVec zVec2CVec(zVec v, zCVec cv)
 {
   register int i;
 
-  for( i=0; i<_zCVecSize(cv); i++ )
+  for( i=0; i<zCVecSizeNC(cv); i++ )
     zComplexCreate( zCVecElem(cv,i), zVecElem(v,i), 0 );
   return cv;
 }
@@ -91,7 +91,7 @@ bool zCVecIsEqual(zCVec v1, zCVec v2)
   zComplex e;
 
   if( !zCVecSizeIsEqual( v1, v2 ) ) return false;
-  for( i=0; i<_zCVecSize(v1); i++ ){
+  for( i=0; i<zCVecSizeNC(v1); i++ ){
     zComplexSub( zCVecElem(v1,i), zCVecElem(v2,i), &e );
     if( !zComplexIsTiny( &e ) ) return false;
   }
@@ -103,7 +103,7 @@ bool zCVecIsTol(zCVec v, double tol)
 {
   register int i;
 
-  for( i=0; i<_zCVecSize(v); i++ )
+  for( i=0; i<zCVecSizeNC(v); i++ )
     if( !zComplexIsTol( zCVecElem(v,i), tol ) ) return false;
   return true;
 }
@@ -113,7 +113,7 @@ zCVec zCVecAddNC(zCVec v1, zCVec v2, zCVec v)
 {
   register int i;
 
-  for( i=0; i<_zCVecSize(v); i++ )
+  for( i=0; i<zCVecSizeNC(v); i++ )
     zComplexAdd( zCVecElem(v1,i), zCVecElem(v2,i), zCVecElem(v,i) );
   return v;
 }
@@ -123,7 +123,7 @@ zCVec zCVecSubNC(zCVec v1, zCVec v2, zCVec v)
 {
   register int i;
 
-  for( i=0; i<_zCVecSize(v); i++ )
+  for( i=0; i<zCVecSizeNC(v); i++ )
     zComplexSub( zCVecElem(v1,i), zCVecElem(v2,i), zCVecElem(v,i) );
   return v;
 }
@@ -133,7 +133,7 @@ zCVec zCVecRevNC(zCVec v1, zCVec v)
 {
   register int i;
 
-  for( i=0; i<_zCVecSize(v); i++ )
+  for( i=0; i<zCVecSizeNC(v); i++ )
     zComplexRev( zCVecElem(v1,i), zCVecElem(v,i) );
   return v;
 }
@@ -144,7 +144,7 @@ zCVec zCVecMulNC(zCVec v1, zComplex *z, zCVec v)
 {
   register int i;
 
-  for( i=0; i<_zCVecSize(v); i++ )
+  for( i=0; i<zCVecSizeNC(v); i++ )
     zComplexCMul( zCVecElem(v1,i), z, zCVecElem(v,i) );
   return v;
 }
@@ -160,7 +160,7 @@ zCVec zCVecDivNC(zCVec v1, zComplex *z, zCVec v)
   r = zComplexSqrAbs( z );
   zComplexConj( z, &dz );
   zComplexDiv( &dz, r, &dz );
-  for( i=0; i<_zCVecSize(v); i++ )
+  for( i=0; i<zCVecSizeNC(v); i++ )
     zComplexCMul( zCVecElem(v1,i), &dz, zCVecElem(v,i) );
   return v;
 }
@@ -172,7 +172,7 @@ zCVec zCVecCatNC(zCVec v1, zComplex *z, zCVec v2, zCVec v)
   register int i;
   zComplex dz;
 
-  for( i=0; i<_zCVecSize(v); i++ ){
+  for( i=0; i<zCVecSizeNC(v); i++ ){
     zComplexCMul( zCVecElem(v2,i), z, &dz );
     zComplexAdd( zCVecElem(v1,i), &dz, zCVecElem(v,i) );
   }
@@ -242,8 +242,8 @@ zComplex *zCVecInnerProdNC(zCVec v1, zCVec v2, zComplex *z)
   register int i;
   zComplex c;
 
-  zComplexClear( z );
-  for( i=0; i<_zCVecSize(v1); i++ ){
+  zComplexZero( z );
+  for( i=0; i<zCVecSizeNC(v1); i++ ){
     zComplexCMul( zCVecElem(v1,i), zCVecElem(v2,i), &c );
     zComplexAdd( z, &c, z );
   }
@@ -278,7 +278,7 @@ zCVec zCVecNormalize(zCVec src, zCVec dest)
     ZRUNWARN( ZM_ERR_ZERONORM );
     return NULL;
   }
-  for( i=0; i<_zCVecSize(dest); i++ )
+  for( i=0; i<zCVecSizeNC(dest); i++ )
     zComplexDiv( zCVecElem(src,i), r, zCVecElem(dest,i) );
   return dest;
 }
@@ -291,8 +291,8 @@ void zCVecFPrint(FILE *fp, zCVec v)
   if( !v )
     fprintf( fp, "(null vector)\n" );
   else{
-    fprintf( fp, "%d (\n", _zCVecSize(v) );
-    for( i=0; i<_zCVecSize(v); i++ ){
+    fprintf( fp, "%d (\n", zCVecSizeNC(v) );
+    for( i=0; i<zCVecSizeNC(v); i++ ){
       fprintf( fp, "  " );
       zComplexFPrint( fp, zCVecElem(v,i) );
       fprintf( fp, "\n" );

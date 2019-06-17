@@ -6,9 +6,7 @@
 
 #include <zm/zm_opt.h>
 
-/* zQuadraticValue
- * - calculation of a quadratic value.
- */
+/* calculation of a quadratic value. */
 double zQuadraticValue(zMat q, zVec c, zVec x)
 {
   register uint i, j;
@@ -36,9 +34,7 @@ double zQuadraticValue(zMat q, zVec c, zVec x)
   return val;
 }
 
-/* zQPSolve
- * - quadratic programming solver.
- */
+/* quadratic programming solver. */
 /* NOTE: this function is to be deleted due to mathematical illegality. */
 bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
 {
@@ -91,9 +87,7 @@ bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
 }
 
 /* (static)
- * _zQP2LCP
- * - transform quadratic programming problem to linear complementary problem.
- */
+ * transform a quadratic programming problem to a linear complementary problem. */
 static bool _zQP2LCP(zMat q, zVec c, zMat a, zVec b, zMat *lm, zVec *lq, zVec *z);
 bool _zQP2LCP(zMat q, zVec c, zMat a, zVec b, zMat *lm, zVec *lq, zVec *z)
 {
@@ -120,9 +114,7 @@ bool _zQP2LCP(zMat q, zVec c, zMat a, zVec b, zMat *lm, zVec *lq, zVec *z)
   return true;
 }
 
-/* zQPSolverDef
- * - define quadratic programming problem solver
- */
+/* define quadratic programming problem solver */
 #define zQPSolverDef( name ) \
 bool zQPSolve##name(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)\
 {\
@@ -143,16 +135,11 @@ bool zQPSolve##name(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)\
   return ret;\
 }
 
-/* zQPSolveLemke
- * - solve quadratic programming problem with Lemke's method.
- */
+/* solve quadratic programming problem with Lemke's method. */
 zQPSolverDef( Lemke )
 
-/* zQPSolveIP
- * - solve quadratic programming problem with interior-point method.
- */
+/* solve quadratic programming problem with interior-point method. */
 zQPSolverDef( IP )
-
 
 /* zQPSolveASM
  * - solve a quadratic programming by active set method
@@ -166,7 +153,7 @@ zListClass( _zQPASMIndexList, _zQPASMIndex, _zQPASMIndexData );
 
 zVec _zQPSolveASMInitDefault(zMat a, zVec b, zVec ans, void *util)
 {
-  return zVecClear( ans );
+  return zVecZero( ans );
 }
 
 double _zQPSolveASMConditionDefault(zMat a, zVec ans, int i, void *util)
@@ -335,9 +322,7 @@ bool zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost, zVec in
   return ret;
 }
 
-/* zCGSolve
- * - quadratic programming solver by conjugate gradient method.
- */
+/* quadratic programming solver by conjugate gradient method. */
 double zCGSolve(zMat q, zVec c, zVec ans, int iter)
 {
   zVec d, g, qd;

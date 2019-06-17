@@ -13,9 +13,7 @@ static zVec zIPAccSpline(zIPData *dat, double t, zVec v);
 static zVec zIPSecVelSpline(zIPData *dat, int i, zVec v);
 static zVec zIPSecAccSpline(zIPData *dat, int i, zVec v);
 
-/* zIPVecSpline
- * - vector on spline interpolation.
- */
+/* vector on spline interpolation. */
 zVec zIPVecSpline(zIPData *dat, double t, zVec v)
 {
   register int i;
@@ -24,7 +22,7 @@ zVec zIPVecSpline(zIPData *dat, double t, zVec v)
   i = zIPSeg( dat, t );
   r1 = ( zIPTime(dat,i  ) - t ) / zIPDelta(dat,i+1);
   r2 = ( zIPTime(dat,i+1) - t ) / zIPDelta(dat,i+1);
-  zVecClear( v );
+  zVecZero( v );
   zVecCatNCDRC( v, zSqr(r2)*(3-2*r2), zIPSecVec( dat, i ) );
   zVecCatNCDRC( v, zSqr(r1)*(3+2*r1), zIPSecVec( dat, i+1 ) );
   zVecCatNCDRC( v,-zIPDelta(dat,i+1)*zSqr(r2)*(r2-1), *zArrayElem(&dat->va,i) );
@@ -32,9 +30,7 @@ zVec zIPVecSpline(zIPData *dat, double t, zVec v)
   return v;
 }
 
-/* zIPVelSpline
- * - velocity on spline interpolation.
- */
+/* velocity on spline interpolation. */
 zVec zIPVelSpline(zIPData *dat, double t, zVec v)
 {
   register int i;
@@ -43,7 +39,7 @@ zVec zIPVelSpline(zIPData *dat, double t, zVec v)
   i = zIPSeg( dat, t );
   r1 = ( zIPTime(dat,i  ) - t ) / zIPDelta(dat,i+1);
   r2 = ( zIPTime(dat,i+1) - t ) / zIPDelta(dat,i+1);
-  zVecClear( v );
+  zVecZero( v );
   zVecCatNCDRC( v,-6*r2*(1-r2)/zIPDelta(dat,i+1), zIPSecVec( dat, i ) );
   zVecCatNCDRC( v,-6*r1*(1+r1)/zIPDelta(dat,i+1), zIPSecVec( dat, i+1 ) );
   zVecCatNCDRC( v, r2*(3*r2-2), *zArrayElem(&dat->va,i) );
@@ -51,9 +47,7 @@ zVec zIPVelSpline(zIPData *dat, double t, zVec v)
   return v;
 }
 
-/* zIPAccSpline
- * - acceleration on spline interpolation.
- */
+/* acceleration on spline interpolation. */
 zVec zIPAccSpline(zIPData *dat, double t, zVec v)
 {
   register int i;
@@ -62,7 +56,7 @@ zVec zIPAccSpline(zIPData *dat, double t, zVec v)
   i = zIPSeg( dat, t );
   t1 = t - zIPTime(dat,i);
   t2 = t - zIPTime(dat,i+1);
-  zVecClear( v );
+  zVecZero( v );
   zVecCatNCDRC( v, 6+12*t2/zIPDelta(dat,i+1), zIPSecVec(dat,i) );
   zVecCatNCDRC( v, 2*zIPDelta(dat,i+1)+6*t2, *zArrayElem(&dat->va,i) );
   zVecCatNCDRC( v, 6-12*t1/zIPDelta(dat,i+1), zIPSecVec(dat,i+1) );
@@ -70,21 +64,17 @@ zVec zIPAccSpline(zIPData *dat, double t, zVec v)
   return zVecDivDRC( v, zSqr(zIPDelta(dat,i+1)) );
 }
 
-/* zIPSecVelSpline
- * - velocity at section on spline interpolation.
- */
+/* velocity at a section on spline interpolation. */
 zVec zIPSecVelSpline(zIPData *dat, int i, zVec v)
 {
   return i >= zIPSize(dat) ?
-    zVecClear( v ) : zVecCopyNC( *zArrayElem(&dat->va,i), v );
+    zVecZero( v ) : zVecCopyNC( *zArrayElem(&dat->va,i), v );
 }
 
-/* zIPSecAccSpline
- * - acceleration at section on spline interpolation.
- */
+/* acceleration at a section on spline interpolation. */
 zVec zIPSecAccSpline(zIPData *dat, int i, zVec v)
 {
-  zVecClear( v );
+  zVecZero( v );
   if( i >= zIPSize(dat) ) return v;
   if( i == zIPSize(dat)-1 ){
     zVecCatNCDRC( v, 6.0/zIPDelta(dat,i), zIPSecVec(dat,i-1) );
@@ -109,9 +99,7 @@ static zIPCom _zm_ip_com_spline = {
   zIPSecAccSpline,
 };
 
-/* zIPCreateSpline
- * - create spline interpolator.
- */
+/* create a spline interpolator. */
 bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v2)
 {
   register int i, j;

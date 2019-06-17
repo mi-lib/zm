@@ -39,7 +39,7 @@ zVec zIPAccLinear(zIPData *dat, double t, zVec v)
   register int i;
 
   return zIsTiny( zIPTime( dat, ( i = zIPSeg(dat,t) ) ) - t ) ?
-    zIPSecAccLinear( dat, i, v ) : zVecClear( v );
+    zIPSecAccLinear( dat, i, v ) : zVecZero( v );
 }
 
 /* zIPSecVelLinear
@@ -48,7 +48,7 @@ zVec zIPAccLinear(zIPData *dat, double t, zVec v)
 zVec zIPSecVelLinear(zIPData *dat, int i, zVec v)
 {
   return i < 0 || i >= zIPSize(dat)-1 ?
-    zVecClear(v) : zVecCopyNC( *zArrayElem(&dat->va,i), v );
+    zVecZero(v) : zVecCopyNC( *zArrayElem(&dat->va,i), v );
 }
 
 /* zIPSecAccLinear
@@ -58,7 +58,7 @@ zVec zIPSecAccLinear(zIPData *dat, int i, zVec v)
 {
   register int j;
 
-  if( i <= 0 || i >= zIPSize(dat)-1 ) return zVecClear(v);
+  if( i <= 0 || i >= zIPSize(dat)-1 ) return zVecZero(v);
   for( j=0; j<zVecSizeNC(v); j++ )
     zVecSetElemNC( v, j,
       zVecArrayElem(&dat->va,i,j) > zVecArrayElem(&dat->va,i-1,j) ? HUGE_VAL :

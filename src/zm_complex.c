@@ -11,9 +11,6 @@
  * complex number class
  * ********************************************************** */
 
-/* zero of the complex number */
-const zComplex zcomplexzero = { 0, 0 };
-
 /* create a complex number. */
 zComplex *zComplexCreate(zComplex *c, double r, double i)
 {

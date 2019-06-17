@@ -126,7 +126,7 @@ zVec zNURBSVec(zNURBS *nurbs, double t, zVec v)
   double b, den;
 
   s = _zNURBSSeg( nurbs, t );
-  zVecClear( v );
+  zVecZero( v );
   for( den=0, i=s-nurbs->dim; i<=s; i++ ){
     b = zNURBSWeight(nurbs,i) * _zNURBSBasis(nurbs,t,i,nurbs->dim,s);
     den += b;
@@ -182,7 +182,7 @@ zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v)
     ZALLOCERROR();
     return NULL;
   }
-  zVecClear( v );
+  zVecZero( v );
   s = _zNURBSSeg( nurbs, t );
   for( den=0, i=s-nurbs->dim; i<=s; i++ ){
     b = zNURBSWeight(nurbs,i) * _zNURBSBasisDiff(nurbs,t,i,nurbs->dim,s,diff);

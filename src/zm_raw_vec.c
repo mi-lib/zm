@@ -201,7 +201,7 @@ void zRawVecLS(double *v, int size, int n, ...)
 {
   va_list args;
 
-  zRawVecClear( v, size );
+  zRawVecZero( v, size );
   va_start( args, n );
   _zRawVecCats( v, size, n, args );
   va_end( args );

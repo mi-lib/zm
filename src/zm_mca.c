@@ -6,31 +6,25 @@
 
 #include <zm/zm_mca.h>
 
-/* zVecListSum
- * - sum up all vectors in a list.
- */
+/* sum up all vectors in a list. */
 zVec zVecListSum(zVecList *list, zVec sum)
 {
   zVecListCell *vc;
 
-  zVecClear( sum );
+  zVecZero( sum );
   zListForEach( list, vc )
     zVecAddDRC( sum, vc->data );
   return sum;
 }
 
-/* zVecListAve
- * - average of all vectors in a list.
- */
+/* average of all vectors in a list. */
 zVec zVecListAve(zVecList *list, zVec ave)
 {
   zVecListSum( list, ave );
   return zVecDivDRC( ave, zListNum(list) );
 }
 
-/* zVecListVar
- * - variance of all vectors in a list.
- */
+/* variance of all vectors in a list. */
 double zVecListVar(zVecList *list, zVec ave)
 {
   zVecListCell *vc;
@@ -45,18 +39,14 @@ double zVecListVar(zVecList *list, zVec ave)
   return var / zListNum(list);
 }
 
-/* zVecListAveVar
- * - average and variance of all vectors in a list.
- */
+/* average and variance of all vectors in a list. */
 double zVecListAveVar(zVecList *list, zVec ave)
 {
   zVecListAve( list, ave );
   return zVecListVar( list, ave );
 }
 
-/* zVecListCov
- * - variance-covariance matrix of all vectors in a list.
- */
+/* variance-covariance matrix of all vectors in a list. */
 zMat zVecListCov(zVecList *list, zVec ave, zMat cov)
 {
   zVec v;
@@ -64,11 +54,11 @@ zMat zVecListCov(zVecList *list, zVec ave, zMat cov)
   int s;
 
   s = zVecSize( zListHead(list)->data );
-  if( zVecSize(ave) != s ){
+  if( zVecSizeNC(ave) != s ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return NULL;
   }
-  if( !zMatIsSqr(cov) || zMatRowSize(cov) != s ){
+  if( !zMatIsSqr(cov) || zMatRowSizeNC(cov) != s ){
     ZRUNERROR( ZM_ERR_SIZMIS_MAT );
     return NULL;
   }
@@ -76,7 +66,7 @@ zMat zVecListCov(zVecList *list, zVec ave, zMat cov)
     ZALLOCERROR();
     return NULL;
   }
-  zMatClear( cov );
+  zMatZero( cov );
   zListForEach( list, vc ){
     zVecSub( vc->data, ave, v );
     zMatAddDyadNC( cov, v, v );
@@ -85,18 +75,14 @@ zMat zVecListCov(zVecList *list, zVec ave, zMat cov)
   return zMatDivDRC( cov, zListNum(list) );
 }
 
-/* zVecListAveCov
- * - average and variance-covariance matrix of all vectors in a list.
- */
+/* average and variance-covariance matrix of all vectors in a list. */
 zMat zVecListAveCov(zVecList *list, zVec ave, zMat cov)
 {
   zVecListAve( list, ave );
   return zVecListCov( list, ave, cov );
 }
 
-/* zPCA
- * - principal component analysis.
- */
+/* principal component analysis. */
 int zPCA(zVecList *points, double cr, zVec ave, zVec score, zMat loading)
 {
   zMat cov;

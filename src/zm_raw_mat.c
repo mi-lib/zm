@@ -9,14 +9,14 @@
 /* create a raw identity matrix. */
 void zRawMatIdent(double *m, int row, int col)
 {
-  zRawMatClear( m, row, col );
+  zRawMatZero( m, row, col );
   for( ; row>0; row--, m+=col+1 ) *m = 1;
 }
 
 /* create a raw diagonal matrix. */
 void zRawMatDiag(double *m, int row, int col, double *d)
 {
-  zRawMatClear( m, row, col );
+  zRawMatZero( m, row, col );
   for( ; row>0; row--, m+=col+1, d++ ) *m = *d;
 }
 
@@ -165,7 +165,7 @@ void zRawMulMatTVec(double *m, double *v1, int row, int col, double *v)
   register int i, j;
   double *vp, *mp;
 
-  zRawVecClear( v, col );
+  zRawVecZero( v, col );
   for( i=0; i<col; i++, v++, m++ )
     for( vp=v1, mp=m, j=0; j<row; j++, vp++, mp+=col )
       *v += (*mp) * (*vp);
@@ -197,7 +197,7 @@ void zRawMulMatTMat(double *m1, int r1, int c1, double *m2, int r2, int c2, doub
   register int i, j, k;
   double *mp, *mp1, *mp2;
 
-  zRawMatClear( m, c1, c2 );
+  zRawMatZero( m, c1, c2 );
   for( i=0; i<c1; i++, m1++ )
     for( mp=m2, j=0; j<c2; j++, mp++, m++ )
       for( mp1=m1, mp2=mp, k=0; k<r1; k++, mp1+=c1, mp2+=c2 )

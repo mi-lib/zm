@@ -12,9 +12,7 @@ static zVec zIPAccAkima(zIPData *dat, double t, zVec v);
 static zVec zIPSecVelAkima(zIPData *dat, int i, zVec v);
 static zVec zIPSecAccAkima(zIPData *dat, int i, zVec v);
 
-/* zIPVecAkima
- * - vector on Akima interpolation.
- */
+/* vector on Akima interpolation. */
 zVec zIPVecAkima(zIPData *dat, double t, zVec v)
 {
   register int i;
@@ -30,9 +28,7 @@ zVec zIPVecAkima(zIPData *dat, double t, zVec v)
   return zVecAddNCDRC( v, zIPSecVec(dat,i) );
 }
 
-/* zIPVelAkima
- * - velocity on Akima interpolation.
- */
+/* velocity on Akima interpolation. */
 zVec zIPVelAkima(zIPData *dat, double t, zVec v)
 {
   register int i;
@@ -48,9 +44,7 @@ zVec zIPVelAkima(zIPData *dat, double t, zVec v)
   return v;
 }
 
-/* zIPAccAkima
- * - acceleration on Akima interpolation.
- */
+/* acceleration on Akima interpolation. */
 zVec zIPAccAkima(zIPData *dat, double t, zVec v)
 {
   register int i;
@@ -66,18 +60,14 @@ zVec zIPAccAkima(zIPData *dat, double t, zVec v)
   return v;
 }
 
-/* zIPSecVelAkima
- * - velocity at section on Akima interpolation.
- */
+/* velocity at a section on Akima interpolation. */
 zVec zIPSecVelAkima(zIPData *dat, int i, zVec v)
 {
-  if( i>=zIPSize(dat) || i==0 ) return zVecClear( v );
+  if( i>=zIPSize(dat) || i==0 ) return zVecZero( v );
   return zVecCopyNC( *zArrayElem(&dat->va,i), v );
 }
 
-/* zIPSecAccAkima
- * - acceleration at section on Akima interpolation.
- */
+/* acceleration at a section on Akima interpolation. */
 zVec zIPSecAccAkima(zIPData *dat, int i, zVec v)
 {
   double d;
@@ -89,7 +79,7 @@ zVec zIPSecAccAkima(zIPData *dat, int i, zVec v)
     v = NULL;
     goto TERMINATE;
   }
-  if( i >= zIPSize(dat) ) return zVecClear( v );
+  if( i >= zIPSize(dat) ) return zVecZero( v );
   if( i < zIPSize(dat)-1 ){
     d = zIPDelta(dat,i+1);
     zVecSubNC( zIPSecVec(dat,i+1), zIPSecVec(dat,i), a1 );
@@ -125,9 +115,7 @@ static zIPCom _zm_ip_com_akima = {
   zIPSecAccAkima,
 };
 
-/* zIPCreateAkima
- * - create Akima interpolator.
- */
+/* create an Akima interpolator. */
 bool zIPCreateAkima(zIP *ip, zSeq *seq)
 {
   register int i, j, n;

@@ -74,9 +74,10 @@ __EXPORT zVec zVecSetElemList(zVec v, ...);
  * zVecFreeAO() frees multiple vectors lasted as ... at once.
  * \a n is the number of vectors to be freed.
  *
- * zVecClear() zeros all the elements of a vector \a v.
+ * zVecZero() sets all components of a vector \a v for zero.
  *
- * zVecTouchup() zeros all elements less than zTOL.
+ * zVecTouchup() replaces all components less than zTOL of \a v
+ * for zeros.
  *
  * zVecCopyNC() copies a vector \a src to the other \a dest
  * without checking the size consistency between \a src and
@@ -96,7 +97,7 @@ __EXPORT zVec zVecSetElemList(zVec v, ...);
  *
  * zVecFree() and zVecFreeAO() return no values.
  *
- * zVecClear() and zVecTouchup() return a pointer \a v.
+ * zVecZero() and zVecTouchup() return a pointer \a v.
  *
  * zVecCopyNC() returns a pointer \a dest.
  *
@@ -121,7 +122,7 @@ __EXPORT zVec zVecAlloc(int s);
 __EXPORT zVec zVecCreateList(int size, ...);
 __EXPORT void zVecFree(zVec v);
 __EXPORT void zVecFreeAO(int, ...);
-__EXPORT zVec zVecClear(zVec v);
+__EXPORT zVec zVecZero(zVec v);
 __EXPORT zVec zVecTouchup(zVec v);
 __EXPORT zVec zVecCopyNC(zVec src, zVec dest);
 __EXPORT zVec zVecCopy(zVec src, zVec dest);

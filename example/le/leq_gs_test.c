@@ -29,7 +29,7 @@ int main(void)
   zVecPrint( x );
 
   printf( "Gauss-Seidel's method.\n" );
-  zVecClear( x );
+  zVecZero( x );
   zLESolveGS( a, b, x );
   zVecPrint( x );
   printf( "(confirmation) A x\n" );

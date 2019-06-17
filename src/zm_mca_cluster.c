@@ -80,7 +80,7 @@ zVec _zClusterMeanLoadedDefault(zVecList *pl, double load[], double n, void *dum
   zVecListCell *vc;
   register int i = 0;
 
-  zVecClear( mean );
+  zVecZero( mean );
   zListForEach( pl, vc ){
     zVecCatDRC( mean, load[i], vc->data );
     i++;

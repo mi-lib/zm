@@ -91,10 +91,10 @@ void zMatFreeAO(int n, ...)
   va_end( arg );
 }
 
-/* cleanup matrix. */
-zMat zMatClear(zMat m)
+/* zero a matrix. */
+zMat zMatZero(zMat m)
 {
-  zRawMatClear( zMatBuf(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
+  zRawMatZero( zMatBuf(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;
 }
 
@@ -824,7 +824,7 @@ zMat zMatQuadNC(zMat a, zVec w, zMat q)
   register int i, j, k;
   double wa;
 
-  zMatClear( q );
+  zMatZero( q );
   for( k=0; k<zMatColSizeNC(a); k++ )
     for( i=0; i<zMatRowSizeNC(a); i++ ){
       wa = w ? zVecElem(w,k) * zMatElemNC(a,i,k) : zMatElemNC(a,i,k);
@@ -861,7 +861,7 @@ zMat zMatTQuadNC(zMat a, zVec w, zMat q)
   register int i, j, k;
   double wa;
 
-  zMatClear( q );
+  zMatZero( q );
   for( k=0; k<zMatRowSizeNC(a); k++ )
     for( i=0; i<zMatColSizeNC(a); i++ ){
       wa = w ? zVecElem(w,k) * zMatElemNC(a,k,i) : zMatElemNC(a,k,i);

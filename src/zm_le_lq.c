@@ -6,16 +6,13 @@
 
 #include <zm/zm_le.h>
 
-/* zLQDecompDST
- * - LQ decomposition based on Gram=Schmidt's method.
- *   (destructive)
- */
+/* LQ decomposition based on Gram=Schmidt's method. (destructive) */
 int zLQDecompDST(zMat m, zMat l, zMat q, zIndex idx)
 {
   register int i, j, rank;
   double *mp, r;
 
-  zMatClear( l );
+  zMatZero( l );
   zIndexOrder( idx, 0 );
   for( rank=0, i=0; i<zMatRowSizeNC(m); i++ ){
     mp = zMatRowBuf(m,i);
@@ -35,9 +32,7 @@ int zLQDecompDST(zMat m, zMat l, zMat q, zIndex idx)
   return rank;
 }
 
-/* zLQDecomp
- * - LQ decomposition based on Gram=Schmidt's method.
- */
+/* LQ decomposition based on Gram=Schmidt's method. */
 int zLQDecomp(zMat m, zMat l, zMat q, zIndex idx)
 {
   zMat mcp;
@@ -52,9 +47,7 @@ int zLQDecomp(zMat m, zMat l, zMat q, zIndex idx)
   return rank;
 }
 
-/* zLQDecompReg
- * - LQ decomposition and regression.
- */
+/* LQ decomposition and regression. */
 int zLQDecompReg(zMat m, zMat l, zMat q, zIndex idx)
 {
   int rank;
@@ -66,9 +59,7 @@ int zLQDecompReg(zMat m, zMat l, zMat q, zIndex idx)
   return rank;
 }
 
-/* zLQDecompAlloc
- * - LQ decomposition with an automatic matrix allocation and resize.
- */
+/* LQ decomposition with an automatic matrix allocation and resize. */
 int zLQDecompAlloc(zMat m, zMat *l, zMat *q, zIndex *idx)
 {
   *l = zMatAllocSqr( zMatRowSizeNC(m) );
@@ -83,9 +74,7 @@ int zLQDecompAlloc(zMat m, zMat *l, zMat *q, zIndex *idx)
   return zLQDecompReg( m, *l, *q, *idx );
 }
 
-/* zQRDecomp
- * - QR decomposition based on Gram=Schmidt's method.
- */
+/* QR decomposition based on Gram=Schmidt's method. */
 int zQRDecomp(zMat m, zMat q, zMat r, zIndex idx)
 {
   zMat mcp, qcp, rcp;

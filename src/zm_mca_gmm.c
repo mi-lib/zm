@@ -47,14 +47,14 @@ void _zGMMUnitEstim(zGMMUnit *gu, zVecList *points, zClusterMethod *met, void *m
   zVecListCell *pc;
 
   met->_mean_fp( points, mean_util, gu->mean );
-  zMatClear( gu->cov );
+  zMatZero( gu->cov );
   zListForEach( points, pc ){
     met->_error_fp( pc->data, gu->mean, err_util, met->_err );
     zMatAddDyadNC( gu->cov, met->_err, met->_err );
   }
   zMatDivNCDRC( gu->cov, zListNum(points) );
   if( zIsTiny( gu->_cov_det = zMatDet( gu->cov ) ) )
-    zMatClear( gu->_cov_inv );
+    zMatZero( gu->_cov_inv );
   else
     zMatInv( gu->cov, gu->_cov_inv );
 }
@@ -77,7 +77,7 @@ zMat _zGMMUnitLoadedCov(zGMMUnit *gu, zVecList *points, double load[], double nk
   zVecListCell *pc;
   register int i = 0;
 
-  zMatClear( gu->cov );
+  zMatZero( gu->cov );
   zListForEach( points, pc ){
     met->_error_fp( pc->data, gu->mean, err_util, met->_err );
     zVecMulNC( met->_err, load[i], met->_err_l );
@@ -168,7 +168,7 @@ bool _zGMMCreateEMExpect(zGMM *gmm, zVecList *points, zMat pdf, zMat load, zVec 
   zVecListCell *pc;
   double p, gamma, eps = 0;
 
-  zVecClear( load_det );
+  zVecZero( load_det );
   i = 0;
   zListForEach( points, pc ){
     j = 0;
@@ -185,7 +185,7 @@ bool _zGMMCreateEMExpect(zGMM *gmm, zVecList *points, zMat pdf, zMat load, zVec 
     }
     i++;
   }
-  zVecClear( nk );
+  zVecZero( nk );
   i = 0;
   zListForEach( points, pc ){
     j = 0;

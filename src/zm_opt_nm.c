@@ -18,9 +18,7 @@ static void _zOptNMCrunch(zOptNM *opt);
 static bool _zOptNMCheck(zOptNM *opt, double tol);
 static int _zOptNMTry(zOptNM *opt, zVec var, void *util, double tol, int iter, double *eval);
 
-/* _zOptNMCreate
- * - create solver, allocating internal working space.
- */
+/* create solver, allocating internal working space. */
 zOptNM *zOptNMCreate(zOptNM *opt, int dim, double (*eval)(zVec,void*))
 {
   register int i;
@@ -45,9 +43,7 @@ zOptNM *zOptNMCreate(zOptNM *opt, int dim, double (*eval)(zVec,void*))
   return opt;
 }
 
-/* zOptNMDestroy
- * - destroy internal working space.
- */
+/* destroy internal workspace. */
 void zOptNMDestroy(zOptNM *opt)
 {
   register int i;
@@ -63,9 +59,7 @@ void zOptNMDestroy(zOptNM *opt)
 }
 
 /* (static)
- * _zOptNMInit
- * - initialize internal workspace.
- */
+ * initialize internal workspace. */
 void _zOptNMInit(zOptNM *opt, zVec var, void *util)
 {
   register int i;
@@ -78,9 +72,7 @@ void _zOptNMInit(zOptNM *opt, zVec var, void *util)
 }
 
 /* (static)
- * _zOptNMEvalAll
- * - evaluate all vertices.
- */
+ * evaluate all vertices. */
 void _zOptNMEvalAll(zOptNM *opt, void *util)
 {
   register int i;
@@ -91,9 +83,7 @@ void _zOptNMEvalAll(zOptNM *opt, void *util)
 }
 
 /* (static)
- * _zOptNMReord
- * - reorder the working vertex according to evaluation.
- */
+ * reorder the working vertex according to evaluation. */
 void _zOptNMReord(zOptNM *opt)
 {
   register int i;
@@ -106,24 +96,20 @@ void _zOptNMReord(zOptNM *opt)
 }
 
 /* (static)
- * _zOptNMPin
- * - compute pin (COG of the bottom face of simplex), the point
- *   to manipulate working vertex.
- */
+ * compute pin (centroid of the bottom face of simplex), the point
+ * to manipulate working vertex. */
 zVec _zOptNMPin(zOptNM *opt)
 {
   register int i;
 
-  zVecClear( opt->pin );
+  zVecZero( opt->pin );
   for( i=1; i<opt->num; i++ )
     zVecAddNCDRC( opt->pin, opt->e[zIndexElemNC(opt->index,i-1)] );
   return zVecDivNCDRC( opt->pin, opt->num-1 );
 }
 
 /* (static)
- * _zOptNMRefl
- * - reflect the working vertex with respect to the pin.
- */
+ * reflect the working vertex with respect to the pin. */
 zVec _zOptNMRefl(zOptNM *opt)
 {
   zVecMulNC( opt->pin, 2, opt->test );
@@ -131,9 +117,7 @@ zVec _zOptNMRefl(zOptNM *opt)
 }
 
 /* (static)
- * _zOptNMExp
- * - expand working vertex with respect to the pin.
- */
+ * expand working vertex with respect to the pin. */
 zVec _zOptNMExp(zOptNM *opt)
 {
   zVecMulNC( opt->e[zIndexHead(opt->index)], 2, opt->test );
@@ -141,9 +125,7 @@ zVec _zOptNMExp(zOptNM *opt)
 }
 
 /* (static)
- * _zOptNMShrink
- * - shrink the working vertex with respect to the pin.
- */
+ * shrink the working vertex with respect to the pin. */
 zVec _zOptNMShrink(zOptNM *opt)
 {
   zVecAddNC( opt->e[zIndexHead(opt->index)], opt->pin, opt->test );
@@ -151,9 +133,7 @@ zVec _zOptNMShrink(zOptNM *opt)
 }
 
 /* (static)
- * _zOptNMCrunch
- * - crunch the working vertex towards the best vertex.
- */
+ * crunch the working vertex towards the best vertex. */
 void _zOptNMCrunch(zOptNM *opt)
 {
   register int i;
@@ -166,9 +146,7 @@ void _zOptNMCrunch(zOptNM *opt)
 }
 
 /* (static)
- * _zOptNMCheck
- * - check if the volume of simplex is tiny.
- */
+ * check if the volume of simplex is tiny. */
 bool _zOptNMCheck(zOptNM *opt, double tol)
 {
   register int i;
@@ -180,9 +158,7 @@ bool _zOptNMCheck(zOptNM *opt, double tol)
 }
 
 /* (static)
- * _zOptNMTry
- * - amoeba-like iteration procedure of polytope method.
- */
+ * amoeba-like iteration procedure of polytope method. */
 int _zOptNMTry(zOptNM *opt, zVec var, void *util, double tol, int iter, double *eval)
 {
   register int i;
@@ -227,9 +203,7 @@ int _zOptNMTry(zOptNM *opt, zVec var, void *util, double tol, int iter, double *
   return -1;
 }
 
-/* zOptNMSolve
- * - execute optimization.
- */
+/* execute optimization. */
 int zOptNMSolve(zOptNM *opt, zVec var, void *util, double tol, int iter, double *eval)
 {
   _zOptNMInit( opt, var, util );

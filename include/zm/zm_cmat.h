@@ -24,12 +24,12 @@ typedef struct{
 } zCMatStruct;
 typedef zCMatStruct * zCMat;
 
-#define _zCMatRowSize(m)         (m)->row
-#define _zCMatColSize(m)         (m)->col
-#define zCMatRowSize(m)          ( (m) ? _zCMatRowSize(m) : 0 )
-#define zCMatColSize(m)          ( (m) ? _zCMatColSize(m) : 0 )
-#define zCMatSetRowSize(m,r)     ( _zCMatRowSize(m) = (r) )
-#define zCMatSetColSize(m,c)     ( _zCMatColSize(m) = (c) )
+#define zCMatRowSizeNC(m)        (m)->row
+#define zCMatColSizeNC(m)        (m)->col
+#define zCMatRowSize(m)          ( (m) ? zCMatRowSizeNC(m) : 0 )
+#define zCMatColSize(m)          ( (m) ? zCMatColSizeNC(m) : 0 )
+#define zCMatSetRowSize(m,r)     ( zCMatRowSizeNC(m) = (r) )
+#define zCMatSetColSize(m,c)     ( zCMatColSizeNC(m) = (c) )
 
 #define zCMatSetSize(m,r,c) do{\
   zCMatSetRowSize(m,r);\
@@ -37,8 +37,8 @@ typedef zCMatStruct * zCMat;
 } while(0)
 
 #define zCMatSizeIsEqual(m1,m2) \
-  ( _zCMatRowSize(m1) == _zCMatRowSize(m2) && \
-    _zCMatColSize(m1) == _zCMatColSize(m2) )
+  ( zCMatRowSizeNC(m1) == zCMatRowSizeNC(m2) && \
+    zCMatColSizeNC(m1) == zCMatColSizeNC(m2) )
 
 /*! \brief retrieve and set an element of a complex matrix.
  *
@@ -52,7 +52,7 @@ typedef zCMatStruct * zCMat;
  * zCMatElem() and zCMatSetElem() return the address of
  * the component at \a r th row and \a c th column of \a m.
  */
-#define zCMatElem(m,r,c)      ( &(m)->elem[(r)*_zCMatColSize(m)+(c)] )
+#define zCMatElem(m,r,c)      ( &(m)->elem[(r)*zCMatColSizeNC(m)+(c)] )
 #define zCMatSetElem(m,r,c,e) zComplexCopy( (e), zCMatElem(m,r,c) )
 
 /*! \brief allocate, free and zero a complex matrix.
@@ -66,20 +66,20 @@ typedef zCMatStruct * zCMat;
  * zCMatFree() frees the memory allocated for a complex matrix
  * \a m.
  *
- * zCMatClear() clears a complex matrix \a m, namely, set all
- * of components of the matrix for zero.
+ * zCMatZero() sets all components of a complex matrix \a m for
+ * zeros.
  * \return
  * zCMatAlloc() and zCMatAllocSqr() return a pointer to the
  * newly allocated memory area.
  *
  * zCMatFree() returns no value.
  *
- * zCMatClear() returns a pointer \a m.
+ * zCMatZero() returns a pointer \a m.
  */
 __EXPORT zCMat zCMatAlloc(int row, int col);
 #define zCMatAllocSqr(s) zCMatAlloc( (s), (s) )
 __EXPORT void zCMatFree(zCMat m);
-__EXPORT zCMat zCMatClear(zCMat m);
+__EXPORT zCMat zCMatZero(zCMat m);
 
 /*! \brief copy a complex  matrix.
  *

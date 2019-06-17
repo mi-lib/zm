@@ -11,23 +11,31 @@
 
 __BEGIN_DECLS
 
-/*! \brief clear, touchup and copy a raw matrix.
+/*! \brief zero a raw matrix.
  *
- * zRawMatClear() sets all components of a raw matrix \a m
+ * zRawMatZero() sets all components of a raw matrix \a m
  * for zeros.
  *
  * zRawMatTouchup() replaces all components less than zTOL
  * (defined in zm_misc.h) of a raw matrix \a m for zeros.
  *
- * zRawMatCopy() copies a raw matrix \a src to another \a dest.
- * \a row and \a col are the row and column sizes of the matrices,
+ * \a r and \a c are the row and column sizes of the matrices,
  * respectively.
  * \return
- * zRawMatClear() and zRawMatTouchup() return no values.
- * zRawMatCopy() returns a pointer \a dest.
+ * zRawMatZero() returns a pointer \a m.
+ * zRawMatTouchup() returns no value.
  */
-#define zRawMatClear(m,r,c)      zRawVecClear( m, (r)*(c) )
-#define zRawMatTouchup(m,r,c)    zRawVecTouchup( m, (r)*(c) )
+#define zRawMatZero(m,r,c)    zRawVecZero( m, (r)*(c) )
+#define zRawMatTouchup(m,r,c) zRawVecTouchup( m, (r)*(c) )
+
+/*! \brief copy a raw matrix.
+ *
+ * zRawMatCopy() copies a raw matrix \a src to another \a dst.
+ * \a r and \a c are the row and column sizes of the matrices,
+ * respectively.
+ * \return
+ * zRawMatCopy() returns a pointer \a dst.
+ */
 #define zRawMatCopy(src,dst,r,c) zRawVecCopy( src, dst, (r)*(c) )
 
 /*! \brief make identity, diagonal and random raw matrices.

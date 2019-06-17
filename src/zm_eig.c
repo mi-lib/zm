@@ -41,7 +41,7 @@ void zHouseholder(zMat m, zMat p, int from, int to, zVec u, zVec v, zVec w)
     }
   /* transportation matrix */
   if( !p ) return;
-  zVecClear( v );
+  zVecZero( v );
   for( i=0; i<zVecSizeNC(v); i++ ){
     for( j=from; j<to; j++ )
       zVecElemNC(v,i) += zMatElemNC(p,i,j)*zVecElemNC(u,j);
@@ -261,7 +261,7 @@ int _zEigVecReal(zMat m, double eig, zCVec eigv, int iter)
 
   ms = zMatClone( m );
   b = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
-  eigv_r = zVecAlloc( _zCVecSize(eigv) );
+  eigv_r = zVecAlloc( zCVecSizeNC(eigv) );
   if( !ms || !b || !eigv_r ){
     ZALLOCERROR();
     ret = -1;
@@ -316,11 +316,11 @@ int _zEigVecComplex(zMat m, zComplex *eig, zCVec eigv1, zCVec eigv2, int iter)
     zMatShift( ms, -( shift *= 10 ) );
   zEigPower( b, eigv, iter );
 
-  for( i=0; i<_zCVecSize(eigv1); i++ ){
+  for( i=0; i<zCVecSizeNC(eigv1); i++ ){
     zComplexCreate( zCVecElem(eigv1,i),
-      zVecElemNC(eigv,i), zVecElemNC(eigv,i+_zCVecSize(eigv1)) );
+      zVecElemNC(eigv,i), zVecElemNC(eigv,i+zCVecSizeNC(eigv1)) );
     zComplexCreate( zCVecElem(eigv2,i),
-      zVecElemNC(eigv,i),-zVecElemNC(eigv,i+_zCVecSize(eigv1)) );
+      zVecElemNC(eigv,i),-zVecElemNC(eigv,i+zCVecSizeNC(eigv1)) );
   }
   zCVecNormalizeDRC( eigv1 );
   zCVecNormalizeDRC( eigv2 );

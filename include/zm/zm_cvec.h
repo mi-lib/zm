@@ -22,10 +22,10 @@ typedef struct{
 } zCVecStruct;
 typedef zCVecStruct * zCVec;
 
-#define _zCVecSize(v)           (v)->size
-#define zCVecSize(v)            ( (v) ? _zCVecSize(v) : 0 )
-#define zCVecSetSize(v,s)       ( _zCVecSize(v) = (s) )
-#define zCVecSizeIsEqual(v1,v2) ( _zCVecSize(v1) == _zCVecSize(v2) )
+#define zCVecSizeNC(v)          (v)->size
+#define zCVecSize(v)            ( (v) ? zCVecSizeNC(v) : 0 )
+#define zCVecSetSize(v,s)       ( zCVecSizeNC(v) = (s) )
+#define zCVecSizeIsEqual(v1,v2) ( zCVecSizeNC(v1) == zCVecSizeNC(v2) )
 
 /*! \brief abstract and set an element of a complex vector.
  *
@@ -44,8 +44,8 @@ typedef zCVecStruct * zCVec;
  *
  * zCVecFree() frees memory allocated for a complex vector \a v.
  *
- * zCVecClear() sets all components of a complex vector \a v
- * for zero.
+ * zCVecZero() sets all components of a complex vector \a v
+ * for zeros.
  *
  * zCVecCopyNC() copies a complex vector \a src to another
  * \a dest without checking the size consistency between them.
@@ -59,7 +59,7 @@ typedef zCVecStruct * zCVec;
  *
  * zCVecFree() returns no values.
  *
- * zCVecClear() returns a pointer \a v.
+ * zCVecZero() returns a pointer \a v.
  *
  * zCVecCopyNC() returns a pointer \a dest.
  *
@@ -73,7 +73,7 @@ typedef zCVecStruct * zCVec;
  */
 __EXPORT zCVec zCVecAlloc(int size);
 __EXPORT void zCVecFree(zCVec v);
-__EXPORT zCVec zCVecClear(zCVec v);
+__EXPORT zCVec zCVecZero(zCVec v);
 __EXPORT zCVec zCVecCopyNC(zCVec src, zCVec dest);
 __EXPORT zCVec zCVecCopy(zCVec src, zCVec dest);
 __EXPORT zCVec zCVecClone(zCVec src);

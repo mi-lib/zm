@@ -27,9 +27,7 @@ static bool _zLP_PDIPEqLUDecomp(_zLP_PDIP *dat);
 static void _zLP_PDIPEqLU(_zLP_PDIP *dat, zVec v1, zVec v2, zVec v3, zVec dx, zVec dy, zVec dz);
 
 /* (static)
- * _zLP_PDIPAlloc
- * - allocate working memory for PD-IP.
- */
+ * allocate working memory for PD-IP. */
 _zLP_PDIP *_zLP_PDIPAlloc(_zLP_PDIP *dat, zMat a, zVec b, zVec c, zVec x)
 {
   /* bind pointers */
@@ -61,9 +59,7 @@ _zLP_PDIP *_zLP_PDIPAlloc(_zLP_PDIP *dat, zMat a, zVec b, zVec c, zVec x)
 }
 
 /* (static)
- * _zLP_PDIPFree
- * - free working memory for PD-IP.
- */
+ * free working memory for PD-IP. */
 void _zLP_PDIPFree(_zLP_PDIP *dat)
 {
   /* unbind pointers */
@@ -77,9 +73,7 @@ void _zLP_PDIPFree(_zLP_PDIP *dat)
 }
 
 /* (static)
- * _zLP_PDIPIni
- * - initial interior point for PD-IP.
- */
+ * initial interior point for PD-IP. */
 bool _zLP_PDIPIni(_zLP_PDIP *dat)
 {
   double m;
@@ -100,9 +94,7 @@ bool _zLP_PDIPIni(_zLP_PDIP *dat)
 }
 
 /* (static)
- * _zLP_PDIPEqLUDecomp
- * - LU decomposition of gradient matrix for PD-IP.
- */
+ * LU decomposition of gradient matrix for PD-IP. */
 bool _zLP_PDIPEqLUDecomp(_zLP_PDIP *dat)
 {
   zVecDemNC( dat->x, dat->z, dat->xz ); /* xz = x / z */
@@ -114,13 +106,11 @@ bool _zLP_PDIPEqLUDecomp(_zLP_PDIP *dat)
 }
 
 /* (static)
- * _zLP_PDIPEqLU
- * - solve gradient equation by LU factorization for PD-IP.
- */
+ * solve gradient equation by LU factorization for PD-IP. */
 void _zLP_PDIPEqLU(_zLP_PDIP *dat, zVec v1, zVec v2, zVec v3, zVec dx, zVec dy, zVec dz)
 {
   /* dy (dz for temporary working space) */
-  v2 ? zVecAmpNC( v2, dat->x, dz ) : zVecClear( dz );
+  v2 ? zVecAmpNC( v2, dat->x, dz ) : zVecZero( dz );
   zVecSubNCDRC( dz, v3 );
   zVecDemNCDRC( dz, dat->z );
   zMulMatVecNC( dat->a, dz, dat->tmp );
@@ -151,9 +141,7 @@ static double _zLP_PDIP_PCStep(zVec x, zVec dx);
 static void _zLP_PDIP_PCCorrect(_zLP_PDIP *dat, _zLP_PDIP_PC *pc, double ap, double ad, double e);
 
 /* (static)
- * _zLP_PDIP_PCAlloc
- * - allocate working memory for PD-IP-PC.
- */
+ * allocate working memory for PD-IP-PC. */
 _zLP_PDIP_PC *_zLP_PDIP_PCAlloc(_zLP_PDIP_PC *pc, zVec b, zVec c)
 {
   pc->dx = zVecAlloc( zVecSizeNC(c) );
@@ -171,18 +159,14 @@ _zLP_PDIP_PC *_zLP_PDIP_PCAlloc(_zLP_PDIP_PC *pc, zVec b, zVec c)
 }
 
 /* (static)
- * _zLP_PDIP_PCFree
- * - free working memory for PD-IP-PC.
- */
+ * free working memory for PD-IP-PC. */
 void _zLP_PDIP_PCFree(_zLP_PDIP_PC *pc)
 {
   zVecFreeAO( 6, pc->dx, pc->dy, pc->dz, pc->dx2, pc->dy2, pc->dz2 );
 }
 
 /* (static)
- * _zLP_PDIP_PCErr
- * - error vector of PD-IP-PC.
- */
+ * error vector of PD-IP-PC. */
 double _zLP_PDIP_PCErr(_zLP_PDIP *dat)
 {
   zMulMatVecNC( dat->a, dat->x, dat->v1 );
@@ -195,9 +179,7 @@ double _zLP_PDIP_PCErr(_zLP_PDIP *dat)
 }
 
 /* (static)
- * _zLP_PDIP_PCStep
- * - updating step of PD-IP-PC.
- */
+ * updating step of PD-IP-PC. */
 double _zLP_PDIP_PCStep(zVec x, zVec dx)
 {
   register int i;
@@ -232,9 +214,7 @@ double _zLP_PDIP_PCStep(zVec x, zVec dx)
 }
 
 /* (static)
- * _zLP_PDIP_PCCorrect
- * - corrector magnitude of PD-IP-PC.
- */
+ * corrector magnitude of PD-IP-PC. */
 void _zLP_PDIP_PCCorrect(_zLP_PDIP *dat, _zLP_PDIP_PC *pc, double ap, double ad, double e)
 {
   double g;
@@ -246,10 +226,8 @@ void _zLP_PDIP_PCCorrect(_zLP_PDIP *dat, _zLP_PDIP_PC *pc, double ap, double ad,
   zVecShift( dat->v3, -zCube(g) * e / zVecSizeNC(dat->x) );
 }
 
-/* zLPSolvePDIP_PC
- * - linear programming solver based on primal-dual interior-point
- *   method with Mehrotra s predictor-corrector.
- */
+/* linear programming solver based on primal-dual interior-point method
+ * with Mehrotra s predictor-corrector. */
 #define ZM_LPSOLVE_PDIP_PCSTEP_MUL 0.99
 bool zLPSolvePDIP_PC(zMat a, zVec b, zVec c, zVec x, double *cost)
 {

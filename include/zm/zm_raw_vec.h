@@ -11,29 +11,32 @@
 
 __BEGIN_DECLS
 
-/*! \brief cleanup and copy raw vector.
+/*! \brief zero a raw vector.
  *
- * zRawVecClear() clears a vector \a v, setting all
- * components for zeros.
+ * zRawVecZero() sets all components of a raw vector \a v for
+ * zeros.
  *
- * zRawVecTouchup() touches up \a v, namely, replace
- * all components which are less than zTOL for zeros.
+ * zRawVecTouchup() replaces all components less than zTOL of
+ * a raw vector \a v for zeros.
+ *
+ * \a size is the size of the vector.
+ * \return
+ * zRawVecZero() returns a pointer \a v.
+ * zRawVecTouchup() returns no value.
+ */
+#define zRawVecZero(v,s) memset( v, 0, sizeof(double)*(s) )
+__EXPORT void zRawVecTouchup(double *v, int size);
+
+/*! \brief copy a raw vector.
  *
  * zRawVecCopy() copies a vector \a src to \a dest.
- *
- * \a size is the size of the vector(s).
+ * \a s is the size of the vectors.
  * \return
- * zRawVecClear() returns a pointer to \a v.
- *
- * zRawVecTouchup() returns no value.
- *
  * zRawVecCopy() returns a pointer to \a dest.
  */
-#define zRawVecClear(v,siz)      memset( v, 0, sizeof(double)*(siz) )
-__EXPORT void zRawVecTouchup(double *v, int size);
-#define zRawVecCopy(src,dst,siz) memcpy( dst, src, sizeof(double)*(siz) )
+#define zRawVecCopy(src,dst,s) memcpy( dst, src, sizeof(double)*(s) )
 
-/*! \brief get/put a part of raw vector.
+/*! \brief get/put a part of a raw vector.
  *
  * zRawVecGet() partly copies \a src to \a dest from
  * the \a pos'th component.

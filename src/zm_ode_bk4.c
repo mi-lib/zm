@@ -107,7 +107,7 @@ zVec zODEUpdate_Gauss(zODE *ode, double t, zVec x, double dt, void *util)
 
   ws->util = util;
   zVecCopyNC( x, ws->x );
-  zVecClear( ws->k );
+  zVecZero( ws->k );
   zNLESolve( &ws->nle, ws->k, ode, zTOL, ws->iter, NULL );
   ode->cat( x, dt, &ws->k1, x, util );
   ode->cat( x, dt, &ws->k2, x, util );
@@ -129,7 +129,7 @@ zVec zODEUpdate_Radau(zODE *ode, double t, zVec x, double dt, void *util)
 
   ws->util = util;
   zVecCopyNC( x, ws->x );
-  zVecClear( ws->k );
+  zVecZero( ws->k );
   zNLESolve( &ws->nle, ws->k, ode, zTOL, ws->iter, NULL );
   ode->cat( x, ws->a21, &ws->k1, x, util );
   ode->cat( x, ws->a22, &ws->k2, x, util );

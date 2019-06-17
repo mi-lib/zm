@@ -20,7 +20,7 @@ zVec zIPVecLagrange(zIPData *dat, double t, zVec v)
   register int i, j;
   double p;
 
-  zVecClear( v );
+  zVecZero( v );
   for( i=0; i<zIPSize(dat); i++ ){
     for( p=1, j=0; j<zIPSize(dat); j++ )
       if( i != j )
@@ -38,7 +38,7 @@ zVec zIPVelLagrange(zIPData *dat, double t, zVec v)
   register int i, j, k;
   double p;
 
-  zVecClear( v );
+  zVecZero( v );
   for( i=0; i<zIPSize(dat); i++ )
     for( j=i+1; j<zIPSize(dat); j++ ){
       for( p=1, k=0; k<zIPSize(dat); k++ )
@@ -58,7 +58,7 @@ zVec zIPAccLagrange(zIPData *dat, double t, zVec v)
   register int i, j, k, l;
   double p;
 
-  zVecClear( v );
+  zVecZero( v );
   for( i=0; i<zIPSize(dat); i++ )
     for( j=i+1; j<zIPSize(dat); j++ )
       for( k=j+1; k<zIPSize(dat); k++ ){

@@ -6,9 +6,7 @@
 
 #include <zm/zm_vec.h>
 
-/* zVecRingAlloc
- * - allocate vector ring.
- */
+/* allocate a vector ring. */
 bool zVecRingAlloc(zVecRing *ring, int dim, int num)
 {
   register int i;
@@ -23,9 +21,7 @@ bool zVecRingAlloc(zVecRing *ring, int dim, int num)
   return true;
 }
 
-/* zVecRingFree
- * - free vector ring.
- */
+/* free a vector ring. */
 void zVecRingFree(zVecRing *ring)
 {
   register int i;
@@ -36,9 +32,7 @@ void zVecRingFree(zVecRing *ring)
   zRingFree( ring );
 }
 
-/* zVecRingFill
- * - fill the ring with the same vector.
- */
+/* fill a ring with the same vector. */
 zVec zVecRingFill(zVecRing *ring, zVec v)
 {
   register int i;
@@ -52,9 +46,7 @@ zVec zVecRingFill(zVecRing *ring, zVec v)
   return v;
 }
 
-/* zVecRingCat
- * - concatenate vector ring.
- */
+/* concatenate vectors of a ring. */
 zVec zVecRingCat(zVec v, zVec c, zVecRing *ring)
 {
   register int i;
@@ -68,11 +60,9 @@ zVec zVecRingCat(zVec v, zVec c, zVecRing *ring)
   return v;
 }
 
-/* zVecRingLS
- * - linear sum of vector ring.
- */
+/* linear sum of vectors of a ring. */
 zVec zVecRingLS(zVec v, zVec c, zVecRing *ring)
 {
-  zVecClear( v );
+  zVecZero( v );
   return zVecRingCat( v, c, ring );
 }

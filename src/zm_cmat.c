@@ -39,14 +39,14 @@ void zCMatFree(zCMat m)
   }
 }
 
-/* clear a complex matrix. */
-zCMat zCMatClear(zCMat m)
+/* zero a complex matrix. */
+zCMat zCMatZero(zCMat m)
 {
   register int i, n;
 
-  n = _zCMatRowSize(m) * _zCMatColSize(m);
+  n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
-    zComplexCopy( ZCOMPLEXZERO, &m->elem[i] );
+    zComplexZero( &m->elem[i] );
   return m;
 }
 
@@ -55,7 +55,7 @@ zCMat zCMatCopyNC(zCMat src, zCMat dest)
 {
   register int i, n;
 
-  n = _zCMatRowSize(src) * _zCMatColSize(src);
+  n = zCMatRowSizeNC(src) * zCMatColSizeNC(src);
   for( i=0; i<n; i++ )
     zComplexCopy( &src->elem[i], &dest->elem[i] );
   return dest;
@@ -76,7 +76,7 @@ zCMat zCMatClone(zCMat src)
 {
   zCMat dest;
 
-  if( ( dest = zCMatAlloc( _zCMatRowSize(src), _zCMatColSize(src) ) ) )
+  if( ( dest = zCMatAlloc( zCMatRowSizeNC(src), zCMatColSizeNC(src) ) ) )
     zCMatCopyNC( src, dest );
   return dest;
 }
@@ -97,7 +97,7 @@ bool zCMatIsTol(zCMat m, double tol)
 {
   register int i, n;
 
-  n = _zCMatRowSize(m) * _zCMatColSize(m);
+  n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
     if( !zComplexIsTol( &m->elem[i], tol ) ) return false;
   return true;
@@ -108,7 +108,7 @@ zCMat zCMatAddNC(zCMat m1, zCMat m2, zCMat m)
 {
   register int i, n;
 
-  n = _zCMatRowSize(m) * _zCMatColSize(m);
+  n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
     zComplexAdd( &m1->elem[i], &m2->elem[i], &m->elem[i] );
   return m;
@@ -120,7 +120,7 @@ zCMat zCMatSubNC(zCMat m1, zCMat m2, zCMat m)
 {
   register int i, n;
 
-  n = _zCMatRowSize(m) * _zCMatColSize(m);
+  n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
     zComplexSub( &m1->elem[i], &m2->elem[i], &m->elem[i] );
   return m;
@@ -131,7 +131,7 @@ zCMat zCMatRevNC(zCMat m1, zCMat m)
 {
   register int i, n;
 
-  n = _zCMatRowSize(m) * _zCMatColSize(m);
+  n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
     zComplexRev( &m1->elem[i], &m->elem[i] );
   return m;
@@ -143,7 +143,7 @@ zCMat zCMatMulNC(zCMat m1, zComplex *z, zCMat m)
 {
   register int i, n;
 
-  n = _zCMatRowSize(m) * _zCMatColSize(m);
+  n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
     zComplexCMul( &m1->elem[i], z, &m->elem[i] );
   return m;
@@ -160,7 +160,7 @@ zCMat zCMatDivNC(zCMat m1, zComplex *z, zCMat m)
   r = zComplexSqrAbs( z );
   zComplexConj( z, &dz );
   zComplexDiv( &dz, r, &dz );
-  n = _zCMatRowSize(m) * _zCMatColSize(m);
+  n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
     zComplexCMul( &m1->elem[i], &dz, &m->elem[i] );
   return m;
@@ -228,9 +228,9 @@ zCVec zCMulMatVecNC(zCMat m, zCVec v1, zCVec v)
   zComplex *e, z;
 
   e = m->elem;
-  for( i=0; i<_zCMatRowSize(m); i++, e+=_zCMatColSize(m) ){
-    zComplexClear( zCVecElem(v,i) );
-    for( j=0; j<_zCMatColSize(m); j++ ){
+  for( i=0; i<zCMatRowSizeNC(m); i++, e+=zCMatColSizeNC(m) ){
+    zComplexZero( zCVecElem(v,i) );
+    for( j=0; j<zCMatColSizeNC(m); j++ ){
       zComplexCMul( &e[j], zCVecElem(v1,j), &z );
       zComplexAdd( zCVecElem(v,i), &z, zCVecElem(v,i) );
     }
@@ -241,8 +241,8 @@ zCVec zCMulMatVecNC(zCMat m, zCVec v1, zCVec v)
 /* multiply a complex matrix and a complex column vector. */
 zCVec zCMulMatVec(zCMat m, zCVec v1, zCVec v)
 {
-  if( zCMatColSize(m) != zCVecSize(v1) ||
-      zCMatRowSize(m) != zCVecSize(v) ){
+  if( zCMatColSizeNC(m) != zCVecSizeNC(v1) ||
+      zCMatRowSizeNC(m) != zCVecSizeNC(v) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return NULL;
   }
@@ -258,9 +258,9 @@ void zCMatFPrint(FILE *fp, zCMat m)
     fprintf( fp, "(null matrix)\n" );
   else{
     fprintf( fp,"(%d, %d) {\n",
-      _zCMatRowSize(m), _zCMatColSize(m) );
-    for( i=0; i<_zCMatRowSize(m); i++ ){
-      for( j=0; j<_zCMatColSize(m); j++ ){
+      zCMatRowSizeNC(m), zCMatColSizeNC(m) );
+    for( i=0; i<zCMatRowSizeNC(m); i++ ){
+      for( j=0; j<zCMatColSizeNC(m); j++ ){
         zComplexFPrint( fp, zCMatElem(m,i,j) );
         fprintf( fp, ", " );
       }

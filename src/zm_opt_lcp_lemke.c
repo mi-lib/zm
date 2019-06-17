@@ -167,14 +167,14 @@ void _zLemkeAnswer(_zLemke *tab, zVec w, zVec z)
   register int i, idx;
 
   if( w ){
-    zVecClear( w );
+    zVecZero( w );
     for( i=0; i<zArraySize(tab->ib); i++ ){
       idx = zIndexElemNC(tab->ib,i) - zVecSizeNC(w);
       if( idx >= 0 && idx < zVecSizeNC(w) )
         zVecSetElemNC( w, idx, zVecElemNC(tab->q,i) );
     }
   }
-  zVecClear( z );
+  zVecZero( z );
   for( i=0; i<zArraySize(tab->ib); i++ )
     if( zIndexElemNC(tab->ib,i) < zVecSizeNC(z) )
       zVecSetElemNC( z, zIndexElemNC(tab->ib,i), zVecElemNC(tab->q,i) );
