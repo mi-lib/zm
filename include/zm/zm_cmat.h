@@ -17,20 +17,22 @@ __BEGIN_DECLS
  * complex matrix class
  * NOTES: each elements of matrix(size=r*c) is at (0 - r-1,0 - c-1).
  * ********************************************************** */
-
-typedef struct{
-  int row, col;
-  zComplex *elem;
-} zCMatStruct;
+zArray2Class( zCMatStruct, zComplex );
 typedef zCMatStruct * zCMat;
 
-#define zCMatRowSizeNC(m)        (m)->row
-#define zCMatColSizeNC(m)        (m)->col
+#define zCMatRowSizeNC(m)        zArray2RowSize(m)
 #define zCMatRowSize(m)          ( (m) ? zCMatRowSizeNC(m) : 0 )
+#define zCMatColSizeNC(m)        zArray2ColSize(m)
 #define zCMatColSize(m)          ( (m) ? zCMatColSizeNC(m) : 0 )
-#define zCMatSetRowSize(m,r)     ( zCMatRowSizeNC(m) = (r) )
-#define zCMatSetColSize(m,c)     ( zCMatColSizeNC(m) = (c) )
+#define zCMatSetRowSizeNC(m,r)   ( zCMatRowSizeNC(m) = (r) )
+#define zCMatSetRowSize(m,r)     ( (m) ? zCMatSetRowSizeNC(m,r) : 0 )
+#define zCMatSetColSizeNC(m,c)   ( zCMatColSizeNC(m) = (c) )
+#define zCMatSetColSize(m,c)     ( (m) ? zCMatSetColSizeNC(m,c) : 0 )
 
+#define zCMatSetSizeNC(m,r,c) do{\
+  zCMatSetRowSizeNC(m,r);\
+  zCMatSetColSizeNC(m,c);\
+} while(0)
 #define zCMatSetSize(m,r,c) do{\
   zCMatSetRowSize(m,r);\
   zCMatSetColSize(m,c);\
@@ -39,6 +41,9 @@ typedef zCMatStruct * zCMat;
 #define zCMatSizeIsEqual(m1,m2) \
   ( zCMatRowSizeNC(m1) == zCMatRowSizeNC(m2) && \
     zCMatColSizeNC(m1) == zCMatColSizeNC(m2) )
+
+#define zCMatBufNC(m) zArrayBuf(m)
+#define zCMatBuf(m)   ( (m) ? zCMatBufNC(m) : NULL )
 
 /*! \brief retrieve and set an element of a complex matrix.
  *
@@ -52,8 +57,10 @@ typedef zCMatStruct * zCMat;
  * zCMatElem() and zCMatSetElem() return the address of
  * the component at \a r th row and \a c th column of \a m.
  */
-#define zCMatElem(m,r,c)      ( &(m)->elem[(r)*zCMatColSizeNC(m)+(c)] )
-#define zCMatSetElem(m,r,c,e) zComplexCopy( (e), zCMatElem(m,r,c) )
+#define zCMatElemNC(m,r,c)      zArray2ElemNC(m,r,c)
+#define zCMatElem(m,r,c)        zArray2Elem(m,r,c)
+#define zCMatSetElemNC(m,r,c,e) zArray2SetElemNC(m,r,c,e)
+#define zCMatSetElem(m,r,c,e)   zArray2SetElem(m,r,c,e)
 
 /*! \brief allocate, free and zero a complex matrix.
  *

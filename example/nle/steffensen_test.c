@@ -20,8 +20,8 @@ zVecPrint(x);
       f( f0, f1, util );
 printf("f1: "); zVecPrint(f1); getchar();
       if( j == zVecSizeNC(x) ) break;
-      zRawVecSub( zVecBuf(f1), zVecBuf(f0), zMatRowBuf(dx,j), zVecSizeNC(x) );
-      if( zRawVecIsTiny( zMatRowBuf(dx,j), zVecSizeNC(x) ) ){
+      zRawVecSub( zVecBufNC(f1), zVecBufNC(f0), zMatRowBufNC(dx,j), zVecSizeNC(x) );
+      if( zRawVecIsTiny( zMatRowBufNC(dx,j), zVecSizeNC(x) ) ){
         zVecCopyNC( f1, x );
         goto TERMINATE;
       }
@@ -33,11 +33,11 @@ printf("f1: "); zVecPrint(f1); getchar();
     }
     l = zVecSqrNorm( f1 );
     for( j=0; j<zMatRowSizeNC(dx)-1; j++ ){
-      zRawVecSub( zMatRowBuf(dx,j+1), zMatRowBuf(dx,j), zVecBuf(f0), zVecSizeNC(f0) );
+      zRawVecSub( zMatRowBufNC(dx,j+1), zMatRowBufNC(dx,j), zVecBufNC(f0), zVecSizeNC(f0) );
       zMatPutCol( ddx, j, f0 );
       zMatElemNC(ddx,j,j) += 1.0;
     }
-    zRawVecSubDRC( zVecBuf(f1), zMatRowBuf(dx,j), zVecSizeNC(f1) );
+    zRawVecSubDRC( zVecBufNC(f1), zMatRowBufNC(dx,j), zVecSizeNC(f1) );
     zMatPutCol( ddx, j, f1 );
     zMatElemNC(ddx,j,j) += 1.0;
 

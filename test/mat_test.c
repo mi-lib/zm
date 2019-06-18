@@ -41,9 +41,9 @@ void assert_get_put(void)
   zAssert( zMatTPut, result );
 
   zMatGetRow( mat_test1, 3, vec_test1 );
-  zAssert( zMatGetRow, memcmp( zMatRowBuf(mat_test1,3), zVecBuf(vec_test1), sizeof(double)*colsize ) == 0 );
+  zAssert( zMatGetRow, memcmp( zMatRowBufNC(mat_test1,3), zVecBufNC(vec_test1), sizeof(double)*colsize ) == 0 );
   zMatPutRow( mat_test2, 2, vec_test1 );
-  zAssert( zMatPutRow, memcmp( zMatRowBuf(mat_test2,2), zMatRowBuf(mat_test1,3), sizeof(double)*colsize ) == 0 );
+  zAssert( zMatPutRow, memcmp( zMatRowBufNC(mat_test2,2), zMatRowBufNC(mat_test1,3), sizeof(double)*colsize ) == 0 );
   zMatGetCol( mat_test1, 2, vec_test2 );
   for( result=true, i=0; i<rowsize; i++ )
     if( zMatElemNC(mat_test1,i,2) != zVecElemNC(vec_test2,i) ) result = false;
@@ -55,8 +55,8 @@ void assert_get_put(void)
   zMatCopy( mat_test1, mat_test2 );
   zMatSwapRow( mat_test2, 3, 7 );
   zAssert( zMatSwapRow,
-    memcmp( zMatRowBuf(mat_test1,3), zMatRowBuf(mat_test2,7), sizeof(double)*colsize ) == 0 &&
-    memcmp( zMatRowBuf(mat_test1,7), zMatRowBuf(mat_test2,3), sizeof(double)*colsize ) == 0 );
+    memcmp( zMatRowBufNC(mat_test1,3), zMatRowBufNC(mat_test2,7), sizeof(double)*colsize ) == 0 &&
+    memcmp( zMatRowBufNC(mat_test1,7), zMatRowBufNC(mat_test2,3), sizeof(double)*colsize ) == 0 );
   zMatCopy( mat_test1, mat_test2 );
   zMatSwapCol( mat_test2, 3, 7 );
   for( result=true, i=0; i<rowsize; i++ )

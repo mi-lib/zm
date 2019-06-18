@@ -138,8 +138,8 @@ int main(void)
   c = zVecCloneArray( c_arr, col );
   x = zVecAlloc( col );
 
-  zVecSetSize( &ans, sizeof(answer)/sizeof(double) );
-  zVecBuf(&ans) = answer;
+  zVecSetSizeNC( &ans, sizeof(answer)/sizeof(double) );
+  zVecBufNC(&ans) = answer;
 
   printf( "revised two-phase simplex method\n" );
   printf( "minimize c^T x subject to Ax=b and x>=0, where:\n" );
@@ -155,7 +155,7 @@ int main(void)
   printf( "cost=%f\n", cost );
   printf( "<true answer>\n" );
   zVecPrint( &ans );
-  printf( "cost=%f\n", zRawVecInnerProd( answer, zVecBuf(c), zVecSizeNC(&ans) ) );
+  printf( "cost=%f\n", zRawVecInnerProd( answer, zVecBufNC(c), zVecSizeNC(&ans) ) );
 
   zMatFree( a );
   zVecFree( b );

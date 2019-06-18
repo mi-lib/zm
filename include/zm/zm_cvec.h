@@ -12,19 +12,21 @@
 __BEGIN_DECLS
 
 /* ********************************************************** */
-/* CLASS: zCVec
- * double precision floating point value vector class
+/*! \brief complex number vector class
  * ********************************************************** */
-
-typedef struct{
-  int size;
-  zComplex *elem;
-} zCVecStruct;
+zArrayClass( zCVecStruct, zComplex );
 typedef zCVecStruct * zCVec;
 
-#define zCVecSizeNC(v)          (v)->size
+/*! \brief size of a complex vector.
+ * \retval the size of a complex vector if \a v is not null.
+ * \retval 0 if \a v is the null pointer.
+ */
+#define zCVecSizeNC(v)          zArraySize(v)
 #define zCVecSize(v)            ( (v) ? zCVecSizeNC(v) : 0 )
-#define zCVecSetSize(v,s)       ( zCVecSizeNC(v) = (s) )
+/*! \brief set the size of a complex vector. */
+#define zCVecSetSizeNC(v,s)     ( zCVecSizeNC(v) = (s) )
+#define zCVecSetSize(v,s)       ( (v) ? zCVecSetSizeNC(v,s) : 0 )
+/*! \brief check if the sizes of two complex vectors are equal. */
 #define zCVecSizeIsEqual(v1,v2) ( zCVecSizeNC(v1) == zCVecSizeNC(v2) )
 
 /*! \brief abstract and set an element of a complex vector.
@@ -35,8 +37,10 @@ typedef zCVecStruct * zCVec;
  * \return
  * zCVecElem() and zCVecSetElem() return the \a i th component of \a v.
  */
-#define zCVecElem(v,n)      ( &(v)->elem[n] )
-#define zCVecSetElem(v,n,e) zComplexCopy( (e), zCVecElem(v,n) )
+#define zCVecElemNC(v,n)      zArrayElemNC(v,n)
+#define zCVecElem(v,n)        zArrayElem(v,n)
+#define zCVecSetElemNC(v,n,e) zArraySetElemNC(v,n,e)
+#define zCVecSetElem(v,n,e)   zArraySetElem(v,n,e)
 
 /*! \brief allocate, free, zero and copy a complex vector.
  *

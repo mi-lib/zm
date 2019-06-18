@@ -14,7 +14,7 @@ void mat_deg(zMat m, int rank)
     r2 = zRandI( 0, rank-1 );
     s1 = zRandF( -10, 10 );
     s2 = zRandF( -10, 10 );
-    zRawVecLS( zMatRowBuf(m,i), zMatColSizeNC(m), 2, s1, zMatRowBuf(m,r1), s2, zMatRowBuf(m,r2) );
+    zRawVecLS( zMatRowBufNC(m,i), zMatColSizeNC(m), 2, s1, zMatRowBufNC(m,r1), s2, zMatRowBufNC(m,r2) );
   }
 }
 

@@ -21,12 +21,12 @@ zCMat zCMatAlloc(int row, int col)
     ZALLOCERROR();
     return NULL;
   }
-  if( !( m->elem = zAlloc( zComplex, row*col ) ) ){
+  if( !( zCMatBufNC(m) = zAlloc( zComplex, row*col ) ) ){
     ZALLOCERROR();
     zFree( m );
     return NULL;
   }
-  zCMatSetSize( m, row, col );
+  zCMatSetSizeNC( m, row, col );
   return m;
 }
 
@@ -34,7 +34,7 @@ zCMat zCMatAlloc(int row, int col)
 void zCMatFree(zCMat m)
 {
   if( m ){
-    zFree( m->elem );
+    zFree( zCMatBufNC(m) );
     free( m );
   }
 }
@@ -46,7 +46,7 @@ zCMat zCMatZero(zCMat m)
 
   n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
-    zComplexZero( &m->elem[i] );
+    zComplexZero( &zCMatBufNC(m)[i] );
   return m;
 }
 
@@ -57,7 +57,7 @@ zCMat zCMatCopyNC(zCMat src, zCMat dest)
 
   n = zCMatRowSizeNC(src) * zCMatColSizeNC(src);
   for( i=0; i<n; i++ )
-    zComplexCopy( &src->elem[i], &dest->elem[i] );
+    zComplexCopy( &zCMatBufNC(src)[i], &zCMatBufNC(dest)[i] );
   return dest;
 }
 
@@ -88,7 +88,7 @@ zCMat zMat2CMat(zMat m, zCMat cm)
 
   n = zMatRowSizeNC(m) * zMatColSizeNC(m);
   for( i=0; i<n; i++ )
-    zComplexCreate( &cm->elem[i], zMatBuf(m)[i], 0 );
+    zComplexCreate( &zCMatBufNC(cm)[i], zMatBufNC(m)[i], 0 );
   return cm;
 }
 
@@ -99,7 +99,7 @@ bool zCMatIsTol(zCMat m, double tol)
 
   n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
-    if( !zComplexIsTol( &m->elem[i], tol ) ) return false;
+    if( !zComplexIsTol( &zCMatBufNC(m)[i], tol ) ) return false;
   return true;
 }
 
@@ -110,7 +110,7 @@ zCMat zCMatAddNC(zCMat m1, zCMat m2, zCMat m)
 
   n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
-    zComplexAdd( &m1->elem[i], &m2->elem[i], &m->elem[i] );
+    zComplexAdd( &zCMatBufNC(m1)[i], &zCMatBufNC(m2)[i], &zCMatBufNC(m)[i] );
   return m;
 }
 
@@ -122,7 +122,7 @@ zCMat zCMatSubNC(zCMat m1, zCMat m2, zCMat m)
 
   n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
-    zComplexSub( &m1->elem[i], &m2->elem[i], &m->elem[i] );
+    zComplexSub( &zCMatBufNC(m1)[i], &zCMatBufNC(m2)[i], &zCMatBufNC(m)[i] );
   return m;
 }
 
@@ -133,7 +133,7 @@ zCMat zCMatRevNC(zCMat m1, zCMat m)
 
   n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
-    zComplexRev( &m1->elem[i], &m->elem[i] );
+    zComplexRev( &zCMatBufNC(m1)[i], &zCMatBufNC(m)[i] );
   return m;
 }
 
@@ -145,7 +145,7 @@ zCMat zCMatMulNC(zCMat m1, zComplex *z, zCMat m)
 
   n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
-    zComplexCMul( &m1->elem[i], z, &m->elem[i] );
+    zComplexCMul( &zCMatBufNC(m1)[i], z, &zCMatBufNC(m)[i] );
   return m;
 }
 
@@ -162,7 +162,7 @@ zCMat zCMatDivNC(zCMat m1, zComplex *z, zCMat m)
   zComplexDiv( &dz, r, &dz );
   n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
-    zComplexCMul( &m1->elem[i], &dz, &m->elem[i] );
+    zComplexCMul( &zCMatBufNC(m1)[i], &dz, &zCMatBufNC(m)[i] );
   return m;
 }
 
@@ -227,12 +227,12 @@ zCVec zCMulMatVecNC(zCMat m, zCVec v1, zCVec v)
   register int i, j;
   zComplex *e, z;
 
-  e = m->elem;
+  e = zCMatBufNC(m);
   for( i=0; i<zCMatRowSizeNC(m); i++, e+=zCMatColSizeNC(m) ){
-    zComplexZero( zCVecElem(v,i) );
+    zComplexZero( zCVecElemNC(v,i) );
     for( j=0; j<zCMatColSizeNC(m); j++ ){
-      zComplexCMul( &e[j], zCVecElem(v1,j), &z );
-      zComplexAdd( zCVecElem(v,i), &z, zCVecElem(v,i) );
+      zComplexCMul( &e[j], zCVecElemNC(v1,j), &z );
+      zComplexAdd( zCVecElemNC(v,i), &z, zCVecElemNC(v,i) );
     }
   }
   return v;
@@ -261,7 +261,7 @@ void zCMatFPrint(FILE *fp, zCMat m)
       zCMatRowSizeNC(m), zCMatColSizeNC(m) );
     for( i=0; i<zCMatRowSizeNC(m); i++ ){
       for( j=0; j<zCMatColSizeNC(m); j++ ){
-        zComplexFPrint( fp, zCMatElem(m,i,j) );
+        zComplexFPrint( fp, zCMatElemNC(m,i,j) );
         fprintf( fp, ", " );
       }
       fprintf( fp, "\n" );

@@ -47,10 +47,10 @@ bool _zLPTableauCreate(_zLPTableau *tab, zMat a, zVec b)
     return false;
   for( i=0; i<zVecSizeNC(b); i++ ){
     if( zVecElemNC(b,i) >= 0 ){
-      zRawVecCopy( zMatRowBuf(a,i), zMatRowBuf(tab->a,i), zMatColSizeNC(a) );
+      zRawVecCopy( zMatRowBufNC(a,i), zMatRowBufNC(tab->a,i), zMatColSizeNC(a) );
       zVecSetElemNC( tab->b, i, zVecElemNC(b,i) );
     } else{
-      zRawVecRev( zMatRowBuf(a,i), zMatRowBuf(tab->a,i), zMatColSizeNC(a) );
+      zRawVecRev( zMatRowBufNC(a,i), zMatRowBufNC(tab->a,i), zMatColSizeNC(a) );
       zVecSetElemNC( tab->b, i, -zVecElemNC(b,i) );
     }
     zMatSetElemNC( tab->a, i, zMatColSizeNC(a)+i, 1.0 );

@@ -102,8 +102,8 @@ int main(void)
 #endif
   zVecStruct ansvec;
 
-  zVecSetSize( &ansvec, sizeof(ans)/sizeof(double) );
-  zVecBuf(&ansvec) = ans;
+  zVecSetSizeNC( &ansvec, sizeof(ans)/sizeof(double) );
+  zVecBufNC(&ansvec) = ans;
   z = zVecAlloc( d );
   m = zMatCloneArray( marray, d, d );
   q = zVecCloneArray( qarray, d );

@@ -170,7 +170,7 @@ zPex _zPexExp(zVec factor)
   zPex p1, p2, p = NULL;
   uint size, hsize;
 
-  size = zVecSize( factor );
+  size = zVecSizeNC( factor );
   if( size == 1 ){
     if( !( p = zPexAlloc( 1 ) ) ){
       ZALLOCERROR();
@@ -181,10 +181,10 @@ zPex _zPexExp(zVec factor)
     return p;
   }
   hsize = size / 2;
-  zVecSetSize( factor, hsize );
+  zVecSetSizeNC( factor, hsize );
   p1 = _zPexExp( factor );
-  zVecSetSize( factor, size-hsize );
-  memcpy( zVecBuf(factor), zVecBuf(factor)+hsize, sizeof(double)*zVecSizeNC(factor) );
+  zVecSetSizeNC( factor, size-hsize );
+  memcpy( zVecBufNC(factor), zVecBufNC(factor)+hsize, sizeof(double)*zVecSizeNC(factor) );
   p2 = _zPexExp( factor );
   if( !p1 || !p2 ) goto TERMINATE;
   p = zPexMul( p1, p2 );

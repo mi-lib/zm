@@ -14,9 +14,9 @@ void assert_get_put(void)
   zVecRandUniform( test_vec2, -10, 10 );
 
   zVecGet( test_vec1, 2, test_vec3 );
-  zAssert( zVecGet, memcmp( zVecBuf(test_vec1)+2, zVecBuf(test_vec3), sizeof(double)*3 ) == 0 );
+  zAssert( zVecGet, memcmp( zVecBufNC(test_vec1)+2, zVecBufNC(test_vec3), sizeof(double)*3 ) == 0 );
   zVecPut( test_vec2, 2, test_vec3 );
-  zAssert( zVecPut, memcmp( zVecBuf(test_vec2)+2, zVecBuf(test_vec3), sizeof(double)*3 ) == 0 );
+  zAssert( zVecPut, memcmp( zVecBufNC(test_vec2)+2, zVecBufNC(test_vec3), sizeof(double)*3 ) == 0 );
   zVecCopy( test_vec1, test_vec2 );
   zVecSwap( test_vec2, 3, 6 );
   zAssert( zVecSwap, zVecElemNC(test_vec1,3) == zVecElemNC(test_vec2,6) && zVecElemNC(test_vec1,6) == zVecElemNC(test_vec2,3) );

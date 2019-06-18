@@ -17,25 +17,29 @@ __BEGIN_DECLS
 zArray2Class( zMatStruct, double );
 typedef zMatStruct * zMat;
 
-/*! \brief row size of a matrix. */
-#define zMatRowSizeNC(m)        zArray2RowSize(m)
-/*! \brief column size of a matrix. */
-#define zMatColSizeNC(m)        zArray2ColSize(m)
 /*! \brief row size of a matrix.
  * \retval the row size of a matrix if \a m is not null.
  * \retval 0 if \a m is the null pointer.
  */
+#define zMatRowSizeNC(m)        zArray2RowSize(m)
 #define zMatRowSize(m)          ( (m) ? zMatRowSizeNC(m) : 0 )
 /*! \brief column size of a matrix.
  * \retval the column size of a matrix if \a m is not null.
  * \retval 0 if \a m is the null pointer.
  */
+#define zMatColSizeNC(m)        zArray2ColSize(m)
 #define zMatColSize(m)          ( (m) ? zMatColSizeNC(m) : 0 )
 /*! \brief set the row size of a matrix. */
-#define zMatSetRowSize(m,r)     ( zMatRowSizeNC(m) = (r) )
+#define zMatSetRowSizeNC(m,r)   ( zMatRowSizeNC(m) = (r) )
+#define zMatSetRowSize(m,r)     ( (m) ? zMatSetRowSizeNC(m,r) : 0 )
 /*! \brief set the column size of a matrix. */
-#define zMatSetColSize(m,c)     ( zMatColSizeNC(m) = (c) )
+#define zMatSetColSizeNC(m,c)   ( zMatColSizeNC(m) = (c) )
+#define zMatSetColSize(m,c)     ( (m) ? zMatSetColSizeNC(m,c) : 0 )
 
+#define zMatSetSizeNC(m,r,c) do{\
+  zMatSetRowSizeNC(m,r);\
+  zMatSetColSizeNC(m,c);\
+} while(0)
 #define zMatSetSize(m,r,c) do{\
   zMatSetRowSize(m,r);\
   zMatSetColSize(m,c);\
@@ -56,21 +60,23 @@ typedef zMatStruct * zMat;
 #define zMatIsSqr(m) zMatRowColSizeIsEqual(m,m)
 
 /*! \brief pointer to the array buffer of of double-precision floating-point values in a matrix. */
-#define zMatBuf(m)      zArray2Buf(m)
+#define zMatBufNC(m)    zArray2Buf(m)
+#define zMatBuf(m)      ( (m) ? zMatBufNC(m) : NULL )
 /*! \brief pointer to the \a r th row array buffer of of double-precision floating-point values in a matrix. */
-#define zMatRowBuf(m,r) ( zMatBuf(m) + (r)*zMatColSizeNC(m) )
+#define zMatRowBufNC(m,r) ( zMatBufNC(m) + (r)*zMatColSizeNC(m) )
+#define zMatRowBuf(m,r)   ( (m) ? zMatRowBufNC(m,r) : NULL )
 
 /*! \brief check if the specified row and column of a matrix is valid. */
-#define zMatPosIsValid(m,r,c) ( (r) >= 0 && (r) < zMatRowSizeNC(m) && (c) >= 0 && (c) < zMatColSizeNC(m) )
+#define zMatPosIsValid(m,r,c) zArray2PosIsValid(m,r,c)
 
 /*! \brief get an element at the specified row and column of a matrix without checking the size. */
-#define zMatElemNC(m,r,c)    zMatRowBuf(m,r)[c]
+#define zMatElemNC(m,r,c)      zMatRowBufNC(m,r)[c]
 /*! \brief get an element at the specified row and column of a matrix. */
-#define zMatElem(m,r,c)      ( zMatPosIsValid(m,r,c) ? zMatRowBuf(m,r)[c] : 0 )
+#define zMatElem(m,r,c)        ( zMatPosIsValid(m,r,c) ? zMatElemNC(m,r,c) : 0 )
 /*! \brief set an alement at the specified row and column of a matrix without checking the size. */
 #define zMatSetElemNC(m,r,c,e) ( zMatElemNC(m,r,c) = (e) )
 /*! \brief set an alement at the specified row and column of a matrix. */
-#define zMatSetElem(m,r,c,e) ( zMatPosIsValid(m,r,c) ? zMatSetElemNC(m,r,c,e) : 0 )
+#define zMatSetElem(m,r,c,e)   ( zMatPosIsValid(m,r,c) ? zMatSetElemNC(m,r,c,e) : 0 )
 
 /*! \brief set elements of a matrix for values in the argument list.
  *

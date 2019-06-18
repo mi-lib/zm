@@ -19,7 +19,7 @@ int main(void)
   for( i=0; i<N; i++ ){
     for( j=0; j<M; j++ )
       zVecSetElem( v, j, zSgn(zMatElem(m,i,j)) );
-    printf( "[%d] %g\n", i, zRawVecInnerProd(zMatRowBuf(m,i),zVecBuf(v),M) );
+    printf( "[%d] %g\n", i, zRawVecInnerProd(zMatRowBufNC(m,i),zVecBufNC(v),M) );
   }
   zMatFree( m );
   zVecFree( v );

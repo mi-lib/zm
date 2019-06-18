@@ -37,10 +37,10 @@ zMat zLyapnovSolve(zMat a, zMat b, zMat ans)
     goto TERMINATE;
   }
   zMatTNC( b, bt );
-  zVecSetSize( &bvec, nn );
-  zVecBuf(&bvec) = zMatBuf(bt);
-  zVecSetSize( &ansvec, nn );
-  zVecBuf(&ansvec) = zMatBuf(ans);
+  zVecSetSizeNC( &bvec, nn );
+  zVecBufNC(&bvec) = zMatBuf(bt);
+  zVecSetSizeNC( &ansvec, nn );
+  zVecBufNC(&ansvec) = zMatBuf(ans);
   for( i=0; i<n; i++ )
     for( j=0; j<n; j++ )
       for( k=0; k<n; k++ ){

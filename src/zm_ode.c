@@ -6,18 +6,13 @@
 
 #include <zm/zm_ode.h>
 
-/* _zODECatDefault
- * - concatenate deviation in finite time step to the current
- *   variable vector.
- */
+/* concatenate deviation in finite time step to the current variable vector. */
 zVec _zODECatDefault(zVec x, double dt, zVec dx, zVec xn, void *dummy)
 {
   return zVecCatNC( x, dt, dx, xn );
 }
 
-/* _zODESubDefault
- * - subtract a variable vector from another.
- */
+/* subtract a variable vector from another. */
 zVec _zODESubDefault(zVec x1, zVec x2, zVec dx, void *dummy)
 {
   return zVecSubNC( x1, x2, dx );

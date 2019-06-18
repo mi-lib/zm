@@ -20,31 +20,33 @@ __BEGIN_DECLS
 zArrayClass( zVecStruct, double );
 typedef zVecStruct * zVec;
 
-/*! \brief size of a vector. */
-#define zVecSizeNC(v)          zArraySize(v)
 /*! \brief size of a vector.
  * \retval the size of a vector if \a v is not null.
  * \retval 0 if \a v is the null pointer.
  */
+#define zVecSizeNC(v)          zArraySize(v)
 #define zVecSize(v)            ( (v) ? zVecSizeNC(v) : 0 )
 /*! \brief set the size of a vector. */
-#define zVecSetSize(v,s)       ( zVecSizeNC(v) = (s) )
+#define zVecSetSizeNC(v,s)     ( zVecSizeNC(v) = (s) )
+#define zVecSetSize(v,s)       ( (v) ? zVecSetSizeNC(v,s) : 0 )
 /*! \brief check if the sizes of two vectors are equal. */
 #define zVecSizeIsEqual(v1,v2) ( zVecSizeNC(v1) == zVecSizeNC(v2) )
 
 /*! \brief check if the specified position of a vector is valid. */
-#define zVecPosIsValid(v,n)    ( (n) >= 0 && (n) < zVecSizeNC(v) )
+#define zVecPosIsValid(v,n)    zArrayPosIsValid( v, n )
 
 /*! \brief pointer to the array buffer of of double-precision floating-point values in a vector. */
-#define zVecBuf(v)         zArrayBuf(v)
+#define zVecBufNC(v)       zArrayBuf(v)
+#define zVecBuf(v)         ( (v) ? zArrayBuf(v) : NULL )
+
 /*! \brief get an element of a vector without checking size. */
-#define zVecElemNC(v,n)    zVecBuf(v)[n]
+#define zVecElemNC(v,n)    zVecBufNC(v)[n]
 /*! \brief get an element of a vector. */
-#define zVecElem(v,n)      ( zVecPosIsValid(v,n) ? zVecElemNC(v,n) : 0 )
+#define zVecElem(v,n)      ( (v) && zVecPosIsValid(v,n) ? zVecElemNC(v,n) : 0 )
 /*! \brief set an element of a vector without checking size. */
 #define zVecSetElemNC(v,n,e) ( zVecElemNC(v,n) = (e) )
 /*! \brief set an element of a vector. */
-#define zVecSetElem(v,n,e) ( zVecPosIsValid(v,n) ? zVecSetElemNC(v,n,e) : 0 )
+#define zVecSetElem(v,n,e) ( (v) && zVecPosIsValid(v,n) ? zVecSetElemNC(v,n,e) : 0 )
 
 /*! \brief set elements of a vector for values in the argument list.
  *
@@ -435,9 +437,9 @@ __EXPORT zVec zVecNormalize(zVec src, zVec dest);
  * zVecFPrint() and zVecPrint() return no values.
  */
 __EXPORT zVec zVecFScan(FILE *fp);
-#define zVecScan()       zVecFScan( stdin )
+#define zVecScan()   zVecFScan( stdin )
 __EXPORT void zVecFPrint(FILE *fp, zVec v);
-#define zVecPrint(v)     zVecFPrint( stdout, v )
+#define zVecPrint(v) zVecFPrint( stdout, v )
 
 /*! \brief print only components of a vector.
  *

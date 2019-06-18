@@ -48,10 +48,10 @@ zVec _zODE2RegularFunc(double t, zVec y, void *ode, zVec dy)
   int size;
 
   size = zVecSizeNC(y) / 2;
-  zVecSetSize( &x, size ); zVecBuf(&x) = zVecBuf(y);
-  zVecSetSize( &v, size ); zVecBuf(&v) = zVecBuf(y)  + size;
-  zVecSetSize( &a, size ); zVecBuf(&a) = zVecBuf(dy) + size;
-  zRawVecCopy( zVecBuf(&v), zVecBuf(dy), size );
+  zVecSetSizeNC( &x, size ); zVecBufNC(&x) = zVecBufNC(y);
+  zVecSetSizeNC( &v, size ); zVecBufNC(&v) = zVecBufNC(y)  + size;
+  zVecSetSizeNC( &a, size ); zVecBufNC(&a) = zVecBufNC(dy) + size;
+  zRawVecCopy( zVecBufNC(&v), zVecBufNC(dy), size );
   ((zODE2 *)ode)->f( t, &x, &v, ((zODE2 *)ode)->util, &a );
   return dy;
 }
@@ -63,12 +63,12 @@ zVec _zODE2Cat(zVec y, double dt, zVec dy, zVec yn, void *ode)
   int size;
 
   size = zVecSizeNC(y) / 2;
-  zVecSetSize( &x,  size ); zVecBuf(&x)  = zVecBuf(y);
-  zVecSetSize( &v,  size ); zVecBuf(&v)  = zVecBuf(y)  + size;
-  zVecSetSize( &xn, size ); zVecBuf(&xn) = zVecBuf(yn);
-  zVecSetSize( &vn, size ); zVecBuf(&vn) = zVecBuf(yn) + size;
-  zVecSetSize( &vf, size ); zVecBuf(&vf) = zVecBuf(dy);
-  zVecSetSize( &af, size ); zVecBuf(&af) = zVecBuf(dy) + size;
+  zVecSetSizeNC( &x,  size ); zVecBufNC(&x)  = zVecBufNC(y);
+  zVecSetSizeNC( &v,  size ); zVecBufNC(&v)  = zVecBufNC(y)  + size;
+  zVecSetSizeNC( &xn, size ); zVecBufNC(&xn) = zVecBufNC(yn);
+  zVecSetSizeNC( &vn, size ); zVecBufNC(&vn) = zVecBufNC(yn) + size;
+  zVecSetSizeNC( &vf, size ); zVecBufNC(&vf) = zVecBufNC(dy);
+  zVecSetSizeNC( &af, size ); zVecBufNC(&af) = zVecBufNC(dy) + size;
   ((zODE2 *)ode)->cat_dis( &x, dt, &vf, &xn, ((zODE2 *)ode)->util );
   ((zODE2 *)ode)->cat_vel( &v, dt, &af, &vn, ((zODE2 *)ode)->util );
   return yn;
@@ -81,12 +81,12 @@ zVec _zODE2Sub(zVec y1, zVec y2, zVec dy, void *ode)
   int size;
 
   size = zVecSizeNC(y1) / 2;
-  zVecSetSize( &x1, size ); zVecBuf(&x1) = zVecBuf(y1);
-  zVecSetSize( &v1, size ); zVecBuf(&v1) = zVecBuf(y1)  + size;
-  zVecSetSize( &x2, size ); zVecBuf(&x2) = zVecBuf(y2);
-  zVecSetSize( &v2, size ); zVecBuf(&v2) = zVecBuf(y2) + size;
-  zVecSetSize( &dx, size ); zVecBuf(&dx) = zVecBuf(dy);
-  zVecSetSize( &dv, size ); zVecBuf(&dv) = zVecBuf(dy) + size;
+  zVecSetSizeNC( &x1, size ); zVecBufNC(&x1) = zVecBufNC(y1);
+  zVecSetSizeNC( &v1, size ); zVecBufNC(&v1) = zVecBufNC(y1)  + size;
+  zVecSetSizeNC( &x2, size ); zVecBufNC(&x2) = zVecBufNC(y2);
+  zVecSetSizeNC( &v2, size ); zVecBufNC(&v2) = zVecBufNC(y2) + size;
+  zVecSetSizeNC( &dx, size ); zVecBufNC(&dx) = zVecBufNC(dy);
+  zVecSetSizeNC( &dv, size ); zVecBufNC(&dv) = zVecBufNC(dy) + size;
   ((zODE2 *)ode)->sub_dis( &x1, &x2, &dx, ((zODE2 *)ode)->util );
   ((zODE2 *)ode)->sub_vel( &v1, &v2, &dv, ((zODE2 *)ode)->util );
   return dy;
@@ -95,12 +95,12 @@ zVec _zODE2Sub(zVec y1, zVec y2, zVec dy, void *ode)
 /* update state destructively. */
 void zODE2UpdateRegular(zODE2 *ode, double t, zVec x, zVec v, double dt, void *util)
 {
-  zRawVecCopy( zVecBuf(x), zVecBuf(ode->_x), zVecSizeNC(x) );
-  zRawVecCopy( zVecBuf(v), zVecBuf(ode->_x)+zVecSizeNC(v), zVecSizeNC(v) );
+  zRawVecCopy( zVecBufNC(x), zVecBufNC(ode->_x), zVecSizeNC(x) );
+  zRawVecCopy( zVecBufNC(v), zVecBufNC(ode->_x)+zVecSizeNC(v), zVecSizeNC(v) );
   ode->util = util;
   zODEUpdate( &ode->_ode, t, ode->_x, dt, ode );
-  zRawVecCopy( zVecBuf(ode->_x), zVecBuf(x), zVecSizeNC(x) );
-  zRawVecCopy( zVecBuf(ode->_x)+zVecSizeNC(v), zVecBuf(v), zVecSizeNC(v) );
+  zRawVecCopy( zVecBufNC(ode->_x), zVecBufNC(x), zVecSizeNC(x) );
+  zRawVecCopy( zVecBufNC(ode->_x)+zVecSizeNC(v), zVecBufNC(v), zVecSizeNC(v) );
 }
 
 /* *** simplest symplectic method *** */
