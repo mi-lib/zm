@@ -1,3 +1,7 @@
+2019. 6.19. Debugged zCVecInnerProdNC. [zm_cvec]
+2019. 6.19. Added zComplexCMulConj. [zm_complex_arith]
+2019. 6.19. Modified zCVecIsEqual. [zm_cvec]
+2019. 6.19. Added zCVecRandUniform, zCVecBufNC and zCVecBuf. [zm_cvec]
 2019. 6.18. Added zCMatBufNC and zCMatBuf. [zm_cmat]
 2019. 6.18. Modified zCMatElemNC, zCMatElem, zCMatSetElem and zCMatSetElem. [zm_cmat]
 2019. 6.18. Added zCMatRowSizeNC, zCMatColSizeNC, zCMatSetRowSizeNC, zCMatSetColSizeNC and zCMatSetSizeNC, and modified zCMatRowSize, zCMatColSize, zCMatSetRowSize, zCMatSetColSize and zCMatSetSize. [zm_cmat]

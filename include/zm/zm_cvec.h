@@ -29,6 +29,10 @@ typedef zCVecStruct * zCVec;
 /*! \brief check if the sizes of two complex vectors are equal. */
 #define zCVecSizeIsEqual(v1,v2) ( zCVecSizeNC(v1) == zCVecSizeNC(v2) )
 
+/*! \brief array buffer of a complex vector. */
+#define zCVecBufNC(v) zArrayBuf(v)
+#define zCVecBuf(v)   ( (v) ? zCVecBufNC(v) : 0 )
+
 /*! \brief abstract and set an element of a complex vector.
  *
  * zCVecElem() returns the \a i th component of a vector \a v.
@@ -82,7 +86,11 @@ __EXPORT zCVec zCVecCopyNC(zCVec src, zCVec dest);
 __EXPORT zCVec zCVecCopy(zCVec src, zCVec dest);
 __EXPORT zCVec zCVecClone(zCVec src);
 
+/*! \brief convert a vector to a complex vector. */
 __EXPORT zCVec zVec2CVec(zVec v, zCVec cv);
+
+/*! \brief generate a uniformly random complex vector. */
+__EXPORT zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rmax, double imax);
 
 /*! \brief compare two complex vectors.
  *

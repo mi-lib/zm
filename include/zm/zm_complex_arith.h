@@ -34,52 +34,57 @@ __EXPORT double zComplexArg(zComplex *c);
  */
 __EXPORT zComplex *zComplexConj(zComplex *c, zComplex *cc);
 
-/* 'zComplexAdd()' adds the 2 given complex numbers,
- * 'c1' and 'c2'. The result is put into 'c'.
- * #
- * 'zComplexSub()' subtracts the given complex number 'c2' from the
- * other 'c1'. The result is put into 'c'.
- * #
- * 'zComplexRev()' reverses the given complex number 'c'.
- * The result is put into 'c'.
- * #
- * 'zComplexMul()' multiply the given complex number 'c'
- * by a real number 'k'. The result is put into 'ec'.
- * #
- * 'zComplexDiv()' divide the given complex number 'c' by a real
- * number 'k'. The result is put into 'rc'.
- * #
- * 'zComplexCMul()' multiplies the 2 given complex number 'c1' and
- * 'c2'. The result is put into 'c'.
- * #
- * 'zComplexCDiv()' divides the given complex number 'c1' by the
- * other 'c2'. The result is put into 'c'.
- * #
- * 'zComplexPow()' calculates the complex number 'c' raised to the
- * power of 'z', which is a real number. The result is put into 'pc'.
- * #
- * 'zComplexCPow()' calculates the complex number 'c' raised to the
- * power of 'z', which is a complex number. The result is put into
- * 'pc'.
- * #
- * 'zComplexLog()' calculates the base 'base' - a real number -
- * logarithm of the given complex number 'c'. The result is put into
- * 'lc'.
- * #
- * 'zComplexCLog()' calculates the base 'base' - a complex number -
- * logarithm of the given complex number 'c'. The result is put into
- * 'lc'.
- * [RETURN VALUE]
- * Each of all these functions returns a pointer to the result.
- * #
- * 'zComplexDiv()' returns the null pointer if 'k' is 0.
- * [NOTES]
- * A number raised to the power of a certain complex number, or a
- * logarithm of a certain complex number  could not be determined
- * uniquely indeed, because one complex has non-unique argument
- * values. 'zComplexPow()', 'zComplexCPow()', 'zComplexLog()' and
- * 'zComplexCLog()' calculate only a solution with the argument
- * value of 'c' between -PI and PI.
+/*! \brief arithmatics of complex numbers.
+ *
+ * zComplexAdd() adds two complex numbers \a c1 and \a c2.
+ * The result is put into \a c.
+ *
+ * zComplexSub() subtracts a complex number \a c2 from another
+ * \a c1. The result is put into \a c.
+ *
+ * zComplexRev() reverses a complex number \a c.
+ * The result is put into \a rc.
+ *
+ * zComplexMul() multiplies a complex number \a c by a real
+ * number \a k. The result is put into \a ec.
+ *
+ * zComplexDiv() divides a complex number \a c by a real number
+ * \a k. The result is put into \a rc.
+ *
+ * zComplexCMul() multiplies a complex number \a c1 by another
+ * \a c2. The result is put into \a c.
+ *
+ * zComplexCMulConj() multiplies a complex number \a c1 by the
+ * conjugate of another \a c2. The result is put into \a c.
+ *
+ * zComplexCDiv() divides a complex number \a c1 by \another
+ * \a c2. The result is put into \a c.
+ *
+ * zComplexPow() calculates a complex number \a c raised to the
+ * power of a real number \a z. The result is put into \a pc.
+ *
+ * zComplexCPow() calculates a complex number \a c raised to the
+ * power of another complex number \a z. The result is put into
+ * \a pc.
+ *
+ * zComplexLog() calculates the base \a base (a real number)
+ * logarithm of a complex number \a c. The result is put into
+ * \a lc.
+ *
+ * zComplexCLog() calculates the base \a base (a complex number)
+ * logarithm of another complex number \a c. The result is put
+ * into \a lc.
+ * \return
+ * These functions returns a pointer to the result.
+ *
+ * zComplexDiv() returns the null pointer if \a k is zero.
+ * \notes
+ * A number raised to the power of a complex number and a logarithm
+ * of a complex number are indeed not unique because one complex
+ * has non-unique argument angles.
+ * zComplexPow(), zComplexCPow(), zComplexLog() and zComplexCLog()
+ * calculate only one solution with the argument angle of \a c
+ * between -pi and pi.
  */
 __EXPORT zComplex *zComplexAdd(zComplex *c1, zComplex *c2, zComplex *c);
 __EXPORT zComplex *zComplexSub(zComplex *c1, zComplex *c2, zComplex *c);
@@ -87,6 +92,7 @@ __EXPORT zComplex *zComplexRev(zComplex *c, zComplex *rc);
 __EXPORT zComplex *zComplexMul(zComplex *c, double k, zComplex *ec);
 __EXPORT zComplex *zComplexDiv(zComplex *c, double k, zComplex *rc);
 __EXPORT zComplex *zComplexCMul(zComplex *c1, zComplex *c2, zComplex *c);
+__EXPORT zComplex *zComplexCMulConj(zComplex *c1, zComplex *c2, zComplex *c);
 __EXPORT zComplex *zComplexCDiv(zComplex *c1, zComplex *c2, zComplex *c);
 __EXPORT zComplex *zComplexPow(zComplex *c, double z, zComplex *pc);
 __EXPORT zComplex *zComplexPowRef(zComplex *c, double z, zComplex *ref, zComplex *pc);

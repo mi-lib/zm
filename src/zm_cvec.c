@@ -84,17 +84,26 @@ zCVec zVec2CVec(zVec v, zCVec cv)
   return cv;
 }
 
+/* generate a uniformly random complex vector. */
+zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rmax, double imax)
+{
+  register int i;
+
+  for( i=0; i<zCVecSizeNC(v); i++ )
+    zComplexCreate( zCVecElemNC(v,i), zRandF(rmin,rmax), zRandF(imin,imax) );
+  return v;
+}
+
 /* check if two complex vectors are equal. */
 bool zCVecIsEqual(zCVec v1, zCVec v2)
 {
   register int i;
-  zComplex e;
 
   if( !zCVecSizeIsEqual( v1, v2 ) ) return false;
-  for( i=0; i<zCVecSizeNC(v1); i++ ){
-    zComplexSub( zCVecElemNC(v1,i), zCVecElemNC(v2,i), &e );
-    if( !zComplexIsTiny( &e ) ) return false;
-  }
+  for( i=0; i<zCVecSizeNC(v1); i++ )
+    if( !zIsTiny( zCVecElemNC(v1,i)->re - zCVecElemNC(v2,i)->re ) ||
+        !zIsTiny( zCVecElemNC(v1,i)->im - zCVecElemNC(v2,i)->im ) )
+      return false;
   return true;
 }
 
@@ -244,7 +253,7 @@ zComplex *zCVecInnerProdNC(zCVec v1, zCVec v2, zComplex *z)
 
   zComplexZero( z );
   for( i=0; i<zCVecSizeNC(v1); i++ ){
-    zComplexCMul( zCVecElemNC(v1,i), zCVecElemNC(v2,i), &c );
+    zComplexCMulConj( zCVecElemNC(v1,i), zCVecElemNC(v2,i), &c );
     zComplexAdd( z, &c, z );
   }
   return z;
@@ -255,7 +264,7 @@ zComplex *zCVecInnerProd(zCVec v1, zCVec v2, zComplex *z)
 {
   if( !zCVecSizeIsEqual(v1,v2) ){
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );
-    return 0;
+    return NULL;
   }
   return zCVecInnerProdNC( v1, v2, z );
 }
