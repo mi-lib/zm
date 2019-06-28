@@ -1,3 +1,4 @@
+2019. 6.28. Reflected new specifications of zStrList and zStrAddrList. [app]
 2019. 6.19. Debugged zCVecInnerProdNC. [zm_cvec]
 2019. 6.19. Added zComplexCMulConj. [zm_complex_arith]
 2019. 6.19. Modified zCVecIsEqual. [zm_cvec]

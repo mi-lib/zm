@@ -127,7 +127,7 @@ bool seqmodAppend(zStrList *arglist)
 
 bool seqmodOperate(int argc, char *argv[])
 {
-  zStrList arglist;
+  zStrAddrList arglist;
   bool ret = true;
 
   if( !zOptionRead( option, argv, &arglist ) ) return false;
@@ -140,7 +140,7 @@ bool seqmodOperate(int argc, char *argv[])
       !seqmodLoadSequence( zListTail(&arglist)->data ) ){
     ret = false;
   }
-  zStrListDestroy( &arglist, false );
+  zStrAddrListDestroy( &arglist );
   if( !ret ) return false;
 
   if( option[SEQMOD_COUNT].flag )
