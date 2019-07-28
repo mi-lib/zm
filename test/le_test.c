@@ -1,4 +1,4 @@
-#include <zm/zm_le.h>
+#include <zm/zm.h>
 
 #define N 30
 #define M 50
@@ -18,35 +18,35 @@ void mat_deg(zMat m, int rank)
   }
 }
 
-int main(void)
+#define TOL (1.0e-10)
+
+void assert_mpnull(void)
 {
-  int rank;
   zMat a, mp, mn;
   zVec v, u, e;
 
-  zRandInit();
   a = zMatAlloc( N, M );
   zMatRandUniform( a, -10, 10 );
   mat_deg( a, R );
   mp = zMatAlloc( M, N );
   mn = zMatAlloc( M, M );
 
-  rank = zMPInvNull( a, mp, mn );
-  zMatPrint( mp );
-  zMatPrint( mn );
+  zMPInvNull( a, mp, mn );
 
-  /* assertion */
   v = zVecAlloc( M );
   u = zVecAlloc( M );
   e = zVecAlloc( N );
   zVecRandUniform( v, -10, 10 );
   zMulMatVec( mn, v, u );
   zMulMatVec( a, u, e );
-  zVecPrint( u );
-  zVecPrint( e );
-  printf( "rank=%d, %s <%g,%g>\n", rank, zBoolExpr( zVecIsTiny(e) ), zVecMin(e,NULL), zVecMax(e,NULL) );
-
+  zAssert( zMPInvNull, zVecIsTol(e,TOL) );
   zMatFreeAO( 3, a, mp, mn );
   zVecFreeAO( 3, v, u, e );
-  return 0;
+}
+
+int main(void)
+{
+  zRandInit();
+  assert_mpnull();
+  return EXIT_SUCCESS;
 }

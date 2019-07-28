@@ -120,7 +120,7 @@ zmParseNum *_zmParseNumAlloc(char *str)
 
 void _zmParseNumFree(zmParseNum *num)
 {
-  zNameDestroy( num );
+  zNameFree( num );
   zFree( num );
 }
 
@@ -156,7 +156,7 @@ void _zmParseVarListDestroy(zmParseVarList *list)
 
   while( !zListIsEmpty( list ) ){
     zListDeleteHead( list, &cp );
-    zNameDestroy( &cp->data );
+    zNameFree( &cp->data );
     zFree( cp );
   }
 }
@@ -245,7 +245,7 @@ void _zmParseFuncListDestroy(zmParseFuncList *list)
 
   while( !zListIsEmpty( list ) ){
     zListDeleteHead( list, &cp );
-    zNameDestroy( &cp->data );
+    zNameFree( &cp->data );
     zFree( cp );
   }
 }
