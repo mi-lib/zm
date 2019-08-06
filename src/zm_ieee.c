@@ -19,17 +19,16 @@ __ieee_fp_t __huge_val = {
 };
 #endif /* __ZM_NEED_HUGE_VAL */
 
-/* zIsInf
- * - check if the value is HUGE_VAL.
- */
+/* check if the value is HUGE_VAL. */
 int zIsInf(double x)
 {
   __ieee_fp_t val;
 
   val.d = x;
-  return ( ( val.c[7] & 0x7f ) == 0x7f && val.c[6] == 0xf0 &&
-           ( val.c[5] | val.c[4] | val.c[3] |
-             val.c[2] | val.c[1] | val.c[0] ) == 0 ) ? 1 : 0;
+  if( val.c[6] != 0xf0 ||
+      ( val.c[5] | val.c[4] | val.c[3] | val.c[2] | val.c[1] | val.c[0] ) != 0 )
+    return 0;
+  return val.c[7] == 0x7f ? 1 : ( val.c[7] == 0xff ? -1 : 0 );
 }
 
 /* define NAN, if not. conforming to C99. */
@@ -45,9 +44,7 @@ __ieee_fp_t __nan_val = {
 };
 #endif /* __ZM_NEED_NAN */
 
-/* zIsNan
- * - check if the value is NAN.
- */
+/* check if the value is NAN. */
 int zIsNan(double x)
 {
   __ieee_fp_t val;

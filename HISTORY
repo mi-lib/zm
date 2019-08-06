@@ -1,3 +1,4 @@
+2019. 8. 6. Debugged zIsInf along with the specification of GNU GCC. [zm_ieee]
 2019. 7.28. Reflected renaming of zNameDestroy to zNameFree. [zm_parse]
 2019. 6.28. Reflected new specifications of zStrList and zStrAddrList. [app]
 2019. 6.19. Debugged zCVecInnerProdNC. [zm_cvec]
