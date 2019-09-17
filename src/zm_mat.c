@@ -883,6 +883,25 @@ zMat zMatTQuad(zMat a, zVec w, zMat q)
   return zMatTQuadNC( a, w, q );
 }
 
+/* ********************************************************** */
+/* I/O
+ * ********************************************************** */
+
+/* read a matrix from a ZTK format processor. */
+zMat zMatFromZTK(ZTK *ztk)
+{
+  register int i, j, row, col;
+  zMat m;
+
+  row = ZTKInt(ztk);
+  col = ZTKInt(ztk);
+  if( !( m = zMatAlloc( row, col ) ) ) return NULL;
+  for( i=0; i<row; i++ )
+    for( j=0; j<col; j++ )
+      zMatSetElemNC( m, i, j, ZTKDouble(ztk) );
+  return m;
+}
+
 /* scan information of a matrix from file. */
 zMat zMatFScan(FILE *fp)
 {
@@ -892,7 +911,6 @@ zMat zMatFScan(FILE *fp)
   row = zFInt( fp );
   col = zFInt( fp );
   if( !( m = zMatAlloc( row, col ) ) ) return NULL;
-
   for( i=0; i<row; i++ )
     for( j=0; j<col; j++ )
       zMatSetElemNC( m, i, j, zFDouble( fp ) );

@@ -544,6 +544,9 @@ __EXPORT zMat zMatQuad(zMat a, zVec w, zMat q);
 __EXPORT zMat zMatTQuadNC(zMat a, zVec w, zMat q);
 __EXPORT zMat zMatTQuad(zMat a, zVec w, zMat q);
 
+/*! \brief read a matrix from a ZTK format processor. */
+__EXPORT zMat zMatFromZTK(ZTK *ztk);
+
 /*! \brief scan and print a matrix.
  *
  * zMatFScan() scans a 2-dim sequence of double floating-point

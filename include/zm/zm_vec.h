@@ -413,6 +413,9 @@ __EXPORT zVec zVecNormalize(zVec src, zVec dest);
 #define zVecSqrDist(v1,v2)  zRawVecSqrDist(zVecBuf(v1),zVecBuf(v2),zVecSizeNC(v1))
 #define zVecDist(v1,v2)     sqrt( zVecSqrDist( v1, v2 ) )
 
+/*! \brief read a vector from a ZTK format processor. */
+__EXPORT zVec zVecFromZTK(ZTK *ztk);
+
 /*! \brief scan and print a vector.
  *
  * These functions scan/print a vector from/to a file.

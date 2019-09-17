@@ -495,6 +495,23 @@ zVec zVecNormalize(zVec src, zVec dest)
   return zRawVecNormalize( zVecBufNC(src), zVecSizeNC(src), zVecBufNC(dest) ) ? dest : NULL;
 }
 
+/* ********************************************************** */
+/* I/O
+ * ********************************************************** */
+
+/* read a vector from a ZTK format processor. */
+zVec zVecFromZTK(ZTK *ztk)
+{
+  register int i, size;
+  zVec v;
+
+  size = ZTKInt(ztk);
+  if( !( v = zVecAlloc( size ) ) ) return NULL;
+  for( i=0; i<size; i++ )
+    zVecSetElemNC( v, i, ZTKDouble(ztk) );
+  return v;
+}
+
 /* scan a vector from a file. */
 zVec zVecFScan(FILE *fp)
 {
