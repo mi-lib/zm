@@ -172,6 +172,9 @@ __EXPORT double zPexVal(zPex p, double arg);
 __EXPORT zComplex *zPexCVal(zPex p, zComplex *arg, zComplex *c);
 __EXPORT double zPexDifVal(zPex p, int dim, double arg);
 
+/*! \brief scan a polynomial expression from a ZTK processor. */
+__EXPORT zPex zPexFromZTK(ZTK *ztk);
+
 /*! \brief expression of a polynomial expression.
  *
  * zPexFScan() scans coefficients of a polynomial

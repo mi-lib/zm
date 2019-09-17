@@ -1,3 +1,4 @@
+2019. 9.17. Added zPexFromZTK. [zm_pex]
 2019. 9.17. Added zMatFromZTK. [zm_mat]
 2019. 9.17. Added zVecFromZTK. [zm_vec]
 2019. 8. 6. Debugged zIsInf along with the specification of GNU GCC. [zm_ieee]

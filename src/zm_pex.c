@@ -296,16 +296,27 @@ double zPexDifVal(zPex p, int dim, double arg)
   return result;
 }
 
+/* scan a polynomial expression from a ZTK processor. */
+zPex zPexFromZTK(ZTK *ztk)
+{
+  register int i, dim;
+  zPex p;
+
+  if( !( p = zPexAlloc( ( dim = ZTKInt(ztk) ) ) ) ) return NULL;
+  for( i=0; i<=dim; i++ )
+    zPexSetCoeff( p, i, ZTKDouble(ztk) );
+  return p;
+}
+
 /* scan a polynomial expression from a file. */
 zPex zPexFScan(FILE *fp)
 {
   register int i, dim;
   zPex p;
 
-  dim = zFInt( fp );
-  if( !( p = zPexAlloc( dim ) ) ) return NULL;
+  if( !( p = zPexAlloc( ( dim = zFInt(fp) ) ) ) ) return NULL;
   for( i=0; i<=dim; i++ )
-    zPexSetCoeff( p, i, zFDouble( fp ) );
+    zPexSetCoeff( p, i, zFDouble(fp) );
   return p;
 }
 
