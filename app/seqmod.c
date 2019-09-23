@@ -46,7 +46,7 @@ bool seqmodLoadSequence(char *name)
 
 void seqmodCount(void)
 {
-  printf( "0-%d steps\n", zListNum(&seq)-1 );
+  printf( "0-%d steps\n", zListSize(&seq)-1 );
 }
 
 void seqmodInterpolate(double dt)
@@ -111,7 +111,7 @@ bool seqmodAppend(zStrList *arglist)
   zSeq subseq;
   char filename[BUFSIZ];
 
-  if( zListNum(arglist) < 2 ) seqmodUsage();
+  if( zListSize(arglist) < 2 ) seqmodUsage();
   cell = zListTail(arglist);
   if( !seqmodLoadSequence( cell->data ) )
     return false;

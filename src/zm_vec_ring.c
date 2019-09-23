@@ -27,7 +27,7 @@ void zVecRingFree(zVecRing *ring)
   register int i;
 
   if( zRingBuf(ring) )
-    for( i=0; i<zRingNum(ring); i++ )
+    for( i=0; i<zRingSize(ring); i++ )
       zVecFree( *zRingElem(ring,i) );
   zRingFree( ring );
 }
@@ -41,7 +41,7 @@ zVec zVecRingFill(zVecRing *ring, zVec v)
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );
     return NULL;
   }
-  for( i=0; i<zRingNum(ring); i++ )
+  for( i=0; i<zRingSize(ring); i++ )
     zVecCopyNC( v, *zRingElem(ring,i) );
   return v;
 }

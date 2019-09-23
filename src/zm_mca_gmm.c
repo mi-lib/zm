@@ -52,7 +52,7 @@ void _zGMMUnitEstim(zGMMUnit *gu, zVecList *points, zClusterMethod *met, void *m
     met->_error_fp( pc->data, gu->mean, err_util, met->_err );
     zMatAddDyadNC( gu->cov, met->_err, met->_err );
   }
-  zMatDivNCDRC( gu->cov, zListNum(points) );
+  zMatDivNCDRC( gu->cov, zListSize(points) );
   if( zIsTiny( gu->_cov_det = zMatDet( gu->cov ) ) )
     zMatZero( gu->_cov_inv );
   else
@@ -229,7 +229,7 @@ void _zGMMCreateEMMaximize(zGMM *gmm, zVecList *points, zMat load, zVec nk, void
     if( gc->data.active ){
       gmm->met._mean_l_fp( points, zMatRowBuf(load,j), zVecElemNC(nk,j), mean_util, gc->data.mean );
       _zGMMUnitLoadedCov( &gc->data, points, zMatRowBuf(load,j), zVecElemNC(nk,j), &gmm->met, err_util );
-      gc->data.weight = zVecElemNC(nk,j) / zListNum(points);
+      gc->data.weight = zVecElemNC(nk,j) / zListSize(points);
     }
     j++;
   }
@@ -248,9 +248,9 @@ zGMM *zGMMCreateEM(zGMM *gmm, zVecList *points, int k, void *mean_util, void *er
 
   if( zMClusterInit( &mc, gmm->met._meansize, gmm->met._mean_fp, gmm->met._errorsize, gmm->met._error_fp ) == NULL )
     return NULL;
-  load = zMatAlloc( k, zListNum(points) );
-  pdf  = zMatAlloc( k, zListNum(points) );
-  load_det = zVecAlloc( zListNum(points) );
+  load = zMatAlloc( k, zListSize(points) );
+  pdf  = zMatAlloc( k, zListSize(points) );
+  load_det = zVecAlloc( zListSize(points) );
   nk = zVecAlloc( k );
   if( !load || !pdf || !load_det || !nk ){
     ZALLOCERROR();
@@ -266,7 +266,7 @@ zGMM *zGMMCreateEM(zGMM *gmm, zVecList *points, int k, void *mean_util, void *er
     } else{
       gc->data.active = true;
       _zGMMUnitEstim( &gc->data, &cc->data.vl, &gmm->met, mean_util, err_util );
-      gc->data.weight = 1.0 / zListNum(&mc.cl);
+      gc->data.weight = 1.0 / zListSize(&mc.cl);
     }
     gc = zListCellNext(gc);
   }

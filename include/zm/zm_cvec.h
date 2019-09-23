@@ -15,7 +15,7 @@ __BEGIN_DECLS
 /*! \brief complex number vector class
  * ********************************************************** */
 zArrayClass( zCVecStruct, zComplex );
-typedef zCVecStruct * zCVec;
+typedef zCVecStruct* zCVec;
 
 /*! \brief size of a complex vector.
  * \retval the size of a complex vector if \a v is not null.

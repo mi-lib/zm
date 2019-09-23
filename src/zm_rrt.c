@@ -11,24 +11,8 @@ enum{
   ZRRT_EXT_OK, ZRRT_EXT_EPS, ZRRT_EXT_NONEED, ZRRT_EXT_UNACCEPT, ZRRT_EXT_ALLOCERR,
 };
 
-static void _zRRTListDestroy(zRRTList *list);
-static bool _zRRTListAdd(zRRTList *list, zVec v, zRRTNode *parent);
-static zRRTNode *_zRRTListNN(zRRTList *list, zVec vr, void *util, double (* dist)(zVec,zVec,void*));
-static int _zRRTListExtend(zRRTList *list, zVec vr, double eps, void *util, double (* dist)(zVec,zVec,void*), zVec (* ext)(zVec,zVec,double,zVec,void*), bool (* chk)(zVec,void*));
-
-static double _zRRTDistDefault(zVec v1, zVec v2, void *util);
-static zVec _zRRTExtDefault(zVec vfrom, zVec vto, double eps, zVec v, void *util);
-
-static void _zRRTPath(zRRT *rrt, zVecList *path);
-static bool _zRRTPathShortcutCheck(zVec v1, zVec v2, zVec vm, double s1, double s2, double d, double eps, void *util, zVec (* ext)(zVec,zVec,double,zVec,void*), bool (* chk)(zVec,void*));
-
-static int _zRRTListExtendEsc(zRRTList *list, zVec vr, double eps, void *util, double (* dist)(zVec,zVec,void*), zVec (* ext)(zVec,zVec,double,zVec,void*), bool (* chk)(zVec,void*), zVec vg);
-
-/* (static)
- * _zRRTListDestroy
- * - destroy a node tree.
- */
-void _zRRTListDestroy(zRRTList *list)
+/* destroy a node tree. */
+static void _zRRTListDestroy(zRRTList *list)
 {
   zRRTListCell *cp;
 
@@ -39,11 +23,8 @@ void _zRRTListDestroy(zRRTList *list)
   }
 }
 
-/* (static)
- * _zRRTListAdd
- * - add a node to a tree.
- */
-bool _zRRTListAdd(zRRTList *list, zVec v, zRRTNode *parent)
+/* add a node to a tree. */
+static bool _zRRTListAdd(zRRTList *list, zVec v, zRRTNode *parent)
 {
   zRRTListCell *cell;
 
@@ -57,11 +38,8 @@ bool _zRRTListAdd(zRRTList *list, zVec v, zRRTNode *parent)
   return true;
 }
 
-/* (static)
- * _zRRTListNN
- * - nearest neighbor search by a naive linear algorithm.
- */
-zRRTNode *_zRRTListNN(zRRTList *list, zVec vr, void *util, double (* dist)(zVec,zVec,void*))
+/* nearest neighbor search by a naive linear algorithm. */
+static zRRTNode *_zRRTListNN(zRRTList *list, zVec vr, void *util, double (* dist)(zVec,zVec,void*))
 {
   zRRTListCell *cp, *nn = NULL;
   double d, min = HUGE_VAL;
@@ -75,9 +53,7 @@ zRRTNode *_zRRTListNN(zRRTList *list, zVec vr, void *util, double (* dist)(zVec,
   return &nn->data;
 }
 
-/* (static)
- * _zRRTListExtend
- * - extend-tree operation.
+/* extend-tree operation.
  * RETURN VALUE:
  * ZRRT_EXT_OK       success to extend tree.
  * ZRRT_EXT_EPS      success to directly connect to the node.
@@ -85,7 +61,7 @@ zRRTNode *_zRRTListNN(zRRTList *list, zVec vr, void *util, double (* dist)(zVec,
  * ZRRT_EXT_UNACCEPT failure to extend tree due to the violation of constraints.
  * ZRRT_EXT_ALLOCERR failure to allocate new node.
  */
-int _zRRTListExtend(zRRTList *list, zVec vr, double eps, void *util, double (* dist)(zVec,zVec,void*), zVec (* ext)(zVec,zVec,double,zVec,void*), bool (* chk)(zVec,void*))
+static int _zRRTListExtend(zRRTList *list, zVec vr, double eps, void *util, double (* dist)(zVec,zVec,void*), zVec (* ext)(zVec,zVec,double,zVec,void*), bool (* chk)(zVec,void*))
 {
   zRRTNode *nn;
   double norm;
@@ -117,29 +93,21 @@ int _zRRTListExtend(zRRTList *list, zVec vr, double eps, void *util, double (* d
   return ret;
 }
 
-/* (static)
- * _zRRTDistDefault
- * - default distance function by a squareroot norm.
- */
-double _zRRTDistDefault(zVec v1, zVec v2, void *util)
+/* default distance function by a squareroot norm. */
+static double _zRRTDistDefault(zVec v1, zVec v2, void *util)
 {
   return zVecDist( v1, v2 );
 }
 
-/* (static)
- * _zRRTExtDefault
- * - default extention function by a linear division.
- */
-zVec _zRRTExtDefault(zVec vfrom, zVec vto, double eps, zVec v, void *util)
+/* default extention function by a linear division. */
+static zVec _zRRTExtDefault(zVec vfrom, zVec vto, double eps, zVec v, void *util)
 {
   zVecMulNC( vfrom, 1-eps, v );
   zVecCatNCDRC( v, eps, vto );
   return v;
 }
 
-/* zRRTInit
- * - initialize RRT solver.
- */
+/* initialize RRT solver. */
 void zRRTInit(zRRT *rrt, zVec min, zVec max, double eps, double (* dist)(zVec,zVec,void*), zVec (* ext)(zVec,zVec,double,zVec,void*), bool (* chk)(zVec,void*))
 {
   rrt->min = min;
@@ -152,20 +120,15 @@ void zRRTInit(zRRT *rrt, zVec min, zVec max, double eps, double (* dist)(zVec,zV
   zListInit( &rrt->glist );
 }
 
-/* zRRTDestroy
- * - destroy RRTs.
- */
+/* destroy RRTs. */
 void zRRTDestroy(zRRT *rrt)
 {
   _zRRTListDestroy( &rrt->slist );
   _zRRTListDestroy( &rrt->glist );
 }
 
-/* (static)
- * _zRRTPath
- * - pick up the path from two RRTs.
- */
-void _zRRTPath(zRRT *rrt, zVecList *path)
+/* pick up the path from two RRTs. */
+static void _zRRTPath(zRRT *rrt, zVecList *path)
 {
   zRRTNode *node;
 
@@ -180,11 +143,8 @@ void _zRRTPath(zRRT *rrt, zVecList *path)
   }
 }
 
-/* (static)
- * _zRRTPathShortcutCheck
- * - check if shortcut between two nodes on a path is available.
- */
-bool _zRRTPathShortcutCheck(zVec v1, zVec v2, zVec vm, double s1, double s2, double d, double eps, void *util, zVec (* ext)(zVec,zVec,double,zVec,void*), bool (* chk)(zVec,void*))
+/* check if shortcut between two nodes on a path is available. */
+static bool _zRRTPathShortcutCheck(zVec v1, zVec v2, zVec vm, double s1, double s2, double d, double eps, void *util, zVec (* ext)(zVec,zVec,double,zVec,void*), bool (* chk)(zVec,void*))
 {
   double s;
 
@@ -197,9 +157,7 @@ bool _zRRTPathShortcutCheck(zVec v1, zVec v2, zVec vm, double s1, double s2, dou
     true : false;
 }
 
-/* zRRTConnect
- * - RRT-connect algorithm to find a path.
- */
+/* RRT-connect algorithm to find a path. */
 bool zRRTConnect(zRRT *rrt, zVec start, zVec goal, int iter, void *util, zVecList *path)
 {
   zVec vr;
@@ -231,15 +189,13 @@ bool zRRTConnect(zRRT *rrt, zVec start, zVec goal, int iter, void *util, zVecLis
   return ret;
 }
 
-/* zRRTPathShortcut
- * - shortcut a path.
- */
+/* shortcut a path. */
 void zRRTPathShortcut(zRRT *rrt, void *util, zVecList *path)
 {
   zVecListCell *cp1, *cp2, *tmp;
   zVec vm;
 
-  if( zListNum(path) < 3 ) return;
+  if( zListSize(path) < 3 ) return;
   vm = zVecAlloc( zVecSizeNC( zListHead(path)->data ) );
   cp1 = zListTail(path);
   cp2 = zListCellNext( zListCellNext(cp1) );
@@ -258,9 +214,7 @@ void zRRTPathShortcut(zRRT *rrt, void *util, zVecList *path)
   zVecFree( vm );
 }
 
-/* (static)
- * _zRRTListExtendEsc
- * - extend-tree operation for RRT-escapement.
+/* extend-tree operation for RRT-escapement.
  * RETURN VALUE:
  * ZRRT_EXT_OK       success to escape.
  * ZRRT_EXT_EPS      success to escape by directly connecting to the node.
@@ -268,7 +222,7 @@ void zRRTPathShortcut(zRRT *rrt, void *util, zVecList *path)
  * ZRRT_EXT_UNACCEPT yet to escape.
  * ZRRT_EXT_ALLOCERR failure to allocate new node.
  */
-int _zRRTListExtendEsc(zRRTList *list, zVec vr, double eps, void *util, double (* dist)(zVec,zVec,void*), zVec (* ext)(zVec,zVec,double,zVec,void*), bool (* chk)(zVec,void*), zVec vg)
+static int _zRRTListExtendEsc(zRRTList *list, zVec vr, double eps, void *util, double (* dist)(zVec,zVec,void*), zVec (* ext)(zVec,zVec,double,zVec,void*), bool (* chk)(zVec,void*), zVec vg)
 {
   zRRTNode *nn;
   double norm;
@@ -296,10 +250,7 @@ int _zRRTListExtendEsc(zRRTList *list, zVec vr, double eps, void *util, double (
   return ZRRT_EXT_OK;
 }
 
-/* zRRTEsc
- * - RRT-Escapement algorithm to find a collision-free point
- *   proposed by Y. Shimizu in 2012.
- */
+/* RRT-Escapement algorithm to find a collision-free point proposed by Y. Shimizu in 2012. */
 bool zRRTEsc(zRRT *rrt, zVec start, int iter, void *util, zVec goal)
 {
   zVec vr;

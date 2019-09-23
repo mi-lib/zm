@@ -31,7 +31,7 @@ typedef struct{
   /*! \endcond */
 } zIPData;
 
-#define zIPSize(dat)       zListNum((dat)->seq)
+#define zIPSize(dat)       zListSize((dat)->seq)
 #define zIPKnot(dat,i)     zArrayElem(&(dat)->knot,i)
 #define zIPTime(dat,i)     ( zIPKnot(dat,i)->t )
 #define zIPDelta(dat,i)    ( zIPKnot(dat,i)->cp->data.dt )

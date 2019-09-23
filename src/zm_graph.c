@@ -153,7 +153,7 @@ void zGraphFPrint(FILE *fp, zGraph *graph)
   zGraphCell *gc;
   zGraphArcListCell *ac;
 
-  fprintf( fp, "number of nodes = %d\n", zListNum(&graph->list) );
+  fprintf( fp, "number of nodes = %d\n", zListSize(&graph->list) );
   zListForEach( &graph->list, gc ){
     fprintf( fp, "node" );
     graph->fprint( fp, gc->data.data );

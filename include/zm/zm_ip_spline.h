@@ -15,14 +15,13 @@ __BEGIN_DECLS
  * divided by the sections for a third-order polynomial
  * curve with keeping the continuity of velocity at every
  * sections.
- * #
- * For the description of 'etype1', 'etype2', 'v1' and
- * 'v2, see 'zm_ip.h'.
+ *
+ * For the description of \a etype1, \a etype2, \a v1 and
+ * \a v2, see zm_ip.h.
  */
 enum{ ZSPLINE_INVALID, ZSPLINE_FIX_EDGE, ZSPLINE_FREE_EDGE };
 
-/* METHOD:
- * zIPCreateSpline - create spline interpolator interpolator.
+/* create spline interpolator interpolator.
  *
  * zIPCreateSpring() creates an interpolator \a ip.
  * \a etype1 and \a etype2 are the types of edges at the
@@ -33,8 +32,8 @@ enum{ ZSPLINE_INVALID, ZSPLINE_FIX_EDGE, ZSPLINE_FREE_EDGE };
  * One can set the velocity at each endpoint for \a v1
  * (or \a v2) with choosing ZSPLINE_FIX_EDGE.
  * When ZSPLINE_FREE_EDGE is chosen, \a v1 (or \a v2) is ignored.
- * [RETURN VALUE]
- * 'zIPCreate()' returns a pointer 'ip' when it succeeds
+ * \return
+ * zIPCreate() returns a pointer \a ip when it succeeds
  * to create interpolator, or the null pointer otherwise.
  */
 __EXPORT bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v2);

@@ -36,7 +36,7 @@ void zClusterFPrint(FILE *fp, zCluster *c)
   register int i = 0;
   zVecListCell *vc;
 
-  fprintf( fp, "%d members\n", zListNum(&c->vl) );
+  fprintf( fp, "%d members\n", zListSize(&c->vl) );
   zListForEach( &c->vl, vc ){
     fprintf( fp, " %d: ", i++ );
     zVecFPrint( fp, vc->data );
@@ -55,27 +55,20 @@ void zClusterDataFPrint(FILE *fp, zCluster *c)
 /* methods for mean and error computation
  * ********************************************************** */
 
-static zVec _zClusterErrorDefault(zVec p, zVec mean, void *dummy, zVec err);
-static zVec _zClusterMeanDefault(zVecList *pl, void *dummy, zVec mean);
-static zVec _zClusterMeanLoadedDefault(zVecList *pl, double load[], double n, void *dummy, zVec mean);
-
-/* (static)
- * a default error function for clustering. */
-zVec _zClusterErrorDefault(zVec p, zVec mean, void *dummy, zVec err)
+/* a default error function for clustering. */
+static zVec _zClusterErrorDefault(zVec p, zVec mean, void *dummy, zVec err)
 {
   return zVecSub( p, mean, err );
 }
 
-/* (static)
- * a default mean computation function for clustering. */
-zVec _zClusterMeanDefault(zVecList *pl, void *dummy, zVec mean)
+/* a default mean computation function for clustering. */
+static zVec _zClusterMeanDefault(zVecList *pl, void *dummy, zVec mean)
 {
   return zVecListAve( pl, mean );
 }
 
-/* (static)
- * a default loaded mean computation function for clustering. */
-zVec _zClusterMeanLoadedDefault(zVecList *pl, double load[], double n, void *dummy, zVec mean)
+/* a default loaded mean computation function for clustering. */
+static zVec _zClusterMeanLoadedDefault(zVecList *pl, double load[], double n, void *dummy, zVec mean)
 {
   zVecListCell *vc;
   register int i = 0;
@@ -229,8 +222,7 @@ void zMClusterMeanFPrint(FILE *fp[], zMCluster *mc)
 
 #if DEBUG
 /* for debug */
-static void _zMClusterKMeansDataPrintFile(zMCluster *mc, int step);
-void _zMClusterKMeansDataPrintFile(zMCluster *mc, int step)
+static void _zMClusterKMeansDataPrintFile(zMCluster *mc, int step)
 {
   FILE *fp;
   char filename[BUFSIZ];
@@ -251,13 +243,8 @@ void _zMClusterKMeansDataPrintFile(zMCluster *mc, int step)
 }
 #endif /* DEBUG */
 
-static double _zMClusterVar(zCluster *c, zMCluster *mc, void *err_util);
-static void _zMClusterKMeansInit(zMCluster *mc, zVecList *points);
-static int _zMClusterKMeansRecluster(zMCluster *mc, void *mean_util, void *err_util);
-
-/* (static)
- * compute variance of a vector cluster. */
-double _zMClusterVar(zCluster *c, zMCluster *mc, void *err_util)
+/* compute variance of a vector cluster. */
+static double _zMClusterVar(zCluster *c, zMCluster *mc, void *err_util)
 {
   zVecListCell *pc;
 
@@ -266,12 +253,11 @@ double _zMClusterVar(zCluster *c, zMCluster *mc, void *err_util)
     mc->met._error_fp( pc->data, c->mean, err_util, mc->met._err );
     c->var += zVecSqrNorm( mc->met._err );
   }
-  return ( c->var /= zListNum(&c->vl) );
+  return ( c->var /= zListSize(&c->vl) );
 }
 
-/* (static)
- * arrange initial candidates of clusters. */
-void _zMClusterKMeansInit(zMCluster *mc, zVecList *points)
+/* arrange initial candidates of clusters. */
+static void _zMClusterKMeansInit(zMCluster *mc, zVecList *points)
 {
   zClusterListCell *cc, *ccnn;
   zVecListCell *pc, *pcmax = NULL;
@@ -326,9 +312,8 @@ void _zMClusterKMeansInit(zMCluster *mc, zVecList *points)
   }
 }
 
-/* (static)
- * recluster tentative clusters. */
-int _zMClusterKMeansRecluster(zMCluster *mc, void *mean_util, void *err_util)
+/* recluster tentative clusters. */
+static int _zMClusterKMeansRecluster(zMCluster *mc, void *mean_util, void *err_util)
 {
   zClusterListCell *cc1, *cc2, *cc;
   zVecListCell *pc, *pc_prev;
@@ -389,20 +374,8 @@ int zMClusterKMeans(zMCluster *mc, zVecList *points, int k, void *mean_util, voi
 
 #define Z_XMEANS_MINSIZE 10
 
-static void _zMClusterMerge(zMCluster *mc, zClusterListCell *vc, zMCluster *submc);
-static void _zMClusterXMeansInit(zMCluster *mc, zVecList *points, void *mean_util, void *err_util);
-
-static double _zClusterMaxError(zCluster *c, zVec (* error_fp)(zVec,zVec,void*,zVec), void *err_util, zVec err);
-static bool _zMClusterXMeansTest(zMCluster *mc, zCluster *org, zMCluster *submc, void *err_util);
-static int _zMClusterXMeans(zMCluster *mc, zClusterListCell *cc, void *mean_util, void *err_util);
-
-static double _zClusterXMeansPDF(zCluster *c, zMCluster *mc, void *err_util, zVec x);
-static bool _zMClusterXMeansBICTest(zMCluster *mc, zCluster *c, zMCluster *submc, void *err_util);
-static int _zMClusterXMeansBIC(zMCluster *mc, zClusterListCell *cc, void *mean_util, void *err_util);
-
-/* (static)
- * merge subclusters with original. */
-void _zMClusterMerge(zMCluster *mc, zClusterListCell *vc, zMCluster *submc)
+/* merge subclusters with original. */
+static void _zMClusterMerge(zMCluster *mc, zClusterListCell *vc, zMCluster *submc)
 {
   zClusterListCell *prev, *next;
 
@@ -412,14 +385,13 @@ void _zMClusterMerge(zMCluster *mc, zClusterListCell *vc, zMCluster *submc)
   free( vc );
   zListCellBind( prev, zListTail(&submc->cl) );
   zListCellBind( zListHead(&submc->cl), next );
-  zListNum(&mc->cl) += zListNum(&submc->cl) - 1;
+  zListSize(&mc->cl) += zListSize(&submc->cl) - 1;
   zListInit( &submc->cl );
   zMClusterDestroy( submc );
 }
 
-/* (static)
- * initialize clusters for X-means. */
-void _zMClusterXMeansInit(zMCluster *mc, zVecList *points, void *mean_util, void *err_util)
+/* initialize clusters for X-means. */
+static void _zMClusterXMeansInit(zMCluster *mc, zVecList *points, void *mean_util, void *err_util)
 {
   zClusterListCell *vc;
   zVecListCell *pc;
@@ -433,9 +405,8 @@ void _zMClusterXMeansInit(zMCluster *mc, zVecList *points, void *mean_util, void
   _zMClusterVar( &vc->data, mc, err_util );
 }
 
-/* (static)
- * find maximum error in a cluster from the mean value. */
-double _zClusterMaxError(zCluster *c, zVec (* error_fp)(zVec,zVec,void*,zVec), void *err_util, zVec err)
+/* find maximum error in a cluster from the mean value. */
+static double _zClusterMaxError(zCluster *c, zVec (* error_fp)(zVec,zVec,void*,zVec), void *err_util, zVec err)
 {
   zVecListCell *vc;
   double dmax = 0, d;
@@ -447,9 +418,8 @@ double _zClusterMaxError(zCluster *c, zVec (* error_fp)(zVec,zVec,void*,zVec), v
   return dmax;
 }
 
-/* (static)
- * test if the subclusters better classify the original cluster. */
-bool _zMClusterXMeansTest(zMCluster *mc, zCluster *org, zMCluster *submc, void *err_util)
+/* test if the subclusters better classify the original cluster. */
+static bool _zMClusterXMeansTest(zMCluster *mc, zCluster *org, zMCluster *submc, void *err_util)
 {
   zCluster *c1, *c2;
   double fr1, fr2;
@@ -457,30 +427,29 @@ bool _zMClusterXMeansTest(zMCluster *mc, zCluster *org, zMCluster *submc, void *
 
   c1 = &zListHead(&submc->cl)->data;
   c2 = &zListTail(&submc->cl)->data;
-  if( zListNum(&c1->vl) < 0.1 * zListNum(&c2->vl) ||
-      zListNum(&c2->vl) < 0.1 * zListNum(&c1->vl) )
+  if( zListSize(&c1->vl) < 0.1 * zListSize(&c2->vl) ||
+      zListSize(&c2->vl) < 0.1 * zListSize(&c1->vl) )
     return false; /* avoid too crisp cluster */
 
   /* original cluster */
   r = _zClusterMaxError( org, mc->met._error_fp, err_util, mc->met._err );
-  fr1 = log(zListNum(&org->vl)) - mc->met._errorsize*log(r);
+  fr1 = log(zListSize(&org->vl)) - mc->met._errorsize*log(r);
   /* bidivided clusters */
   r1 = _zClusterMaxError( c1, mc->met._error_fp, err_util, mc->met._err );
   r2 = _zClusterMaxError( c2, mc->met._error_fp, err_util, mc->met._err );
-  fr2 = log( zListNum(&org->vl) )
+  fr2 = log( zListSize(&org->vl) )
       - log( pow(r1,mc->met._errorsize) + pow(r2,mc->met._errorsize) );
   return fr1 < fr2 ? true : false;
 }
 
-/* (static)
- * cluster vectors by X-means in a recursive way based on filling rate. */
-int _zMClusterXMeans(zMCluster *mc, zClusterListCell *cc, void *mean_util, void *err_util)
+/* cluster vectors by X-means in a recursive way based on filling rate. */
+static int _zMClusterXMeans(zMCluster *mc, zClusterListCell *cc, void *mean_util, void *err_util)
 {
   zMCluster submc;
   int iter, iter1, iter2;
 
   /* avoid a too small / sparse cluster */
-  if( zListNum(&cc->data.vl) < Z_XMEANS_MINSIZE ) return 0;
+  if( zListSize(&cc->data.vl) < Z_XMEANS_MINSIZE ) return 0;
 
   if( zMClusterInit( &submc, mc->met._meansize, mc->met._mean_fp, mc->met._errorsize, mc->met._error_fp ) == NULL )
     return 0;
@@ -504,17 +473,15 @@ int zMClusterXMeans(zMCluster *mc, zVecList *points, void *mean_util, void *err_
   return _zMClusterXMeans( mc, zListHead(&mc->cl), mean_util, err_util );
 }
 
-/* (static)
- * probability density function based on Gaussian distribution. */
-double _zClusterXMeansPDF(zCluster *c, zMCluster *mc, void *err_util, zVec x)
+/* probability density function based on Gaussian distribution. */
+static double _zClusterXMeansPDF(zCluster *c, zMCluster *mc, void *err_util, zVec x)
 {
   mc->met._error_fp( x, c->mean, err_util, mc->met._err );
   return exp( -0.5*zVecSqrNorm(mc->met._err)/c->var ) / sqrt(c->var);
 }
 
-/* (static)
- * test if the subclusters better classify the original based on BIC. */
-bool _zMClusterXMeansBICTest(zMCluster *mc, zCluster *c, zMCluster *submc, void *err_util)
+/* test if the subclusters better classify the original based on BIC. */
+static bool _zMClusterXMeansBICTest(zMCluster *mc, zCluster *c, zMCluster *submc, void *err_util)
 {
   zCluster *c1, *c2;
   zVecListCell *vc;
@@ -522,7 +489,7 @@ bool _zMClusterXMeansBICTest(zMCluster *mc, zCluster *c, zMCluster *submc, void 
   double ls = 0, bic1, bic2;
 
   q = mc->met._meansize + 1;
-  n = zListNum(&c->vl);
+  n = zListSize(&c->vl);
   c1 = &zListHead(&submc->cl)->data;
   c2 = &zListTail(&submc->cl)->data;
   zListForEach( &c1->vl, vc ){
@@ -538,15 +505,14 @@ bool _zMClusterXMeansBICTest(zMCluster *mc, zCluster *c, zMCluster *submc, void 
   return bic1 < bic2 ? true : false;
 }
 
-/* (static)
- * cluster vectors by X-means based on BIC. */
-int _zMClusterXMeansBIC(zMCluster *mc, zClusterListCell *cc, void *mean_util, void *err_util)
+/* cluster vectors by X-means based on BIC. */
+static int _zMClusterXMeansBIC(zMCluster *mc, zClusterListCell *cc, void *mean_util, void *err_util)
 {
   zMCluster submc;
   int iter, iter1, iter2;
 
   /* ignore a too small cluster */
-  if( zListNum(&cc->data.vl) < Z_XMEANS_MINSIZE ) return 0;
+  if( zListSize(&cc->data.vl) < Z_XMEANS_MINSIZE ) return 0;
   if( zMClusterInit( &submc, mc->met._meansize, mc->met._mean_fp, mc->met._errorsize, mc->met._error_fp ) == NULL )
     return 0;
   iter = zMClusterKMeans( &submc, &cc->data.vl, 2, mean_util, err_util );

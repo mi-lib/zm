@@ -1,3 +1,5 @@
+2019. 9.23. Reflected renaming of zRingSize. [zm_vec_ring]
+2019. 9.23. Reflected renaming of zListSize. [zm_mca, zm_mca_cluster, zm_mca_gmm, zm_ip, zm_ip_lin, zm_nurbs, zm_graph, zm_rrt, app]
 2019. 9.17. Added zPexFromZTK. [zm_pex]
 2019. 9.17. Added zMatFromZTK. [zm_mat]
 2019. 9.17. Added zVecFromZTK. [zm_vec]

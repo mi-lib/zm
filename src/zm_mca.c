@@ -21,7 +21,7 @@ zVec zVecListSum(zVecList *list, zVec sum)
 zVec zVecListAve(zVecList *list, zVec ave)
 {
   zVecListSum( list, ave );
-  return zVecDivDRC( ave, zListNum(list) );
+  return zVecDivDRC( ave, zListSize(list) );
 }
 
 /* variance of all vectors in a list. */
@@ -36,7 +36,7 @@ double zVecListVar(zVecList *list, zVec ave)
   }
   zListForEach( list, vc )
     var += zVecSqrDist( vc->data, ave );
-  return var / zListNum(list);
+  return var / zListSize(list);
 }
 
 /* average and variance of all vectors in a list. */
@@ -72,7 +72,7 @@ zMat zVecListCov(zVecList *list, zVec ave, zMat cov)
     zMatAddDyadNC( cov, v, v );
   }
   zVecFree( v );
-  return zMatDivDRC( cov, zListNum(list) );
+  return zMatDivDRC( cov, zListSize(list) );
 }
 
 /* average and variance-covariance matrix of all vectors in a list. */

@@ -11,10 +11,7 @@
  * interpolation curve class
  * ********************************************************** */
 
-/* zIPDataAlloc
- * - assign a sequence to an interpolator and allocate
- *   the internal workspace.
- */
+/* assign a sequence to an interpolator and allocate the internal workspace. */
 bool zIPDataAlloc(zIPData *dat, zSeq *seq)
 {
   zSeqListCell *cp;
@@ -26,9 +23,9 @@ bool zIPDataAlloc(zIPData *dat, zSeq *seq)
     ZRUNWARN( ZM_WARN_SEQ_EMPTY );
     return true;
   }
-  zArrayAlloc( &dat->knot, zIPKnotCell, zListNum(seq) );
+  zArrayAlloc( &dat->knot, zIPKnotCell, zListSize(seq) );
   if( zArraySize(&dat->knot) == 0 ) return false;
-  if( !zVecArrayAlloc( &dat->va, zVecSize(zListHead(seq)->data.v), zListNum(seq) ) ){
+  if( !zVecArrayAlloc( &dat->va, zVecSize(zListHead(seq)->data.v), zListSize(seq) ) ){
     ZALLOCERROR();
     zIPDataFree( dat );
     return false;
@@ -42,9 +39,7 @@ bool zIPDataAlloc(zIPData *dat, zSeq *seq)
   return true;
 }
 
-/* zIPDataFree
- * - free the internal workspace of an interpolator.
- */
+/* free the internal workspace of an interpolator. */
 void zIPDataFree(zIPData *dat)
 {
   zArrayFree( &dat->knot );
@@ -52,9 +47,7 @@ void zIPDataFree(zIPData *dat)
   dat->seq = NULL;
 }
 
-/* zIPSeg
- * - find a segment in which the absessi is included.
- */
+/* find a segment in which the absessi is included. */
 int zIPSeg(zIPData *dat, double t)
 {
   register int i, j, k;
