@@ -35,12 +35,12 @@ __EXPORT zComplex *zComplexCreate(zComplex *c, double r, double i);
 
 /*! \brief create a complex number from the polar expression.
  *
- * zComplexPolar() creates a complex number from the polar
+ * zComplexCreatePolar() creates a complex number from the polar
  * expression with radius \a r and argument angle \a t
  * in Gaussian plane, where \a t is given in radians.
  * The result is put where \a c points.
  */
-__EXPORT zComplex *zComplexPolar(zComplex *c, double r, double t);
+__EXPORT zComplex *zComplexCreatePolar(zComplex *c, double r, double t);
 
 /*! \brief copy a complex number to another.
  *

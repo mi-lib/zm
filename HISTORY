@@ -1,3 +1,4 @@
+2019. 9.23. Renamed zComplexPolar to zComplexCreatePolar. [zm_complex, zm_complex_arith, zm_pex_eq]
 2019. 9.23. Reflected renaming of zRingSize. [zm_vec_ring]
 2019. 9.23. Reflected renaming of zListSize. [zm_mca, zm_mca_cluster, zm_mca_gmm, zm_ip, zm_ip_lin, zm_nurbs, zm_graph, zm_rrt, app]
 2019. 9.17. Added zPexFromZTK. [zm_pex]

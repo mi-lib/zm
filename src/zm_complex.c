@@ -20,7 +20,7 @@ zComplex *zComplexCreate(zComplex *c, double r, double i)
 }
 
 /* create a complex number based on the polar expression. */
-zComplex *zComplexPolar(zComplex *c, double r, double t)
+zComplex *zComplexCreatePolar(zComplex *c, double r, double t)
 {
   return zComplexCreate( c, r*cos(t), r*sin(t) );
 }

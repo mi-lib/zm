@@ -92,7 +92,7 @@ zComplex *zComplexPow(zComplex *c, double z, zComplex *pc)
 
   r = zComplexAbs( c );
   theta = zComplexArg( c );
-  return zComplexPolar( pc, pow( r, z ), theta * z );
+  return zComplexCreatePolar( pc, pow( r, z ), theta * z );
 }
 
 /* power complex number by a real number. */
@@ -105,7 +105,7 @@ zComplex *zComplexPowRef(zComplex *c, double z, zComplex *ref, zComplex *pc)
   w = 2 * zPI * z;
   if( ref && !zIsTiny(z) )
     theta += w * ceil( ( zComplexArg(ref) - theta ) / w );
-  return zComplexPolar( pc, r, theta );
+  return zComplexCreatePolar( pc, r, theta );
 }
 
 /* power complex number by another complex number. */
@@ -115,7 +115,7 @@ zComplex *zComplexCPow(zComplex *c, zComplex *z, zComplex *pc)
 
   r = zComplexAbs( c );
   theta = zComplexArg( c );
-  return zComplexPolar( pc,
+  return zComplexCreatePolar( pc,
     pow( r, z->re ) * exp( -z->im * theta ),
     z->re*theta + z->im*log(r) );
 }

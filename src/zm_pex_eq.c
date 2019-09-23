@@ -142,7 +142,7 @@ zComplex *zPexDKA(zPex a, zComplex *ans, double tol, int iter)
     if( r0 < r ) r0 = r;
   }
   for( i=0; i<n; i++ ){
-    zComplexPolar( &ans[i], r0, ( zPIx2*i + 1.5 )/n );
+    zComplexCreatePolar( &ans[i], r0, ( zPIx2*i + 1.5 )/n );
     ans[i].re -= s;
   }
   /* Durand's method with Kerner's interpretation */
