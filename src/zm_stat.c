@@ -7,9 +7,7 @@
 #include <zm/zm_stat.h>
 #include <zm/zm_sf.h>
 
-/* zPermut
- * - permutation.
- */
+/* permutation. */
 double zPermut(int n, int i)
 {
   double result = 1.0;
@@ -19,26 +17,20 @@ double zPermut(int n, int i)
   return result;
 }
 
-/* zFacto
- * - factorial.
- */
+/* factorial. */
 double zFacto(int n)
 {
   return zPermut( n, n );
 }
 
-/* zCombi
- * - combination.
- */
+/* combination. */
 double zCombi(int n, int i)
 {
   if( n-i < i ) i = n-i;
   return zPermut( n, i ) / zFacto( i );
 }
 
-/* zCombiSeries
- * - series of combination.
- */
+/* series of combination. */
 double *zCombiSeries(int n, size_t size, double c[])
 {
   register int i, j;
@@ -57,17 +49,13 @@ double *zCombiSeries(int n, size_t size, double c[])
 
 /* basic distribution functions */
 
-/* zNormalDistrib
- * - normal distribution.
- */
+/* normal distribution. */
 double zNormalDistrib(double x, double mu, double sigma)
 {
   return zND / sigma * exp( -0.5 * zSqr( ( x - mu ) / sigma ) );
 }
 
-/* zNormalCumDistrib
- * - normal cumulative distribution.
- */
+/* normal cumulative distribution. */
 #define Z_ND_CUM_MAX 200
 double zNormalCumDistrib(double x, double mu, double sigma)
 {
@@ -82,25 +70,19 @@ double zNormalCumDistrib(double x, double mu, double sigma)
   return x > 0 ? 1.0 : 0.0;
 }
 
-/* zPoissonDistrib
- * - Poisson distribution.
- */
+/* Poisson distribution. */
 double zPoissonDistrib(int x, double lambda)
 {
   return exp( -lambda ) * pow( lambda, x ) / zFacto( x );
 }
 
-/* zBinDistrib
- * - binomial distribution.
- */
+/* binomial distribution. */
 double zBinDistrib(int x, int n, double p)
 {
   return zCombi( n, x ) * pow( p, x ) * pow( 1-p, n-x );
 }
 
-/* zChi2Distrib
- * - chi-squared distribution.
- */
+/* chi-squared distribution. */
 double zChi2Distrib(double x, int k)
 {
   double kd;
@@ -109,9 +91,7 @@ double zChi2Distrib(double x, int k)
   return pow(0.5,kd)*pow(x,kd-1)*exp(-0.5*x)/zGamma(kd);
 }
 
-/* zChi2CumDistrib
- * - chi-squared cumulative distribution.
- */
+/* chi-squared cumulative distribution. */
 double zChi2CumDistrib(double x, int k)
 {
   register int i;
@@ -133,16 +113,14 @@ double zChi2CumDistrib(double x, int k)
 
 /* basic statistics computation */
 
-/* zDataMax
- * - maximum component of data.
- */
-double zDataMax(double *data, int num, int *im)
+/* maximum component of data. */
+double zDataMax(double *data, int size, int *im)
 {
   register int i;
   double max;
 
   if( im ) *im = 0;
-  for( max = data[0], i=1; i<num; i++ )
+  for( max = data[0], i=1; i<size; i++ )
     if( data[i] > max ){
       max = data[i];
       if( im ) *im = i;
@@ -150,16 +128,14 @@ double zDataMax(double *data, int num, int *im)
   return max;
 }
 
-/* zDataMin
- * - minimum component of data.
- */
-double zDataMin(double *data, int num, int *im)
+/* minimum component of data. */
+double zDataMin(double *data, int size, int *im)
 {
   register int i;
   double min;
 
   if( im ) *im = 0;
-  for( min = data[0], i=1; i<num; i++ )
+  for( min = data[0], i=1; i<size; i++ )
     if( data[i] < min ){
       min = data[i];
       if( im ) *im = i;
@@ -167,16 +143,14 @@ double zDataMin(double *data, int num, int *im)
   return min;
 }
 
-/* zDataAbsMax
- * - maximum absolute component of data.
- */
-double zDataAbsMax(double *data, int num, int *im)
+/* maximum absolute component of data. */
+double zDataAbsMax(double *data, int size, int *im)
 {
   register int i;
   double val, max;
 
   if( im ) *im = 0;
-  for( max = fabs( data[0] ), i=1; i<num; i++ )
+  for( max = fabs( data[0] ), i=1; i<size; i++ )
     if( ( val = fabs( data[i] ) ) > max ){
       max = val;
       if( im ) *im = i;
@@ -184,16 +158,14 @@ double zDataAbsMax(double *data, int num, int *im)
   return max;
 }
 
-/* zDataAbsMin
- * - minimum component of data.
- */
-double zDataAbsMin(double *data, int num, int *im)
+/* minimum absolute component of data. */
+double zDataAbsMin(double *data, int size, int *im)
 {
   register int i;
   double val, min;
 
   if( im ) *im = 0;
-  for( min = fabs( data[0] ), i=1; i<num; i++ )
+  for( min = fabs( data[0] ), i=1; i<size; i++ )
     if( ( val = fabs( data[i] ) ) < min ){
       min = val;
       if( im ) *im = i;
@@ -201,15 +173,13 @@ double zDataAbsMin(double *data, int num, int *im)
   return min;
 }
 
-/* zDataSum
- * - sum up all data values.
- */
-double zDataSum(double *data, int num)
+/* sum up all values of data. */
+double zDataSum(double *data, int size)
 {
   double s=0, s_prev=0, q=0, r;
   register int i;
 
-  for( i=0; i<num; i++ ){
+  for( i=0; i<size; i++ ){
     s = s_prev + data[i];
     r = s - s_prev;
     q += data[i] - r;
@@ -218,32 +188,36 @@ double zDataSum(double *data, int num)
   return s + q;
 }
 
-/* zDataAve
- * - calculate the average of data.
- */
-double zDataAve(double *data, int num)
+/* average of all values of data. */
+double zDataAve(double *data, int size)
 {
-  return zDataSum(data,num) / num;
+  return zDataSum(data,size) / size;
 }
 
-/* zDataVar
- * - calculate the variance of data.
- */
-double zDataVar(double *data, int num)
+/* calculate the variance of data. */
+double zDataVar(double *data, int size)
 {
   register int i;
   double ave, result;
 
-  ave = zDataAve( data, num );
-  for( result=0, i=0; i<num; i++ )
+  ave = zDataAve( data, size );
+  for( result=0, i=0; i<size; i++ )
     result += zSqr( data[i] - ave );
-  return result / num;
+  return result / size;
 }
 
-/* zDataSD
- * - calculate the standard deviation of data.
- */
-double zDataSD(double *data, int num)
+/* calculate the standard deviation of data. */
+double zDataSD(double *data, int size)
 {
-  return sqrt( zDataVar( data, num ) );
+  return sqrt( zDataVar( data, size ) );
+}
+
+/* check if a value is a member of data. */
+bool zDataIsIncluded(double *data, int size, double val)
+{
+  register int i;
+
+  for( i=0; i<size; i++ )
+    if( zIsTiny( data[i] - val ) ) return true;
+  return false;
 }

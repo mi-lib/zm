@@ -13,32 +13,30 @@ __BEGIN_DECLS
 
 /*! \brief numerical solution of polynomial equation.
  *
- * zPexBHDST(), zPexBH() and zPexDKA() solve a
- * polynomial equation 'a'=0. 'zPexBHDST()' and 'zPexBH()'
- * are based on Bairstow-Hitchcock's method, while
- * 'zPexDKA()' is based on Durand-Kerner-Aberth's method.
- * #
- * All answers are put into the array pointed by 'ans'
- * ('ans' should have enough size) as complex numbers.
- * 'tol' is a tolerance to finish iteration.
- * 'iter' is the maximum number of iteration. When it
- * does iteration over 'iter' times, it is aborted.
- * If zero is given for 'iter', Z_MAX_ITER_NUM defined
- * in 'zm_misc.h' is chosen instead.
- * 'zPexBHDST()' destroys 'a' in the course of computation.
- * [KNOWN PROBLEMS]
- * Since Bairstow-Hitchcock's method is an iteration,
- * 'zPexBH()' may not converge due to bad initialization.
- * 'zPexDKA()' is slightly advantageous from this viewpoint.
+ * zPexBHDST(), zPexBH() and zPexDKA() solve a polynomial equation
+ * \a a=0 based on Bairstow-Hitchcock's method and Durand-Kerner-Aberth's
+ * method, respectively.
+ *
+ * All answers are put into an array pointed by \a ans as complex numbers.
+ * \a ans must have enough size.
+ * \a tol is a tolerance to terminate iteration.
+ * \a iter is the maximum number of iteration. When it runs over \a iter
+ * times, it is aborted. If zero is given for \a iter, Z_MAX_ITER_NUM
+ * defined in zm_misc.h is used instead.
+ * zPexBHDST() is a destructive version of zPexBD(), which destroys \a a
+ * in the computation process.
+ * \note
+ * Since Bairstow-Hitchcock's method is an iteration, zPexBH() may not
+ * converge due to bad initialization.
+ * zPexDKA() is advantageous to it from this viewpoint.
  * \return
- * 'zPexBHDST()' and 'zPexBH()' return a pointer 'ans'
- * if succeeding. Or, the null pointer is returned when
- * failing to allocate working memory.
+ * zPexBHDST() and zPexBH() return a pointer \a ans if succeeding.
+ * Otherwise, the null pointer is returned.
  */
 #define ZM_PEX_EQ_TOL ( 1.0e-7 )
-__EXPORT zComplex *zPexBHDST(zPex a, zComplex *ans, double tol, int iter);
-__EXPORT zComplex *zPexBH(zPex a, zComplex *ans, double tol, int iter);
-__EXPORT zComplex *zPexDKA(zPex a, zComplex *ans, double tol, int iter);
+__EXPORT zCVec zPexBHDST(zPex a, zCVec ans, double tol, int iter);
+__EXPORT zCVec zPexBH(zPex a, zCVec ans, double tol, int iter);
+__EXPORT zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter);
 
 __END_DECLS
 

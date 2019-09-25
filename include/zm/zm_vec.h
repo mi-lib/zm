@@ -233,6 +233,12 @@ __EXPORT void zVecSort(zVec v, zIndex idx);
 #define zVecAve(v)      zDataAve( zVecBuf(v), zVecSizeNC(v) )
 #define zVecVar(v)      zDataVar( zVecBuf(v), zVecSizeNC(v) )
 
+/*! \brief check if a value is included in a vector.
+ *
+ * zVecValIsIncluded() checks if a value \a val is included in a vector \a v.
+ */
+#define zVecValIsIncluded(v,val) zDataIsIncluded( zVecBuf(v), zVecSizeNC(v), val )
+
 /*! \brief compare two vectors.
  *
  * zVecIsEqual() sees if the given two vector \a v1 and \a v2

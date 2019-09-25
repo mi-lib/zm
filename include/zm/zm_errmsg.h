@@ -50,6 +50,8 @@
 
 #define ZM_ERR_ZERONORM      "cannot normalize zero vector"
 
+#define ZM_ERR_CVEC_CONJPAIR_UNABLE "unable to pair co-conjugate complex numbers."
+
 #define ZM_ERR_LE_SINGULAR   "matrix is singular"
 #define ZM_ERR_LE_CHOLESKY   "matrix is not positive-semidefinite"
 
@@ -58,6 +60,7 @@
 #define ZM_ERR_PE_DEFL       "equation deflated"
 
 #define ZM_ERR_PEX_DIMMIS    "dimension mismatch"
+#define ZM_ERR_PEX_EQ_SIZMIS "shortage of vector size %d for answers of a %s-order polynomial equation."
 
 #define ZM_ERR_IP_INVTERM    "invalid term for polynomial curve"
 #define ZM_ERR_IP_SIZMIS     "size mismatch of sample point vector"

@@ -6,14 +6,10 @@
 
 #include <zm/zm_pex.h>
 
-/* Bairstow-Hitchcock's method */
-static bool _zPexBH(double *p,double *q,zPex a, int n, double tol, int iter);
+/* Bairstow-Hitchcock's method. */
 
-/* (static)
- * _zPexBH
- * - iterative calculation of quadratic factor.
- */
-bool _zPexBH(double *p,double *q,zPex a, int n, double tol, int iter)
+/* iterative calculation of quadratic factor based on Bairstow-Hitchcock's method. */
+static bool _zPexBH(double *p, double *q, zPex a, int n, double tol, int iter)
 {
   double *b, *c;
   double dp, dq, d;
@@ -23,7 +19,6 @@ bool _zPexBH(double *p,double *q,zPex a, int n, double tol, int iter)
   b = zAlloc( double, n + 1 );
   c = zAlloc( double, n );
   if( !b || !c ){
-    ZALLOCERROR();
     result = false;
     goto TERMINATE;
   }
@@ -39,8 +34,7 @@ bool _zPexBH(double *p,double *q,zPex a, int n, double tol, int iter)
     c[n-2] = b[n-1] - *p * c[n-1];
     for( j=n-3; j>=0; j-- )
       c[j] = b[j+1] - *p * c[j+1] - *q * c[j+2];
-    /* delta of divider coefficients
-       (based on Newton=Raphson's method) */
+    /* delta of divider coefficients (based on Newton=Raphson's method) */
     d  = c[1] * c[1] +( b[1] - c[0] ) * c[2];
     dp = ( b[1] * c[1] - b[0] * c[2] ) / d;
     dq = ( b[0] * c[1] + b[1] * ( b[1] - c[0] ) ) / d;
@@ -60,12 +54,9 @@ bool _zPexBH(double *p,double *q,zPex a, int n, double tol, int iter)
   return result;
 }
 
-/* zPexBHDST
- * - numerical solution of polynomial equation
- *   based on Bairstow-Hitchcock's method.
- *   (destructive)
- */
-zComplex *zPexBHDST(zPex a, zComplex *ans, double tol, int iter)
+/* numerical solution of polynomial equation based on Bairstow-Hitchcock's method.
+ * (destructive) */
+zCVec zPexBHDST(zPex a, zCVec ans, double tol, int iter)
 {
   int n;
   double p, q;
@@ -74,39 +65,34 @@ zComplex *zPexBHDST(zPex a, zComplex *ans, double tol, int iter)
   for( n=zPexDim(a); n>0; n-=2 )
     switch( n ){
     case 1: /* linear equation */
-      zComplexCreate( &ans[0], -zPexCoeff(a,0)/zPexCoeff(a,1), 0 );
+      zComplexCreate( zCVecElemNC(ans,0), -zPexCoeff(a,0)/zPexCoeff(a,1), 0 );
       return ans;
     case 2: /* quadratic equation */
-      zQESolve( zPexCoeff(a,2), zPexCoeff(a,1), zPexCoeff(a,0), &ans[0] );
+      zQESolve( zPexCoeff(a,2), zPexCoeff(a,1), zPexCoeff(a,0), zCVecElemNC(ans,0) );
       return ans;
     default:
       /* initial values of p and q for iteration */
       p = zPexCoeff(a,1) + 1.0;
       q = zPexCoeff(a,0) + 1.0;
-      /* division by quadratic expression
-         based on Bairstow's method */
-      if( !_zPexBH( &p, &q, a, n, tol, iter ) ){
-        ZALLOCERROR();
-        return NULL;
-      }
+      /* division by quadratic expression based on Bairstow's method */
+      if( !_zPexBH( &p, &q, a, n, tol, iter ) ) return NULL;
       /* append solution of 'x^2 + p x + q = 0' */
-      zQESolve( 1, p, q, &ans[n-2] );
+      zQESolve( 1, p, q, zCVecElemNC(ans,n-2) );
     }
   return ans;
 }
 
-/* zPexBH
- * - numerical solution of polynomial equation
- *   based on Bairstow-Hitchcock's method.
- */
-zComplex *zPexBH(zPex a, zComplex *ans, double tol, int iter)
+/* numerical solution of polynomial equation based on Bairstow-Hitchcock's method. */
+zCVec zPexBH(zPex a, zCVec ans, double tol, int iter)
 {
   zPex ac;
+  char buf[BUFSIZ];
 
-  if( !( ac = zPexClone( a ) ) ){
-    ZALLOCERROR();
+  if( zPexDim(a) > zCVecSizeNC(ans) ){
+    ZRUNERROR( ZM_ERR_PEX_EQ_SIZMIS, zCVecSizeNC(ans), itoa_ordinal(zPexDim(a),buf,BUFSIZ) );
     return NULL;
   }
+  if( !( ac = zPexClone( a ) ) ) return NULL;
   ans = zPexBHDST( ac, ans, tol, iter );
   zPexFree( ac );
   return ans;
@@ -114,25 +100,24 @@ zComplex *zPexBH(zPex a, zComplex *ans, double tol, int iter)
 
 /* Durand-Kerner-Aberth's method */
 
-/* zPexDKA
- * - numerical solution of polynomial equation
- *   based on Durand-Kerner-Aberth's method.
- */
-zComplex *zPexDKA(zPex a, zComplex *ans, double tol, int iter)
+/* numerical solution of polynomial equation based on Durand-Kerner-Aberth's method. */
+zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter)
 {
   register int i, j, k, n;
   int count;
+  char buf[BUFSIZ];
   double s, r, r0;
   zComplex *p, tmp1, tmp2;
   zPex b;
 
+  if( zPexDim(a) > zCVecSizeNC(ans) ){
+    ZRUNERROR( ZM_ERR_PEX_EQ_SIZMIS, zCVecSizeNC(ans), itoa_ordinal(zPexDim(a),buf,BUFSIZ) );
+    return NULL;
+  }
   n = zPexDim(a);
   p = zAlloc( zComplex, n );
   b = zPexAlloc( n );
-  if( !p || !b ){
-    ZALLOCERROR();
-    return NULL;
-  }
+  if( !p || !b ) return NULL;
   if( tol == 0 ) tol = ZM_PEX_EQ_TOL;
   /* Aberth-Iri's initialization */
   s = zPexCoeff(a,n-1) / ( zPexCoeff(a,n) * n );
@@ -142,8 +127,8 @@ zComplex *zPexDKA(zPex a, zComplex *ans, double tol, int iter)
     if( r0 < r ) r0 = r;
   }
   for( i=0; i<n; i++ ){
-    zComplexCreatePolar( &ans[i], r0, ( zPIx2*i + 1.5 )/n );
-    ans[i].re -= s;
+    zComplexCreatePolar( zCVecElemNC(ans,i), r0, ( zPIx2*i + 1.5 )/n );
+    zCVecElemNC(ans,i)->re -= s;
   }
   /* Durand's method with Kerner's interpretation */
   ZITERINIT( iter );
@@ -152,16 +137,16 @@ zComplex *zPexDKA(zPex a, zComplex *ans, double tol, int iter)
       zComplexCreate( &p[i], zPexCoeff(a,n), 0.0 );
       for( j=0; j<n; j++ ){
         if( j == i ) continue;
-        zComplexSub( &ans[i], &ans[j], &tmp1 );
+        zComplexSub( zCVecElemNC(ans,i), zCVecElemNC(ans,j), &tmp1 );
         zComplexCMul( &p[i], &tmp1, &tmp2 );
         zComplexCopy( &tmp2, &p[i] );
       }
     }
     for( count=0, i=0; i<n; i++ ){
-      zPexCVal( a, &ans[i], &tmp1 );
+      zPexCVal( a, zCVecElemNC(ans,i), &tmp1 );
       if( zComplexIsTol( &tmp1, tol ) ) count++;
       zComplexCDiv( &tmp1, &p[i], &tmp2 );
-      zComplexSub( &ans[i], &tmp2, &ans[i] );
+      zComplexSub( zCVecElemNC(ans,i), &tmp2, zCVecElemNC(ans,i) );
     }
     if( count == n ) goto TERMINATE;
   }

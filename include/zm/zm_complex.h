@@ -53,6 +53,16 @@ __EXPORT zComplex *zComplexCreatePolar(zComplex *c, double r, double t);
  * setting both real and imaginary parts for zeros. */
 #define zComplexZero(c) zComplexCreate(c,0,0)
 
+/*! \brief touchup a complex number.
+ *
+ * zComplexTouchup() replaces real part or imaginary part of a
+ * complex number \a c for zero if either value relative to the
+ * other part is less than zTOL.
+ * \return
+ * zComplexTouchup() returns a pointer \a c.
+ */
+__EXPORT zComplex *zComplexTouchup(zComplex *c);
+
 /*! \brief test if a complex number is under the tolerance.
  *
  * zComplexIsTol() tests if the absolute values of
@@ -65,6 +75,15 @@ __EXPORT zComplex *zComplexCreatePolar(zComplex *c, double r, double t);
 
 /*! \brief test if a complex nubmer is under the default tolerance. */
 #define zComplexIsTiny(c)    zComplexIsTol( c, zTOL )
+
+/*! \brief check if a complex number is a real number. */
+#define zComplexIsReal(c)    zIsTiny((c)->im)
+
+/*! \brief check if two complex numbers are equal. */
+#define zComplexIsEqual(c1,c2) ( zIsTiny( (c1)->re - (c2)->re ) && zIsTiny( (c1)->im - (c2)->im ) )
+
+/*! \brief check if two complex numbers are co-conjugate. */
+#define zComplexIsConj(c1,c2) ( zIsTiny( (c1)->re - (c2)->re ) && zIsTiny( (c1)->im + (c2)->im ) )
 
 /*! \brief primt a complex number.
  *
@@ -87,6 +106,23 @@ __EXPORT void zComplexCoordFPrint(FILE *fp, zComplex *c);
 /*! \brief prints the coordinates of a complex number
  * to the standard output. */
 #define zComplexCoordPrint(c) zComplexCoordFPrint( stdout, (c) )
+
+/*! \brief check if a complex number is a member of an array.
+ *
+ * zComplexValIsIncluded() checks if a complex number \a c is
+ * included in an array \a array.
+ * zComplexValConjIsIncluded() checks if conjugate of \a c is
+ * included in an array \a array.
+ * For both functions, \a size is the size of the array.
+ * \return
+ * zComplexValIsIncluded() returns the true value if \a c is
+ * included in \a \array. Otherwise, the false value is returned.
+ * zComplexValConjIsIncluded() returns the true value if conjugate
+ * of \a c is included in \a \array. Otherwise, the false value
+ * is returned.
+ */
+__EXPORT bool zComplexValIsIncluded(zComplex *array, int size, zComplex *c);
+__EXPORT bool zComplexValConjIsIncluded(zComplex *array, int size, zComplex *c);
 
 /*! \} */
 

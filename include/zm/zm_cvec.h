@@ -55,6 +55,10 @@ typedef zCVecStruct* zCVec;
  * zCVecZero() sets all components of a complex vector \a v
  * for zeros.
  *
+ * zCVecTouchup() replaces real part or imaginary part of all
+ * components of a complex vector \a v for zero if either value
+ * relative to the other part is less than zTOL.
+ *
  * zCVecCopyNC() copies a complex vector \a src to another
  * \a dest without checking the size consistency between them.
  *
@@ -69,6 +73,8 @@ typedef zCVecStruct* zCVec;
  *
  * zCVecZero() returns a pointer \a v.
  *
+ * zCVecTouchup() returns a pointer \a v.
+ *
  * zCVecCopyNC() returns a pointer \a dest.
  *
  * zCVecCopy() returns a pointer \a dest, or the null pointer
@@ -82,6 +88,7 @@ typedef zCVecStruct* zCVec;
 __EXPORT zCVec zCVecAlloc(int size);
 __EXPORT void zCVecFree(zCVec v);
 __EXPORT zCVec zCVecZero(zCVec v);
+__EXPORT zCVec zCVecTouchup(zCVec v);
 __EXPORT zCVec zCVecCopyNC(zCVec src, zCVec dest);
 __EXPORT zCVec zCVecCopy(zCVec src, zCVec dest);
 __EXPORT zCVec zCVecClone(zCVec src);
@@ -115,6 +122,12 @@ __EXPORT bool zCVecIsEqual(zCVec v1, zCVec v2);
  */
 __EXPORT bool zCVecIsTol(zCVec v, double tol);
 #define zCVecIsTiny(v) zCVecIsTol( v, zTOL )
+
+/* split a complex vector to a real vector and an imaginary vector. */
+__EXPORT bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec);
+
+/* reorder a complex vector as co-conjugate numbers are paired as adjacencies. */
+__EXPORT zCVec zCVecConjPair(zCVec v);
 
 /*! \brief basic arithmetics for the complex vector.
  *
@@ -215,6 +228,11 @@ __EXPORT double zCVecSqrNorm(zCVec v);
 #define zCVecNorm(v)         sqrt( zCVecSqrNorm(v) )
 __EXPORT zCVec zCVecNormalize(zCVec src, zCVec dest);
 #define zCVecNormalizeDRC(v) zCVecNormalize(v,v)
+
+/*! \brief check if a complex number is included in a complex vector. */
+#define zCVecValIsIncluded(v,c) zComplexValIsIncluded( zCVecBufNC(v), zCVecSizeNC(v), c )
+/*! \brief check if conjugate of a complex number is included in a complex vector. */
+#define zCVecValConjIsIncluded(v,c) zComplexValConjIsIncluded( zCVecBufNC(v), zCVecSizeNC(v), c )
 
 /*! \brief print a complex vector.
  *

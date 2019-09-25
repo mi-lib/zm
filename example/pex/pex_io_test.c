@@ -5,7 +5,7 @@ int main(void)
   zPex p;
   FILE *fp;
 
-  if( !( fp = fopen( "pex_test.zpx", "r" ) ) )
+  if( !( fp = fopen( "pex_test.dat", "r" ) ) )
     return 1;
   p = zPexFScan( fp );
   fclose( fp );

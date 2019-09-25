@@ -108,59 +108,66 @@ __EXPORT double zChi2CumDistrib(double x, int k);
 
 /*! \brief the maximum value in data.
  *
- * \a num is the number of data.
+ * \a size is the size of data.
  * The index to the max is stored where \a im points,
  * if it is not the null pointer.
  */
-__EXPORT double zDataMax(double *data, int num, int *im);
+__EXPORT double zDataMax(double *data, int size, int *im);
 
 /*! \brief the minimum value in data.
  *
- * \a num is the number of data.
+ * \a size is the size of data.
  * The index to the max is stored where \a im points,
  * if it is not the null pointer.
  */
-__EXPORT double zDataMin(double *data, int num, int *im);
+__EXPORT double zDataMin(double *data, int size, int *im);
 
 /*! \brief the maximum absolute value in data.
  *
- * \a num is the number of data.
+ * \a size is the size of data.
  * The index to the max is stored where \a im points,
  * if it is not the null pointer.
  */
-__EXPORT double zDataAbsMax(double *data, int num, int *im);
+__EXPORT double zDataAbsMax(double *data, int size, int *im);
 
 /*! \brief the minimum absolute value in data.
  *
- * \a num is the number of data.
+ * \a size is the size of data.
  * The index to the max is stored where \a im points,
  * if it is not the null pointer.
  */
-__EXPORT double zDataAbsMin(double *data, int num, int *im);
+__EXPORT double zDataAbsMin(double *data, int size, int *im);
 
 /*! \brief the summation of data.
  *
- * \a num is the number of data.
+ * \a size is the size of data.
  */
-__EXPORT double zDataSum(double *data, int num);
+__EXPORT double zDataSum(double *data, int size);
 
 /*! \brief the average of data.
  *
- * \a num is the number of data.
+ * \a size is the size of data.
  */
-__EXPORT double zDataAve(double *data, int num);
+__EXPORT double zDataAve(double *data, int size);
 
 /*! \brief the variance of data.
  *
- * \a num is the number of data.
+ * \a size is the size of data.
  */
-__EXPORT double zDataVar(double *data, int num);
+__EXPORT double zDataVar(double *data, int size);
 
 /*! \brief the standard deviation of data.
  *
- * \a num is the number of data.
+ * \a size is the size of data.
  */
-__EXPORT double zDataSD(double *data, int num);
+__EXPORT double zDataSD(double *data, int size);
+
+/*! \brief check if a value is included in data.
+ *
+ * zDataIsIncluded() checks if a value \a val is included in
+ * a data set \a data. \a size is the size of the data.
+ */
+__EXPORT bool zDataIsIncluded(double *data, int size, double val);
 
 /*! \} */
 

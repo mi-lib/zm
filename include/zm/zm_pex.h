@@ -8,6 +8,7 @@
 #define __ZM_PEX_H__
 
 #include <zm/zm_stat.h>
+#include <zm/zm_cvec.h>
 #include <zm/zm_le.h>
 
 __BEGIN_DECLS
@@ -103,15 +104,22 @@ __EXPORT bool zPexDiv(zPex p, zPex f, zPex *q, zPex *r);
 
 /*! \brief expand factors into a polynomial expression.
  *
- * zPexExp() expands a factorial style into a polynomial
- * expression. Suppose \a factor is [a1 a2 ... aN], the
- * corresponding factorial styleis (x-a1)(x-a2)...(x-aN).
+ * zPexExp() and zPexCExp() expand a factorial style into a polynomial
+ * expression. Suppose \a factor is [a1 a2 ... aN], the corresponding
+ * factorial style is (x-a1)(x-a2)...(x-aN).
  *
- * The result is newly allocated.
+ * zPexExp() accepts real-number factors given by a real vector, while
+ * zPexCExp() does complex-number factors by a complex vector.
+ *
+ * The result is newly allocated for both functions.
+ * \note
+ * The factors given to zPexCExp() have to include only real numbers
+ * and paired co-conjugate imaginary numbers.
  * \return
- * zPexExp() returns a pointer to the result.
+ * zPexExp() and zPexCExp() return a pointer to the result.
  */
 __EXPORT zPex zPexExp(zVec factor);
+__EXPORT zPex zPexCExp(zCVec factor);
 
 /*! \brief compute modulo of a primary expression.
  *

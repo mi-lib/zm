@@ -108,11 +108,8 @@ zPex zPexMul(zPex p1, zPex p2)
   return p;
 }
 
-static void _zPexDivDRC(zPex p, zPex f, zPex q, zPex *r);
-
-/* (static)
- * divide a polynomial expression directly by another. */
-void _zPexDivDRC(zPex p, zPex f, zPex q, zPex *r)
+/* divide a polynomial expression directly by another. */
+static void _zPexDivDRC(zPex p, zPex f, zPex q, zPex *r)
 {
   register int i, n, m;
   double a;
@@ -161,11 +158,9 @@ bool zPexDiv(zPex p, zPex f, zPex *q, zPex *r)
   return ret;
 }
 
-static zPex _zPexExp(zVec factor);
-/* (static)
- * expand factors into polynomial expression.
- * (internal function which may modify \a factor) */
-zPex _zPexExp(zVec factor)
+/* expand factors into polynomial expression.
+ * (internal function to modify \a factor) */
+static zPex _zPexExp(zVec factor)
 {
   zPex p1, p2, p = NULL;
   uint size, hsize;
@@ -176,7 +171,7 @@ zPex _zPexExp(zVec factor)
       ZALLOCERROR();
       return NULL;
     }
-    zPexSetCoeff( p, 0,-zVecElemNC( factor, 0 ) );
+    zPexSetCoeff( p, 0,-zVecElemNC(factor,0) );
     zPexSetCoeff( p, 1, 1 );
     return p;
   }
@@ -205,6 +200,59 @@ zPex zPexExp(zVec factor)
   result = _zPexExp( f );
   zVecFree( f );
   return result;
+}
+
+/* expand imaginary factors into polynomial expression.
+ * conjugate complex numbers are supposed to be paired as adjacencies.
+ */
+static zPex _zPexExpIm(zCVec ifactor)
+{
+  zPex p1, p2, p = NULL;
+  uint size, hsize, hhsize;
+
+  hsize = ( size = zVecSizeNC( ifactor ) ) / 2;
+  if( hsize == 1 ){
+    if( !( p = zPexAlloc( 2 ) ) ){
+      ZALLOCERROR();
+      return NULL;
+    }
+    zPexSetCoeff( p, 0, zComplexSqrAbs(zCVecElemNC(ifactor,0)) );
+    zPexSetCoeff( p, 1,-2*zCVecElemNC(ifactor,0)->re );
+    zPexSetCoeff( p, 2, 1 );
+    return p;
+  }
+  hhsize = hsize / 2;
+  zVecSetSizeNC( ifactor, ( hsize = hhsize * 2 ) );
+  p1 = _zPexExpIm( ifactor );
+  zVecSetSizeNC( ifactor, size-hsize );
+  memcpy( zCVecBufNC(ifactor), zCVecBufNC(ifactor)+hsize, sizeof(zComplex)*zCVecSizeNC(ifactor) );
+  p2 = _zPexExpIm( ifactor );
+  if( !p1 || !p2 ) goto TERMINATE;
+  p = zPexMul( p1, p2 );
+
+ TERMINATE:
+  zPexFree( p1 );
+  zPexFree( p2 );
+  return p;
+}
+
+/* expand complex factors into a polynomial expression. */
+zPex zPexCExp(zCVec factor)
+{
+  zVec rfactor;
+  zCVec ifactor;
+  zPex pr, pc, p = NULL;
+
+  if( !zCVecToReIm( factor, &rfactor, &ifactor ) ) return NULL;
+  pr = _zPexExp( rfactor );
+  pc = _zPexExpIm( ifactor );
+  if( pr && pc )
+    p = zPexMul( pr, pc );
+  zPexFree( pr );
+  zPexFree( pc );
+  zVecFree( rfactor );
+  zCVecFree( ifactor );
+  return p;
 }
 
 /* modulo of a primary expression. */
