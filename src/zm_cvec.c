@@ -147,9 +147,9 @@ bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec)
       zIndexSetElemNC( iidx, isize++, i );
     }
   }
-  *rvec = zVecAlloc( ( zArraySize(ridx) = rsize ) );
-  *ivec = zCVecAlloc( ( zArraySize(iidx) = isize ) );
-  if( !*rvec || !*ivec ){
+  *rvec = rsize > 0 ? zVecAlloc( ( zArraySize(ridx) = rsize ) ) : NULL;
+  *ivec = isize > 0 ? zCVecAlloc( ( zArraySize(iidx) = isize ) ) : NULL;
+  if( !*rvec && !*ivec ){
     zVecFree( *rvec );
     zCVecFree( *ivec );
     ret = false;
@@ -159,7 +159,7 @@ bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec)
     zVecSetElemNC( *rvec, i, zCVecElemNC(cvec,zIndexElemNC(ridx,i))->re );
   for( i=0; i<isize; i++ )
     zCVecSetElemNC( *ivec, i, zCVecElemNC(cvec,zIndexElemNC(iidx,i)) );
-  if( !zCVecConjPair( *ivec ) ) ret = false;
+  if( *ivec && !zCVecConjPair( *ivec ) ) ret = false;
 
  TERMINATE:
   zIndexFree( ridx );

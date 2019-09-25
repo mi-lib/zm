@@ -244,10 +244,14 @@ zPex zPexCExp(zCVec factor)
   zPex pr, pc, p = NULL;
 
   if( !zCVecToReIm( factor, &rfactor, &ifactor ) ) return NULL;
-  pr = _zPexExp( rfactor );
-  pc = _zPexExpIm( ifactor );
+  pr = rfactor ? _zPexExp( rfactor ) : NULL;
+  pc = ifactor ? _zPexExpIm( ifactor ) : NULL;
   if( pr && pc )
     p = zPexMul( pr, pc );
+  else if( pr )
+    p = zPexClone( pr );
+  else
+    p = zPexClone( pc );
   zPexFree( pr );
   zPexFree( pc );
   zVecFree( rfactor );

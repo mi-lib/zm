@@ -95,7 +95,7 @@ zCVec zPexBH(zPex a, zCVec ans, double tol, int iter)
   if( !( ac = zPexClone( a ) ) ) return NULL;
   ans = zPexBHDST( ac, ans, tol, iter );
   zPexFree( ac );
-  return ans;
+  return zCVecTouchup( ans );
 }
 
 /* Durand-Kerner-Aberth's method */
@@ -154,5 +154,5 @@ zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter)
  TERMINATE:
   zFree( p );
   zPexFree( b );
-  return ans;
+  return zCVecTouchup( ans );
 }

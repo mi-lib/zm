@@ -9,7 +9,7 @@ void psolve_usage(char *cmd)
 int main(int argc, char *argv[])
 {
   zPex pex;
-  zComplex *ans;
+  zCVec ans;
   int dim, i;
   FILE *fp;
 
@@ -30,20 +30,17 @@ int main(int argc, char *argv[])
   if( fp != stdin ) fclose( fp );
 
   dim = zPexDim( pex );
-  if( !( ans = zAlloc( zComplex, dim ) ) ){
-    ZALLOCERROR();
-    return EXIT_FAILURE;
-  }
+  if( !( ans = zCVecAlloc( dim ) ) ) return EXIT_FAILURE;
   printf( "Equation:\n" );
   zPexExprX( pex );
   printf( "= 0\n" );
   zPexDKA( pex, ans, zTOL, 0 );
   printf( "Answer(s):\n" );
   for( i=0; i<dim; i++ ){
-    zComplexPrint( &ans[i] );
+    zComplexPrint( zCVecElemNC(ans,i) );
     zEndl();
   }
-  zFree( ans );
+  zCVecFree( ans );
   zPexFree( pex );
   return 0;
 }
