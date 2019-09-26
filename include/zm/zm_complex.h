@@ -77,13 +77,13 @@ __EXPORT zComplex *zComplexTouchup(zComplex *c);
 #define zComplexIsTiny(c)    zComplexIsTol( c, zTOL )
 
 /*! \brief check if a complex number is a real number. */
-#define zComplexIsReal(c)    zIsTiny((c)->im)
+#define zComplexIsReal(c)    zIsTiny( (c)->im )
 
 /*! \brief check if two complex numbers are equal. */
-#define zComplexIsEqual(c1,c2) ( zIsTiny( (c1)->re - (c2)->re ) && zIsTiny( (c1)->im - (c2)->im ) )
+#define zComplexIsEqual(c1,c2) ( zIsTiny( (c1)->re/(c2)->re - 1.0 ) && zIsTiny( (c1)->im/(c2)->im - 1.0 ) )
 
 /*! \brief check if two complex numbers are co-conjugate. */
-#define zComplexIsConj(c1,c2) ( zIsTiny( (c1)->re - (c2)->re ) && zIsTiny( (c1)->im + (c2)->im ) )
+#define zComplexIsConj(c1,c2) ( zIsTiny( (c1)->re/(c2)->re - 1.0 ) && zIsTiny( (c1)->im/(c2)->im + 1.0 ) )
 
 /*! \brief primt a complex number.
  *

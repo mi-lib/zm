@@ -111,9 +111,7 @@ bool zCVecIsEqual(zCVec v1, zCVec v2)
 
   if( !zCVecSizeIsEqual( v1, v2 ) ) return false;
   for( i=0; i<zCVecSizeNC(v1); i++ )
-    if( !zIsTiny( zCVecElemNC(v1,i)->re - zCVecElemNC(v2,i)->re ) ||
-        !zIsTiny( zCVecElemNC(v1,i)->im - zCVecElemNC(v2,i)->im ) )
-      return false;
+    if( !zComplexIsEqual( zCVecElemNC(v1,i), zCVecElemNC(v2,i) ) ) return false;
   return true;
 }
 
@@ -177,11 +175,12 @@ zCVec zCVecConjPair(zCVec v)
     return NULL;
   }
   for( i=0; i<zCVecSizeNC(v); i+=2 ){
-    for( j=i+1; j<zCVecSizeNC(v); j++ )
+    for( j=i+1; j<zCVecSizeNC(v); j++ ){
       if( zComplexIsConj( zCVecElemNC(v,i), zCVecElemNC(v,j) ) ){
         if( j > i + 1 ) zSwap( zComplex, *zCVecElemNC(v,i+1), *zCVecElemNC(v,j) );
         break;
       }
+    }
     if( j == zCVecSizeNC(v) ){
       ZRUNERROR( ZM_ERR_CVEC_CONJPAIR_UNABLE );
       return NULL;

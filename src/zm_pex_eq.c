@@ -35,9 +35,9 @@ static bool _zPexBH(double *p, double *q, zPex a, int n, double tol, int iter)
     for( j=n-3; j>=0; j-- )
       c[j] = b[j+1] - *p * c[j+1] - *q * c[j+2];
     /* delta of divider coefficients (based on Newton=Raphson's method) */
-    d  = c[1] * c[1] +( b[1] - c[0] ) * c[2];
-    dp = ( b[1] * c[1] - b[0] * c[2] ) / d;
-    dq = ( b[0] * c[1] + b[1] * ( b[1] - c[0] ) ) / d;
+    d  = 1.0 / ( c[1] * c[1] +( b[1] - c[0] ) * c[2] );
+    dp = ( b[1] * c[1] - b[0] * c[2] ) * d;
+    dq = ( b[0] * c[1] + b[1] * ( b[1] - c[0] ) ) * d;
     /* termination judgement */
     if( zIsTol(dp,tol) && zIsTol(dq,tol) ) goto SUCCESS;
     *p += dp;
@@ -104,7 +104,7 @@ zCVec zPexBH(zPex a, zCVec ans, double tol, int iter)
 zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter)
 {
   register int i, j, k, n;
-  int count;
+  bool flag;
   char buf[BUFSIZ];
   double s, r, r0;
   zComplex *p, tmp1, tmp2;
@@ -133,22 +133,20 @@ zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter)
   /* Durand's method with Kerner's interpretation */
   ZITERINIT( iter );
   for( k=0; k<iter; k++ ){
+    for( flag=true, i=0; i<n; i++ )
+      if( !zComplexIsTol( zPexCVal( a, zCVecElemNC(ans,i), &p[i] ), tol ) ) flag = false;
+    if( flag ) goto TERMINATE;
     for( i=0; i<n; i++ ){
-      zComplexCreate( &p[i], zPexCoeff(a,n), 0.0 );
       for( j=0; j<n; j++ ){
         if( j == i ) continue;
         zComplexSub( zCVecElemNC(ans,i), zCVecElemNC(ans,j), &tmp1 );
-        zComplexCMul( &p[i], &tmp1, &tmp2 );
+        zComplexCDiv( &p[i], &tmp1, &tmp2 );
         zComplexCopy( &tmp2, &p[i] );
       }
+      zComplexDiv( &p[i], zPexCoeff(a,n), &p[i] );
     }
-    for( count=0, i=0; i<n; i++ ){
-      zPexCVal( a, zCVecElemNC(ans,i), &tmp1 );
-      if( zComplexIsTol( &tmp1, tol ) ) count++;
-      zComplexCDiv( &tmp1, &p[i], &tmp2 );
-      zComplexSub( zCVecElemNC(ans,i), &tmp2, zCVecElemNC(ans,i) );
-    }
-    if( count == n ) goto TERMINATE;
+    for( i=0; i<n; i++ )
+      zComplexSub( zCVecElemNC(ans,i), &p[i], zCVecElemNC(ans,i) );
   }
   ZITERWARN( iter );
  TERMINATE:

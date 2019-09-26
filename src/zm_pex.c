@@ -20,10 +20,7 @@ zPex zPexRgl(zPex *p)
   for( size=zPexDim(*p); zPexCoeff(*p,size)==0; size-- );
   if( size != zPexDim(*p) ){
     zPexSetDim( *p, size );
-    if( !( newp = zPexAlloc( size ) ) ){
-      ZALLOCERROR();
-      return NULL;
-    }
+    if( !( newp = zPexAlloc( size ) ) ) return NULL;
     zPexCopy( *p, newp );
     zPexFree( *p );
     *p = newp;
@@ -64,10 +61,7 @@ zPex zPexAdd(zPex p1, zPex p2)
 {
   zPex p;
 
-  if( !( p = zPexAlloc( zMax( zPexDim(p1), zPexDim(p2) ) ) ) ){
-    ZALLOCERROR();
-    return NULL;
-  }
+  if( !( p = zPexAlloc( zMax( zPexDim(p1), zPexDim(p2) ) ) ) ) return NULL;
   zPexAddDRC( p, p1 );
   zPexAddDRC( p, p2 );
   zPexRgl( &p );
@@ -79,10 +73,7 @@ zPex zPexSub(zPex p1, zPex p2)
 {
   zPex p;
 
-  if( !( p = zPexAlloc( zMax( zPexDim(p1), zPexDim(p2) ) ) ) ){
-    ZALLOCERROR();
-    return NULL;
-  }
+  if( !( p = zPexAlloc( zMax( zPexDim(p1), zPexDim(p2) ) ) ) ) return NULL;
   zPexAddDRC( p, p1 );
   zPexSubDRC( p, p2 );
   zPexRgl( &p );
@@ -97,10 +88,7 @@ zPex zPexMul(zPex p1, zPex p2)
 
   dim1 = zPexDim( p1 );
   dim2 = zPexDim( p2 );
-  if( !( p = zPexAlloc( dim1 + dim2 ) ) ){
-    ZALLOCERROR();
-    return NULL;
-  }
+  if( !( p = zPexAlloc( dim1 + dim2 ) ) ) return NULL;
   for( i=0; i<=dim2; i++ )
     for( j=0; j<=dim1; j++ )
       zPexCoeff(p,i+j) += zPexCoeff(p2,i)*zPexCoeff(p1,j);
@@ -141,19 +129,14 @@ bool zPexDiv(zPex p, zPex f, zPex *q, zPex *r)
   bool ret = true;
 
   dim = zPexDim(p) - zPexDim(f);
-  if( !( pcp = zPexAlloc( zPexDim(p) ) ) ){
-    ZALLOCERROR();
-    return false;
-  }
+  if( !( pcp = zPexAlloc( zPexDim(p) ) ) ) return false;
   zPexCopy( p, pcp );
   *q = zPexAlloc( dim );
   *r = zPexAlloc( zPexDim(f) - 1 );
   if( *q && *r )
     _zPexDivDRC( pcp, f, *q, r );
-  else{
-    ZALLOCERROR();
+  else
     ret = false;
-  }
   zPexFree( pcp );
   return ret;
 }
@@ -167,10 +150,7 @@ static zPex _zPexExp(zVec factor)
 
   size = zVecSizeNC( factor );
   if( size == 1 ){
-    if( !( p = zPexAlloc( 1 ) ) ){
-      ZALLOCERROR();
-      return NULL;
-    }
+    if( !( p = zPexAlloc( 1 ) ) ) return NULL;
     zPexSetCoeff( p, 0,-zVecElemNC(factor,0) );
     zPexSetCoeff( p, 1, 1 );
     return p;
@@ -212,10 +192,7 @@ static zPex _zPexExpIm(zCVec ifactor)
 
   hsize = ( size = zVecSizeNC( ifactor ) ) / 2;
   if( hsize == 1 ){
-    if( !( p = zPexAlloc( 2 ) ) ){
-      ZALLOCERROR();
-      return NULL;
-    }
+    if( !( p = zPexAlloc( 2 ) ) ) return NULL;
     zPexSetCoeff( p, 0, zComplexSqrAbs(zCVecElemNC(ifactor,0)) );
     zPexSetCoeff( p, 1,-2*zCVecElemNC(ifactor,0)->re );
     zPexSetCoeff( p, 2, 1 );
@@ -280,10 +257,7 @@ zPex zPexDif(zPex p)
   register int i, dim;
   zPex q;
 
-  if( !( q = zPexAlloc( ( dim = zPexDim(p) - 1 ) ) ) ){
-    ZALLOCERROR();
-    return NULL;
-  }
+  if( !( q = zPexAlloc( ( dim = zPexDim(p) - 1 ) ) ) ) return NULL;
   for( i=0; i<=dim; i++ )
     zPexSetCoeff( q, i, zPexCoeff(p,i+1)*(i+1) );
   return q;
@@ -295,10 +269,7 @@ zPex zPexIntg(zPex p)
   register int i, dim;
   zPex q;
 
-  if( !( q = zPexAlloc( ( dim=zPexDim(p) ) + 1 ) ) ){
-    ZALLOCERROR();
-    return NULL;
-  }
+  if( !( q = zPexAlloc( ( dim=zPexDim(p) ) + 1 ) ) ) return NULL;
   for( i=0; i<=dim; i++ )
     zPexSetCoeff( q, i+1, zPexCoeff(p,i)/(i+1) );
   return q;

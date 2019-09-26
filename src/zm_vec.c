@@ -259,7 +259,7 @@ bool zVecIsEqual(zVec v1, zVec v2)
 
   if( !zVecSizeIsEqual( v1, v2 ) ) return false;
   for( i=0; i<zVecSizeNC(v1); i++ )
-    if( !zIsTiny( zVecElemNC(v1,i) - zVecElemNC(v2,i) ) ) return false;
+    if( !zIsTiny( zVecElemNC(v1,i)/zVecElemNC(v2,i) - 1.0 ) ) return false;
   return true;
 }
 

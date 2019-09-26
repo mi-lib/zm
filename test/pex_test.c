@@ -19,7 +19,7 @@ void assert_peqsolve(void)
   zPexDKA( pex, ans, zTOL, 0 );
   for( i=0; i<DIM-1; i++ ){
     zPexCVal( pex, zCVecElemNC(ans,i), &c );
-    if( !zComplexIsTol( &c, TOL ) ) ret = false;
+    if( !zComplexIsTol( &c, zTOL ) ) ret = false;
   }
   zAssert( zPexDKA, ret );
 
@@ -39,7 +39,6 @@ void assert_exp(void)
   zPex p;
   zVec fact;
   zCVec ans;
-  zComplex c;
   register int i;
   bool ret = true;
 
@@ -48,10 +47,10 @@ void assert_exp(void)
   for( i=0; i<NUM; i++ )
     zVecElemNC(fact,i) = zRandF(-10,10);
   p = zPexExp( fact );
-  zPexDKA( p, ans, TOL, 0 );
+  zPexDKA( p, ans, zTOL, 0 );
   for( i=0; i<NUM; i++ ){
-    zComplexCreate( &c, zVecElemNC(fact,i), 0 );
-    if( !zCVecValIsIncluded( ans, &c ) ) ret = false;
+    if( !zComplexIsReal( zCVecElemNC(ans,i) ) ) ret = false;
+    if( !zVecValIsIncluded( fact, zCVecElemNC(ans,i)->re ) ) ret = false;
   }
   zPexFree( p );
   zVecFree( fact );

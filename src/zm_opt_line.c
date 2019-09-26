@@ -6,9 +6,7 @@
 
 #include <zm/zm_opt.h>
 
-/* zOptLineGSEC
- * - golden section method.
- */
+/* golden section method. */
 double zOptLineGSEC(double (*eval)(double,void*), double a, double b, void *util, int iter)
 {
   register int i;
@@ -17,7 +15,7 @@ double zOptLineGSEC(double (*eval)(double,void*), double a, double b, void *util
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){
     x = 0.5 * ( a + b );
-    if( zIsTiny( a - b ) ) return x;
+    if( zIsTiny( a/b - 1.0 ) ) return x;
     c = a - Z_GSEC * ( a - b );
     d = b + Z_GSEC * ( a - b );
     e1 = eval( c, util );
@@ -29,9 +27,7 @@ double zOptLineGSEC(double (*eval)(double,void*), double a, double b, void *util
   return x;
 }
 
-/* zOptLineBisec
- * - bisection method.
- */
+/* bisection method. */
 double zOptLineBisec(double (*eval)(double,void*), double a, double b, void *util, int iter)
 {
   register int i;
@@ -42,7 +38,7 @@ double zOptLineBisec(double (*eval)(double,void*), double a, double b, void *uti
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){
     x = 0.5 * ( a + b );
-    if( zIsTiny( a - b ) ) return x;
+    if( zIsTiny( a/b - 1.0 ) ) return x;
     e3 = eval( x, util );
     if( e1 > e2 ){
       e1 = e3;
@@ -56,9 +52,7 @@ double zOptLineBisec(double (*eval)(double,void*), double a, double b, void *uti
   return x;
 }
 
-/* zOptLineBrent
- * - Brent's method.
- */
+/* Brent's method. */
 double zOptLineBrent(double (*eval)(double,void*), double a, double b, void *util, int iter)
 {
   register int i;
