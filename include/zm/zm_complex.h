@@ -84,7 +84,7 @@ __EXPORT zComplex *zComplexTouchup(zComplex *c);
 #define zComplexIsEqual(c1,c2) ( zIsEqual( (c1)->re, (c2)->re ) && zIsEqual( (c1)->im, (c2)->im ) )
 
 /*! \brief check if two complex numbers are co-conjugate. */
-#define zComplexIsConj(c1,c2) ( zIsEqual( (c1)->re, (c2)->re ) && zIsEqual( (c1)->im, (c2)->im ) )
+#define zComplexIsConj(c1,c2) ( zIsEqual( (c1)->re, (c2)->re ) && zIsEqual( (c1)->im, -(c2)->im ) )
 
 /*! \brief primt a complex number.
  *

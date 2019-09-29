@@ -1,3 +1,4 @@
+2019. 9.30. Debugged zComplexIsConj. [zm_complex]
 2019. 9.29. Applied zIsEqual to zDataIsIncluded, zVecIsEqual, zMatIsEqual, zOptLineGSEC, zOptLineBisec, _zQPSolveASMInitIndex, _zQPSolveASM, _zOptDMStepDS and zNURBSVecNN. [zm_stat, zm_complex, zm_vec, zm_mat, zm_opt_line, zm_opt_qp, zm_opt_dm, zm_nurbs]
 2019. 9.29. Added zIsEqual. [zm_misc]
 2019. 9.27. Added _zComplexCopy and reimplemented zComplexCopy as a function. [zm_complex]
