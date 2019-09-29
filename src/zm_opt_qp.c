@@ -167,7 +167,7 @@ int _zQPSolveASMInitIndex(zIndex idx, zMat a, zVec b, zVec ans, void *util, doub
 
   /* initialize the active set of constraints */
   for( m=0, i=0; i<zVecSizeNC(b); i++ ){
-    if( zIsTiny( cond( a, ans, i, util ) / zVecElemNC(b,i) - 1.0 ) ){
+    if( zIsEqual( cond( a, ans, i, util ), zVecElemNC(b,i) ) ){
       zIndexElemNC(idx,i) = 1;
       m++;
     } else
@@ -235,7 +235,7 @@ bool _zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, zIndex idx, void *ut
     zLESolveMP( qa, cb, NULL, NULL, xy );
 
     for( i=0; i<n; i++ )
-      if( !zIsTiny( zVecElemNC(xy,i)/zVecElemNC(ans,i) - 1.0 ) ) goto STEP2;
+      if( !zIsEqual( zVecElemNC(xy,i), zVecElemNC(ans,i) ) ) goto STEP2;
 
     for( i=0; i<n; i++ )
       zVecElemNC(ans,i) = zVecElemNC(xy,i);
@@ -274,7 +274,7 @@ bool _zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, zIndex idx, void *ut
     for( i=0; i<n; i++ )
       zVecElemNC(ans,i) += tempd * zVecElemNC(d,i);
     for( i=0; i<zVecSizeNC(b); i++ )
-      if( zIndexElemNC(idx,i) == 0 && zIsTiny( cond( a, ans, i, util ) / zVecElemNC(b,i) - 1.0 ) ){
+      if( zIndexElemNC(idx,i) == 0 && zIsEqual( cond( a, ans, i, util ), zVecElemNC(b,i) ) ){
         zIndexElemNC(idx,i) = 1;
         m++;
       }

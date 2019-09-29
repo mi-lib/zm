@@ -25,6 +25,13 @@ zComplex *zComplexCreatePolar(zComplex *c, double r, double t)
   return zComplexCreate( c, r*cos(t), r*sin(t) );
 }
 
+/* copy a complex number to another. */
+zComplex *zComplexCopy(zComplex *src, zComplex *dest)
+{
+  _zComplexCopy( src, dest );
+  return dest;
+}
+
 /* touchup a complex number. */
 zComplex *zComplexTouchup(zComplex *c)
 {

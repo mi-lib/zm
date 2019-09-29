@@ -218,6 +218,6 @@ bool zDataIsIncluded(double *data, int size, double val)
   register int i;
 
   for( i=0; i<size; i++ )
-    if( zIsTiny( data[i]/val - 1.0 ) ) return true;
+    if( zIsEqual( data[i], val ) ) return true;
   return false;
 }

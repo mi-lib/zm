@@ -33,6 +33,9 @@ __BEGIN_DECLS
 /*! \brief check if value is under the defined tolerance zTOL. */
 #define zIsTiny(x)    zIsTol( x, zTOL )
 
+/*! \brief check if two values are equal. */
+#define zIsEqual(a,b) zIsTiny( (a)/(b) - 1.0 )
+
 /*! \brief checks if an integer value \a d is an even number. */
 #define zIsEven(d)    (~(d) & 0x1 )
 /*! \brief checks if an integer value \a d is an odd number. */

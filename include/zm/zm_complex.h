@@ -45,7 +45,8 @@ __EXPORT zComplex *zComplexCreatePolar(zComplex *c, double r, double t);
 /*! \brief copy a complex number to another.
  *
  * zComplexCopy() copies a complex number \a src to another \a dest. */
-#define zComplexCopy(src,dest) ( *(dest) = *(src) );
+#define _zComplexCopy(src,dest) ( *(dest) = *(src) )
+__EXPORT zComplex *zComplexCopy(zComplex *src, zComplex *dest);
 
 /*! \brief create a zero complex number.
  *
@@ -80,10 +81,10 @@ __EXPORT zComplex *zComplexTouchup(zComplex *c);
 #define zComplexIsReal(c)    zIsTiny( (c)->im )
 
 /*! \brief check if two complex numbers are equal. */
-#define zComplexIsEqual(c1,c2) ( zIsTiny( (c1)->re/(c2)->re - 1.0 ) && zIsTiny( (c1)->im/(c2)->im - 1.0 ) )
+#define zComplexIsEqual(c1,c2) ( zIsEqual( (c1)->re, (c2)->re ) && zIsEqual( (c1)->im, (c2)->im ) )
 
 /*! \brief check if two complex numbers are co-conjugate. */
-#define zComplexIsConj(c1,c2) ( zIsTiny( (c1)->re/(c2)->re - 1.0 ) && zIsTiny( (c1)->im/(c2)->im + 1.0 ) )
+#define zComplexIsConj(c1,c2) ( zIsEqual( (c1)->re, (c2)->re ) && zIsEqual( (c1)->im, (c2)->im ) )
 
 /*! \brief primt a complex number.
  *
