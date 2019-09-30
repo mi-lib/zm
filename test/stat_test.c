@@ -10,7 +10,7 @@ bool assert_is_included(void)
   for( i=0; i<NUM; i++ )
     data[i] = zRandF(-10,10);
   for( i=0; i<NUM; i++ )
-    if( !zDataIsIncluded( data, NUM, data[i] ) ) return false;
+    if( !zDataIsIncluded( data, NUM, data[i], zTOL ) ) return false;
   return true;
 }
 

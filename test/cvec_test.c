@@ -11,7 +11,7 @@ void assert_misc(void)
   v2 = zCVecClone( v1 );
   v3 = zCVecAlloc( TEST_VEC_SIZE );
   zCVecRandUniform( v3, -10, -10, 10, 10 );
-  zAssert( zCVecIsEqual, zCVecIsEqual(v1,v2) && !zCVecIsEqual(v1,v3) );
+  zAssert( zCVecIsEqual, zCVecIsEqual(v1,v2,zTOL) && !zCVecIsEqual(v1,v3,zTOL) );
 
   zCVecFree( v1 );
   zCVecFree( v2 );

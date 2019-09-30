@@ -78,13 +78,13 @@ __EXPORT zComplex *zComplexTouchup(zComplex *c);
 #define zComplexIsTiny(c)    zComplexIsTol( c, zTOL )
 
 /*! \brief check if a complex number is a real number. */
-#define zComplexIsReal(c)    zIsTiny( (c)->im )
+#define zComplexIsReal(c,tol) zIsTol( (c)->im, tol )
 
 /*! \brief check if two complex numbers are equal. */
-#define zComplexIsEqual(c1,c2) ( zIsEqual( (c1)->re, (c2)->re ) && zIsEqual( (c1)->im, (c2)->im ) )
+#define zComplexIsEqual(c1,c2,tol) ( zIsEqual( (c1)->re, (c2)->re, tol ) && zIsEqual( (c1)->im, (c2)->im, tol ) )
 
 /*! \brief check if two complex numbers are co-conjugate. */
-#define zComplexIsConj(c1,c2) ( zIsEqual( (c1)->re, (c2)->re ) && zIsEqual( (c1)->im, -(c2)->im ) )
+#define zComplexIsConj(c1,c2,tol) ( zIsEqual( (c1)->re, (c2)->re, tol ) && zIsEqual( (c1)->im, -(c2)->im, tol ) )
 
 /*! \brief primt a complex number.
  *
@@ -114,7 +114,8 @@ __EXPORT void zComplexCoordFPrint(FILE *fp, zComplex *c);
  * included in an array \a array.
  * zComplexValConjIsIncluded() checks if conjugate of \a c is
  * included in an array \a array.
- * For both functions, \a size is the size of the array.
+ * For both functions, \a size is the size of the array, and
+ * \a tol is the tolerance to regard two values are the same.
  * \return
  * zComplexValIsIncluded() returns the true value if \a c is
  * included in \a \array. Otherwise, the false value is returned.
@@ -122,8 +123,8 @@ __EXPORT void zComplexCoordFPrint(FILE *fp, zComplex *c);
  * of \a c is included in \a \array. Otherwise, the false value
  * is returned.
  */
-__EXPORT bool zComplexValIsIncluded(zComplex *array, int size, zComplex *c);
-__EXPORT bool zComplexValConjIsIncluded(zComplex *array, int size, zComplex *c);
+__EXPORT bool zComplexValIsIncluded(zComplex *array, int size, zComplex *c, double tol);
+__EXPORT bool zComplexValConjIsIncluded(zComplex *array, int size, zComplex *c, double tol);
 
 /*! \} */
 

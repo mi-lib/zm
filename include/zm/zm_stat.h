@@ -166,8 +166,10 @@ __EXPORT double zDataSD(double *data, int size);
  *
  * zDataIsIncluded() checks if a value \a val is included in
  * a data set \a data. \a size is the size of the data.
+ * \a tol is the tolerance to regard two values as the same.
+ * \sa zIsEqual
  */
-__EXPORT bool zDataIsIncluded(double *data, int size, double val);
+__EXPORT bool zDataIsIncluded(double *data, int size, double val, double tol);
 
 /*! \} */
 

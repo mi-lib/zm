@@ -105,13 +105,13 @@ zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rmax, double im
 }
 
 /* check if two complex vectors are equal. */
-bool zCVecIsEqual(zCVec v1, zCVec v2)
+bool zCVecIsEqual(zCVec v1, zCVec v2, double tol)
 {
   register int i;
 
   if( !zCVecSizeIsEqual( v1, v2 ) ) return false;
   for( i=0; i<zCVecSizeNC(v1); i++ )
-    if( !zComplexIsEqual( zCVecElemNC(v1,i), zCVecElemNC(v2,i) ) ) return false;
+    if( !zComplexIsEqual( zCVecElemNC(v1,i), zCVecElemNC(v2,i), tol ) ) return false;
   return true;
 }
 
@@ -126,7 +126,7 @@ bool zCVecIsTol(zCVec v, double tol)
 }
 
 /* split a complex vector to a real vector and an imaginary vector. */
-bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec)
+bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec, double tol)
 {
   zIndex ridx, iidx;
   register int i, rsize, isize;
@@ -139,7 +139,7 @@ bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec)
     goto TERMINATE;
   }
   for( i=rsize=isize=0; i<zCVecSizeNC(cvec); i++ ){
-    if( zComplexIsReal( zCVecElemNC(cvec,i) ) )
+    if( zComplexIsReal( zCVecElemNC(cvec,i), tol ) )
       zIndexSetElemNC( ridx, rsize++, i );
     else{
       zIndexSetElemNC( iidx, isize++, i );
@@ -157,7 +157,7 @@ bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec)
     zVecSetElemNC( *rvec, i, zCVecElemNC(cvec,zIndexElemNC(ridx,i))->re );
   for( i=0; i<isize; i++ )
     zCVecSetElemNC( *ivec, i, zCVecElemNC(cvec,zIndexElemNC(iidx,i)) );
-  if( *ivec && !zCVecConjPair( *ivec ) ) ret = false;
+  if( *ivec && !zCVecConjPair( *ivec, tol ) ) ret = false;
 
  TERMINATE:
   zIndexFree( ridx );
@@ -166,7 +166,7 @@ bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec)
 }
 
 /* reorder a complex vector as co-conjugate numbers are paired as adjacencies. */
-zCVec zCVecConjPair(zCVec v)
+zCVec zCVecConjPair(zCVec v, double tol)
 {
   register int i, j;
 
@@ -176,7 +176,7 @@ zCVec zCVecConjPair(zCVec v)
   }
   for( i=0; i<zCVecSizeNC(v); i+=2 ){
     for( j=i+1; j<zCVecSizeNC(v); j++ ){
-      if( zComplexIsConj( zCVecElemNC(v,i), zCVecElemNC(v,j) ) ){
+      if( zComplexIsConj( zCVecElemNC(v,i), zCVecElemNC(v,j), tol ) ){
         if( j > i + 1 ) zSwap( zComplex, *zCVecElemNC(v,i+1), *zCVecElemNC(v,j) );
         break;
       }

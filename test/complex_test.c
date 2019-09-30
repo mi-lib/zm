@@ -10,7 +10,7 @@ bool assert_isincluded(void)
   for( i=0; i<NUM; i++ )
     zComplexCreate( &c[i], zRandF(-10,10), zRandF(-10,10) );
   for( i=0; i<NUM; i++ )
-    if( !zComplexValIsIncluded( c, NUM, &c[i] ) ) return false;
+    if( !zComplexValIsIncluded( c, NUM, &c[i], zTOL ) ) return false;
   return true;
 }
 

@@ -102,12 +102,13 @@ __EXPORT zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rmax, 
 /*! \brief compare two complex vectors.
  *
  * zCVecIsEqual() checks if two complex vectors \a v1 and
- * \a v2 are equal.
+ * \a v2 are equal. \a tol is the tolerance to regard two
+ * values as the same.
  * \return
  * zCVecIsEqual() returns the true value if \a v1 equals
  * to \a v2, or the false value otherwise.
  */
-__EXPORT bool zCVecIsEqual(zCVec v1, zCVec v2);
+__EXPORT bool zCVecIsEqual(zCVec v1, zCVec v2, double tol);
 
 /*! \brief check if a complex vector is tiny.
  *
@@ -123,11 +124,11 @@ __EXPORT bool zCVecIsEqual(zCVec v1, zCVec v2);
 __EXPORT bool zCVecIsTol(zCVec v, double tol);
 #define zCVecIsTiny(v) zCVecIsTol( v, zTOL )
 
-/* split a complex vector to a real vector and an imaginary vector. */
-__EXPORT bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec);
+/*! \brief split a complex vector to a real vector and an imaginary vector. */
+__EXPORT bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec, double tol);
 
-/* reorder a complex vector as co-conjugate numbers are paired as adjacencies. */
-__EXPORT zCVec zCVecConjPair(zCVec v);
+/*! \brief reorder a complex vector as co-conjugate numbers are paired as adjacencies. */
+__EXPORT zCVec zCVecConjPair(zCVec v, double tol);
 
 /*! \brief basic arithmetics for the complex vector.
  *

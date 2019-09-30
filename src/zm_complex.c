@@ -62,20 +62,21 @@ void zComplexCoordFPrint(FILE *fp, zComplex *c)
 }
 
 /* check if a complex number is a member of an array. */
-bool zComplexValIsIncluded(zComplex *array, int size, zComplex *c)
+bool zComplexValIsIncluded(zComplex *array, int size, zComplex *c, double tol)
 {
   register int i;
 
   for( i=0; i<size; i++ )
-    if( zComplexIsEqual( &array[i], c ) ) return true;
+    if( zComplexIsEqual( &array[i], c, tol ) ) return true;
   return false;
 }
 
 /* check if conjugate of a complex number is a member of an array. */
-bool zComplexValConjIsIncluded(zComplex *array, int size, zComplex *c)
+bool zComplexValConjIsIncluded(zComplex *array, int size, zComplex *c, double tol)
 {
-  zComplex cc;
+  register int i;
 
-  zComplexConj( c, &cc );
-  return zComplexValIsIncluded( array, size, &cc );
+  for( i=0; i<size; i++ )
+    if( zComplexIsConj( &array[i], c, tol ) ) return true;
+  return false;
 }

@@ -230,7 +230,7 @@ double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn)
         s2 = sj;
       }
     }
-    if( zIsEqual( s1, s2 ) || zIsEqual( dmin1, dmin2 ) ) break;
+    if( zIsEqual( s1, s2, zTOL ) || zIsEqual( dmin1, dmin2, zTOL ) ) break;
   }
   zNURBSVec( nurbs, ( sj = 0.5*(s1+s2) ), nn );
   zVecFree( vs );

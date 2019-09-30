@@ -49,8 +49,8 @@ void assert_exp(void)
   p = zPexExp( fact );
   zPexDKA( p, ans, zTOL, 0 );
   for( i=0; i<NUM; i++ ){
-    if( !zComplexIsReal( zCVecElemNC(ans,i) ) ) ret = false;
-    if( !zVecValIsIncluded( fact, zCVecElemNC(ans,i)->re ) ) ret = false;
+    if( !zComplexIsReal( zCVecElemNC(ans,i), zTOL ) ) ret = false;
+    if( !zVecValIsIncluded( fact, zCVecElemNC(ans,i)->re, zTOL ) ) ret = false;
   }
   zPexFree( p );
   zVecFree( fact );

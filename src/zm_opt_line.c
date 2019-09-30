@@ -15,7 +15,7 @@ double zOptLineGSEC(double (*eval)(double,void*), double a, double b, void *util
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){
     x = 0.5 * ( a + b );
-    if( zIsEqual( a, b ) ) return x;
+    if( zIsEqual( a, b, zTOL ) ) return x;
     c = a - Z_GSEC * ( a - b );
     d = b + Z_GSEC * ( a - b );
     e1 = eval( c, util );
@@ -38,7 +38,7 @@ double zOptLineBisec(double (*eval)(double,void*), double a, double b, void *uti
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){
     x = 0.5 * ( a + b );
-    if( zIsEqual( a, b ) ) return x;
+    if( zIsEqual( a, b, zTOL ) ) return x;
     e3 = eval( x, util );
     if( e1 > e2 ){
       e1 = e3;

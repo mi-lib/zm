@@ -213,11 +213,11 @@ double zDataSD(double *data, int size)
 }
 
 /* check if a value is a member of data. */
-bool zDataIsIncluded(double *data, int size, double val)
+bool zDataIsIncluded(double *data, int size, double val, double tol)
 {
   register int i;
 
   for( i=0; i<size; i++ )
-    if( zIsEqual( data[i], val ) ) return true;
+    if( zIsEqual( data[i], val, tol ) ) return true;
   return false;
 }

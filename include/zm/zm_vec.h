@@ -237,17 +237,18 @@ __EXPORT void zVecSort(zVec v, zIndex idx);
  *
  * zVecValIsIncluded() checks if a value \a val is included in a vector \a v.
  */
-#define zVecValIsIncluded(v,val) zDataIsIncluded( zVecBuf(v), zVecSizeNC(v), val )
+#define zVecValIsIncluded(v,val,tol) zDataIsIncluded( zVecBuf(v), zVecSizeNC(v), val, tol )
 
 /*! \brief compare two vectors.
  *
  * zVecIsEqual() sees if the given two vector \a v1 and \a v2
- * are equal to each other.
+ * are equal to each other. \a tol is the tolerance to regard
+ * two values as the same.
  * \return
  * zVecIsEqual() returns the true value if \a v1 equals to
  * \a v2, or the false value otherwise.
  */
-__EXPORT bool zVecIsEqual(zVec v1, zVec v2);
+__EXPORT bool zVecIsEqual(zVec v1, zVec v2, double tol);
 
 /*! \brief check if a vector is tiny.
  *

@@ -405,14 +405,14 @@ void zMatShift(zMat m, double shift)
 }
 
 /* see if two matrices are equal. */
-bool zMatIsEqual(zMat m1, zMat m2)
+bool zMatIsEqual(zMat m1, zMat m2, double tol)
 {
   register int i, j;
 
   if( !zMatSizeIsEqual( m1, m2 ) ) return false;
   for( i=0; i<zMatRowSizeNC(m1); i++ )
     for( j=0; j<zMatColSizeNC(m1); j++ )
-      if( !zIsEqual( zMatElemNC(m1,i,j), zMatElemNC(m2,i,j) ) ) return false;
+      if( !zIsEqual( zMatElemNC(m1,i,j), zMatElemNC(m2,i,j), tol ) ) return false;
   return true;
 }
 

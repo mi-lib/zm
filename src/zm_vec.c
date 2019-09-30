@@ -253,13 +253,13 @@ void zVecSort(zVec v, zIndex idx)
 }
 
 /* check if two vectors are equal. */
-bool zVecIsEqual(zVec v1, zVec v2)
+bool zVecIsEqual(zVec v1, zVec v2, double tol)
 {
   register int i;
 
   if( !zVecSizeIsEqual( v1, v2 ) ) return false;
   for( i=0; i<zVecSizeNC(v1); i++ )
-    if( !zIsEqual( zVecElemNC(v1,i), zVecElemNC(v2,i) ) ) return false;
+    if( !zIsEqual( zVecElemNC(v1,i), zVecElemNC(v2,i), tol ) ) return false;
   return true;
 }
 
