@@ -33,7 +33,7 @@ typedef zVec zPex;
 #define zPexSetCoeffHigh(p,i,c)  zPexSetCoeff(p,zPexDim(p)-(i),c)
 #define zPexSetCoeffLow(p,i,c)   zPexSetCoeff(p,i,c)
 
-#define zPexIsEqual(p1,p2)       zVecIsEqual(p1,p2)
+#define zPexIsEqual(p1,p2,tol)   zVecIsEqual(p1,p2,tol)
 
 #define zPexTouchup(p)           zVecTouchup(p)
 
