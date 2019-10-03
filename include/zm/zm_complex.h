@@ -86,6 +86,12 @@ __EXPORT zComplex *zComplexTouchup(zComplex *c);
 /*! \brief check if two complex numbers are co-conjugate. */
 #define zComplexIsConj(c1,c2,tol) ( zIsEqual( (c1)->re, (c2)->re, tol ) && zIsEqual( (c1)->im, -(c2)->im, tol ) )
 
+/*! \brief read a complex number from a string. */
+__EXPORT zComplex *zComplexFromStr(zComplex *c, char *str);
+
+/*! \brief read a complex number from a ZTK format processor. */
+__EXPORT zComplex *zComplexFromZTK(zComplex *c, ZTK *ztk);
+
 /*! \brief primt a complex number.
  *
  * zComplexFPrint() prints a complex number \a c to the

@@ -1,0 +1,11 @@
+[val]
+complex: +1-2i
+complex: -1.0e-20+2.0e-10i
+complex: +1-1
+complex: +1-i
+complex: +1+i
+complex: i
+complex: -i
+complex: +i
+complex: -1i
+complex: -1.0e5

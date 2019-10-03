@@ -1,3 +1,5 @@
+2019.10. 3. Added zComplexFromStr and zComplexFromZTK. [zm_complex]
+2019.10. 3. Modified zComplexFPrint. [zm_complex]
 2019.10. 1. Enabled make uninstall. [makefile]
 2019. 9.30. Reflected modification of zIsEqual in zNURBSVecNN, zOptLineGSEC, zOptLineBisec, _zQPSolveASMInitIndex, _zQPSolveASM, _zOptDMStepDS and some test codes. [zm_nurbs, zm_opt_line, zm_opt_qp, zm_opt_dm, test]
 2019. 9.30. Modified zPexCExp. [zm_pex]

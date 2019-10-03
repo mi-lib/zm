@@ -44,14 +44,54 @@ zComplex *zComplexTouchup(zComplex *c)
   return c;
 }
 
+/* read a complex number from a string. */
+zComplex *zComplexFromStr(zComplex *c, char *str)
+{
+  double re, im;
+  char buf[BUFSIZ], tkn[BUFSIZ];
+
+  strcpy( buf, str );
+  if( *buf == 'i' ) return zComplexCreate( c, 0, 1 );
+  if( *buf == '+' && *(buf+1) == 'i' ) return zComplexCreate( c, 0, 1 );
+  if( *buf == '-' && *(buf+1) == 'i' ) return zComplexCreate( c, 0, -1 );
+  re = atof( zSNumToken( buf, tkn, BUFSIZ ) );
+  if( *buf == 'i' )
+    return zComplexCreate( c, 0, re );
+
+  if( *buf == 'i' ) return zComplexCreate( c, re, 1 );
+  if( *buf == '+' && *(buf+1) == 'i' ) return zComplexCreate( c, re, 1 );
+  if( *buf == '-' && *(buf+1) == 'i' ) return zComplexCreate( c, re, -1 );
+  zSNumToken( buf, tkn, BUFSIZ );
+  im = *buf == 'i' ? atof( tkn ) : 0;
+  return zComplexCreate( c, re, im );
+}
+
+/* read a complex number from a ZTK format processor. */
+zComplex *zComplexFromZTK(zComplex *c, ZTK *ztk)
+{
+  return zComplexFromStr( c, ZTKVal(ztk) );
+}
+
 /* print a complex number to a file. */
 void zComplexFPrint(FILE *fp, zComplex *c)
 {
-  fprintf( fp, "%.10g", c->re );
-  if( c->im > 0 )
-    fprintf( fp, " + %.10g i", c->im );
-  else if( c->im < 0 )
-    fprintf( fp, " - %.10g i",-c->im );
+  if( c->re == 0 ){
+    if( c->im == 0 ){
+      fprintf( fp, "0" );
+    } else{
+      fprintf( fp, "%c", c->im > 0 ? '\0' : '-' );
+      if( ( c->im = fabs( c->im ) ) != 1 )
+        fprintf( fp, "%.10g", c->im );
+      fprintf( fp, "i" );
+    }
+  } else{
+    fprintf( fp, "%.10g", c->re );
+    if( c->im == 0 ) return;
+    fprintf( fp, " %c ", c->im > 0 ? '+' : '-' );
+    if( ( c->im = fabs( c->im ) ) != 1 )
+      fprintf( fp, "%.10g ", c->im );
+    fprintf( fp, "i" );
+  }
 }
 
 /* print the coordinates of a complex number on the
