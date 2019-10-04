@@ -355,23 +355,54 @@ void zPexFPrint(FILE *fp, zPex p)
   fprintf( fp, " )\n" );
 }
 
-/* present a polynomial expression. */
-void zPexFExpr(FILE *fp, zPex p, char c)
+#define __strcat_dec(str,buf,len,size) do{\
+  if( ( len = strlen( buf ) ) < size ){\
+    strcat( str, buf );\
+    size -= len;\
+  }\
+} while(0)
+
+/* express a polynomial expression to a string. */
+char *zPexSExpr(char *str, size_t size, zPex p, char c)
 {
   register int i, dim;
+  char buf[BUFSIZ];
+  double coeff;
+  int len;
 
   if( ( dim = zPexDim(p) ) < 0 )
-    fprintf( fp, "0" );
-  else
+    sprintf( str, "0" );
+  else{
+    str[0] = '\0';
     for( i=dim; i>=0; i-- ){
-      if( i<dim && zPexCoeff(p,i)>0 )
-        fprintf( fp, " + " );
+      if( i < dim && zPexCoeff(p,i) > 0 )
+        __strcat_dec( str, " + ", len, size );
+      else if( zPexCoeff(p,i) < 0 )
+        __strcat_dec( str, " - ", len, size );
       if( zPexCoeff(p,i) != 0 ){
-        if( zPexCoeff(p,i) != 1 || i == 0 )
-          fprintf( fp, "%.10g ", zPexCoeff(p,i) );
-        if( i > 0 ) fprintf( fp, "%c", c );
-        if( i > 1 ) fprintf( fp, "^%d", i );
+        if( i == 0 || !zIsEqual( ( coeff = fabs( zPexCoeff(p,i) ) ), 1.0, zTOL ) ){
+          sprintf( buf, "%.10g ", coeff );
+          __strcat_dec( str, buf, len, size );
+        }
+        if( i > 0 ){
+          sprintf( buf, "%c", c );
+          __strcat_dec( str, buf, len, size );
+        }
+        if( i > 1 ){
+          sprintf( buf, "^%d", i );
+          __strcat_dec( str, buf, len, size );
+        }
       }
     }
-  fprintf( fp, "\n" );
+  }
+  return str;
+}
+
+/* express a polynomial expression to the current position of a file. */
+int zPexFExpr(FILE *fp, zPex p, char c)
+{
+  char buf[BUFSIZ];
+
+  zPexSExpr( buf, BUFSIZ, p, c );
+  return fprintf( fp, "%s\n", buf );
 }

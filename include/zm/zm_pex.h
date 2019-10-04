@@ -183,31 +183,43 @@ __EXPORT double zPexDifVal(zPex p, int dim, double arg);
 /*! \brief scan a polynomial expression from a ZTK processor. */
 __EXPORT zPex zPexFromZTK(ZTK *ztk);
 
-/*! \brief expression of a polynomial expression.
+/*! \brief scan and print a polynomial expression.
  *
- * zPexFScan() scans coefficients of a polynomial
- * expression \a p in ascending absolute value order
- * from the current position of a file \a fp.
+ * zPexFScan() scans coefficients of a polynomial expression \a p
+ * in ascending absolute value order from the current position of
+ * a file \a fp.
  * zPexScan() scans them from the standerd input.
  *
- * zPexFPrint() prints coefficients of a polynomial
- * expression \a p in ascending absolute value order
- * to the current position of a file \a fp.
+ * zPexFPrint() prints coefficients of a polynomial expression
+ * \a p in ascending absolute value order to the current position
+ * of a file \a fp.
  * zPexPrint() prints them to the standerd output.
- *
- * zPexFExpr() prints the expression \a p in decending
- * absolute value order in the expression form to the
- * current position of a file a fp. zPexExpr() prints
- * the expression \a p to the standerd output.
  * \return
- * zPexFPrint(), zPexPrint(), zPexFExpr() and zPexExpr()
- * return no values.
+ * zPexFScan() and zPexScan() return a pointer \a p.
+ * zPexFPrint() and zPexPrint() return no values.
  */
 __EXPORT zPex zPexFScan(FILE *fp);
 #define zPexScan(p)     zPexFScan( stdin, p )
 __EXPORT void zPexFPrint(FILE *fp, zPex p);
 #define zPexPrint(p)    zPexFPrint( stdout, p )
-__EXPORT void zPexFExpr(FILE *fp, zPex p, char c);
+
+/*! \brief expression of a polynomial expression.
+ *
+ * zPexSExpr() prints a polynomial expression \a p in decending
+ * absolute value order in the expression form to an array of
+ * charactors \a str. \a size is the maximum number of charactors
+ * \a str can store.
+ * \a c is a letter that represents the base variable.
+ *
+ * zPexFExpr() prints a polynomial expression \a p in the same
+ * format with zPexSExpr() to the current position of a file a fp.
+ * zPexExpr() prints \a p to the standerd output.
+ * \return
+ * zPexSExpr() returns a pointer \a str.
+ * zPexFExpr() and zPexExpr() return the number of output charactors.
+ */
+__EXPORT char *zPexSExpr(char *str, size_t size, zPex p, char c);
+__EXPORT int zPexFExpr(FILE *fp, zPex p, char c);
 #define zPexExpr(p,c)   zPexFExpr( stdout, (p), (c) )
 #define zPexFExprX(f,p) zPexFExpr( (f), (p), 'x' )
 #define zPexExprX(p)    zPexExpr( p, 'x' )

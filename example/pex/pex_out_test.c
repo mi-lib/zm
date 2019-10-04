@@ -6,7 +6,7 @@ int main(void)
   zPex p;
 
   p = zPexCreateList( 3, 1.0,-1.0, 3.0,-1.0 );
-  zPexExprX( p );
+  zPexFExprX( stderr, p );
 
   for( x=-2.0; x<=3.0; x+=0.01 )
     printf( "%f %f %f %f %f %f\n",
