@@ -147,7 +147,7 @@ double zRawMatTr(double *m, int row, int col)
   double result = 0;
   register int n;
 
-  n = zMin( row, col );
+  n = _zMin( row, col );
   for( ; n>0 ; n--, m+=col+1 ) result += *m;
   return result;
 }

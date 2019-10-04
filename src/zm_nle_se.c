@@ -178,7 +178,7 @@ double zNLE_VDB(double (* f)(double,void*), double x1, double x2, void *priv, do
         p = -p;
       min1 = 3*xm*q - fabs(tol2*q);
       min2 = fabs(dx2*q);
-      if( 2*p < zMin(min1,min2) ){
+      if( 2*p < _zMin(min1,min2) ){
         dx2 = dx1;
         dx1 = p / q;
       } else{

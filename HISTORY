@@ -1,3 +1,4 @@
+2019.10. 5. Reflected new specification of zMax, zMin and zLimit. [zm_raw_mat, zm_mat, zm_opt_dm, zm_nle_se]
 2019.10. 5. Added zPexSExpr and modified specification of zPexFExpr. [zm_pex]
 2019.10. 4. Added _zComplexImFPrint and debugged zComplexFPrint. [zm_complex]
 2019.10. 3. Debugged zPexIsEqual. [zm_pex]

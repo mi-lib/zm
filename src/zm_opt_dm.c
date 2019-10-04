@@ -153,7 +153,7 @@ zVec _zOptDMStepMT(zOptDM *opt, zVec var, void *util, double e0, double *e1)
         if( fabs( gt ) <= fabs( gl ) ){
           at = ( fabs( ac - at ) < fabs( as - at ) ) ? ac : as;
           v1 = at + 0.66 * (au-at); /* v1 temporarily used */
-          at = ( at > al ) ? zMin( v1, at ) : zMax( v1, at );
+          at = ( at > al ) ? _zMin( v1, at ) : _zMax( v1, at );
         } else
           at = ac;
       }

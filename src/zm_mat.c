@@ -946,14 +946,14 @@ void zMatImg(zMat m)
 
   max = fabs( zDataMax( zMatBufNC(m), zMatRowSizeNC(m)*zMatColSizeNC(m), NULL ) );
   min = fabs( zDataMin( zMatBufNC(m), zMatRowSizeNC(m)*zMatColSizeNC(m), NULL ) );
-  d = zMax( max, min ) / 4;
+  d = _zMax( max, min ) / 4;
   for( i=0; i<zMatRowSizeNC(m); i++ ){
     for( j=0; j<zMatColSizeNC(m); j++ ){
       if( zIsTiny( zMatElemNC(m,i,j) ) )
         printf( "  " );
       else{
         c = zRound( zMatElemNC(m,i,j) / d );
-        c = zLimit( c, -3, 3 );
+        c = _zLimit( c, -3, 3 );
         printf( "%c ", c < 0 ? pat_neg[-c] : pat_pos[c] );
       }
     }
