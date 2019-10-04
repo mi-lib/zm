@@ -72,25 +72,29 @@ zComplex *zComplexFromZTK(zComplex *c, ZTK *ztk)
   return zComplexFromStr( c, ZTKVal(ztk) );
 }
 
+/* print imaginary part of a complex number to a file. */
+static void _zComplexImFPrint(FILE *fp, zComplex *c, char ps)
+{
+  double im;
+
+  fprintf( fp, "%c", c->im > 0 ? ps : '-' );
+  if( ( im = fabs( c->im ) ) != 1 )
+    fprintf( fp, "%.10g", im );
+  fprintf( fp, "i" );
+}
+
 /* print a complex number to a file. */
 void zComplexFPrint(FILE *fp, zComplex *c)
 {
   if( c->re == 0 ){
-    if( c->im == 0 ){
+    if( c->im == 0 )
       fprintf( fp, "0" );
-    } else{
-      fprintf( fp, "%c", c->im > 0 ? '\0' : '-' );
-      if( ( c->im = fabs( c->im ) ) != 1 )
-        fprintf( fp, "%.10g", c->im );
-      fprintf( fp, "i" );
-    }
+    else
+      _zComplexImFPrint( fp, c, '\0' );
   } else{
     fprintf( fp, "%.10g", c->re );
-    if( c->im == 0 ) return;
-    fprintf( fp, " %c ", c->im > 0 ? '+' : '-' );
-    if( ( c->im = fabs( c->im ) ) != 1 )
-      fprintf( fp, "%.10g ", c->im );
-    fprintf( fp, "i" );
+    if( c->im != 0 )
+      _zComplexImFPrint( fp, c, '+' );
   }
 }
 
