@@ -13,6 +13,7 @@
  - vectors and matrices of real numbers and complex numbers
  - complex number (arithmetics, quadratic/cubic equation solvers)
  - polynomial expression and equation solver
+ - (finite) Fourier series
  - linear equation solvers (generalized, tridiagonal, Lyapunov)
  - matrix decompositions (LU, Choresky, LQ/QR)
  - eigenvalue analysis
@@ -42,6 +43,7 @@
 #include <zm/zm_sf.h>
 #include <zm/zm_mca.h>
 #include <zm/zm_pex.h>
+#include <zm/zm_fourier.h>
 #include <zm/zm_nle.h>
 #include <zm/zm_ip.h>
 #include <zm/zm_data.h>

@@ -21,9 +21,9 @@ OBJ=zm_ieee.o zm_misc.o\
 	zm_eig.o\
 	zm_mca.o zm_mca_cluster.o zm_mca_gmm.o\
 	zm_seq.o\
-	zm_pex.o zm_pex_eq.o\
+	zm_pex.o zm_pex_eq.o zm_fourier.o\
 	zm_ip.o zm_ip_lin.o zm_ip_lagrange.o zm_ip_spline.o zm_ip_akima.o zm_ip_pex.o zm_ip_ipio.o\
-	zm_data_fft.o\
+	zm_data.o zm_data_fft.o\
 	zm_nurbs.o\
 	zm_opt_line.o\
 	zm_opt_lp_stdcnv.o zm_opt_lp_simplex.o zm_opt_lp_pdip.o\

@@ -6,8 +6,6 @@
 
 #include <zm/zm_data.h>
 
-static void _zFFTInner(zComplex data[], zComplex buf[], size_t n, double theta);
-
 /* internal sub-FFT procedure. */
 void _zFFTInner(zComplex data[], zComplex buf[], size_t n, double theta)
 {

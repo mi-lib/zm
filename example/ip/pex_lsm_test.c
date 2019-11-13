@@ -1,4 +1,3 @@
-/* least square method */
 #include <zm/zm_ip.h>
 
 int main(int argc, char *argv[])
@@ -12,8 +11,8 @@ int main(int argc, char *argv[])
   zPexIPCreateLSM( &pc, 5.0, 4, tvec, xvec );
 
   for( t=0; t<=zPexIPTerm(&pc); t+=0.01 )
-    printf( "%f\n", zPexIPVal( &pc, t ) );
+    printf( "%.10f %.10f\n", t, zPexIPVal( &pc, t ) );
 
-  zPexIPDestroy( &pc );
+  zPexIPFree( &pc );
   return 0;
 }
