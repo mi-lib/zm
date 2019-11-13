@@ -1,18 +1,15 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_fft - Fast Fourier Transform.
+ * zm_data_fft - data analysis: fast Fourier transformation.
  */
 
-#include <zm/zm_fft.h>
+#include <zm/zm_data.h>
 
-static void _zFFTInner(zComplex data[], zComplex buf[], int n, double theta);
+static void _zFFTInner(zComplex data[], zComplex buf[], size_t n, double theta);
 
-/* (static)
- * _zFFTInner
- * - internal sub-FFT procedure.
- */
-void _zFFTInner(zComplex data[], zComplex buf[], int n, double theta)
+/* internal sub-FFT procedure. */
+void _zFFTInner(zComplex data[], zComplex buf[], size_t n, double theta)
 {
   register int i, j, k;
   int radix, n_radix;
@@ -45,10 +42,8 @@ void _zFFTInner(zComplex data[], zComplex buf[], int n, double theta)
       data[radix*i+j] = buf[n_radix*j+i];
 }
 
-/* zFFT
- * - Fast Fourier Transform
- */
-bool zFFT(double data[], int n, zComplex res[])
+/* Fast Fourier Transformation. */
+bool zFFT(double data[], size_t n, zComplex res[])
 {
   register int i;
   zComplex *buf;
@@ -69,24 +64,29 @@ bool zFFT(double data[], int n, zComplex res[])
   return true;
 }
 
-/* zFFTInv
- * - Inverse Fast Fourier Transform
- */
-bool zFFTInv(zComplex data[], int n, zComplex res[])
+/* inverse fast Fourier transformation. */
+bool zFFTInv(zComplex data[], size_t n, double res[])
 {
   register int i;
-  zComplex *buf;
+  zComplex *buf, *cres;
+  bool result = true;
 
-  if( !( buf = zAlloc( zComplex, n ) ) ){
+  buf = zAlloc( zComplex, n );
+  cres = zAlloc( zComplex, n );
+  if( !buf || !cres ){
     ZALLOCERROR();
-    return false;
+    result = false;
+    goto TERMINATE;
   }
   /* amplitude correction */
-  res[0] = data[0];
+  cres[0] = data[0];
   for( i=1; i<n; i++ )
-    zComplexMul( &data[i], 0.5, &res[i] );
+    zComplexMul( &data[i], 0.5, &cres[i] );
   /* internal inverse FFT */
-  _zFFTInner( res, buf, n,-2*zPI/n );
+  _zFFTInner( cres, buf, n,-2*zPI/n );
+  for( i=0; i<n; i++ ) res[i] = cres[i].re;
+ TERMINATE:
   zFree( buf );
-  return true;
+  zFree( cres );
+  return result;
 }

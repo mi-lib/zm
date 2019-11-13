@@ -23,6 +23,7 @@ OBJ=zm_ieee.o zm_misc.o\
 	zm_seq.o\
 	zm_pex.o zm_pex_eq.o\
 	zm_ip.o zm_ip_lin.o zm_ip_lagrange.o zm_ip_spline.o zm_ip_akima.o zm_ip_pex.o zm_ip_ipio.o\
+	zm_data_fft.o\
 	zm_nurbs.o\
 	zm_opt_line.o\
 	zm_opt_lp_stdcnv.o zm_opt_lp_simplex.o zm_opt_lp_pdip.o\
@@ -30,7 +31,6 @@ OBJ=zm_ieee.o zm_misc.o\
 	zm_opt_qp.o zm_opt_nm.o zm_opt_ga.o zm_opt_dm.o\
 	zm_nle_se.o zm_nle_dm.o zm_nle_ss.o\
 	zm_ode.o zm_ode_dc.o zm_ode_euler.o zm_ode_heun.o zm_ode_rk4.o zm_ode_rkg.o zm_ode_erk.o zm_ode_adams.o zm_ode_beuler.o zm_ode_bk4.o zm_ode_gear.o zm_ode2.o\
-	zm_fft.o\
 	zm_intg.o zm_oscil_vdp.o zm_oscil_kura.o\
 	zm_graph.o zm_graph_search.o\
 	zm_rrt.o\

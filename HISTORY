@@ -1,3 +1,7 @@
+2019.11.13. Modified zFFTInv to store the result as real numbers. [zm_data_fft]
+2019.11.13. Modified _zFFTInner, zFFT and zFFTInv to use size_t. [zm_data_fft]
+2019.11.13. Renamed zm_fft to zm_data_fft. [zm_data, zm_data_fft]
+2019.11.13. Added zm_data. [zm, zm_data]
 2019.10. 5. Reflected new specification of zMax, zMin and zLimit. [zm_raw_mat, zm_mat, zm_opt_dm, zm_nle_se]
 2019.10. 5. Added zPexSExpr and modified specification of zPexFExpr. [zm_pex]
 2019.10. 4. Added _zComplexImFPrint and debugged zComplexFPrint. [zm_complex]
