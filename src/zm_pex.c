@@ -278,14 +278,18 @@ zPex zPexIntg(zPex p)
 /* evaluate a polynomial expression given an argument. */
 double zPexVal(zPex p, double arg)
 {
-  register int i;
-  double result;
+  register int i, n;
+  double val = 0, term;
 
-  i = zPexDim( p );
-  result = zPexCoeff( p, i );
-  for( ; i>0; i-- )
-    result = zPexCoeff( p, i-1 ) + result * arg;
-  return result;
+  if( arg == 0 ) return zPexCoeff( p, 0 );
+  n = zPexDim(p);
+  if( fabs(arg) < 1.0 )
+    for( i=n, term=pow(arg,n); i>=0; i--, term/=arg )
+      val += zPexCoeff(p,i) * term;
+  else
+    for( i=0, term=1.0; i<=n; i++, term*=arg )
+      val += zPexCoeff(p,i) * term;
+  return val;
 }
 
 /* evaluate a polynomial expression given a complex number argument. */

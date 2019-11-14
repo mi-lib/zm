@@ -3,6 +3,24 @@
 #define DIM 7
 #define TOL 1.0e-7
 
+void assert_pex_val(void)
+{
+  zPex p;
+  double x, val;
+  register int i, n;
+  bool result = true;
+
+  p = zPexCreateList( 3, zRandF(-1,1), zRandF(-1,1), zRandF(-1,1), zRandF(-1,1) );
+  n = 100;
+  for( i=0; i<=n; i++ ){
+    x = 5.0*i/n - 2.0;
+    val = ((zPexCoeff(p,3)*x+zPexCoeff(p,2))*x+zPexCoeff(p,1))*x+zPexCoeff(p,0);
+    if( !zIsEqual( zPexVal(p,x), val, zTOL ) ) result = false;
+  }
+  zPexFree( p );
+  zAssert( zPexVal, result );
+}
+
 void assert_peqsolve(void)
 {
   double a[DIM];
@@ -96,6 +114,7 @@ void assert_cexp(void)
 int main(void)
 {
   zRandInit();
+  assert_pex_val();
   assert_peqsolve();
   assert_exp();
   assert_cexp();

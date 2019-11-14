@@ -91,6 +91,12 @@ __EXPORT bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double
  */
 __EXPORT double zPexIPVal(zPexIP *pc, double t);
 
+/*! \brief velocity of a polynomial curve. */
+__EXPORT double zPexIPVel(zPexIP *pc, double t);
+
+/*! \brief acceleration of a polynomial curve. */
+__EXPORT double zPexIPAcc(zPexIP *pc, double t);
+
 /*! \brief print a polynomial curve.
  *
  * zPexIPFPrint() prints out a polynomial curve \a pc in

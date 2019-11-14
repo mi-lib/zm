@@ -173,19 +173,19 @@ bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, doub
 /* value of a polynomial curve. */
 double zPexIPVal(zPexIP *pc, double t)
 {
-  register int i, n;
-  double value = 0, term;
+  return zPexVal( pc->c, t/zPexIPTerm(pc) );
+}
 
-  n = zPexIPDim( pc );
-  if( ( t /= zPexIPTerm( pc ) ) == 0 )
-    value = zPexIPCoeff( pc, 0 );
-  else if( fabs(t) < 1.0 )
-    for( i=n, term=pow(t,n); i>=0; i--, term/=t )
-      value += zPexIPCoeff( pc, i ) * term;
-  else
-    for( i=0, term=1.0; i<=n; i++, term*=t )
-      value += zPexIPCoeff( pc, i ) * term;
-  return value;
+/* velocity of a polynomial curve. */
+double zPexIPVel(zPexIP *pc, double t)
+{
+  return zPexDifVal( pc->c, 1, t/zPexIPTerm(pc) ) / zPexIPTerm(pc);
+}
+
+/* acceleration of a polynomial curve. */
+double zPexIPAcc(zPexIP *pc, double t)
+{
+  return zPexDifVal( pc->c, 2, t/zPexIPTerm(pc) ) / zSqr( zPexIPTerm(pc) );
 }
 
 /* print expression of a polynomial curve. */

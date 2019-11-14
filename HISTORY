@@ -1,3 +1,7 @@
+2019.11.14. Added zDataPeakSG. [zm_data]
+2019.11.14. Modified zPexIPVal and added zPexIPVel and zPexIPAcc. [zm_ip_pex]
+2019.11.14. Modified zPexVal to improve accuracy. [zm_pex]
+2019.11.14. Modified specification of zDataSmoothSG. [zm_data]
 2019.11.13. Added zDataSmoothSG. [zm_data]
 2019.11.13. Added zPexIPCreateBounderyLSM. [zm_ip_pex]
 2019.11.13. Added zPexIPLSM and modified zPexIPCreateLSM. [zm_ip_pex]

@@ -7,12 +7,12 @@ int main(int argc, char *argv[])
   int dim, i;
 
   for( dim=1; dim<=3; dim++ ){
-    zPexIPCreate( &pc, 3, dim );
+    zPexIPAlloc( &pc, 3, dim );
     for( i=0; i<=dim; i++ )
       zPexIPSetCoeff( &pc, i, 1 );
     for( t=-zPexIPTerm(&pc); t<=zPexIPTerm(&pc); t+=0.01 )
-      printf( "%f\n", zPexIPVal( &pc, t ) );
-    zPexIPDestroy( &pc );
+      printf( "%.10f %.10f %.10f\n", zPexIPVal(&pc,t), zPexIPVel(&pc,t), zPexIPAcc(&pc,t) );
+    zPexIPFree( &pc );
   }
   return 0;
 }

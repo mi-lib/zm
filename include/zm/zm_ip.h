@@ -38,17 +38,15 @@ typedef struct{
 #define zIPSecVec(dat,i)   ( zIPKnot(dat,i)->cp->data.v )
 #define zIPSecVal(dat,i,j) zVecElem( zIPSecVec(dat,i), j )
 
-/* zIPDataAlloc, zIPDataFree
- * - allocate and free the internal workspace of an interpolator.
- */
+/* allocate and free the internal workspace of an interpolator. */
 __EXPORT bool zIPDataAlloc(zIPData *dat, zSeq *seq);
 __EXPORT void zIPDataFree(zIPData *dat);
 
-/* zIPSeg - get segment of a sequence to be interpolated.
+/* get segment of a sequence to be interpolated.
  *
  * zIPSeg() finds the segment which the given point corresponding
  * to \a t belongs to in an interpolation data \a dat.
- * [RETURN VALUE]
+ * \return
  * zIPSeg() returns an integer value \a i when t_i <= t < t_i+1.
  */
 __EXPORT int zIPSeg(zIPData *dat, double t);
@@ -66,29 +64,24 @@ typedef struct{
   zIPCom *com;
 } zIP;
 
-/* METHOD:
- * zIPVal, zIPVel, zIPAcc, zIPSecVal, zIPSecVel, zIPSecAcc
- * - interpolation values.
+/* interpolation values.
  *
- * 'zIPVal()' returns a value interpolated at 'x' by an
- * interpolator 'ip' and a set of control points 'dat'.
- * #
- * 'zIPVel()' and 'zIPAcc()' return velocity and
- * acceleration, namely, the first and second order
- * derivative, respectively, of the interpolation curve
- * at 'x'.
- * #
- * 'zIPSecVal()' returns the 'i' th section value
- * of the interpolation data 'dat' with the interpolator
- * 'ip'.
- * #
- * 'zIPSecVel()' and 'zIPSecAcc()' return velocity
- * and acceleration at the 'i' th section of 'dat'
- * with 'ip'.
- * [RETURNS]
- * All these functions utilize each method assigned
- * in advance. When no interpolator is assigned, it
- * causes segmentation faults.
+ * zIPVal() returns a value interpolated at \a x by an
+ * interpolator \a ip and a set of control points \a dat.
+ *
+ * zIPVel() and zIPAcc() return velocity and acceleration,
+ * namely, the first and second order derivative,
+ * respectively, of the interpolation curve at \a x.
+ *
+ * zIPSecVal() returns the \a i th section value of the
+ * interpolation data \a dat with the interpolator \a ip.
+ *
+ * zIPSecVel() and zIPSecAcc() return velocity and
+ * acceleration at the \a i th section of \a dat with \a ip.
+ * \return
+ * All these functions utilize each method assigned in
+ * advance. When no interpolator is assigned, it causes
+ * segmentation faults.
  */
 #define zIPVec(ip,t,v)    (ip)->com->vec( &(ip)->dat, (t), (v) )
 #define zIPVel(ip,t,v)    (ip)->com->vel( &(ip)->dat, (t), (v) )
@@ -96,9 +89,7 @@ typedef struct{
 #define zIPSecVel(ip,i,v) (ip)->com->sec_vel( &(ip)->dat, (i), (v) )
 #define zIPSecAcc(ip,i,v) (ip)->com->sec_acc( &(ip)->dat, (i), (v) )
 
-/* METHOD:
- * zIPDestroy - destroy an interpolator.
- */
+/* destroy an interpolator. */
 #define zIPDestroy(ip) zIPDataFree( &(ip)->dat )
 
 __END_DECLS

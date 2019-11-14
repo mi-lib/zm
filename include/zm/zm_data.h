@@ -14,7 +14,10 @@
 __BEGIN_DECLS
 
 /*! \brief smooth a data sequence based on Savitzky-Golay's method */
-__EXPORT void zDataSmoothSG(double src[], size_t n, size_t w, int dim, double dest[]);
+__EXPORT bool zDataSmoothSG(double src[], size_t n, size_t w, int dim, double dest[]);
+
+/*! \brief smooth a data sequence based on Savitzky-Golay's method and pick up peaks. */
+__EXPORT zIndex zDataPeakSG(double src[], size_t n, int w, int dim);
 
 __END_DECLS
 
