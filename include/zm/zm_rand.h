@@ -4,7 +4,7 @@
 /*! \file zm_rand.h
  * \brief random number generator.
  *
- * This implementation of Mersenne twister proposed by
+ * The implementation of Mersenne twister proposed by
  * M. Matsumoto and T. Nishimura (1995) is a simple
  * rearrangement of the code written by Mr. Isaku Wada.
  * The original sources zmtrand.{h,c} are available at:
@@ -19,54 +19,9 @@
 
 __BEGIN_DECLS
 
-/*! \brief a random value generator based on the normal distribution.
- *
- * zRandFND() returns a randomly generated value in accordance with
- * a Gaussian distribution with the mean \a mu and the variance \a sigma
- * based on Box-Muller's method.
- */
-__EXPORT double zRandFND(double mu, double sigma);
-
 /* ********************************************************** */
 /*! \defgroup rand random number generator with Mersenne twister.
  * \{ *//* ************************************************** */
-
-/*! \cond */
-#define Z_RAND_MT_HISTORY 623
-/*! \endcond */
-
-/* ********************************************************** */
-/*! \brief Mersenne twister class.
- *//********************************************************* */
-typedef struct{
-  ulong  x[Z_RAND_MT_HISTORY+1]; /*!< state vector */
-  int    index;                  /*!< index */
-  bool   nd_sw;                  /*!< a switch for normal distribution */
-  double nd_last;                /*!< a memory for normal distribution */
-} zRandMT;
-
-/*! \brief initialize Mersenne twister.
- *
- * zRandInitMT() initializes Mersenne twister \a mt
- * by seeding the current time for a new history.
- * If the null pointer is given for \a mt, it makes
- * use of the internal default instance.
- */
-__EXPORT void zRandInitMT(zRandMT *mt);
-
-/*! \brief a pseudo-random integer between \a min and \a max. */
-__EXPORT int zRandMTI(zRandMT *mt, int min, int max);
-
-/*! \brief a pseudo-random double-precision floating-point
- * value between \a min and \a max. */
-__EXPORT double zRandMTF(zRandMT *mt, double min, double max);
-
-/*! \brief a pseudo-random double-precision floating-point
- * value in the range of [0,1]. */
-__EXPORT double zRandMTN(zRandMT *mt);
-
-/*! \brief a pseudo-random value in the range of [0,1). */
-__EXPORT double zRandMTNU(zRandMT *mt);
 
 /* ********************************************************** */
 /* a variety of random distributions
@@ -85,8 +40,15 @@ __EXPORT double zRandFD(zRandMT *mt, double a, double b);
 
 /* normal distribution family */
 
-/*! \brief a random number yielded from normal distribution. */
-__EXPORT double zRandND(zRandMT *mt);
+/*! \brief a random number yielded from normal distribution based on Box-Muller's method. */
+__EXPORT double zRandND0(zRandMT *mt);
+/*! \brief a random number yielded from normal distribution based on Box-Muller's method.
+ *
+ * zRandND() returns a randomly generated value in accordance with
+ * the normal distribution with the mean \a mu and the variance \a sigma
+ * based on Box-Muller's method.
+ */
+__EXPORT double zRandND(zRandMT *mt, double mu, double sigma);
 /*! \brief a random number yielded from t distribution. */
 __EXPORT double zRandT(zRandMT *mt, double n);
 
