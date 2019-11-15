@@ -1,3 +1,4 @@
+2019.11.15. Renamed zRandNormal to zRandND. [zm_rand]
 2019.11.14. Added zDataPeakSG. [zm_data]
 2019.11.14. Modified zPexIPVal and added zPexIPVel and zPexIPAcc. [zm_ip_pex]
 2019.11.14. Modified zPexVal to improve accuracy. [zm_pex]

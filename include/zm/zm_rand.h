@@ -22,7 +22,8 @@ __BEGIN_DECLS
 /*! \brief a random value generator based on the normal distribution.
  *
  * zRandFND() returns a randomly generated value in accordance with
- * a Gaussian distribution with the mean \a mu and the variance \a sigma.
+ * a Gaussian distribution with the mean \a mu and the variance \a sigma
+ * based on Box-Muller's method.
  */
 __EXPORT double zRandFND(double mu, double sigma);
 
@@ -85,7 +86,7 @@ __EXPORT double zRandFD(zRandMT *mt, double a, double b);
 /* normal distribution family */
 
 /*! \brief a random number yielded from normal distribution. */
-__EXPORT double zRandNormal(zRandMT *mt);
+__EXPORT double zRandND(zRandMT *mt);
 /*! \brief a random number yielded from t distribution. */
 __EXPORT double zRandT(zRandMT *mt, double n);
 
