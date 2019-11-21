@@ -6,30 +6,24 @@
 
 #include <zm/zm_ip.h>
 
-static zVec zIPVecAkima(zIPData *dat, double t, zVec v);
-static zVec zIPVelAkima(zIPData *dat, double t, zVec v);
-static zVec zIPAccAkima(zIPData *dat, double t, zVec v);
-static zVec zIPSecVelAkima(zIPData *dat, int i, zVec v);
-static zVec zIPSecAccAkima(zIPData *dat, int i, zVec v);
-
 /* vector on Akima interpolation. */
-zVec zIPVecAkima(zIPData *dat, double t, zVec v)
+static zVec _zIPVecAkima(zIPData *dat, double t, zVec v)
 {
   register int i;
-  double d, dt;
+  double d, dt, d2, dt2;
 
   i = zIPSeg( dat, t );
-  d = zIPDelta(dat,i+1);
-  dt = t - zIPTime(dat,i);
+  d2 = zSqr( ( d = zIPDelta(dat,i+1) ) );
+  dt2 = zSqr( ( dt = t - zIPTime(dat,i) ) );
   zVecSubNC( zIPSecVec(dat,i+1), zIPSecVec(dat,i), v );
-  zVecMulDRC( v, zSqr(dt)*(3-2*dt/d)/zSqr(d) );
-  zVecCatNCDRC( v, dt*(1-2*dt/d+zSqr(dt)/zSqr(d)), *zArrayElem(&dat->va,i) );
-  zVecCatNCDRC( v, zSqr(dt)*(dt/d-1)/d, *zArrayElem(&dat->va,i+1) );
+  zVecMulDRC( v, dt2*(3-2*dt/d)/d2 );
+  zVecCatNCDRC( v, dt*(1-2*dt/d+dt2/d2), *zArrayElem(&dat->va,i) );
+  zVecCatNCDRC( v, dt2*(dt/d-1)/d, *zArrayElem(&dat->va,i+1) );
   return zVecAddNCDRC( v, zIPSecVec(dat,i) );
 }
 
 /* velocity on Akima interpolation. */
-zVec zIPVelAkima(zIPData *dat, double t, zVec v)
+static zVec _zIPVelAkima(zIPData *dat, double t, zVec v)
 {
   register int i;
   double d, dt;
@@ -45,30 +39,30 @@ zVec zIPVelAkima(zIPData *dat, double t, zVec v)
 }
 
 /* acceleration on Akima interpolation. */
-zVec zIPAccAkima(zIPData *dat, double t, zVec v)
+static zVec _zIPAccAkima(zIPData *dat, double t, zVec v)
 {
   register int i;
-  double d, dt;
+  double d, dt, d2;
 
   i = zIPSeg( dat, t );
-  d = zIPDelta(dat,i+1);
+  d2 = zSqr( ( d = zIPDelta(dat,i+1) ) );
   dt = t - zIPTime(dat,i);
   zVecSubNC( zIPSecVec(dat,i+1), zIPSecVec(dat,i), v );
-  zVecMulDRC( v, 6*(1-2/d*dt)/zSqr(d) );
-  zVecCatNCDRC( v, 6/zSqr(d)*dt-4/d, *zArrayElem(&dat->va,i) );
-  zVecCatNCDRC( v, 6/zSqr(d)*dt-2/d, *zArrayElem(&dat->va,i+1) );
+  zVecMulDRC( v, 6*(1-2/d*dt)/d2 );
+  zVecCatNCDRC( v, 6/d2*dt-4/d, *zArrayElem(&dat->va,i) );
+  zVecCatNCDRC( v, 6/d2*dt-2/d, *zArrayElem(&dat->va,i+1) );
   return v;
 }
 
 /* velocity at a section on Akima interpolation. */
-zVec zIPSecVelAkima(zIPData *dat, int i, zVec v)
+static zVec _zIPSecVelAkima(zIPData *dat, int i, zVec v)
 {
   if( i>=zIPSize(dat) || i==0 ) return zVecZero( v );
   return zVecCopyNC( *zArrayElem(&dat->va,i), v );
 }
 
 /* acceleration at a section on Akima interpolation. */
-zVec zIPSecAccAkima(zIPData *dat, int i, zVec v)
+static zVec _zIPSecAccAkima(zIPData *dat, int i, zVec v)
 {
   double d;
   zVec a1, a2;
@@ -108,11 +102,11 @@ zVec zIPSecAccAkima(zIPData *dat, int i, zVec v)
 
 /* methods */
 static zIPCom _zm_ip_com_akima = {
-  zIPVecAkima,
-  zIPVelAkima,
-  zIPAccAkima,
-  zIPSecVelAkima,
-  zIPSecAccAkima,
+  _zIPVecAkima,
+  _zIPVelAkima,
+  _zIPAccAkima,
+  _zIPSecVelAkima,
+  _zIPSecAccAkima,
 };
 
 /* create an Akima interpolator. */

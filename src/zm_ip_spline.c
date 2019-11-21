@@ -7,14 +7,8 @@
 #include <zm/zm_ip.h>
 #include <zm/zm_le.h>
 
-static zVec zIPVecSpline(zIPData *dat, double t, zVec v);
-static zVec zIPVelSpline(zIPData *dat, double t, zVec v);
-static zVec zIPAccSpline(zIPData *dat, double t, zVec v);
-static zVec zIPSecVelSpline(zIPData *dat, int i, zVec v);
-static zVec zIPSecAccSpline(zIPData *dat, int i, zVec v);
-
 /* vector on spline interpolation. */
-zVec zIPVecSpline(zIPData *dat, double t, zVec v)
+static zVec _zIPVecSpline(zIPData *dat, double t, zVec v)
 {
   register int i;
   double r1, r2;
@@ -31,7 +25,7 @@ zVec zIPVecSpline(zIPData *dat, double t, zVec v)
 }
 
 /* velocity on spline interpolation. */
-zVec zIPVelSpline(zIPData *dat, double t, zVec v)
+static zVec _zIPVelSpline(zIPData *dat, double t, zVec v)
 {
   register int i;
   double r1, r2;
@@ -48,7 +42,7 @@ zVec zIPVelSpline(zIPData *dat, double t, zVec v)
 }
 
 /* acceleration on spline interpolation. */
-zVec zIPAccSpline(zIPData *dat, double t, zVec v)
+static zVec _zIPAccSpline(zIPData *dat, double t, zVec v)
 {
   register int i;
   double t1, t2;
@@ -65,14 +59,14 @@ zVec zIPAccSpline(zIPData *dat, double t, zVec v)
 }
 
 /* velocity at a section on spline interpolation. */
-zVec zIPSecVelSpline(zIPData *dat, int i, zVec v)
+static zVec _zIPSecVelSpline(zIPData *dat, int i, zVec v)
 {
   return i >= zIPSize(dat) ?
     zVecZero( v ) : zVecCopyNC( *zArrayElem(&dat->va,i), v );
 }
 
 /* acceleration at a section on spline interpolation. */
-zVec zIPSecAccSpline(zIPData *dat, int i, zVec v)
+static zVec _zIPSecAccSpline(zIPData *dat, int i, zVec v)
 {
   zVecZero( v );
   if( i >= zIPSize(dat) ) return v;
@@ -92,11 +86,11 @@ zVec zIPSecAccSpline(zIPData *dat, int i, zVec v)
 
 /* methods */
 static zIPCom _zm_ip_com_spline = {
-  zIPVecSpline,
-  zIPVelSpline,
-  zIPAccSpline,
-  zIPSecVelSpline,
-  zIPSecAccSpline,
+  _zIPVecSpline,
+  _zIPVelSpline,
+  _zIPAccSpline,
+  _zIPSecVelSpline,
+  _zIPSecAccSpline,
 };
 
 /* create a spline interpolator. */

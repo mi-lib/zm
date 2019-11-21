@@ -1,3 +1,5 @@
+2019.11.21. Modified zm_ip_lin, zm_ip_lagrange, zm_ip_spline and zm_ip_akima. [zm_ip_lin, zm_ip_lagrange, zm_ip_spline, zm_ip_akima]
+2019.11.21. Debugged zIPKnot and zIPSecVal. [zm_ip]
 2019.11.16. Renamed zRandND to zRandND0 and reimplemented zRandND. [zm_rand]
 2019.11.16. Moved zRandMT to ZEDA to use Mersenne twister as the defaul random generator. [zm_rand]
 2019.11.15. Renamed zRandNormal to zRandND. [zm_rand]

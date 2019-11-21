@@ -32,11 +32,11 @@ typedef struct{
 } zIPData;
 
 #define zIPSize(dat)       zListSize((dat)->seq)
-#define zIPKnot(dat,i)     zArrayElem(&(dat)->knot,i)
+#define zIPKnot(dat,i)     zArrayElemNC(&(dat)->knot,i)
 #define zIPTime(dat,i)     ( zIPKnot(dat,i)->t )
 #define zIPDelta(dat,i)    ( zIPKnot(dat,i)->cp->data.dt )
 #define zIPSecVec(dat,i)   ( zIPKnot(dat,i)->cp->data.v )
-#define zIPSecVal(dat,i,j) zVecElem( zIPSecVec(dat,i), j )
+#define zIPSecVal(dat,i,j) zVecElemNC( zIPSecVec(dat,i), j )
 
 /* allocate and free the internal workspace of an interpolator. */
 __EXPORT bool zIPDataAlloc(zIPData *dat, zSeq *seq);

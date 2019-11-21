@@ -26,17 +26,14 @@ typedef struct{
 
 #define zIPIODT(i) (i)->dt
 
-/* METHOD:
- * zIPIOInit, zIPIOCreate, zIPIOSetNextValue, zIPIOUpdate
- * zIPIOLinValue, zIPIOSplineValue
- * - interpolation-in-order.
+/* interpolation-in-order.
  *
  * 'zIPIO' realizes the interpolation-in-order; the interpolation
  * is done with values at three times - previous, current and
  * next steps. Updating the inner parameters of the interpolator
  * by setting new value at the next step, the segment between the
  * two control points, previous and current point, is interpolated.
- * #
+ *
  * 'zIPIO' has three control points and two time steps.
  * 'p_prev', 'p_cur' and 'p_next' are the previous, current and
  * next point respectively. And the time step 'dt' is a time
@@ -45,7 +42,7 @@ typedef struct{
  * Setting these 5 parameters and updating the inner state of
  * the instance of 'zIPIO', the value at the time from the
  * previous point can be calculated.
- * #
+ *
  * The procedure to use 'zIPIO' is as follows.
  *  1. Create the new instance 'ip' of zIPIO by calling 'zIPIOCreate()'.
  *     'p0' is the initial value for the interpolation.
@@ -63,12 +60,11 @@ typedef struct{
  *     't' is a time width from the previous time.
  *  5. The instance of 'zIPIO', 'ip', can be intialized by using
  *     'zIPIOInit()'.
- * [RETURN VALUE]
- * 'zIPIOInit()', 'zIPIOCreate()', 'zIPIOSetNextValue()' and
- * 'zIPIOUpdate()' return no value.
- * #
- * 'zIPIOLinValue()' and 'zIPIOSplineValue()' return the value
- * interpolated.
+ * \return
+ * zIPIOInit(), zIPIOCreate(), zIPIOSetNextValue() and zIPIOUpdate()
+ * return no value.
+ *
+ * zIPIOLinValue() and zIPIOSplineValue() return the interpolated value.
  */
 __EXPORT void zIPIOInit(zIPIO *ip);
 __EXPORT void zIPIOCreate(zIPIO *ip, double p0);
@@ -87,9 +83,7 @@ typedef struct{
   double c[4];
 } zFerguson;
 
-/* METHOD:
- * zFergusonCreate, zFergusonValue
- * - Ferguson s interpolation curve.
+/* Ferguson s interpolation curve.
  *
  * 'zFerguson' realizes Ferguson s curve, which is defined as:
  *   x(t)=x(0)*H_00(t/T)+x(T)*H_01(t/T)+x'(0)*H_10(t/T)+x'(T)*H_11(t/T)
@@ -98,19 +92,19 @@ typedef struct{
  *   H_01(s) =-2 s^3 + 3 s^2     =- s^2*(2s-3)
  *   H_10(s) =   s^3 - 2 s^2 + s =  s(s-1)^2
  *   H_11(s) =   s^3 -   s^2     =  s^2(s-1)
- * #
+ *
  * An advantage of it is that one can specify the boundary condition
  * in both position and velocity.
- * #
- * 'zFergusonCreate()' calculates the coefficients of the curve
+ *
+ * zFergusonCreate() calculates the coefficients of the curve
  * which satisfies a given set of 'x1', 'v1', 'x2' and 'v2'.
  * 'term' is the terminal time(the time when the value has to be
  * 'x2').
- * #
- * 'zFergusonValue()' calculates the value at each moment 't'.
- * [RETURN VALUE]
- * 'zFergusonCreate()' returns no value.
- * 'zFergusonValue()' returns the value computed.
+ *
+ * zFergusonValue() calculates the value at each moment 't'.
+ * \return
+ * zFergusonCreate() returns no value.
+ * zFergusonValue() returns the value computed.
  */
 __EXPORT void zFergusonCreate(zFerguson *ferg, double term, double x1, double v1, double x2, double v2);
 __EXPORT double zFergusonValue(zFerguson *ferg, double t);
