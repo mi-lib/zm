@@ -80,28 +80,26 @@ __EXPORT zVec zLESolveGauss(zMat a, zVec b, zVec ans);
 
 /*! \brief linear equation solver by LU decomposition method.
  *
- * zLESolveLU() solves linear equation \a a x = \a b based on
- * LU decomposition. The answer is put into \a ans.
- *
- * zLESolve_LU() solves the linear equation \a lmat \a umat x = \a b.
- * \a lmat and \a umat are a lower and upper triangular matrix,
- * respectively.
+ * zLESolveLU() solves linear equation \a l \a u x = \a b based
+ * on LU decomposition, where \a l and \a u are supposed to be
+ * a lower and an upper triangular matrices, respectively.
+ * The answer is put into \a ans.
  * \a index is an index vector for order discription.
- * \a lmat y = \a b and \a umat x = y are solved by zLESolve_L()
- * and zLESolve_U(), respectively.
+ * \a l y = \a b and \a u x = y are solved by zLESolveL() and
+ * zLESolveU(), respectively.
  *
- * Since zLUDecomp() pivots the original coefficient matrix,
- * zLESolve_L() needs the pivot index.
+ * zLESolveL() needs the pivot index since zLUDecomp() pivots
+ * the original coefficient matrix.
  * \return
- * zLESolveLU() family functions return a pointer \a ans, if
- * succeeds.
- * When \a a is a singular matrix, the equation does not have
- * a unique answer and these functions return the null pointer.
+ * zLESolveLU(), zLESolveL() and zLESolveU() return a pointer
+ * \a ans, if succeeding. Otherwise, they return the null
+ * pointer if the original matrix is singular.
+ * \sa
+ * zLUDecomp
  */
-__EXPORT zVec zLESolve_L(zMat lmat, zVec b, zVec ans, zIndex idx);
-__EXPORT zVec zLESolve_U(zMat umat, zVec b, zVec ans);
-__EXPORT zVec zLESolve_LU(zMat lmat, zMat umat, zVec b, zVec ans, zIndex index);
-__EXPORT zVec zLESolveLU(zMat a, zVec b, zVec ans);
+__EXPORT zVec zLESolveL(zMat l, zVec b, zVec ans, zIndex idx);
+__EXPORT zVec zLESolveU(zMat u, zVec b, zVec ans);
+__EXPORT zVec zLESolveLU(zMat l, zMat u, zVec b, zVec ans, zIndex index);
 
 /*! \brief linear equation solver by residual iteration.
  *

@@ -1,3 +1,6 @@
+2019.11.21. Renamed zLESolve_L, zLESolve_U and zLESolve_LU to zLESolveL, zLESolveU and zLESolveLU, respectively. [zm_le]
+2019.11.21. Abolished zLESolveLU. [zm_le]
+2019.11.21. Rewrote README as a markdown file. [README]
 2019.11.21. Modified zm_ip_lin, zm_ip_lagrange, zm_ip_spline and zm_ip_akima. [zm_ip_lin, zm_ip_lagrange, zm_ip_spline, zm_ip_akima]
 2019.11.21. Debugged zIPKnot and zIPSecVal. [zm_ip]
 2019.11.16. Renamed zRandND to zRandND0 and reimplemented zRandND. [zm_rand]

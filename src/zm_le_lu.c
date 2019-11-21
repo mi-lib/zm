@@ -140,12 +140,12 @@ int zCholeskyDecomp(zMat m, zMat l, zIndex idx)
 
   if( !zMatIsSqr(m) || !zMatIsSqr(l) ){
     ZRUNERROR( ZM_ERR_NONSQR_MAT );
-    return false;
+    return -1;
   }
   if( zMatRowSize(m) != zArraySize(idx) ||
       zMatRowSize(l) != zArraySize(idx) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MAT );
-    return false;
+    return -1;
   }
   zIndexOrder( idx, 0 );
   if( !( mc = zMatClone( m ) ) ) return -1;

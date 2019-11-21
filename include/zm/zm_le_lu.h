@@ -11,46 +11,37 @@
 
 __BEGIN_DECLS
 
-/* METHOD:
- * zLUDecomp, zLUDecompReg, zLUDecompDST
- * - LU decomposition.
+/* LU decomposition.
  *
- * 'zLUDecomp()' decomposes the matrix 'm' into a
- * lower triangular matrix(L) 'l' and upper triangular
- * matrix(U) 'um' with Crout method.
- * 'index' is an index vector for order discription.
- * #
- * 'zLUDecompReg()' regresses L and U, if the rank of 'm'
- * less than its size.
- * #
- * 'zLUDecompDST()' destroys 'm' during decomposition.
- * [RETURN VALUE]
- * 'zLUDecompDST()', 'zLUDecomp()' and 'zLUDecompReg()'
- * return the rank of 'm', which becomes the same with
- * the minimum of the row and column size of 'm' when
- * 'm' is full rank.
+ * zLUDecomp() decomposes the matrix \a m into a lower
+ * triangular matrix \a l and an upper triangular matrix \a u
+ * with Crout method.
+ * \a index is an index vector for order discription.
+ *
+ * zLUDecompReg() regresses \a l and \a u after decomposing
+ * \a m, if the rank of \a m less than its size.
+ *
+ * zLUDecompDST() destroys \a m during decomposition.
+ * \return
+ * zLUDecompDST(), zLUDecomp() and zLUDecompReg() return the
+ * rank of \a m, which becomes the same with the minimum of
+ * the row and column size of \a m when \a m is full rank.
  */
 __EXPORT int zLUDecompDST(zMat m, zMat l, zMat u, zIndex idx);
 __EXPORT int zLUDecomp(zMat m, zMat l, zMat u, zIndex idx);
 __EXPORT int zLUDecompReg(zMat m, zMat l, zMat u, zIndex idx);
 __EXPORT int zLUDecompAlloc(zMat m, zMat *l, zMat *u, zIndex *idx);
 
-/* METHOD:
- * zCholeskyDecomp, zCholeskyDecompDST
- * - Cholesky decomposition.
+/* Cholesky decomposition.
  *
- * zCholeskyDecomp() decomposes a symmetric matrix \a m
- * into \a l \a l ^T.
+ * zCholeskyDecomp() decomposes a symmetric matrix \a m into
+ * \a l \a l ^T.
  *
- * 'zCholeskyDecompDST()' destroys 'm' during decomposition.
- * [RETURN VALUE]
- * 'zCholeskyDecompDST()' and 'zCholeskyDecomp()'
- * return the true value if succeeding to get both 'lmat'
- * and 'umat'. When 'm' is not full rank, they fail to
- * calculate and return the false value.
- * [NOTES]
- * 'zCholeskyDecomp()' is to be treated so as to
- * return the rank of 'm' as much as 'zLUDecomp()'.
+ * zCholeskyDecompDST() destroys \a m during decomposition.
+ * \return
+ * zCholeskyDecompDST() and zCholeskyDecomp() return the rank
+ * of \a m. In case they fail to allocate internal memory for
+ * the computation, -1 is returned.
  */
 __EXPORT int zCholeskyDecompDST(zMat m, zMat l, zIndex index);
 __EXPORT int zCholeskyDecomp(zMat m, zMat l, zIndex index);

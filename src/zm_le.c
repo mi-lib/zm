@@ -147,8 +147,8 @@ zVec zLESolveGauss(zMat a, zVec b, zVec ans)
   return ans;
 }
 
-/* internal solver of zLUSolve for L matrix. */
-zVec zLESolve_L(zMat lmat, zVec b, zVec ans, zIndex idx)
+/* a solver for Ly=b. */
+zVec zLESolveL(zMat l, zVec b, zVec ans, zIndex idx)
 {
   register int i, j;
   int p;
@@ -157,14 +157,14 @@ zVec zLESolve_L(zMat lmat, zVec b, zVec ans, zIndex idx)
   for( i=0; i<zArraySize(idx); i++ ){
     x = zVecElemNC( b, (p=zIndexElemNC(idx,i)) );
     for( j=0; j<i; j++ )
-      x -= zMatElemNC(lmat,p,j)*zVecElemNC(ans,j);
-    zVecSetElemNC( ans, i, x/zMatElemNC(lmat,p,i) );
+      x -= zMatElemNC(l,p,j)*zVecElemNC(ans,j);
+    zVecSetElemNC( ans, i, x/zMatElemNC(l,p,i) );
   }
   return ans;
 }
 
-/* internal solver of zLUSolve for U matrix. */
-zVec zLESolve_U(zMat umat, zVec b, zVec ans)
+/* a solver for Ux=y. */
+zVec zLESolveU(zMat u, zVec b, zVec ans)
 {
   register int i, j;
   double x;
@@ -172,59 +172,32 @@ zVec zLESolve_U(zMat umat, zVec b, zVec ans)
   for( i=zVecSizeNC(b)-1; i>=0; i-- ){
     x = zVecElemNC( b, i );
     for( j=zVecSizeNC(b)-1; j>i; j-- )
-      x -= zMatElemNC(umat,i,j)*zVecElemNC(ans,j);
+      x -= zMatElemNC(u,i,j)*zVecElemNC(ans,j);
     zVecSetElemNC( ans, i, x );
   }
   return ans;
 }
 
-/* internal solver of zLESolveLU for decomposed L/U matrices. */
-zVec zLESolve_LU(zMat lmat, zMat umat, zVec b, zVec ans, zIndex idx)
+/* a solver for LUx=b. */
+zVec zLESolveLU(zMat l, zMat u, zVec b, zVec ans, zIndex idx)
 {
   zVec c;
 
-  if( !zMatIsSqr(lmat) || !zMatIsSqr(umat) ){
+  if( !zMatIsSqr(l) || !zMatIsSqr(u) ){
     ZRUNERROR( ZM_ERR_NONSQR_MAT );
     return NULL;
   }
-  if( zMatRowSize(lmat) != zArraySize(idx) ||
-      zMatRowSize(umat) != zArraySize(idx) ||
+  if( zMatRowSize(l) != zArraySize(idx) ||
+      zMatRowSize(u) != zArraySize(idx) ||
       zVecSize(b) != zArraySize(idx) ||
       zVecSize(ans) != zArraySize(idx) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return NULL;
   }
   if( !( c = zVecAlloc( zArraySize(idx) ) ) ) return NULL;
-  zLESolve_L( lmat, b, c, idx );
-  zLESolve_U( umat, c, ans );
+  zLESolveL( l, b, c, idx );
+  zLESolveU( u, c, ans );
   zVecFree( c );
-  return ans;
-}
-
-/* linear equation solver based on LU decomposition method. */
-zVec zLESolveLU(zMat a, zVec b, zVec ans)
-{
-  int n;
-  zMat lmat, umat;
-  zIndex idx;
-
-  n = zVecSizeNC( b );
-  lmat = zMatAllocSqr( n );
-  umat = zMatAllocSqr( n );
-  idx = zIndexCreate( n );
-  if( !lmat || !umat || !idx ) goto TERMINATE;
-
-  if( zLUDecomp( a, lmat, umat, idx ) < zMatRowSizeNC(a) ){
-    ZRUNERROR( ZM_ERR_LE_SINGULAR );
-    ans = NULL;
-    goto TERMINATE;
-  }
-  zLESolve_LU( lmat, umat, b, ans, idx );
-
- TERMINATE:
-  zMatFree( lmat );
-  zMatFree( umat );
-  zIndexFree( idx );
   return ans;
 }
 
@@ -233,38 +206,38 @@ zVec zLESolveRI(zMat a, zVec b, zVec ans)
 {
   register int i;
   int n;
-  zMat lmat, umat;
+  zMat l, u;
   zVec res, err;
   double err_norm, err_norm_old = HUGE_VAL;
   zIndex idx;
 
   n = zVecSizeNC( b );
-  lmat = zMatAllocSqr( n );
-  umat = zMatAllocSqr( n );
+  l = zMatAllocSqr( n );
+  u = zMatAllocSqr( n );
   res = zVecAlloc( n );
   err = zVecAlloc( n );
   idx = zIndexCreate( n );
-  if( !lmat || !umat || !res || !err || !idx ) goto TERMINATE;
+  if( !l || !u || !res || !err || !idx ) goto TERMINATE;
 
-  if( zLUDecomp( a, lmat, umat, idx ) < zMatRowSizeNC(a) ){
+  if( zLUDecomp( a, l, u, idx ) < zMatRowSizeNC(a) ){
     ZRUNERROR( ZM_ERR_LE_SINGULAR );
     ans = NULL;
     goto TERMINATE;
   }
-  zLESolve_LU( lmat, umat, b, ans, idx );
+  zLESolveLU( l, u, b, ans, idx );
   for( i=0; i<Z_MAX_ITER_NUM; i++ ){
     zLEResidual( a, b, ans, res );
     err_norm = zVecNorm( res );
     if( err_norm >= err_norm_old ) goto TERMINATE;
     err_norm_old = err_norm;
-    zLESolve_LU( lmat, umat, res, err, idx );
+    zLESolveLU( l, u, res, err, idx );
     zVecAddNCDRC( ans, err );
   }
   ZITERWARN( Z_MAX_ITER_NUM );
 
  TERMINATE:
-  zMatFree( lmat );
-  zMatFree( umat );
+  zMatFree( l );
+  zMatFree( u );
   zVecFree( res );
   zVecFree( err );
   zIndexFree( idx );
