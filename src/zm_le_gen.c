@@ -148,10 +148,8 @@ zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans)
   return ans;
 }
 
-/* (static)
- * allocate working memory for a lienar equation solver with Moore=Penrose's inverse matrix. */
-static bool _zLEAllocWorkMP(zMat a, zVec b, zMat *l, zMat *u, zVec *bcp, zIndex *idx);
-bool _zLEAllocWorkMP(zMat a, zVec b, zMat *l, zMat *u, zVec *bcp, zIndex *idx)
+/* allocate working memory for a lienar equation solver with Moore=Penrose's inverse matrix. */
+static bool _zLEAllocWorkMP(zMat a, zVec b, zMat *l, zMat *u, zVec *bcp, zIndex *idx)
 {
   *bcp = zVecClone( b );
   *l = zMatAllocSqr( zMatRowSizeNC(a) );
@@ -160,27 +158,23 @@ bool _zLEAllocWorkMP(zMat a, zVec b, zMat *l, zMat *u, zVec *bcp, zIndex *idx)
   return *bcp && *l && *u && *idx ? true : false;
 }
 
-/* (static)
- * free working memory for a lienar equation solver with Moore=Penrose's inverse matrix. */
-static void _zLEFreeWorkMP(zMat *l, zMat *u, zVec *bcp, zIndex *idx);
-void _zLEFreeWorkMP(zMat *l, zMat *u, zVec *bcp, zIndex *idx)
+/* free working memory for a lienar equation solver with Moore=Penrose's inverse matrix. */
+static void _zLEFreeWorkMP(zMat *l, zMat *u, zVec *bcp, zIndex *idx)
 {
   zVecFree( *bcp );
   zMatFreeAO( 2, *l, *u );
   zIndexFree( *idx );
 }
 
-/* (static)
- * compute left-lower part of the linear equation. */
-static void _zLESolveMP1(zMat l, zMat u, zVec b, zVec c, zVec we, zMat m, zVec v, zVec s, zIndex idx1, zIndex idx2, int rank);
-void _zLESolveMP1(zMat l, zMat u, zVec b, zVec c, zVec we, zMat m, zVec v, zVec s, zIndex idx1, zIndex idx2, int rank)
+/* compute left-lower part of the linear equation. */
+static void _zLESolveMP1(zMat l, zMat u, zVec b, zVec c, zVec we, zMat m, zVec v, zVec s, zIndex idx1, zIndex idx2, int rank)
 {
   if( rank < zMatColSizeNC(l) ){
     zMatColReg( l, rank );
     zMatRowReg( u, rank );
     zLESolveErrorMinDST( l, b, we, c, m, v, idx2, s );
   } else
-    zLESolve_L( l, b, c, idx1 );
+    zLESolveL( l, b, c, idx1 );
 }
 
 /* generalized linear equation solver using Moore-Penrose's
@@ -214,7 +208,7 @@ zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 
 /* generalized linear equation solver with MP-inverse
  * based on LU decomposition. */
-zVec zLESolveMP_LU(zMat a, zVec b, zVec wn, zVec we, zVec ans)
+zVec zLESolveMPLU(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 {
   int rank;
   zMat l, u, m;
@@ -230,7 +224,7 @@ zVec zLESolveMP_LU(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 
   _zLESolveMP1( l, u, bcp, c, we, m, v, s, idx1, idx2, rank );
   zMatIsSqr(u) ?
-    zLESolve_U( u, c, ans ) :
+    zLESolveU( u, c, ans ) :
     zLESolveNormMinDST( u, c, wn, ans, m, v, idx2, s );
 
  TERMINATE1:
@@ -243,7 +237,7 @@ zVec zLESolveMP_LU(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 
 /* generalized linear equation solver with MP-inverse
  * based on singular value decomposition. */
-zVec zLESolveMP_SVD(zMat a, zVec b, zVec ans)
+zVec zLESolveMPSVD(zMat a, zVec b, zVec ans)
 {
   int rank;
   zMat u, v;
@@ -325,10 +319,8 @@ zVec zLESolveMPAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
   return zVecAddNCDRC( ans, aux );
 }
 
-/* (static)
- * check sizes of vectors and matrices for a linear equation solver with SR-inverse matrix. */
-static bool _zLESolveSRSizeIsEqual(zMat a, zVec b, zVec wn, zVec we, zVec ans);
-bool _zLESolveSRSizeIsEqual(zMat a, zVec b, zVec wn, zVec we, zVec ans)
+/* check sizes of vectors and matrices for a linear equation solver with SR-inverse matrix. */
+static bool _zLESolveSRSizeIsEqual(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 {
   if( !zMatRowVecSizeIsEqual( a, b ) ||
       !zMatColVecSizeIsEqual( a, ans ) ){

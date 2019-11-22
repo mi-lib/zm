@@ -116,7 +116,7 @@ void _zLP_PDIPEqLU(_zLP_PDIP *dat, zVec v1, zVec v2, zVec v3, zVec dx, zVec dy, 
   zMulMatVecNC( dat->a, dz, dat->tmp );
   if( v1 ) zVecAddNCDRC( dat->tmp, v1 );
   zVecRevNCDRC( dat->tmp );
-  zLESolve_LU( dat->l, dat->u, dat->tmp, dy, dat->idx );
+  zLESolveLU( dat->l, dat->u, dat->tmp, dy, dat->idx );
   /* dz */
   zMulMatTVecNC( dat->a, dy, dz );
   if( v2 ) zVecAddNCDRC( dz, v2 );

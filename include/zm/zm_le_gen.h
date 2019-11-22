@@ -65,16 +65,16 @@ __EXPORT void zLEFreeWork(zMat m, zVec v, zVec s, zIndex idx);
  * internally. One difference from the original definition, it
  * can weigh on both the residual error and the answer norm;
  * \a wn is for answer norm and \a we is for residual error.
- * zLESolveMP_LU() also solves the equation based on pseudoinverse
+ * zLESolveMPLU() also solves the equation based on pseudoinverse
  * matrix, where LU decomposition is used internally.
  *
- * zLESolveMP_SVD() is another version of an equation solver
+ * zLESolveMPSVD() is another version of an equation solver
  * by pseudoinverse matrix, while it is based on the singular
  * value decomposition along with the original definition of
  * pseudoinverse. It cannot accept weightings.
  *
- * Probably, there is no situation where zLESolveMP_LU() and
- * zLESolveMP_SVD() are preferred.
+ * Probably, there is no situation where zLESolveMPLU() and
+ * zLESolveMPSVD() are preferred.
  *
  * zLESolveMPAux() solves the equation based on MP-inverse,
  * biasing a vector \a aux in the null space of \a a. Namely:
@@ -122,8 +122,8 @@ __EXPORT zVec zLESolveErrorMin(zMat a, zVec b, zVec w, zVec ans);
 __EXPORT zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zMat m, zVec v1, zVec v2, zIndex index, zVec s);
 __EXPORT zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans);
 __EXPORT zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans);
-__EXPORT zVec zLESolveMP_LU(zMat a, zVec b, zVec wn, zVec we, zVec ans);
-__EXPORT zVec zLESolveMP_SVD(zMat a, zVec b, zVec ans);
+__EXPORT zVec zLESolveMPLU(zMat a, zVec b, zVec wn, zVec we, zVec ans);
+__EXPORT zVec zLESolveMPSVD(zMat a, zVec b, zVec ans);
 __EXPORT zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn);
 __EXPORT zVec zLESolveMPAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux);
 __EXPORT zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat m, zVec v, zIndex index, zVec s);
