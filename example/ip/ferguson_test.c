@@ -14,7 +14,7 @@ int main(void)
 
   for( t=0; t<T; t+=0.01 ){
     for( i=0; i<N; i++ )
-      printf( "%f ", zFergusonValue( &ferg[i], t ) );
+      printf( "%f ", zFergusonVal( &ferg[i], t ) );
     printf( "\n" );
   }
 

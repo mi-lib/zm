@@ -6,7 +6,7 @@
 
 #include <zm/zm_ip.h>
 
-/* vector on Akima interpolation. */
+/* vector on Akima interpolation */
 static zVec _zIPVecAkima(zIPData *dat, double t, zVec v)
 {
   register int i;
@@ -22,7 +22,7 @@ static zVec _zIPVecAkima(zIPData *dat, double t, zVec v)
   return zVecAddNCDRC( v, zIPSecVec(dat,i) );
 }
 
-/* velocity on Akima interpolation. */
+/* velocity on Akima interpolation */
 static zVec _zIPVelAkima(zIPData *dat, double t, zVec v)
 {
   register int i;
@@ -38,7 +38,7 @@ static zVec _zIPVelAkima(zIPData *dat, double t, zVec v)
   return v;
 }
 
-/* acceleration on Akima interpolation. */
+/* acceleration on Akima interpolation */
 static zVec _zIPAccAkima(zIPData *dat, double t, zVec v)
 {
   register int i;
@@ -54,14 +54,14 @@ static zVec _zIPAccAkima(zIPData *dat, double t, zVec v)
   return v;
 }
 
-/* velocity at a section on Akima interpolation. */
+/* velocity at a section on Akima interpolation */
 static zVec _zIPSecVelAkima(zIPData *dat, int i, zVec v)
 {
   if( i>=zIPSize(dat) || i==0 ) return zVecZero( v );
   return zVecCopyNC( *zArrayElem(&dat->va,i), v );
 }
 
-/* acceleration at a section on Akima interpolation. */
+/* acceleration at a section on Akima interpolation */
 static zVec _zIPSecAccAkima(zIPData *dat, int i, zVec v)
 {
   double d;
@@ -109,7 +109,7 @@ static zIPCom _zm_ip_com_akima = {
   _zIPSecAccAkima,
 };
 
-/* create an Akima interpolator. */
+/* create an Akima interpolator */
 bool zIPCreateAkima(zIP *ip, zSeq *seq)
 {
   register int i, j, n;

@@ -11,13 +11,13 @@ int main(void)
   while( 1 ){
     eprintf( "enter dx-value to the next step and y-value.\n" );
     eprintf( "(to terminate the operation, enter 0 for dx)\n" );
-    scanf( "%lf %lf", &dt, &p );
+    if( scanf( "%lf %lf", &dt, &p ) < 0 ) break;
     if( dt == 0 ) break;
-    zIPIOSetNextValue( &ip, p, dt );
+    zIPIOSetNextVal( &ip, p, dt );
     zIPIOUpdate( &ip );
     for( t=0; t+zTOL<zIPIODT(&ip); t+=0.1 ){
       eprintf( "%f\n", t );
-      printf( "%f %f\n", zIPIOValue( &ip, t ), zIPIOLinValue( &ip, t ) );
+      printf( "%f %f\n", zIPIOVal( &ip, t ), zIPIOLinVal( &ip, t ) );
     }
   }
   return 0;  

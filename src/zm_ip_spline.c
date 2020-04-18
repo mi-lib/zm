@@ -7,7 +7,7 @@
 #include <zm/zm_ip.h>
 #include <zm/zm_le.h>
 
-/* vector on spline interpolation. */
+/* vector on spline interpolation */
 static zVec _zIPVecSpline(zIPData *dat, double t, zVec v)
 {
   register int i;
@@ -24,7 +24,7 @@ static zVec _zIPVecSpline(zIPData *dat, double t, zVec v)
   return v;
 }
 
-/* velocity on spline interpolation. */
+/* velocity on spline interpolation */
 static zVec _zIPVelSpline(zIPData *dat, double t, zVec v)
 {
   register int i;
@@ -41,7 +41,7 @@ static zVec _zIPVelSpline(zIPData *dat, double t, zVec v)
   return v;
 }
 
-/* acceleration on spline interpolation. */
+/* acceleration on spline interpolation */
 static zVec _zIPAccSpline(zIPData *dat, double t, zVec v)
 {
   register int i;
@@ -58,14 +58,14 @@ static zVec _zIPAccSpline(zIPData *dat, double t, zVec v)
   return zVecDivDRC( v, zSqr(zIPDelta(dat,i+1)) );
 }
 
-/* velocity at a section on spline interpolation. */
+/* velocity at a section on spline interpolation */
 static zVec _zIPSecVelSpline(zIPData *dat, int i, zVec v)
 {
   return i >= zIPSize(dat) ?
     zVecZero( v ) : zVecCopyNC( *zArrayElem(&dat->va,i), v );
 }
 
-/* acceleration at a section on spline interpolation. */
+/* acceleration at a section on spline interpolation */
 static zVec _zIPSecAccSpline(zIPData *dat, int i, zVec v)
 {
   zVecZero( v );
@@ -93,7 +93,25 @@ static zIPCom _zm_ip_com_spline = {
   _zIPSecAccSpline,
 };
 
-/* create a spline interpolator. */
+/* set a fixed edge condition */
+static void _zIPFixEdgeSpline(zIP *ip, zVec b, zVec d, int i, int j, zVec v)
+{
+  zVecSetElemNC( b, i, 1 );
+  zVecSetElemNC( d, i, zVecElemNC(v,j) );
+}
+
+/* set a free edge condition */
+static void _zIPFreeEdgeSpline(zIP *ip, zVec a, zVec b, zVec d, int i, int iv, int j)
+{
+  double r;
+
+  r = 1.0 / zIPDelta(&ip->dat,iv);
+  zVecSetElemNC( a, i, 2 * r );
+  zVecSetElemNC( b, i,     r );
+  zVecSetElemNC( d, i, 3.0*(zIPSecVal(&ip->dat,iv,j)-zIPSecVal(&ip->dat,iv-1,j)) / zSqr( zIPDelta(&ip->dat,iv) ) );
+}
+
+/* create a spline interpolator */
 bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v2)
 {
   register int i, j;
@@ -128,32 +146,16 @@ bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v
     }
     /* setting of the edge type at the beginning point */
     switch( etype1 ){
-    case ZSPLINE_FIX_EDGE:
-      zVecSetElemNC( b, 0, 1 );
-      zVecSetElemNC( d, 0, zVecElemNC(v1,i) );
-      break;
-    case ZSPLINE_FREE_EDGE:
-      r1 = 1.0 / zIPDelta(&ip->dat,1);
-      zVecSetElemNC( b, 0, 2 * r1 );
-      zVecSetElemNC( c, 0,     r1 );
-      zVecSetElemNC( d, 0, 3.0*(zIPSecVal(&ip->dat,1,i)-zIPSecVal(&ip->dat,0,i))/zSqr( zIPDelta(&ip->dat,1) ) );
-      break;
+    case ZSPLINE_FIX_EDGE:  _zIPFixEdgeSpline( ip, b, d, 0, i, v1 );    break;
+    case ZSPLINE_FREE_EDGE: _zIPFreeEdgeSpline( ip, b, c, d, 0, 1, i ); break;
     default:
       ZRUNERROR( ZM_ERR_IP_INVTYPE );
       goto TERMINATE;
     }
     /* setting of the edge type at the termination point */
     switch( etype2 ){
-    case ZSPLINE_FIX_EDGE:
-      zVecSetElemNC( b, n-1, 1 );
-      zVecSetElemNC( d, n-1, zVecElemNC(v2,i) );
-      break;
-    case ZSPLINE_FREE_EDGE:
-      r2 = 1.0 / zIPDelta(&ip->dat,n-1);
-      zVecSetElemNC( a, n-1, 2 * r2 );
-      zVecSetElemNC( b, n-1,     r2 );
-      zVecSetElemNC( d, n-1, 3.0*(zIPSecVal(&ip->dat,n-1,i)-zIPSecVal(&ip->dat,n-2,i))/zSqr(zIPDelta(&ip->dat,n-1)) );
-      break;
+    case ZSPLINE_FIX_EDGE:  _zIPFixEdgeSpline( ip, b, d, n-1, i, v2 );      break;
+    case ZSPLINE_FREE_EDGE: _zIPFreeEdgeSpline( ip, a, b, d, n-1, n-1, i ); break;
     default:
       ZRUNERROR( ZM_ERR_IP_INVTYPE );
       goto TERMINATE;

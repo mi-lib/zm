@@ -98,6 +98,7 @@ __END_DECLS
 #include <zm/zm_ip_lagrange.h> /* Lagrange's interpolation */
 #include <zm/zm_ip_spline.h>   /* spline interpolation */
 #include <zm/zm_ip_akima.h>    /* Akima's interpolation */
+#include <zm/zm_ip_pchip.h>    /* Piecewise Cubic Hermite Interporating Polynomial */
 
 #include <zm/zm_ip_pex.h>      /* polynomial curve */
 #include <zm/zm_ip_ipio.h>     /* interpolation-in-order */

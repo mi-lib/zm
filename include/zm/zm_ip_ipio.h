@@ -28,7 +28,7 @@ typedef struct{
 
 /* interpolation-in-order.
  *
- * 'zIPIO' realizes the interpolation-in-order; the interpolation
+ * zIPIO realizes the interpolation-in-order; the interpolation
  * is done with values at three times - previous, current and
  * next steps. Updating the inner parameters of the interpolator
  * by setting new value at the next step, the segment between the
@@ -46,7 +46,7 @@ typedef struct{
  * The procedure to use 'zIPIO' is as follows.
  *  1. Create the new instance 'ip' of zIPIO by calling 'zIPIOCreate()'.
  *     'p0' is the initial value for the interpolation.
- *  2. When the next value comes, set it with 'zIPIOSetNextValue()'.
+ *  2. When the next value comes, set it with 'zIPIOSetNextVal()'.
  *     'p' is the new value and 'dt' is a time step between the
  *     current and next step.
  *  3. Call 'zIOIPUpdate()', and the inner parameters of 'ip'
@@ -55,24 +55,24 @@ typedef struct{
  *     and current value respectively.
  *  4. The two methods for interpolation are available.
  *     One is the linear interpolation and the other is the spline
- *     interpolation. Each is called by 'zIPIOLinValue()' and
- *     'zIPIOSplineValue()' respectively.
+ *     interpolation. Each is called by 'zIPIOLinVal()' and
+ *     'zIPIOSplineVal()' respectively.
  *     't' is a time width from the previous time.
  *  5. The instance of 'zIPIO', 'ip', can be intialized by using
  *     'zIPIOInit()'.
  * \return
- * zIPIOInit(), zIPIOCreate(), zIPIOSetNextValue() and zIPIOUpdate()
+ * zIPIOInit(), zIPIOCreate(), zIPIOSetNextVal() and zIPIOUpdate()
  * return no value.
  *
- * zIPIOLinValue() and zIPIOSplineValue() return the interpolated value.
+ * zIPIOLinVal() and zIPIOSplineVal() return the interpolated value.
  */
 __EXPORT void zIPIOInit(zIPIO *ip);
 __EXPORT void zIPIOCreate(zIPIO *ip, double p0);
-__EXPORT void zIPIOSetNextValue(zIPIO *ip, double p, double dt);
+__EXPORT void zIPIOSetNextVal(zIPIO *ip, double p, double dt);
 __EXPORT void zIPIOUpdate(zIPIO *ip);
-__EXPORT double zIPIOSplineValue(zIPIO *ip, double t);
-__EXPORT double zIPIOLinValue(zIPIO *ip, double t);
-#define zIPIOValue(i,t)  zIPIOSplineValue(i,t)
+__EXPORT double zIPIOSplineVal(zIPIO *ip, double t);
+__EXPORT double zIPIOLinVal(zIPIO *ip, double t);
+#define zIPIOVal(i,t)  zIPIOSplineVal(i,t)
 
 /* ********************************************************** */
 /* CLASS: zFerguson
@@ -101,13 +101,13 @@ typedef struct{
  * 'term' is the terminal time(the time when the value has to be
  * 'x2').
  *
- * zFergusonValue() calculates the value at each moment 't'.
+ * zFergusonVal() calculates the value at each moment 't'.
  * \return
  * zFergusonCreate() returns no value.
- * zFergusonValue() returns the value computed.
+ * zFergusonVal() returns the value computed.
  */
 __EXPORT void zFergusonCreate(zFerguson *ferg, double term, double x1, double v1, double x2, double v2);
-__EXPORT double zFergusonValue(zFerguson *ferg, double t);
+__EXPORT double zFergusonVal(zFerguson *ferg, double t);
 
 __END_DECLS
 

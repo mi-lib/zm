@@ -21,14 +21,14 @@ __BEGIN_DECLS
  */
 enum{ ZSPLINE_INVALID, ZSPLINE_FIX_EDGE, ZSPLINE_FREE_EDGE };
 
-/* create spline interpolator interpolator.
+/* \brief create spline interpolator.
  *
  * zIPCreateSpring() creates an interpolator \a ip.
  * \a etype1 and \a etype2 are the types of edges at the
  * beginning point and the termination point, respectively.
  * They should be chosen from ZSPLINE_FIX_EDGE and
- * ZSPLINE_FREE_EDGE, which are for fixed-edge and
- * free-edge, respectively.
+ * ZSPLINE_FREE_EDGE, which are for fixed-edge and free-edge,
+ * respectively.
  * One can set the velocity at each endpoint for \a v1
  * (or \a v2) with choosing ZSPLINE_FIX_EDGE.
  * When ZSPLINE_FREE_EDGE is chosen, \a v1 (or \a v2) is ignored.

@@ -12,6 +12,14 @@ double eval(zVec v, void *dummy)
   return result;
 }
 
+void test(zOptNM *opt, zVec x)
+{
+  printf( "initial value:  " ); zVecPrint( x );
+  zOptNMSolve( opt, x, NULL, zTOL, 0, NULL );
+  zVecTouchup( x );
+  printf( "solution value: " ); zVecPrint( x );
+}
+
 int main(void)
 {
   zOptNM opt;
@@ -20,26 +28,16 @@ int main(void)
 
   zOptNMCreate( &opt, N, eval );
   x = zVecAlloc( N );
-  printf( "initial value:  " ); zVecPrint( x );
-  zOptNMSolve( &opt, x, NULL, zTOL, 0, NULL );
-  printf( "solution value: " ); zVecPrint( x );
+  test( &opt, x );
 
-  for( i=0; i<N; i++ )
-    zVecSetElem( x, i, -i );
-  printf( "initial value:  " ); zVecPrint( x );
-  zOptNMSolve( &opt, x, NULL, zTOL, 0, NULL );
-  printf( "solution value: " ); zVecPrint( x );
+  for( i=0; i<N; i++ ) zVecSetElem( x, i, -i );
+  test( &opt, x );
 
-  for( i=0; i<N; i++ )
-    zVecSetElem( x, i, N-i );
-  printf( "initial value:  " ); zVecPrint( x );
-  zOptNMSolve( &opt, x, NULL, zTOL, 0, NULL );
-  printf( "solution value: " ); zVecPrint( x );
+  for( i=0; i<N; i++ ) zVecSetElem( x, i, N-i );
+  test( &opt, x );
 
   zVecRandUniform( x, -100, 100 );
-  printf( "initial value:  " ); zVecPrint( x );
-  zOptNMSolve( &opt, x, NULL, zTOL, 0, NULL );
-  printf( "solution value: " ); zVecPrint( x );
+  test( &opt, x );
 
   zVecFree( x );
   zOptNMDestroy( &opt );

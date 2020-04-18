@@ -1,3 +1,6 @@
+2020. 4.18. Renamed zIPIOSetNextValue, zIPIOLinValue, zIPIOSplineValue, zIPIOValue and zFergusonValue to zIPIOSetNextVal, zIPIOLinVal, zIPIOSplineVal, zIPIOVal and zFergusonVal, respectively. [zm_ip_ipio]
+2020. 4.18. Added _zIPFixEdgeSpline and _zIPFreeEdgeSpline, and modified zIPCreateSpline. [zm_ip_spline]
+2020. 4.18. Implemented Piecewise Cubic Hermite Interporating Polynomial and added zIPCreatePCHIP. [zm_ip, zm_ip_pchip]
 2019.11.22. Renamed zLESolveMP_LU and zLESolveMP_SVD to zLESolveMPLU and zLESolveMPSVD, respectively. [zm_le_gen]
 2019.11.21. Renamed zLESolve_L, zLESolve_U and zLESolve_LU to zLESolveL, zLESolveU and zLESolveLU, respectively. [zm_le, zm_le_gen, zm_opt_lp_pdip]
 2019.11.21. Abolished zLESolveLU. [zm_le]

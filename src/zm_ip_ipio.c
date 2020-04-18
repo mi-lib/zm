@@ -12,9 +12,7 @@
  * this class realizes interpolation-in-order.
  * ********************************************************** */
 
-/* zIPIOInit
- * - initialization of interpolation-in-order.
- */
+/* initialize an interpolation-in-order. */
 void zIPIOInit(zIPIO *ip)
 {
   ip->p_prev = ip->p_cur = ip->p_next = 0;
@@ -23,19 +21,15 @@ void zIPIOInit(zIPIO *ip)
   ip->c[0] = ip->c[1] = ip->c[2] = ip->c[3] = 0;
 }
 
-/* zIPIOCreate
- * - creation of interpolation-in-order.
- */
+/* create an interpolation-in-order. */
 void zIPIOCreate(zIPIO *ip, double p0)
 {
   zIPIOInit( ip );
   ip->p_prev = ip->p_cur = ip->p_next = p0;
 }
 
-/* zIPIOSetNextValue
- * - setting of the next value on interpolation-in-order.
- */
-void zIPIOSetNextValue(zIPIO *ip, double p, double dt)
+/* set the next value on interpolation-in-order. */
+void zIPIOSetNextVal(zIPIO *ip, double p, double dt)
 {
   ip->p_prev = ip->p_cur;
   ip->p_cur = ip->p_next;
@@ -49,9 +43,7 @@ void zIPIOSetNextValue(zIPIO *ip, double p, double dt)
                     + (ip->p_cur-ip->p_prev)/ip->dt );
 }
 
-/* zIPIOUpdate
- * - updating of interpolation-in-order.
- */
+/* update an interpolation-in-order. */
 void zIPIOUpdate(zIPIO *ip)
 {
   double dp;
@@ -63,18 +55,14 @@ void zIPIOUpdate(zIPIO *ip)
   ip->c[3] = (-2*dp/ip->dt+(ip->v_cur+ip->v_prev))/(ip->dt*ip->dt);
 }
 
-/* zIPIOLinValue
- * - value on linear interpolation-in-order.
- */
-double zIPIOLinValue(zIPIO *ip, double t)
+/* value on linear interpolation-in-order. */
+double zIPIOLinVal(zIPIO *ip, double t)
 {
   return ip->p_prev + ( ip->p_cur - ip->p_prev ) * t/ip->dt;
 }
 
-/* zIPIOSplineValue
- * - value on spline interpolation-in-order.
- */
-double zIPIOSplineValue(zIPIO *ip, double t)
+/* value on spline interpolation-in-order. */
+double zIPIOSplineVal(zIPIO *ip, double t)
 {
   return ip->c[0]+(ip->c[1]+(ip->c[2]+ip->c[3]*t)*t)*t;
 }
@@ -84,9 +72,7 @@ double zIPIOSplineValue(zIPIO *ip, double t)
  * Ferguson's curve
  * ********************************************************** */
 
-/* zFergusonCreate
- * - creation of Ferguson s interpolation curve.
- */
+/* create Ferguson interpolator. */
 void zFergusonCreate(zFerguson *ferg, double term, double x1, double v1, double x2, double v2)
 {
   ferg->c[0] = x1;
@@ -95,10 +81,8 @@ void zFergusonCreate(zFerguson *ferg, double term, double x1, double v1, double 
   ferg->c[3] = (2*(x1-x2)+v1-v2)/(term*term*term);
 }
 
-/* zFergusonValue
- * - value calculation of Ferguson s interpolation curve.
- */
-double zFergusonValue(zFerguson *ferg, double t)
+/* value of Ferguson interpolation curve. */
+double zFergusonVal(zFerguson *ferg, double t)
 {
   return ( ( ferg->c[3]*t + ferg->c[2] )*t + ferg->c[1] )*t + ferg->c[0];
 }
