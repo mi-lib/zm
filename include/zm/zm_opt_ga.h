@@ -101,7 +101,7 @@ __EXPORT void zOptGAInit(zOptGA *ga);
  * zOptGACreate() returns the true value if succeed, or the false
  * value otherwise.
  */
-__EXPORT bool zOptGACreate(zOptGA *ga, double (* f)(zVec,void*), void *util, zVec min, zVec max, int population, double rate_survive, double rate_mutate);
+__EXPORT bool zOptGACreate(zOptGA *ga, double (* f)(zVec,void*), void *util, zVec min, zVec max, int population, double rate_survival, double rate_mutation);
 
 /*! \brief create a genetic population with default parameters. */
 __EXPORT bool zOptGACreateDefault(zOptGA *ga, double (* f)(zVec,void*), void *util, zVec min, zVec max);
