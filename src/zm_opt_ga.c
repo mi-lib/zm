@@ -6,16 +6,6 @@
 
 #include <zm/zm_opt.h>
 
-/* ********************************************************** */
-/* CLASS: zOptGAChromosome
- * chromosome class, supporting
- * 1. bit-chromosome
- * 2. integer-chromosome
- * 3. double-chromosome
- * ********************************************************** */
-
-static void _zOptGAChromosomeSwap(zOptGAChromosome *c1, zOptGAChromosome *C2);
-
 /* initialize a chromosome. */
 zOptGAChromosome *zOptGAChromosomeInit(zOptGAChromosome *c)
 {
@@ -57,10 +47,8 @@ zOptGAChromosome *zOptGAChromosomeRand(zOptGAChromosome *c, zVec min, zVec max)
   return c;
 }
 
-/* (static)
- * swap two chromosomes. This is utilized for quicksort of individuals.
- */
-void _zOptGAChromosomeSwap(zOptGAChromosome *c1, zOptGAChromosome *c2)
+/* swap two chromosomes. This is utilized for quicksort of individuals. */
+static void _zOptGAChromosomeSwap(zOptGAChromosome *c1, zOptGAChromosome *c2)
 {
   zSwap( double, c1->fitness, c2->fitness );
   zSwap( zVec, c1->gene, c2->gene );
@@ -82,10 +70,6 @@ zOptGAChromosome *zOptGAChromosomeXover(zOptGAChromosome *c1, zOptGAChromosome *
 /* CLASS: zOptGA
  * ********************************************************** */
 
-static zOptGAChromosome *_zOptGASelect(zOptGA *ga);
-static void _zOptGAQuickSort(zOptGA *ga, int head, int tail);
-static void _zOptGASort(zOptGA *ga, void *util);
-
 /* initialize a genetic population. */
 void zOptGAInit(zOptGA *ga)
 {
@@ -95,26 +79,31 @@ void zOptGAInit(zOptGA *ga)
 }
 
 /* create a genetic population. */
-bool zOptGACreate(zOptGA *ga, size_t size, int population, zVec min, zVec max, double (* fitness)(zOptGAChromosome*,void*), double rate_survive, double rate_mutate, void *util)
+bool zOptGACreate(zOptGA *ga, double (* f)(zVec,void*), void *util, zVec min, zVec max, int population, double rate_survival, double rate_mutation)
 {
   register int i;
 
+  if( !zVecSizeIsEqual( min, max ) ){
+    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    return false;
+  }
   zOptGAInit( ga );
   if( ( ga->individual = zAlloc( zOptGAChromosome, population ) ) == NULL ){
     ZALLOCERROR();
     return false;
   }
   for( i=0; i<population; i++ )
-    if( zOptGAChromosomeAlloc( &ga->individual[i], size ) == NULL ) goto ERR;
+    if( zOptGAChromosomeAlloc( &ga->individual[i], zVecSizeNC(min) ) == NULL ) goto ERR;
 
   ga->population = population;
   ga->min = zVecClone( min );
   ga->max = zVecClone( max );
   if( ga->min == NULL || ga->max == NULL ) goto ERR;
 
-  ga->rate_survive = rate_survive;
-  ga->rate_mutate = rate_mutate;
-  ga->fitness_fp = fitness;
+  ga->rate_survival = rate_survival;
+  ga->rate_mutation = rate_mutation;
+  ga->f = f;
+  ga->eval = HUGE_VAL;
   zOptGARand( ga, util );
   return true;
 
@@ -122,6 +111,12 @@ bool zOptGACreate(zOptGA *ga, size_t size, int population, zVec min, zVec max, d
   ZALLOCERROR();
   zOptGADestroy( ga );
   return false;
+}
+
+/* create a genetic population with default parameters. */
+bool zOptGACreateDefault(zOptGA *ga, double (* f)(zVec,void*), void *util, zVec min, zVec max)
+{
+  return zOptGACreate( ga, f, util, min, max, ZOPT_GA_DEFAULT_POPULATION, ZOPT_GA_RATE_SURVIVAL, ZOPT_GA_RATE_MUTATION );
 }
 
 /* destroy a genetic population. */
@@ -137,9 +132,8 @@ void zOptGADestroy(zOptGA *ga)
   zOptGAInit( ga );
 }
 
-/* (static)
- * quick sort of population based on fitness. */
-void _zOptGAQuickSort(zOptGA *ga, int head, int tail)
+/* quick sort of population based on fitness. */
+static void _zOptGAQuickSort(zOptGA *ga, int head, int tail)
 {
   register int i, j;
   double pivot;
@@ -155,18 +149,18 @@ void _zOptGAQuickSort(zOptGA *ga, int head, int tail)
   if( i < tail ) _zOptGAQuickSort( ga, i, tail );
 }
 
-/* (static)
- * compute fitnesses of each individual and sort them in accordance with it. */
-void _zOptGASort(zOptGA *ga, void *util)
+/* compute fitnesses of each individual and sort them in accordance with it. */
+static void _zOptGASort(zOptGA *ga, void *util)
 {
   register int i;
   double fitness_min, fitness_sum;
 
   for( i=0; i<ga->population; i++ )
-    ga->individual[i].fitness = ga->fitness_fp( &ga->individual[i], util );
+    ga->individual[i].fitness = -ga->f( ga->individual[i].gene, util );
   _zOptGAQuickSort( ga, 0, ga->population-1 );
   fitness_min = ga->individual[ga->population-1].fitness;
   fitness_sum = 0;
+  ga->eval = -ga->individual[0].fitness; /* optimum value of the current population */
   for( i=0; i<ga->population; i++ ){
     ga->individual[i].fitness -= fitness_min;
     fitness_sum += ga->individual[i].fitness;
@@ -190,9 +184,8 @@ double zOptGARand(zOptGA *ga, void *util)
   return ga->individual[0].fitness;
 }
 
-/* (static)
- * select individuals of a genetic population */
-zOptGAChromosome *_zOptGASelect(zOptGA *ga)
+/* select individuals of a genetic population */
+static zOptGAChromosome *_zOptGASelect(zOptGA *ga)
 {
   double p, rate = 0;
   register int i;
@@ -212,7 +205,7 @@ double zOptGAReproduce(zOptGA *ga, void *util)
   register int i;
 
   /* survival and selection */
-  ns = ga->population * ga->rate_survive;
+  ns = ga->population * ga->rate_survival;
   /* crossover */
   for( i=ns; i<ga->population; i++ ){
     c1 = _zOptGASelect( ga );
@@ -221,7 +214,7 @@ double zOptGAReproduce(zOptGA *ga, void *util)
   }
   /* mutation */
   for( i=0; i<ga->population; i++ )
-    if( zRandF(0,1) < ga->rate_mutate )
+    if( zRandF(0,1) < ga->rate_mutation )
       zOptGAChromosomeRand( &ga->individual[i], ga->min, ga->max );
   /* resort */
   _zOptGASort( ga, util ); /* compute and normalize fitness */
@@ -233,10 +226,33 @@ double zOptGASolve(zOptGA *ga, zVec ans, void *util, int generation)
 {
   register int i;
 
+  if( generation == 0 ) generation = ZOPT_GA_DEFAULT_GENERATION;
   for( i=0; i<generation; i++ )
     zOptGAReproduce( ga, util );
   zVecCopy( ga->individual[0].gene, ans );
+#if 0
   return ga->individual[0].fitness;
+#else
+  return ga->eval;
+#endif
+}
+
+/* solve an optimization problem by genetic algorithm. */
+int zOptSolveGA(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, int population, double rate_survival, double rate_mutation, zVec ans, double *eval)
+{
+  zOptGA opt;
+
+  zRandInit();
+  zOptGACreate( &opt, f, util, min, max, population, rate_survival, rate_mutation );
+  *eval = zOptGASolve( &opt, ans, util, iter );
+  zOptGADestroy( &opt );
+  return iter;
+}
+
+/* solve an optimization problem by genetic algorithm with default parameters. */
+int zOptSolveGADefault(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval)
+{
+  return zOptSolveGA( f, util, min, max, iter, tol, ZOPT_GA_DEFAULT_POPULATION, ZOPT_GA_RATE_SURVIVAL, ZOPT_GA_RATE_MUTATION, ans, eval );
 }
 
 /* for debug */
@@ -247,7 +263,7 @@ void zOptGAFPrint(FILE *fp, zOptGA *ga)
   register int i;
 
   for( i=0; i<ga->population; i++ ){
-    fprintf( fp, "%g ", ga->individual[i].fitness );
+    fprintf( fp, "%g ",-ga->individual[i].fitness );
     zVecDataFPrint( fp, ga->individual[i].gene );
   }
 }

@@ -80,10 +80,10 @@ typedef struct{
   zOptGAChromosome *individual;
   zVec min;
   zVec max;
-  double rate_survive;
-  double rate_mutate;
-
-  double (* fitness_fp)(zOptGAChromosome*,void*);
+  double rate_survival;
+  double rate_mutation;
+  double (* f)(zVec,void*);
+  double eval;
 } zOptGA;
 
 __EXPORT void zOptGAInit(zOptGA *ga);
@@ -91,18 +91,20 @@ __EXPORT void zOptGAInit(zOptGA *ga);
 /*! \brief create a genetic population.
  *
  * zOptGACreate() creates a new genetic population \a ga.
- * \a size is the size of each individual.
  * \a num is the number of population.
  * \a min is the minimum pattern of gene.
  * \a max is the maximum pattern of gene.
- * \a fitness is a function to provide fitness of each individual.
- * \a rate_survive is the survival rate.
- * \a rate_mutate is the mutation rate.
+ * \a fitness is an evaluation function to be minimized.
+ * \a rate_survival is the survival rate.
+ * \a rate_mutation is the mutation rate.
  * \return
  * zOptGACreate() returns the true value if succeed, or the false
  * value otherwise.
  */
-__EXPORT bool zOptGACreate(zOptGA *ga, size_t size, int population, zVec min, zVec max, double (* fitness)(zOptGAChromosome*,void*), double rate_survive, double rate_mutate, void *util);
+__EXPORT bool zOptGACreate(zOptGA *ga, double (* f)(zVec,void*), void *util, zVec min, zVec max, int population, double rate_survival, double rate_mutation);
+
+/*! \brief create a genetic population with default parameters. */
+__EXPORT bool zOptGACreateDefault(zOptGA *ga, double (* f)(zVec,void*), void *util, zVec min, zVec max);
 
 /*! \brief destroy a genetic population.
  *
@@ -146,6 +148,17 @@ __EXPORT double zOptGAReproduce(zOptGA *ga, void *util);
  * by the genetic algorithm.
  */
 __EXPORT double zOptGASolve(zOptGA *ga, zVec ans, void *util, int generation);
+
+#define ZOPT_GA_DEFAULT_GENERATION 1000
+#define ZOPT_GA_DEFAULT_POPULATION  100
+#define ZOPT_GA_RATE_SURVIVAL         0.3
+#define ZOPT_GA_RATE_MUTATION         0.05
+
+/*! \brief solve an optimization problem by genetic algorithm. */
+__EXPORT int zOptSolveGA(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, int population, double rate_survival, double rate_mutation, zVec ans, double *eval);
+
+/*! \brief solve an optimization problem by genetic algorithm. */
+__EXPORT int zOptSolveGADefault(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval);
 
 /*! \brief print a genetic population out to a file.
  */
