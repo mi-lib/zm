@@ -1,3 +1,8 @@
+2020. 4.26. Added zOptSolveDIRECT. [zm_opt, zm_opt_direct]
+2020. 4.26. Added zRawVecScale and zVecScale. [zm_raw_vec, zm_vec]
+2020. 4.26. Added zRawVecInterDiv and zVecInterDiv. [zm_raw_vec, zm_vec]
+2020. 4.26. Added zLog. [zm_misc]
+2020. 4.25. Modified zDataPeakSG as to use zIntList and zIntListCell. [zm_data]
 2020. 4.18. Renamed zIPIOSetNextValue, zIPIOLinValue, zIPIOSplineValue, zIPIOValue and zFergusonValue to zIPIOSetNextVal, zIPIOLinVal, zIPIOSplineVal, zIPIOVal and zFergusonVal, respectively. [zm_ip_ipio]
 2020. 4.18. Added _zIPFixEdgeSpline and _zIPFreeEdgeSpline, and modified zIPCreateSpline. [zm_ip_spline]
 2020. 4.18. Implemented Piecewise Cubic Hermite Interporating Polynomial and added zIPCreatePCHIP. [zm_ip, zm_ip_pchip]

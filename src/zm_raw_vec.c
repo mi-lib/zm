@@ -207,6 +207,26 @@ void zRawVecLS(double *v, int size, int n, ...)
   va_end( args );
 }
 
+/* interior division of two raw vectors. */
+void zRawVecInterDiv(double *v1, double *v2, double ratio, double *v, int size)
+{
+  while( size-- > 0 ){
+    *v++ = *v1 + ratio * ( *v2 - *v1 );
+    v1++;
+    v2++;
+  }
+}
+
+/* scale a raw vector with two boundary vectors. */
+void zRawVecScale(double *x, double *min, double *max, double *v, int size)
+{
+  while( size-- > 0 ){
+    *v++ = *min + *x++ * ( *max - *min );
+    min++;
+    max++;
+  }
+}
+
 /* inner product of two raw vectors. */
 double zRawVecInnerProd(double *v1, double *v2, int size)
 {

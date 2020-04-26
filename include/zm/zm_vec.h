@@ -373,6 +373,30 @@ __EXPORT zVec zVecCat(zVec v1, double k, zVec v2, zVec v);
 __EXPORT zVec zVecCats(zVec v, int n, ...);
 __EXPORT zVec zVecLS(zVec v, int n, ...);
 
+/*! \brief interior division of two vectors.
+ *
+ * zVecInterDiv() calculates the interior division vector of two
+ * vectors \a v1 and \a v2 with a division ratio \a ratio.
+ * The result is put into \a v.
+ *
+ * i.e. \a v = (1-\a ratio)* \a v1 + \a ratio * \a v2.
+ * \return
+ * zVecInterDiv() returns a pointer \a v.
+ */
+__EXPORT zVec zVecInterDiv(zVec v1, zVec v2, double ratio, zVec v);
+
+/*! \brief scale a vector with two boundary vectors.
+ *
+ * zVecScale() scales a vector \a x with the minimum and maximum boundary
+ * vectors \a min and \a max, respectively and puts it into \a v. Namely,
+ * each component of \a v is the corresponding component of \a x multipied
+ * by the corresponding components of \a max - \a min and offset by that
+ * of \a min.
+ * \return
+ * zVecScale() returns a pointer \a v.
+ */
+__EXPORT zVec zVecScale(zVec x, zVec min, zVec max, zVec v);
+
 /*! \brief inner product of vector.
  *
  * zVecInnerProdNC() and zVecInnerProd() calculates the

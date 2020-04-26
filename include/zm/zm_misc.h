@@ -71,6 +71,9 @@ __EXPORT void zSinCos(double angle, double *s, double *c);
  */
 __EXPORT double zPhaseNormalize(double angle);
 
+/*! \brief logarithmic function with an arbitrary base. */
+#define zLog(b,x) ( log(x) / log(b) )
+
 /*! \brief the base of natural logarithms. */
 #define zE 2.7182818284590452354
 

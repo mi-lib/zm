@@ -16,6 +16,7 @@ int main(void)
 
   zAssert( zPhaseNormalize, zIsTiny( zPhaseNormalize(3*zPI) - zPI ) &&
                             zIsTiny( zPhaseNormalize(-zPI-zTOL) - zPI ) );
+
   zAssert( zCeil, zCeil(0.5) == 1.0 && zCeil(-0.5) == -1.0 );
   zAssert( zRound, zRound( 1.499999 ) == 1.0 && zRound( 1.50000001 ) == 2.0 &&
                    zRound(-1.499999 ) ==-1.0 && zRound(-1.50000001 ) ==-2.0 );
@@ -23,5 +24,8 @@ int main(void)
 
   val = zRandF( 1, 10 );
   zAssert( zCbrt, zIsTiny( zCube( zCbrt( val ) ) - val ) );
+  val = zRandF( zTOL, 1.0e10 );
+  zAssert( zLog, zIsTiny( zLog(2,val) - log2(val) ) &&
+                 zIsTiny( zLog(10,val) - log10(val) ) );
   return EXIT_SUCCESS;
 }

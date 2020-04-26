@@ -177,6 +177,31 @@ __EXPORT void zRawVecCatDRC(double *v1, double k, double *v2, int size);
 __EXPORT void zRawVecCats(double *v, int size, int n, ...);
 __EXPORT void zRawVecLS(double *v, int size, int n, ...);
 
+/*! \brief interior division of two raw vectors.
+ *
+ * zRawVecInterDiv() calculates the interior division of two
+ * raw vectors \a v1 and \a v2 with a division ratio \a ratio.
+ * The result is put into \a v.
+ *
+ * i.e. \a v = (1-\a ratio)* \a v1 + \a ratio * \a v2.
+ * \return
+ * zRawVecInterDiv() does not return any value.
+ */
+__EXPORT void zRawVecInterDiv(double *v1, double *v2, double ratio, double *v, int size);
+
+/*! \brief scale a raw vector with two boundary vectors.
+ *
+ * zRawVecScale() scales a raw vector \a x with the minimum and maximum
+ * boundary vectors \a min and \a max, respectively and puts it into
+ * \a v. Namely, each component of \a v is the corresponding component
+ * of \a x multipied by the corresponding components of \a max - \a min
+ * and offset by that of \a min.
+ * \a size is the size of the vectors.
+ * \return
+ * zRawVecScale() does not return any value.
+ */
+__EXPORT void zRawVecScale(double *x, double *min, double *max, double *v, int size);
+
 /*! \brief inner product of raw vector.
  *
  * \return

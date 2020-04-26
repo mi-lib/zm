@@ -60,14 +60,12 @@ bool zDataSmoothVelSG(double src[], size_t n, size_t w, int dim, double dest[])
   return _zDataSmoothSG( src, n, w, dim, dest, zPexIPVel );
 }
 
-zListClass( int_list_t, int_list_cell_t, int );
-
 /* smooth a data sequence based on Savitzky-Golay's method and pick up peaks. */
 zIndex zDataPeakSG(double src[], size_t n, int w, int dim)
 {
   zIndex peakidx = NULL;
-  int_list_t list;
-  int_list_cell_t *cp;
+  zIntList list;
+  zIntListCell *cp;
   double *g;
   register int i;
 
@@ -77,7 +75,7 @@ zIndex zDataPeakSG(double src[], size_t n, int w, int dim)
   n--;
   for( i=1; i<n; i++ ){
     if( g[i-1] > 0 && g[i] < 0 ){
-      if( !( cp = zAlloc( int_list_cell_t, 1 ) ) ) goto TERMINATE;
+      if( !( cp = zAlloc( zIntListCell, 1 ) ) ) goto TERMINATE;
       cp->data = i;
       zListInsertHead( &list, cp );
     }
@@ -90,6 +88,6 @@ zIndex zDataPeakSG(double src[], size_t n, int w, int dim)
   }
  TERMINATE:
   free( g );
-  zListDestroy( int_list_cell_t, &list );
+  zListDestroy( zIntListCell, &list );
   return peakidx;
 }

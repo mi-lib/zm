@@ -445,6 +445,20 @@ zVec zVecLS(zVec v, int n, ...)
   return v;
 }
 
+/* interior division of two vectors. */
+zVec zVecInterDiv(zVec v1, zVec v2, double ratio, zVec v)
+{
+  zRawVecInterDiv( zVecBufNC(v1), zVecBufNC(v2), ratio, zVecBufNC(v), zVecSizeNC(v) );
+  return v;
+}
+
+/* scale a raw vector with two boundary vectors. */
+zVec zVecScale(zVec x, zVec min, zVec max, zVec v)
+{
+  zRawVecScale( zVecBuf(x), zVecBuf(min), zVecBuf(max), zVecBuf(v), zVecSizeNC(x) );
+  return v;
+}
+
 /* inner product of two vectors without checking size consistency. */
 double zVecInnerProdNC(zVec v1, zVec v2)
 {
