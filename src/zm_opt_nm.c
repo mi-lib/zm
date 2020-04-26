@@ -5,29 +5,25 @@
  */
 #include <zm/zm_opt.h>
 
-static void _zOptNMInit(zOptNM *opt, zVec var, void *util);
-static void _zOptNMEvalAll(zOptNM *opt, void *util);
-static void _zOptNMReord(zOptNM *opt);
-static zVec _zOptNMPin(zOptNM *opt);
-
-static zVec _zOptNMRefl(zOptNM *opt);
-static zVec _zOptNMExp(zOptNM *opt);
-static zVec _zOptNMShrink(zOptNM *opt);
-static void _zOptNMCrunch(zOptNM *opt);
-
-static bool _zOptNMCheck(zOptNM *opt, double tol);
-static int _zOptNMTry(zOptNM *opt, zVec var, void *util, double tol, int iter, double *eval);
+/* data set for the Nelder-Mead (downhill simplex/polytope) method. */
+typedef struct{
+  int num;   /* number of vertices of simplex */
+  zVec *e;   /* bases */
+  zVec eval; /* evaluation values */
+  zVec pin;  /* pin (COG of the bottom face of simplex) */
+  zVec test; /* test stick */
+  zIndex index;
+} zOptNM;
 
 /* create solver, allocating internal working space. */
-zOptNM *zOptNMCreate(zOptNM *opt, int dim, double (*eval)(zVec,void*))
+static zOptNM *_zOptNMCreate(zOptNM *opt, int dim)
 {
   register int i;
   bool check = true;
 
-  opt->eval = eval;
   opt->num = dim+1;
-  if( !( opt->f = zVecAlloc(opt->num) ) ||
-      !( opt->pin = zVecAlloc(dim) ) ||
+  if( !( opt->eval = zVecAlloc(opt->num) ) ||
+      !( opt->pin  = zVecAlloc(dim) ) ||
       !( opt->test = zVecAlloc(dim) ) ||
       !( opt->index = zIndexCreate(opt->num) ) ||
       !( opt->e = zAlloc( zVec, opt->num ) ) ){
@@ -44,7 +40,7 @@ zOptNM *zOptNMCreate(zOptNM *opt, int dim, double (*eval)(zVec,void*))
 }
 
 /* destroy internal workspace. */
-void zOptNMDestroy(zOptNM *opt)
+static void _zOptNMDestroy(zOptNM *opt)
 {
   register int i;
 
@@ -53,14 +49,12 @@ void zOptNMDestroy(zOptNM *opt)
       zVecFree( opt->e[i] );
     zFree( opt->e );
   }
-  zVecFreeAO( 3, opt->f, opt->pin, opt->test );
+  zVecFreeAO( 3, opt->eval, opt->pin, opt->test );
   zIndexFree( opt->index );
-  opt->eval = NULL;
 }
 
-/* (static)
- * initialize internal workspace. */
-void _zOptNMInit(zOptNM *opt, zVec var, void *util)
+/* initialize internal workspace. */
+static void _zOptNMInit(zOptNM *opt, zVec var)
 {
   register int i;
 
@@ -71,34 +65,31 @@ void _zOptNMInit(zOptNM *opt, zVec var, void *util)
   }
 }
 
-/* (static)
- * evaluate all vertices. */
-void _zOptNMEvalAll(zOptNM *opt, void *util)
+/* evaluate all vertices. */
+static void _zOptNMEvalAll(zOptNM *opt, double (* f)(zVec,void*), void *util)
 {
   register int i;
 
   for( i=0; i<opt->num; i++ )
-    zVecSetElemNC( opt->f, i, opt->eval( opt->e[i], util ) );
-  zVecSort( opt->f, opt->index );
+    zVecSetElemNC( opt->eval, i, f( opt->e[i], util ) );
+  zVecSort( opt->eval, opt->index );
 }
 
-/* (static)
- * reorder the working vertex according to evaluation. */
-void _zOptNMReord(zOptNM *opt)
+/* reorder the working vertex according to evaluation. */
+static void _zOptNMReord(zOptNM *opt)
 {
   register int i;
 
   for( i=0; i<opt->num; i++ )
-    if( zVecElemNC(opt->f,zIndexElemNC(opt->index,i)) > zVecElemNC(opt->f,zIndexHead(opt->index)) ){
+    if( zVecElemNC(opt->eval,zIndexElemNC(opt->index,i)) > zVecElemNC(opt->eval,zIndexHead(opt->index)) ){
       zIndexMove( opt->index, zArraySize(opt->index)-1, i );
       break;
     }
 }
 
-/* (static)
- * compute pin (centroid of the bottom face of simplex), the point
+/* compute pin (centroid of the bottom face of simplex), the point
  * to manipulate working vertex. */
-zVec _zOptNMPin(zOptNM *opt)
+static zVec _zOptNMPin(zOptNM *opt)
 {
   register int i;
 
@@ -108,33 +99,29 @@ zVec _zOptNMPin(zOptNM *opt)
   return zVecDivNCDRC( opt->pin, opt->num-1 );
 }
 
-/* (static)
- * reflect the working vertex with respect to the pin. */
-zVec _zOptNMRefl(zOptNM *opt)
+/* reflect the working vertex with respect to the pin. */
+static zVec _zOptNMRefl(zOptNM *opt)
 {
   zVecMulNC( opt->pin, 2, opt->test );
   return zVecSubNCDRC( opt->test, opt->e[zIndexHead(opt->index)] );
 }
 
-/* (static)
- * expand working vertex with respect to the pin. */
-zVec _zOptNMExp(zOptNM *opt)
+/* expand working vertex with respect to the pin. */
+static zVec _zOptNMExp(zOptNM *opt)
 {
   zVecMulNC( opt->e[zIndexHead(opt->index)], 2, opt->test );
   return zVecSubNCDRC( opt->test, opt->pin );
 }
 
-/* (static)
- * shrink the working vertex with respect to the pin. */
-zVec _zOptNMShrink(zOptNM *opt)
+/* shrink the working vertex with respect to the pin. */
+static zVec _zOptNMShrink(zOptNM *opt)
 {
   zVecAddNC( opt->e[zIndexHead(opt->index)], opt->pin, opt->test );
   return zVecMulNCDRC( opt->test, 0.5 );
 }
 
-/* (static)
- * crunch the working vertex towards the best vertex. */
-void _zOptNMCrunch(zOptNM *opt)
+/* crunch the working vertex towards the best vertex. */
+static void _zOptNMCrunch(zOptNM *opt)
 {
   register int i;
 
@@ -145,9 +132,8 @@ void _zOptNMCrunch(zOptNM *opt)
     }
 }
 
-/* (static)
- * check if the volume of simplex is tiny. */
-bool _zOptNMCheck(zOptNM *opt, double tol)
+/* check if the volume of simplex is tiny. */
+static bool _zOptNMCheck(zOptNM *opt, double tol)
 {
   register int i;
 
@@ -157,9 +143,8 @@ bool _zOptNMCheck(zOptNM *opt, double tol)
   return true;
 }
 
-/* (static)
- * amoeba-like iteration procedure of polytope method. */
-int _zOptNMTry(zOptNM *opt, zVec var, void *util, double tol, int iter, double *eval)
+/* amoeba-like iteration procedure of polytope method. */
+static int _zOptNMTry(zOptNM *opt, zVec var, double (* f)(zVec,void*), void *util, int iter, double tol, double *eval)
 {
   register int i;
   double newval, bestval;
@@ -168,45 +153,51 @@ int _zOptNMTry(zOptNM *opt, zVec var, void *util, double tol, int iter, double *
   for( i=0; i<iter; i++ ){
     if( _zOptNMCheck( opt, tol ) ){
       zVecCopyNC( opt->e[zIndexTail(opt->index)], var );
-      if( eval ) *eval = zVecElemNC( opt->f, zIndexTail(opt->index) );
+      if( eval ) *eval = zVecElemNC( opt->eval, zIndexTail(opt->index) );
       return i; /* succeed. */
     }
     _zOptNMPin( opt );
     _zOptNMRefl( opt );
-    bestval = zVecElemNC( opt->f, zIndexTail(opt->index) );
-    newval = opt->eval( opt->test, util );
+    bestval = zVecElemNC( opt->eval, zIndexTail(opt->index) );
+    newval = f( opt->test, util );
     if( newval < bestval ){
       do{
         bestval = newval;
         zVecCopyNC( opt->test, opt->e[zIndexHead(opt->index)] );
         _zOptNMExp( opt );
-        newval = opt->eval( opt->test, util );
+        newval = f( opt->test, util );
       } while( newval < bestval );
-      zVecSetElemNC( opt->f, zIndexHead(opt->index), bestval );
+      zVecSetElemNC( opt->eval, zIndexHead(opt->index), bestval );
       _zOptNMReord( opt );
       continue;
     }
-    if( newval > zVecElemNC(opt->f,zIndexNeck(opt->index)) ){
+    if( newval > zVecElemNC(opt->eval,zIndexNeck(opt->index)) ){
       _zOptNMShrink( opt );
-      newval = opt->eval( opt->test, util );
-      if( newval > zVecElemNC(opt->f,zIndexNeck(opt->index)) ){
+      newval = f( opt->test, util );
+      if( newval > zVecElemNC(opt->eval,zIndexNeck(opt->index)) ){
         _zOptNMCrunch( opt );
-        _zOptNMEvalAll( opt, util );
+        _zOptNMEvalAll( opt, f, util );
         continue;
       }
     }
     zVecCopyNC( opt->test, opt->e[zIndexHead(opt->index)] );
-    zVecSetElemNC( opt->f, zIndexHead(opt->index), newval );
+    zVecSetElemNC( opt->eval, zIndexHead(opt->index), newval );
     _zOptNMReord( opt );
   }
   ZITERWARN( iter );
   return -1;
 }
 
-/* execute optimization. */
-int zOptNMSolve(zOptNM *opt, zVec var, void *util, double tol, int iter, double *eval)
+/* solve an optimization problem by Nelder-Mead method. */
+int zOptSolveNM(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval)
 {
-  _zOptNMInit( opt, var, util );
-  _zOptNMEvalAll( opt, util );
-  return _zOptNMTry( opt, var, util, tol, iter, eval );
+  zOptNM opt;
+  int ret;
+
+  if( !_zOptNMCreate( &opt, zVecSizeNC(ans) ) ) return -1;
+  _zOptNMInit( &opt, ans );
+  _zOptNMEvalAll( &opt, f, util );
+  ret = _zOptNMTry( &opt, ans, f, util, iter, tol, eval );
+  _zOptNMDestroy( &opt );
+  return ret;
 }

@@ -11,21 +11,13 @@
 
 __BEGIN_DECLS
 
-typedef struct{
-  double (*eval)(zVec,void*); /* evaluator function */
-  int num;   /* number of vertices of simplex */
-  zVec *e;   /* bases */
-  zVec f;    /* evaluation values */
-  zVec pin;  /* pin (COG of the bottom face of simplex) */
-  zVec test; /* test stick */
-  zIndex index;
-} zOptNM;
-
-/* downhill simplex/polytope method by Nelder and Mead (1965).
+/*! \brief solve an optimization problem by Nelder-Mead method.
+ *
+ * zOptSolveNM() solves an optimization problem by Nelder-Mead method, which
+ * is also known as the downhill simplex/polytope method proposed by Nelder
+ * and Mead (1965).
  */
-__EXPORT zOptNM *zOptNMCreate(zOptNM *opt, int dim, double (*eval)(zVec,void*));
-__EXPORT void zOptNMDestroy(zOptNM *opt);
-__EXPORT int zOptNMSolve(zOptNM *opt, zVec var, void *util, double tol, int iter, double *eval);
+__EXPORT int zOptSolveNM(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval);
 
 __END_DECLS
 

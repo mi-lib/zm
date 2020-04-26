@@ -1,3 +1,6 @@
+2020. 4.26. Abolished eval member in zOptNM and renamed f member to eval. [zm_opt_nm]
+2020. 4.26. Renamed zOptNMSolve to zOptSolveNM. [zm_opt_nm]
+2020. 4.26. Renamed zOptNMCreate and zOptNMDestroy to _zOptNMCreate and _zOptNMDestroy as static functions. [zm_opt_nm]
 2020. 4.26. Added zOptSolveDIRECT. [zm_opt, zm_opt_direct]
 2020. 4.26. Added zRawVecScale and zVecScale. [zm_raw_vec, zm_vec]
 2020. 4.26. Added zRawVecInterDiv and zVecInterDiv. [zm_raw_vec, zm_vec]
