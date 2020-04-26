@@ -230,11 +230,7 @@ double zOptGASolve(zOptGA *ga, zVec ans, void *util, int generation)
   for( i=0; i<generation; i++ )
     zOptGAReproduce( ga, util );
   zVecCopy( ga->individual[0].gene, ans );
-#if 0
-  return ga->individual[0].fitness;
-#else
   return ga->eval;
-#endif
 }
 
 /* solve an optimization problem by genetic algorithm. */
