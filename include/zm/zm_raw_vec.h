@@ -189,6 +189,17 @@ __EXPORT void zRawVecLS(double *v, int size, int n, ...);
  */
 __EXPORT void zRawVecInterDiv(double *v1, double *v2, double ratio, double *v, int size);
 
+/*! \brief midpoint of two raw vectors.
+ *
+ * zRawVecMid() calculates the midpoint of two raw vectors \a v1 and
+ * \a v2. The result is put into \a v.
+ *
+ * i.e. \a v = ( \a v1 + \a v2 ) / 2.
+ * \return
+ * zRawVecMid() does not return any value.
+ */
+__EXPORT void zRawVecMid(double *v1, double *v2, double *v, int size);
+
 /*! \brief scale a raw vector with two boundary vectors.
  *
  * zRawVecScale() scales a raw vector \a x with the minimum and maximum

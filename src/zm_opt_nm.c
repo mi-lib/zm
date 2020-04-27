@@ -54,13 +54,13 @@ static void _zOptNMDestroy(zOptNM *opt)
 }
 
 /* initialize internal workspace. */
-static void _zOptNMInit(zOptNM *opt, zVec var)
+static void _zOptNMInit(zOptNM *opt, zVec min, zVec max)
 {
   register int i;
 
-  zVecCopyNC( var, opt->e[0] );
+  zVecMid( min, max, opt->e[0] );
   for( i=1; i<opt->num; i++ ){
-    zVecCopyNC( var, opt->e[i] );
+    zVecCopyNC( opt->e[0], opt->e[i] );
     zVecElemNC(opt->e[i],i-1) += 1.0;
   }
 }
@@ -199,7 +199,7 @@ int zOptSolveNM(double (* f)(zVec,void*), void *util, zVec min, zVec max, int it
     return -1;
   }
   if( !_zOptNMCreate( &opt, zVecSizeNC(ans) ) ) return -1;
-  _zOptNMInit( &opt, ans );
+  _zOptNMInit( &opt, min, max );
   _zOptNMEvalAll( &opt, f, util );
   ret = _zOptNMTry( &opt, ans, f, util, iter, tol, eval );
   _zOptNMDestroy( &opt );

@@ -139,6 +139,7 @@ static zOptDIRECTRectSet *_zOptDIRECTRectSetAlloc(zOptDIRECTRectSet *set, int le
   for( i=0; i<=level_max; i++ )
     zListInit( &set->list[i] );
   set->level_max = level_max;
+  set->min_level = 0;
   return set;
 }
 
@@ -433,8 +434,8 @@ int zOptSolveDIRECT(double (* f)(zVec,void*), void *util, zVec min, zVec max, in
   if( !_zOptDIRECTRectSetInit( &set, f, util, zVecSizeNC(ans), min, max, ans ) )
     goto TERMINATE2;
 
-  ZITERINIT( iter );
-  for( i=0; i<=iter; i++ ){
+  if( iter == 0 ) iter = ZOPT_DIRECT_MAX_ITER_NUM;
+  for( i=0; i<iter; i++ ){
     if( !_zOptDIRECTRectPORIdent( &por, &set ) ) goto TERMINATE1;
     if( set.min_level == set.level_max ) break;
     _zOptDIRECTRectPORSetDivide( &por, &set, f, util, min, max, ans );

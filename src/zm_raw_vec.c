@@ -6,8 +6,6 @@
 
 #include <zm/zm_raw.h>
 
-static void _zRawVecCats(double *v, int size, int n, va_list args);
-
 /* touchup a raw vector. */
 void zRawVecTouchup(double *v, int size)
 {
@@ -171,10 +169,9 @@ void zRawVecCatDRC(double *v1, double k, double *v2, int size)
   while( size-- > 0 ) *v1++ += *v2++ * k;
 }
 
-/* (static)
- * concatenate multiple sets of a scalar and a raw vector,
+/* concatenate multiple sets of a scalar and a raw vector,
  * which is internally called to manage variable arguments. */
-void _zRawVecCats(double *v, int size, int n, va_list args)
+static void _zRawVecCats(double *v, int size, int n, va_list args)
 {
   register int i;
   double k, *vec;
@@ -215,6 +212,13 @@ void zRawVecInterDiv(double *v1, double *v2, double ratio, double *v, int size)
     v1++;
     v2++;
   }
+}
+
+/* midpoint of two raw vectors. */
+void zRawVecMid(double *v1, double *v2, double *v, int size)
+{
+  while( size-- > 0 )
+    *v++ = 0.5 * ( *v1++ + *v2++ );
 }
 
 /* scale a raw vector with two boundary vectors. */

@@ -1,3 +1,7 @@
+2020. 4.27. Modified _zOptDIRECTRectSetAlloc. [zm_opt_direct]
+2020. 4.27. Defined ZOPT_DIRECT_MAX_ITER_NUM and modified zOptSolveDIRECT. [zm_opt_direct]
+2020. 4.27. Modified specification of _zOptNMInit. [zm_opt_nm]
+2020. 4.27. Added zRawVecMid and zVecMid. [zm_raw_vec, zm_vec]
 2020. 4.27. Added zOptSolvePSO and zOptSolvePSODefault. [zm_opt, zm_opt_pso]
 2020. 4.27. Modified zOptGASolve. [zm_opt_ga]
 2020. 4.27. Added eval member to zOptGA to store the optimum value. [zm_opt_ga]

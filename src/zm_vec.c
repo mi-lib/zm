@@ -11,9 +11,6 @@
  * double precision floating point value vector class
  * ********************************************************** */
 
-static int _zVecSortCmp(void *p1, void *p2, void *priv);
-static void _zVecCats(zVec v, int n, va_list args);
-
 /* set vector components from variable argument list. */
 zVec zVecSetElemVList(zVec v, va_list args)
 {
@@ -232,7 +229,7 @@ zVec zVecSwap(zVec v, int i1, int i2)
 }
 
 /* comparison function for zVecSort. */
-int _zVecSortCmp(void *p1, void *p2, void *priv)
+static int _zVecSortCmp(void *p1, void *p2, void *priv)
 {
   double d;
 
@@ -407,7 +404,7 @@ zVec zVecCat(zVec v1, double k, zVec v2, zVec v)
 /* concatenate multiple vectors multiplied by scalar values.
  * this function is internally called to mange variable arguments.
  */
-void _zVecCats(zVec v, int n, va_list args)
+static void _zVecCats(zVec v, int n, va_list args)
 {
   register int i;
   double k;
@@ -449,6 +446,13 @@ zVec zVecLS(zVec v, int n, ...)
 zVec zVecInterDiv(zVec v1, zVec v2, double ratio, zVec v)
 {
   zRawVecInterDiv( zVecBufNC(v1), zVecBufNC(v2), ratio, zVecBufNC(v), zVecSizeNC(v) );
+  return v;
+}
+
+/* midpoint of two vectors. */
+zVec zVecMid(zVec v1, zVec v2, zVec v)
+{
+  zRawVecMid( zVecBufNC(v1), zVecBufNC(v2), zVecBufNC(v), zVecSizeNC(v) );
   return v;
 }
 

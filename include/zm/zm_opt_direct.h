@@ -19,6 +19,8 @@ __BEGIN_DECLS
  */
 __EXPORT int zOptSolveDIRECT(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval);
 
+#define ZOPT_DIRECT_MAX_ITER_NUM 1000
+
 __END_DECLS
 
 #endif /* __ZM_OPT_DIRECT_H__ */

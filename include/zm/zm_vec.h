@@ -385,6 +385,17 @@ __EXPORT zVec zVecLS(zVec v, int n, ...);
  */
 __EXPORT zVec zVecInterDiv(zVec v1, zVec v2, double ratio, zVec v);
 
+/*! \brief midpoint of two vectors.
+ *
+ * zVecMid() calculates the midpoint of two vectors \a v1 and \a v2.
+ * The result is put into \a v.
+ *
+ * i.e. \a v = ( \a v1 + \a v2 ) / 2.
+ * \return
+ * zVecMid() returns a pointer \a v.
+ */
+__EXPORT zVec zVecMid(zVec v1, zVec v2, zVec v);
+
 /*! \brief scale a vector with two boundary vectors.
  *
  * zVecScale() scales a vector \a x with the minimum and maximum boundary
