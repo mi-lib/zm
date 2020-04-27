@@ -17,9 +17,11 @@
 /*! \macro small quantity for finite-difference derivative */
 #define Z_OPT_EPS ( 1.0e-6 )
 
+#include <zm/zm_opt_dm.h>     /* descent method */
+
 #include <zm/zm_opt_direct.h> /* DIviding RECTangle method */
 #include <zm/zm_opt_nm.h>     /* downhill simplex/polytope method */
 #include <zm/zm_opt_ga.h>     /* genetic algorithm */
-#include <zm/zm_opt_dm.h>     /* descent method */
+#include <zm/zm_opt_pso.h>    /* Particle Swarm Optimization method */
 
 #endif /* __ZM_OPT_H__ */

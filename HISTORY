@@ -1,3 +1,4 @@
+2020. 4.27. Added zOptSolvePSO and zOptSolvePSODefault. [zm_opt, zm_opt_pso]
 2020. 4.27. Modified zOptGASolve. [zm_opt_ga]
 2020. 4.27. Added eval member to zOptGA to store the optimum value. [zm_opt_ga]
 2020. 4.27. Modified specification of zOptGASolve to accept an evaluation function to be minimized rather than that to be maximized. [zm_opt_ga]
