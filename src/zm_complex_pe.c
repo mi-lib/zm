@@ -6,9 +6,7 @@
 
 #include <zm/zm_complex.h>
 
-/* zQESolve
- * - solve quadratic equation.
- */
+/* solve quadratic equation. */
 zComplex *zQESolve(double a, double b, double c, zComplex ans[])
 {
   double d, q;
@@ -33,11 +31,8 @@ zComplex *zQESolve(double a, double b, double c, zComplex ans[])
   return ans;
 }
 
-/* zCardano
- * - solve cubic equation by Cardano's formula: algebric roots
- *   of cubic equation, originally derived by Fontana=Tartaglia.
- */
-zComplex *zCardano(double a, double b, double c, double d, zComplex ans[])
+/* solve a cubic equation algebraically by Cardano's formula. */
+zComplex *zCESolve(double a, double b, double c, double d, zComplex ans[])
 {
   double g, p, q, w, z1, z2;
 
@@ -60,7 +55,7 @@ zComplex *zCardano(double a, double b, double c, double d, zComplex ans[])
     zComplexConj( &ans[1], &ans[2] );
   } else{
     z1 = ( q != 0 ) ? atan2( sqrt(-g), q ) : zPI_2;
-    w = 2 * sqrt( -p ); /* 'p' necessarily be negative. */
+    w = 2 * sqrt( -p ); /* p is necessarily negative. */
     zComplexCreate( &ans[0],  w * cos(     z1 /3) - b, 0 );
     zComplexCreate( &ans[1], -w * cos((zPI-z1)/3) - b, 0 );
     zComplexCreate( &ans[2], -w * cos((zPI+z1)/3) - b, 0 );

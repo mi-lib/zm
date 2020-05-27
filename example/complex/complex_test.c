@@ -9,7 +9,7 @@ int main(void)
   printf( " abs = %f\n", zComplexAbs(&c1) );
   printf( " arg = %f\n", zRad2Deg(zComplexArg(&c1)) );
 
-  zComplexPolar( &c2, 1, zDeg2Rad(45) );
+  zComplexCreatePolar( &c2, 1, zDeg2Rad(45) );
   printf( "C2 = " ); zComplexPrint( &c2 ); zEndl();
   printf( " abs = %f\n", zComplexAbs(&c2) );
   printf( " arg = %f\n", zRad2Deg(zComplexArg(&c2)) );

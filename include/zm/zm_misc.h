@@ -92,7 +92,7 @@ __EXPORT double zPhaseNormalize(double angle);
  *  ( ex. zCeil(0.5) = 1.0 , zCeil(-0.5) = -1.0 ) */
 #define zCeil(x)    ( (x)>=0 ? ceil(x) : floor(x) )
 /*! \brief rounded value.
- * \note This is defined for a compiler which is not conforming C99. */
+ * \note This is defined for a compiler which is not conforming to C99. */
 #define zRound(x)   (double)( (x)>=0 ? (int)((x)+0.5) : (int)((x)-0.5) )
 /*! \brief a fructuation of a value \a x devided by \a y.
  * \note if \a y is zero, anything might happen. */
@@ -109,21 +109,20 @@ __EXPORT double zPowN(double x, unsigned int n);
  * points on a plane, (\a x0, \a y0) and (\a x1, \a y1). */
 __EXPORT double zLine(double x, double x0, double y0, double x1, double y1);
 
-/*! \brief the x value of a cycloid curve which goes from
- * (\a from, \a base) to (\a to, \a base) with a height \a h
- * with respect to \a phase, mostly expected in between 0 and 1.
+/*! \brief the x value of a cycloid curve with respect to \a phase,
+ * which is mostly expected to be between 0 and 1.
  * \sa zCycloidY
  */
-__EXPORT double zCycloidX(double from, double to, double phase);
-/*! \brief the y value of a cycloid curve which goes from
- * (\a from, \a base) to (\a to, \a base) with a height \a h
- * with respect to \a phase, mostly expected in between 0 and 1.
+__EXPORT double zCycloidX(double phase);
+
+/*! \brief the y value of a cycloid curve with respect to \a phase,
+ * which is mostly expected to be between 0 and 1.
  * \sa zCycloidX
  */
-__EXPORT double zCycloidY(double base, double h, double phase);
+__EXPORT double zCycloidY(double phase);
 
-/*! \brief a sigmoid function. \a s is the time constant. */
-__EXPORT double zSigmoid(double x, double s);
+/*! \brief sigmoid function. */
+__EXPORT double zSigmoid(double x);
 
 /*! \brief the cubic root of \a x. */
 __EXPORT double zCbrt(double x);

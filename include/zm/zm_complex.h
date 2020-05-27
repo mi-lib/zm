@@ -31,6 +31,10 @@ typedef struct{
  * is \a r and imaginary part is \a i. The result is put
  * where \a c points.
  */
+#define _zComplexCreate(c,r,i) do{\
+  (c)->re = (r);\
+  (c)->im = (i);\
+} while(0)
 __EXPORT zComplex *zComplexCreate(zComplex *c, double r, double i);
 
 /*! \brief create a complex number from the polar expression.
@@ -40,6 +44,7 @@ __EXPORT zComplex *zComplexCreate(zComplex *c, double r, double i);
  * in Gaussian plane, where \a t is given in radians.
  * The result is put where \a c points.
  */
+#define _zComplexCreatePolar(c,r,t) _zComplexCreate( c, (r)*cos(t), (r)*sin(t) )
 __EXPORT zComplex *zComplexCreatePolar(zComplex *c, double r, double t);
 
 /*! \brief copy a complex number to another.
@@ -52,6 +57,7 @@ __EXPORT zComplex *zComplexCopy(zComplex *src, zComplex *dest);
  *
  * zComplexZero() creates a zero complex number \a c by
  * setting both real and imaginary parts for zeros. */
+#define _zComplexZero(c) _zComplexCreate(c,0,0)
 #define zComplexZero(c) zComplexCreate(c,0,0)
 
 /*! \brief touchup a complex number.

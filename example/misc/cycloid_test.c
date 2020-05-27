@@ -9,8 +9,8 @@ int main(void)
 
   for( i=0; i<=DIV; i++ ){
     t = (double)i / DIV;
-    x = zCycloidX( 5, 12, t );
-    y = zCycloidY( 3,  4, t );
+    x = 7 * zCycloidX( t ) + 5;
+    y = 3 * zCycloidY( t ) + 4;
     printf( "%f %f\n", x, y );
   }
   return 0;

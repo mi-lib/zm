@@ -11,36 +11,28 @@
 
 __BEGIN_DECLS
 
-/* METHOD:
- * zQESolve, zCardano - solve quadratic and cubic equation.
- * [SYNOPSIS]
- * zComplex *zQESolve(double a, double b, double c, zComplex ans[]);
- * zComplex *zCardano(double a, double b, double c, double d, zComplex ans[]);
- * [DESCRIPTION]
- * 'zQESolve()' solves a quadratic equation
- *  'a' x^2 + 'b' x + 'c' = 0.
- * 'a' must be nonzero.
- * 2 answers of the quadratic equation (including duplicate
- * answer) are put into the array 'ans'.
- * #
- * 'zCardano()' solves a cubic equation
- *  'a' x^3 + 'b' x^2 + 'c' x + 'd' = 0
- * by Cardano s formula, which is originally derived by
- * Fontana=Tartaglia.
- * 'a' must be nonzero.
- * 3 answers of the equation (including duplicate answer) are
- * put into the array 'ans'.
- * [RETURN VALUE]
- * 'zQESolve()' and 'zCardano()' return the address 'ans',
- * when 'a' is nonzero, or the null pointer, otherwise.
- * [NOTES]
- * At least, the size of the array beginning with 'ans' must be
- * more than 2 and 3 for 'zQESolve()' and 'zCardano()',
- * respectively.
- * If size is not enough, anything might happen.
+/*! \brief solve quadratic and cubic equation.
+ *
+ * zQESolve() finds two answers including duplicate answer of
+ * a quadratic equation \a a x^2 + \a b x + \a c = 0.
+ * \a a must be nonzero.
+ * The answers are put into an array pointed by \a ans.
+ *
+ * zCESolve() finds three answers including duplicate answer of
+ * a cubic equation \a a x^3 + \a b x^2 + \a c x + \a d = 0
+ * by Cardano's formula (originally derived by Fontana=Tartaglia).
+ * \a a must be nonzero.
+ * The answers are put into an array pointed by \a ans.
+ * \return
+ * zQESolve() and zCESolve() return \a ans if succeeding.
+ * If \a a is zero, the null pointer is returned.
+ * \notes
+ * The size of the array pointed by \a ans must be larger than
+ * 2 for zQESolve() and 3 for zCESolve(), respectively.
+ * If not, anything might happen.
  */
 __EXPORT zComplex *zQESolve(double a, double b, double c, zComplex ans[]);
-__EXPORT zComplex *zCardano(double a, double b, double c, double d, zComplex ans[]);
+__EXPORT zComplex *zCESolve(double a, double b, double c, double d, zComplex ans[]);
 
 __END_DECLS
 

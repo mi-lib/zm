@@ -14,15 +14,15 @@
 /* create a complex number. */
 zComplex *zComplexCreate(zComplex *c, double r, double i)
 {
-  c->re = r;
-  c->im = i;
+  _zComplexCreate( c, r, i );
   return c;
 }
 
 /* create a complex number based on the polar expression. */
 zComplex *zComplexCreatePolar(zComplex *c, double r, double t)
 {
-  return zComplexCreate( c, r*cos(t), r*sin(t) );
+  _zComplexCreatePolar( c, r, t );
+  return c;
 }
 
 /* copy a complex number to another. */
