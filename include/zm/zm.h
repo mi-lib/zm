@@ -20,8 +20,8 @@
  - Fast Fourier Transform
  - graph search and rapidly-explored random tree.
  - kd-tree
- - vector sequence and interpolations (linear, Lagrange, spline
-   Akima, polynomial fitting, NURBS)
+ - vector sequence and interpolations (linear, Lagrange, spline,
+   Akima, PCHIP, polynomial fitting, NURBS)
  - data analysis (FFT)
  - numerical integrator
  - optimization tools (line search, linear programming, linear
@@ -40,6 +40,7 @@
 #ifndef __ZM_H__
 #define __ZM_H__
 
+#include <zm/zm_rand.h>
 #include <zm/zm_sf.h>
 #include <zm/zm_mca.h>
 #include <zm/zm_pex.h>

@@ -1,3 +1,4 @@
+2020. 6. 1. Included zm_rand.h in zm.h. [zm]
 2020. 5.27. Added zComplexAddDRC, zComplexSubDRC, zComplexRevDRC, zComplexMulDRC and zComplexDivDRC. [zm_complex_arith]
 2020. 5.27. Reimplemented zComplexPow, zComplexPowRef, zComplexCPow, zComplexLog and zComplexCLog. [zm_complex_arith]
 2020. 5.27. Added _zComplexAdd, _zComplexSub, _zComplexRev, _zComplexMul, _zComplexCMul and _zComplexCMulConj, and reimplemented zComplexAdd, zComplexSub, zComplexRev, zComplexMul, zComplexDiv, zComplexCMul, zComplexCMulConj and zComplexCDiv. [zm_complex_arith]
