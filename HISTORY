@@ -1,3 +1,4 @@
+2020. 7. 1. Added benchmark tests for LP and LCP solvers. [example]
 2020. 6. 1. Included zm_rand.h in zm.h. [zm]
 2020. 5.27. Added zComplexAddDRC, zComplexSubDRC, zComplexRevDRC, zComplexMulDRC and zComplexDivDRC. [zm_complex_arith]
 2020. 5.27. Reimplemented zComplexPow, zComplexPowRef, zComplexCPow, zComplexLog and zComplexCLog. [zm_complex_arith]
