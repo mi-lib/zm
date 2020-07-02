@@ -15,22 +15,29 @@ typedef struct{
   int act;
 } _zLemke;
 
-static _zLemke *_zLemkeCreate(_zLemke *tab, zMat m, zVec q);
-static void _zLemkeDestroy(_zLemke *tab);
-static bool _zLemkeInit(_zLemke *tab);
-static void _zLemkeSweep(_zLemke *tab, int p);
-static bool _zLemkeSwap(_zLemke *tab, int p);
-static int _zLemkePivot(_zLemke *tab);
-static bool _zLemkeIter(_zLemke *tab);
-static void _zLemkeAnswer(_zLemke *tab, zVec w, zVec z);
-
 #ifdef DEBUG
-void _zLemkePrint(_zLemke *tab);
+/* print out tableau contents (for debug). */
+static void _zLemkePrint(_zLemke *tab)
+{ /* for debug. */
+  printf( "tableau: " ); zMatPrint( tab->m );
+  printf( "answer: " ); zVecPrint( tab->q );
+  printf( "base lex.: " ); zIndexPrint( tab->ib );
+  printf( "nonbase lex.: " ); zIndexPrint( tab->in );
+  printf( "active var.: %d\n", tab->act );
+}
 #endif /* DEBUG */
 
-/* (static)
- * create Lemke tableau and lexicon. */
-_zLemke *_zLemkeCreate(_zLemke *tab, zMat m, zVec q)
+/* destroy Lemke tableau and lexicon. */
+static void _zLemkeDestroy(_zLemke *tab)
+{
+  zMatFree( tab->m );
+  zVecFree( tab->q );
+  zIndexFree( tab->ib );
+  zIndexFree( tab->in );
+}
+
+/* create Lemke tableau and lexicon. */
+static _zLemke *_zLemkeCreate(_zLemke *tab, zMat m, zVec q)
 {
   register int i, j, n;
 
@@ -56,32 +63,8 @@ _zLemke *_zLemkeCreate(_zLemke *tab, zMat m, zVec q)
   return tab;
 }
 
-/* (static)
- * destroy Lemke tableau and lexicon. */
-void _zLemkeDestroy(_zLemke *tab)
-{
-  zMatFree( tab->m );
-  zVecFree( tab->q );
-  zIndexFree( tab->ib );
-  zIndexFree( tab->in );
-}
-
-/* (static)
- * initialize Lemke tableau and lexicon. */
-bool _zLemkeInit(_zLemke *tab)
-{
-  int p;
-  double qmin;
-
-  if( ( qmin = zVecMin( tab->q, &p ) ) >= 0 ) return true;
-  _zLemkeSweep( tab, p );
-  _zLemkeSwap( tab, p );
-  return false;
-}
-
-/* (static)
- * sweep-out the active column of Lemke tableau. */
-void _zLemkeSweep(_zLemke *tab, int p)
+/* sweep-out the active column of Lemke tableau. */
+static void _zLemkeSweep(_zLemke *tab, int p)
 {
   register int i, j;
   double ap;
@@ -107,9 +90,8 @@ void _zLemkeSweep(_zLemke *tab, int p)
   }
 }
 
-/* (static)
- * swap Lemke lexicon and active variable index. */
-bool _zLemkeSwap(_zLemke *tab, int p)
+/* swap Lemke lexicon and active variable index. */
+static bool _zLemkeSwap(_zLemke *tab, int p)
 {
   register int i, ib;
 
@@ -125,10 +107,9 @@ bool _zLemkeSwap(_zLemke *tab, int p)
   return ib == zMatColSizeNC(tab->m) - 1 ? true : false;
 }
 
-/* (static)
- * pivot Lemke tableau. */
-int _zLemkePivot(_zLemke *tab)
-{ /* next pivot */
+/* find next pivot in Lemke tableau. */
+static int _zLemkePivot(_zLemke *tab)
+{
   register int i, np;
   double a, p, p_min;
 
@@ -144,9 +125,8 @@ int _zLemkePivot(_zLemke *tab)
   return np;
 }
 
-/* (static)
- * iterate Lemke's pivoting procedure. */
-bool _zLemkeIter(_zLemke *tab)
+/* iterate Lemke's pivoting procedure. */
+static bool _zLemkeIter(_zLemke *tab)
 {
   int p;
 
@@ -160,9 +140,8 @@ bool _zLemkeIter(_zLemke *tab)
   return true;
 }
 
-/* (static)
- * complementary vectors. */
-void _zLemkeAnswer(_zLemke *tab, zVec w, zVec z)
+/* complementary vectors. */
+static void _zLemkeAnswer(_zLemke *tab, zVec w, zVec z)
 {
   register int i, idx;
 
@@ -180,18 +159,17 @@ void _zLemkeAnswer(_zLemke *tab, zVec w, zVec z)
       zVecSetElemNC( z, zIndexElemNC(tab->ib,i), zVecElemNC(tab->q,i) );
 }
 
-#ifdef DEBUG
-/* (static)
- * print out tableau contents (for debug). */
-void _zLemkePrint(_zLemke *tab)
-{ /* for debug. */
-  printf( "tableau: " ); zMatPrint( tab->m );
-  printf( "answer: " ); zVecPrint( tab->q );
-  printf( "base lex.: " ); zIndexPrint( tab->ib );
-  printf( "nonbase lex.: " ); zIndexPrint( tab->in );
-  printf( "active var.: %d\n", tab->act );
+/* initialize Lemke tableau and lexicon. */
+static bool _zLemkeInit(_zLemke *tab)
+{
+  int p;
+  double qmin;
+
+  if( ( qmin = zVecMin( tab->q, &p ) ) >= 0 ) return true;
+  _zLemkeSweep( tab, p );
+  _zLemkeSwap( tab, p );
+  return false;
 }
-#endif /* DEBUG */
 
 /* solve linear complementarity problem by Lemke's method. */
 bool zLCPSolveLemke(zMat m, zVec q, zVec w, zVec z)

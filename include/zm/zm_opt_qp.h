@@ -36,7 +36,7 @@ __EXPORT double zQuadraticValue(zMat q, zVec c, zVec x);
  * subject to a x >= b and x >= 0 based on Lemke method. For this
  * function, \a q must be positive definite.
  *
- * zQPSolveLemke() solves a quadratic programming with inequality
+ * zQPSolveIP() solves a quadratic programming with inequality
  * constraint to find the vector x which minimizes 0.5 xT q x + cT x
  * subject to a x >= b and x >= 0 based on interior point method.
  * For this function, \a q must be positive definite.

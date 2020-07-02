@@ -1,7 +1,5 @@
 #include <zm/zm_opt.h>
 
-#define TOL (1.0e-7)
-
 void alloc_sample(int d, double marray[], double qarray[], double ansarray[], zMat *m, zVec *q, zVec *ans, zVec *z, zVec *err)
 {
   *m = zMatCloneArray( marray, d, d );
@@ -131,6 +129,8 @@ void (* gen_sample[])(zMat*,zVec*,zVec*,zVec*,zVec*) = {
   gen_sample9,
   NULL,
 };
+
+#define TOL (1.0e-7)
 
 int main(void)
 {
