@@ -67,14 +67,14 @@ void test(zMat a, zVec b, zVec w, zVec w2, zVec x, zVec _b)
   printf( "MP(LQ):%g %ld ", zVecNorm( _b ), (c2-c1)/1000 );
 
   c1 = clock();
-  zLESolveMP_LU( a, b, w, w2, x );
+  zLESolveMPLU( a, b, w, w2, x );
   c2 = clock();
   zMulMatVec( a, x, _b );
   zVecSub( b, _b, _b );
   printf( "MP(LU):%g %ld ", zVecNorm( _b ), (c2-c1)/1000 );
 
   c1 = clock();
-  zLESolveMP_SVD( a, b, x );
+  zLESolveMPSVD( a, b, x );
   c2 = clock();
   zMulMatVec( a, x, _b );
   zVecSub( b, _b, _b );

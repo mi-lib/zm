@@ -1,3 +1,4 @@
+2021. 3.31. Modified makefile to separately make and install library and applications. [makefile]
 2020. 7. 2. Added benchmark tests for QP solvers. [example]
 2020. 7. 1. Added benchmark tests for LP and LCP solvers. [example]
 2020. 6. 1. Included zm_rand.h in zm.h. [zm]
