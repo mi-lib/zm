@@ -7,6 +7,40 @@
 #include <zm/zm_data.h>
 #include <zm/zm_ip.h>
 
+/* check if the specified point is a peak. */
+static bool _zDataIsPeak(double src[], size_t n, int i)
+{
+  if( i <= 0 || i >= n - 1 ) return false;
+  return src[i] > src[i-1] && src[i] > src[i+1];
+}
+
+/* pick up peaks a data sequence. */
+zIndex zDataPeak(double src[], size_t n, int w)
+{
+  zIndex peakidx = NULL;
+  zIntList list;
+  zIntListCell *cp;
+  register int i;
+
+  zListInit( &list );
+  for( i=1; i<n; i++ ){
+    if( _zDataIsPeak( src, n, i ) ){
+      if( zListIsEmpty(&list) || i > zListHead(&list)->data + w ){
+        if( !zIntListAdd( &list, i ) ) goto TERMINATE;
+      } else
+      if( src[i] > src[zListHead(&list)->data] ){
+        zListDeleteHead( &list, &cp );
+        free( cp );
+        if( !zIntListAdd( &list, i ) ) goto TERMINATE;
+      }
+    }
+  }
+  peakidx = zIndexCreateFromList( &list );
+ TERMINATE:
+  zListDestroy( zIntListCell, &list );
+  return peakidx;
+}
+
 /* internal function for smoothing a data sequence based on Savitzky-Golay's method */
 static bool _zDataSmoothSG(double src[], size_t n, size_t w, int dim, double dest[], double (*pexip_func)(zPexIP*,double))
 {
@@ -60,12 +94,11 @@ bool zDataSmoothVelSG(double src[], size_t n, size_t w, int dim, double dest[])
   return _zDataSmoothSG( src, n, w, dim, dest, zPexIPVel );
 }
 
-/* smooth a data sequence based on Savitzky-Golay's method and pick up peaks. */
+/* pick up peaks of a smoothed data sequence based on Savitzky-Golay's method. */
 zIndex zDataPeakSG(double src[], size_t n, int w, int dim)
 {
   zIndex peakidx = NULL;
   zIntList list;
-  zIntListCell *cp;
   double *g;
   register int i;
 
@@ -73,19 +106,10 @@ zIndex zDataPeakSG(double src[], size_t n, int w, int dim)
   if( !zDataSmoothVelSG( src, n, w, dim, g ) ) goto TERMINATE;
   zListInit( &list );
   n--;
-  for( i=1; i<n; i++ ){
-    if( g[i-1] > 0 && g[i] < 0 ){
-      if( !( cp = zAlloc( zIntListCell, 1 ) ) ) goto TERMINATE;
-      cp->data = i;
-      zListInsertHead( &list, cp );
-    }
-  }
-  if( zListSize(&list) > 0 ){
-    if( !( peakidx = zIndexCreate( zListSize(&list) ) ) ) goto TERMINATE;
-    i=0;
-    zListForEach( &list, cp )
-      zIndexElemNC(peakidx,i++) = cp->data;
-  }
+  for( i=1; i<n; i++ )
+    if( g[i-1] > 0 && g[i] < 0 )
+      if( !zIntListAdd( &list, i ) ) goto TERMINATE;
+  peakidx = zIndexCreateFromList( &list );
  TERMINATE:
   free( g );
   zListDestroy( zIntListCell, &list );

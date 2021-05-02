@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
   zFourier fourier;
   double sample[SAMPLE_N];
   double smooth[SAMPLE_N];
-  zIndex peakidx;
+  zIndex peakidx, peakidx_sg;
   register int i;
   FILE *fp;
 
@@ -30,15 +30,21 @@ int main(int argc, char *argv[])
   }
 
   zDataSmoothSG( sample, SAMPLE_N, 50, 5, smooth );
-  peakidx = zDataPeakSG( sample, SAMPLE_N, 100, 5 );
+  peakidx = zDataPeak( sample, SAMPLE_N, 100 );
+  peakidx_sg = zDataPeakSG( sample, SAMPLE_N, 100, 5 );
   fp = fopen( "sample.dat", "w" );
   for( i=0; i<SAMPLE_N; i++ )
     fprintf( fp, "%.10f %.10f\n", sample[i], smooth[i] );
   fclose( fp );
   fp = fopen( "peak.dat", "w" );
   for( i=0; i<zArraySize(peakidx); i++ )
-    fprintf( fp, "%d %.10f\n", zIndexElemNC(peakidx,i), smooth[zIndexElemNC(peakidx,i)] );
+    fprintf( fp, "%d %.10f\n", zIndexElemNC(peakidx,i), sample[zIndexElemNC(peakidx,i)] );
+  fclose( fp );
+  fp = fopen( "peak_sg.dat", "w" );
+  for( i=0; i<zArraySize(peakidx_sg); i++ )
+    fprintf( fp, "%d %.10f\n", zIndexElemNC(peakidx_sg,i), smooth[zIndexElemNC(peakidx_sg,i)] );
   fclose( fp );
   zIndexFree( peakidx );
+  zIndexFree( peakidx_sg );
   return 0;
 }

@@ -1,3 +1,5 @@
+2021. 5. 2. Modified zDataPeakSG. [zm_data]
+2021. 5. 2. Added zDataPeak. [zm_data]
 2021. 4.29. Modified app/makefile. [app]
 2021. 4.29. Reflected new specification of zeda-config-gen. [app]
 2021. 3.31. Modified makefile to separately make and install library and applications. [makefile]
