@@ -32,6 +32,8 @@ int main(int argc, char *argv[])
   zDataSmoothSG( sample, SAMPLE_N, 50, 5, smooth );
   peakidx = zDataPeak( sample, SAMPLE_N, 100 );
   peakidx_sg = zDataPeakSG( sample, SAMPLE_N, 100, 5 );
+  zDataSortIndex( sample, SAMPLE_N, peakidx );
+  zDataSortIndex( smooth, SAMPLE_N, peakidx_sg );
   fp = fopen( "sample.dat", "w" );
   for( i=0; i<SAMPLE_N; i++ )
     fprintf( fp, "%.10f %.10f\n", sample[i], smooth[i] );

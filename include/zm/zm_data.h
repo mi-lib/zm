@@ -22,6 +22,9 @@ __EXPORT bool zDataSmoothSG(double src[], size_t n, size_t w, int dim, double de
 /*! \brief pick up peaks of a smoothed data sequence based on Savitzky-Golay's method. */
 __EXPORT zIndex zDataPeakSG(double src[], size_t n, int w, int dim);
 
+/*! \brief sort an integer vector in the descent order of the corresponding samples. */
+__EXPORT zIndex zDataSortIndex(double data[], size_t n, zIndex index);
+
 __END_DECLS
 
 #include <zm/zm_data_fft.h>

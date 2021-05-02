@@ -115,3 +115,18 @@ zIndex zDataPeakSG(double src[], size_t n, int w, int dim)
   zListDestroy( zIntListCell, &list );
   return peakidx;
 }
+
+/* an internal comparison function for zDataSortIndex. */
+static int _zDataSortIndexCmp(void *i1, void *i2, void *priv)
+{
+  if( ((double *)priv)[*(int*)i1] < ((double *)priv)[*(int*)i2] ) return 1;
+  if( ((double *)priv)[*(int*)i1] > ((double *)priv)[*(int*)i2] ) return -1;
+  return 0;
+}
+
+/* sort an integer vector in the descent order of the corresponding samples. */
+zIndex zDataSortIndex(double data[], size_t n, zIndex index)
+{
+  zQuickSort( zArrayBuf(index), zArraySize(index), sizeof(int), _zDataSortIndexCmp, data );
+  return index;
+}
