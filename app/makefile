@@ -1,40 +1,38 @@
 include ../config
 
-INCLUDE=`zeda-config -I`
-LIB=`zeda-config -L`
-DEF=`zeda-config -D`
+CONFIG=zm-config
 BINDIR=$(PREFIX)/bin
+
+INCLUDE=`$(CONFIG) -I`
+LIB=`$(CONFIG) -L`
+DEF=`$(CONFIG) -D`
+LINK=`$(CONFIG) -l`
 
 CC=gcc
 CFLAGS=-ansi -Wall -O3 $(INCLUDE) $(LIB) $(DEF)
 
-LINK=-lzm `zeda-config -l`
-
 COMPILE=$(CC) $(CFLAGS) -o $@ $< $(LINK)
-
 INSTALL=install -m 755
 UNINSTALL=rm -f
 
-CONFIGGEN=zeda-config-gen
-CONFIG=zm-config
-TARGET=$(CONFIG) deg2rad rad2deg le psolve pexp seqmod
+TARGET=deg2rad rad2deg le psolve pexp seqmod
 
 #####################################################################
 all: $(TARGET)
 
-$(CONFIG):
-	@echo " GENERATE" $@
-	-@rm -f $@
-	@$(CONFIGGEN) -I "$(INCLUDE)" -L "$(LIB)" -D "$(DEF)" -l "$(LINK)" -v $(VERSION) > $@
 %: %.c
 	@echo " CC	" $<
 	@$(COMPILE)
-install: $(TARGET)
-	@echo " INSTALL	" $^
-	@$(INSTALL) $^ $(BINDIR)
 clean:
 	@echo " CLEAN"
 	-@rm -f *.o *~ core $(TARGET)
+install: $(TARGET)
+ifneq ($(TARGET),)
+	@echo " INSTALL	" $^
+	@$(INSTALL) $^ $(BINDIR)
+endif
 uninstall:
+ifneq ($(TARGET),)
 	@echo " UNINSTALL	" $(TARGET)
-	@cd $(BINDIR); $(UNINSTALL) $(TARGET); cd -
+	@$(UNINSTALL) $(BINDIR)/$(TARGET)
+endif
