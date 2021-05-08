@@ -1,0 +1,4 @@
+INCLUDE+=`zeda-config -I`
+LIB+=`zeda-config -L`
+DEF+=`zeda-config -D`
+LINK+=`zeda-config -l`

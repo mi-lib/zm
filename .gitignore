@@ -1,7 +1,10 @@
 config
 src/*.o
-app
-!app/*.c
-!app/makefile
 lib/*
 !lib/.gitkeep
+tools/*
+!tools/makefile
+!tools/config.tools
+app/*
+!app/*.c
+!app/makefile
