@@ -1,3 +1,4 @@
+2021. 5. 8. Modified makefile. [makefile]
 2021. 5. 8. Reflected -ansi option of zeda-makefile-gen. [app]
 2021. 5. 7. Made tools/, and modified makefiles. [zm, app, tools]
 2021. 5. 2. Added zDataSortIndex. [zm_data]

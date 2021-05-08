@@ -2,7 +2,7 @@ MAKEFILEGEN=`which zeda-makefile-gen`
 
 all:
 ifeq ($(MAKEFILEGEN),)
-	echo "install ZEDA."
+	echo "ZEDA not installed."
 else
 	@$(MAKEFILEGEN) | make -f -
 endif
