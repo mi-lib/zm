@@ -127,7 +127,8 @@ __EXPORT double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn);
 
 /* for debug */
 
-__EXPORT void zNURBSKnotFPrint(FILE *fp, zNURBS *nurbs);
+#define zNURBSKnotFPrint(fp,n) zVecFPrint( fp, (n)->knot )
+
 __EXPORT void zNURBSCPFPrint(FILE *fp, zNURBS *nurbs);
 
 __END_DECLS

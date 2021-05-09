@@ -6,15 +6,8 @@
 
 #include <zm/zm_nurbs.h>
 
-static void _zNURBSKnotInit(zNURBS *nurbs);
-static int _zNURBSSeg(zNURBS *nurbs, double t);
-
-static double _zNURBSBasis(zNURBS *nurbs, double t, int i, int r, int seg);
-static double _zNURBSBasisDiff(zNURBS *nurbs, double t, int i, int r, int seg, int diff);
-static double _zNURBSDenDiff(zNURBS *nurbs, double t, int s, int diff);
-
 /* set knots & assign control points & initialize weight uniformly. */
-void _zNURBSKnotInit(zNURBS *nurbs)
+static void _zNURBSKnotInit(zNURBS *nurbs)
 {
   register int j;
 
@@ -80,7 +73,7 @@ void zNURBSKnotNormalize(zNURBS *nurbs)
 }
 
 /* find a knot segment that includes the given parameter. */
-int _zNURBSSeg(zNURBS *nurbs, double t)
+static int _zNURBSSeg(zNURBS *nurbs, double t)
 {
   register int i, j, k;
 
@@ -98,7 +91,7 @@ int _zNURBSSeg(zNURBS *nurbs, double t)
 }
 
 /* basis function of NURBS. */
-double _zNURBSBasis(zNURBS *nurbs, double t, int i, int r, int seg)
+static double _zNURBSBasis(zNURBS *nurbs, double t, int i, int r, int seg)
 {
   double t1, tr1, b = 0;
 
@@ -137,7 +130,7 @@ zVec zNURBSVec(zNURBS *nurbs, double t, zVec v)
 }
 
 /* derivative of the basis function of NURBS. */
-double _zNURBSBasisDiff(zNURBS *nurbs, double t, int i, int r, int seg, int diff)
+static double _zNURBSBasisDiff(zNURBS *nurbs, double t, int i, int r, int seg, int diff)
 {
   double dt, b = 0;
 
@@ -155,7 +148,7 @@ double _zNURBSBasisDiff(zNURBS *nurbs, double t, int i, int r, int seg, int diff
 }
 
 /* derivative of the denominator of NURBS. */
-double _zNURBSDenDiff(zNURBS *nurbs, double t, int s, int diff)
+static double _zNURBSDenDiff(zNURBS *nurbs, double t, int s, int diff)
 {
   register int i;
   double den;

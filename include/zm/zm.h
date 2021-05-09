@@ -47,8 +47,8 @@
 #include <zm/zm_fourier.h>
 #include <zm/zm_nle.h>
 #include <zm/zm_ip.h>
+#include <zm/zm_nurbs.h>
 #include <zm/zm_data.h>
-#include <zm/zm_seq.h>
 #include <zm/zm_opt.h>
 #include <zm/zm_ode.h>
 #include <zm/zm_intg.h>
