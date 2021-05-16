@@ -338,12 +338,19 @@ zPex zPexFromZTK(ZTK *ztk)
 /* scan a polynomial expression from a file. */
 zPex zPexFScan(FILE *fp)
 {
-  register int i, dim;
+  register int i;
+  int dim;
   zPex p;
 
-  if( !( p = zPexAlloc( ( dim = zFInt(fp) ) ) ) ) return NULL;
+  if( !zFInt( fp, &dim ) ){
+    ZRUNERROR( ZM_ERR_PEX_DIMUNFOUND );
+  }
+  if( !( p = zPexAlloc( dim ) ) ) return NULL;
   for( i=0; i<=dim; i++ )
-    zPexSetCoeff( p, i, zFDouble(fp) );
+    if( !zFDouble( fp, &zPexCoeff(p,i) ) ){
+      ZRUNWARN( ZM_WARN_PEX_SIZMIS, i, dim+1 );
+      break;
+    }
   return p;
 }
 

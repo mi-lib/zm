@@ -17,12 +17,17 @@
 #define ZM_WARN_SIZINV_VEC   "invalid vector size, ignored"
 #define ZM_WARN_SIZINV_MAT   "invalid matrix size, ignored"
 
+#define ZM_WARN_VEC_SIZMIS   "vector has only %d components, while specified size is %d"
+#define ZM_WARN_MAT_SIZMIS   "matrix has only %d components, while specified size is %d"
+
 #define ZM_WARN_LE_ZEROPIVOT "cannot sweep out by zero pivot"
 
 #define ZM_WARN_NLE_NOROOT   "probably, equation has no root"
 
 #define ZM_WARN_SEQ_EMPTY    "sequence list is empty"
 #define ZM_WARN_SEQ_STEP     "too large step index"
+
+#define ZM_WARN_PEX_SIZMIS   "polynomial expression has only %d components, while specified size is %d"
 
 #define ZM_WARN_OPT_BADINI   "probably inadequate initial guess"
 
@@ -44,6 +49,9 @@
 #define ZM_ERR_SIZMIS_MATVEC "size mismatch of matrix and vector"
 #define ZM_ERR_NONSQR_MAT    "not a square matrix"
 
+#define ZM_ERR_SIZUNFOUND_VEC "vector size not specified"
+#define ZM_ERR_SIZUNFOUND_MAT "matrix size not specified"
+
 #define ZM_ERR_INV_ROW       "invalid row specified"
 #define ZM_ERR_INV_COL       "invalid column specified"
 #define ZM_ERR_INV_INDEX     "invalid index specified"
@@ -59,6 +67,9 @@
 
 #define ZM_ERR_PE_DEFL       "equation deflated"
 
+#define ZM_ERR_SEQ_DT_UNFOUND "delta time not specified"
+
+#define ZM_ERR_PEX_DIMUNFOUND "dimension not specified"
 #define ZM_ERR_PEX_DIMMIS    "dimension mismatch"
 #define ZM_ERR_PEX_EQ_SIZMIS "shortage of vector size %d for answers of a %s-order polynomial equation."
 

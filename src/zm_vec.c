@@ -533,13 +533,21 @@ zVec zVecFromZTK(ZTK *ztk)
 /* scan a vector from a file. */
 zVec zVecFScan(FILE *fp)
 {
-  register int i, size;
+  register int i;
+  int size;
   zVec v;
 
-  size = zFInt( fp );
+  if( !zFInt( fp, &size ) ){
+    ZRUNERROR( ZM_ERR_SIZUNFOUND_VEC );
+    return NULL;
+  }
   if( !( v = zVecAlloc( size ) ) ) return NULL;
-  for( i=0; i<size; i++ )
-    zVecSetElemNC( v, i, zFDouble( fp ) );
+  for( i=0; i<size; i++ ){
+    if( zFDouble( fp, &zVecElemNC(v,i) ) ){
+      ZRUNERROR( ZM_WARN_VEC_SIZMIS, i, size );
+      break;
+    }
+  }
   return v;
 }
 

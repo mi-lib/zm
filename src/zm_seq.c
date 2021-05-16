@@ -101,7 +101,10 @@ zSeq *zSeqFScan(FILE *fp, zSeq *seq)
       ZALLOCERROR();
       break;
     }
-    cp->data.dt = zFDouble(fp);
+    if( !zFDouble( fp, &cp->data.dt ) ){
+      ZRUNERROR( ZM_ERR_SEQ_DT_UNFOUND );
+      break;
+    }
     if( !( cp->data.v = zVecFScan(fp) ) ){
       ZALLOCERROR();
       free( cp );

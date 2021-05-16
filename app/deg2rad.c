@@ -16,7 +16,7 @@ void deg2rad_file(FILE *fp, int id)
   while( fgets( buf, BUFSIZ, fp ) ){
     val = 0;
     for( i=0; i<id; i++ )
-      val = zSDouble( buf );
+      zSDouble( buf, &val );
     printf( "%.10f\n", zDeg2Rad(val) );
   }
   fclose( fp );

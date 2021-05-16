@@ -905,15 +905,25 @@ zMat zMatFromZTK(ZTK *ztk)
 /* scan information of a matrix from file. */
 zMat zMatFScan(FILE *fp)
 {
-  register unsigned i, j, row, col;
+  register unsigned i, j;
+  int row, col;
   zMat m;
 
-  row = zFInt( fp );
-  col = zFInt( fp );
+  if( !zFInt( fp, &row ) ){
+    ZRUNERROR( ZM_ERR_SIZUNFOUND_MAT );
+    return NULL;
+  }
+  if( !zFInt( fp, &col ) ){
+    ZRUNERROR( ZM_ERR_SIZUNFOUND_MAT );
+    return NULL;
+  }
   if( !( m = zMatAlloc( row, col ) ) ) return NULL;
   for( i=0; i<row; i++ )
     for( j=0; j<col; j++ )
-      zMatSetElemNC( m, i, j, zFDouble( fp ) );
+      if( zFDouble( fp, &zMatElemNC(m,i,j) ) ){
+        ZRUNERROR( ZM_WARN_MAT_SIZMIS, i*row+j, row*col );
+        break;
+      }
   return m;
 }
 
