@@ -543,7 +543,7 @@ zVec zVecFScan(FILE *fp)
   }
   if( !( v = zVecAlloc( size ) ) ) return NULL;
   for( i=0; i<size; i++ ){
-    if( zFDouble( fp, &zVecElemNC(v,i) ) ){
+    if( !zFDouble( fp, &zVecElemNC(v,i) ) ){
       ZRUNERROR( ZM_WARN_VEC_SIZMIS, i, size );
       break;
     }

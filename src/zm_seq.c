@@ -95,7 +95,7 @@ zSeq *zSeqFScan(FILE *fp, zSeq *seq)
   zSeqListCell *cp;
 
   zSeqInit( seq );
-  while( !feof(fp) ){
+  while( !feof( fp ) ){
     if( !zFSkipDelimiter( fp ) ) break;
     if( !( cp = zAlloc( zSeqListCell, 1 ) ) ){
       ZALLOCERROR();
@@ -105,7 +105,7 @@ zSeq *zSeqFScan(FILE *fp, zSeq *seq)
       ZRUNERROR( ZM_ERR_SEQ_DT_UNFOUND );
       break;
     }
-    if( !( cp->data.v = zVecFScan(fp) ) ){
+    if( !( cp->data.v = zVecFScan( fp ) ) ){
       ZALLOCERROR();
       free( cp );
       break;
