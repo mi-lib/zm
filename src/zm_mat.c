@@ -920,7 +920,7 @@ zMat zMatFScan(FILE *fp)
   if( !( m = zMatAlloc( row, col ) ) ) return NULL;
   for( i=0; i<row; i++ )
     for( j=0; j<col; j++ )
-      if( zFDouble( fp, &zMatElemNC(m,i,j) ) ){
+      if( !zFDouble( fp, &zMatElemNC(m,i,j) ) ){
         ZRUNERROR( ZM_WARN_MAT_SIZMIS, i*row+j, row*col );
         break;
       }
