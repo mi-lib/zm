@@ -1,3 +1,4 @@
+2021. 5.30. Applied zeda-deb-gen. [makefile]
 2021. 5.21. Debugged zMatFScan. [zm_mat]
 2021. 5.20. Debugged zVecFScan. [zm_vec]
 2021. 5.16. Reflected new specifications of zFInt and zFDouble. [zm_errmsg, zm_vec, zm_mat, zm_seq, zm_pex, app]
