@@ -4,7 +4,9 @@ for sampledir in *
 do
     if [ -d ${sampledir} ]; then
 	cd ${sampledir} > /dev/null
-	make clean
+	if [ -e makefile ]; then
+	    make clean
+	fi
 	cd - > /dev/null
     fi
 done

@@ -1,3 +1,5 @@
+2021. 6. 1. Applied new zeda-makefile-gen to compilation of shared objects. [src]
+2021. 6. 1. Modified allclean.sh in example to skip directories without makefile. [example]
 2021. 5.30. Applied zeda-deb-gen. [makefile]
 2021. 5.21. Debugged zMatFScan. [zm_mat]
 2021. 5.20. Debugged zVecFScan. [zm_vec]

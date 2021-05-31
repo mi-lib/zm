@@ -22,5 +22,4 @@ ifeq ($(MAKEDEB),)
 	echo "ZEDA is not installed."
 else
 	@$(MAKEDEB)
-	@$(MAKEDEB) clean
 endif
