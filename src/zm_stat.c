@@ -188,21 +188,21 @@ double zDataSum(double *data, int size)
   return s + q;
 }
 
-/* average of all values of data. */
-double zDataAve(double *data, int size)
+/* mean of all values of data. */
+double zDataMean(double *data, int size)
 {
-  return zDataSum(data,size) / size;
+  return zDataSum( data, size ) / size;
 }
 
 /* calculate the variance of data. */
 double zDataVar(double *data, int size)
 {
   register int i;
-  double ave, result;
+  double mean, result;
 
-  ave = zDataAve( data, size );
+  mean = zDataMean( data, size );
   for( result=0, i=0; i<size; i++ )
-    result += zSqr( data[i] - ave );
+    result += zSqr( data[i] - mean );
   return result / size;
 }
 

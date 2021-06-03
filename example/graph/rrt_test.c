@@ -85,6 +85,6 @@ int main(int argc, char *argv[])
   fclose( fp );
 
   zRRTDestroy( &rrt );
-  zRRTPathDestroy( &path );
+  zVecListDestroy( &path );
   return 0;
 }

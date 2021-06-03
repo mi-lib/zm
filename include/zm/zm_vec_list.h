@@ -19,30 +19,68 @@ __BEGIN_DECLS
 zListClass( zVecList, zVecListCell, zVec );
 
 /*! \brief insert a vector to a list at the head.
- * if \a flag is true, a clone of \a v is registered.
+ *
+ * zVecListInsertHead() inserts a clone of a given vector \a v to the head
+ * of a list \a list.
+ * \return
+ * zVecListInsertHead() returns a pointer to the newly inserted list cell, if
+ * it succeeds. Otherwise, the null pointer is returned.
  */
-__EXPORT zVecListCell *zVecListInsertHead(zVecList *list, zVec v, bool flag);
+__EXPORT zVecListCell *zVecListInsertHead(zVecList *list, zVec v);
 
 /*! \brief insert a vector to a list at the tail.
- * if \a flag is true, a clone of \a v is registered.
+ *
+ * zVecListInsertTail() inserts a clone of a given vector \a v to the tail
+ * of a list \a list.
+ * \return
+ * zVecListInsertTail() returns a pointer to the newly inserted list cell, if
+ * it succeeds. Otherwise, the null pointer is returned.
  */
-__EXPORT zVecListCell *zVecListInsertTail(zVecList *list, zVec v, bool flag);
+__EXPORT zVecListCell *zVecListInsertTail(zVecList *list, zVec v);
 
 /*! \brief destroy a vector list.
- * if \a flag is true, a vector pointed by each cell is freed.
+ *
+ * zVecListDestroy() destroys a vector list \a list.
  */
-__EXPORT void zVecListDestroy(zVecList *list, bool flag);
+__EXPORT void zVecListDestroy(zVecList *list);
 
 /*! \brief nearest neighbor cell in a list to a vector.
- * the distance from \a v to the nearest neighbor is stored where
- * is pointed by \a dmin, unless \a dmin is the null pointer.
+ *
+ * zVecListNN() finds the nearest neighbor to a vector \a v in a list of
+ * vectors \a list. If \a dmin is not the null pointer, the distance
+ * between \a v to the nearest neighbor is stored where is pointed by
+ * \a dmin.
+ * \return
+ * zVecListNN() returns a pointer to the nearest neighbor vector.
  */
 __EXPORT zVec zVecListNN(zVecList *list, zVec v, double *dmin);
 
 /*! \brief print a vector list out to a file.
+ *
+ * zVecListFPrint() prints out information about the list of vectors
+ * \a list to the current position of a stream \a fp.
  */
 __EXPORT void zVecListFPrint(FILE *fp, zVecList *list);
 #define zVecListPrint(l) zVecListFPrint( stdout, l )
+
+/* ********************************************************** */
+/* CLASS: zVecAddrList
+ * vector address list class.
+ * ********************************************************** */
+
+typedef zVecList zVecAddrList;
+
+/*! \brief insert a pointer to a vector to a list at the head.
+ */
+__EXPORT zVecListCell *zVecAddrListInsertHead(zVecAddrList *list, zVec v);
+
+/*! \brief insert a pointer to a vector to a list at the tail.
+ */
+__EXPORT zVecListCell *zVecAddrListInsertTail(zVecAddrList *list, zVec v);
+
+/*! \brief destroy a vector list.
+ */
+__EXPORT void zVecAddrListDestroy(zVecList *list);
 
 __END_DECLS
 

@@ -15,11 +15,11 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
     xc = zRandF( xmin, xmax );
     yc = zRandF( ymin, ymax );
     for( j=0; j<np; j++ ){
-      r = zRandFND(0,0.5*rmax);
-      t = zRandF(0,zPIx2);
+      r = zRandND( NULL, 0, 0.5*rmax );
+      t = zRandF( 0, zPIx2 );
       zVecSetElem( vc, 0, xc + r * cos(t) );
       zVecSetElem( vc, 1, yc + r * sin(t) );
-      zVecListInsertHead( vl, vc, true );
+      zVecListInsertHead( vl, vc );
     }
   }
   zVecFree( vc );
@@ -52,6 +52,6 @@ int main(int argc, char *argv[])
     fclose( fp );
   }
   zMClusterDestroy( &mc );
-  zVecListDestroy( &points, true );
+  zVecListDestroy( &points );
   return 0;
 }

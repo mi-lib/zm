@@ -6,11 +6,8 @@
 
 #include <zm/zm_vec.h>
 
-static zVecListCell *_zVecListCellCreate(zVec v, bool flag);
-
-/* (static)
- * create a vector list cell. */
-zVecListCell *_zVecListCellCreate(zVec v, bool flag)
+/* create a vector list cell. */
+static zVecListCell *_zVecListCellCreate(zVec v, bool flag)
 {
   zVecListCell *cell;
 
@@ -24,14 +21,13 @@ zVecListCell *_zVecListCellCreate(zVec v, bool flag)
       zFree( cell );
       return NULL;
     }
-  } else{
+  } else
     cell->data = v;
-  }
   return cell;
 }
 
 /* insert a vector list cell at the head of a list. */
-zVecListCell *zVecListInsertHead(zVecList *list, zVec v, bool flag)
+static zVecListCell *_zVecListInsertHead(zVecList *list, zVec v, bool flag)
 {
   zVecListCell *cell;
 
@@ -41,7 +37,7 @@ zVecListCell *zVecListInsertHead(zVecList *list, zVec v, bool flag)
 }
 
 /* insert a vector list cell at the tail of a list. */
-zVecListCell *zVecListInsertTail(zVecList *list, zVec v, bool flag)
+static zVecListCell *_zVecListInsertTail(zVecList *list, zVec v, bool flag)
 {
   zVecListCell *cell;
 
@@ -50,22 +46,32 @@ zVecListCell *zVecListInsertTail(zVecList *list, zVec v, bool flag)
   return cell;
 }
 
+/* ********************************************************** */
+/* CLASS: zVecList
+ * vector list class.
+ * ********************************************************** */
+
+/* insert a vector list cell at the head of a list. */
+zVecListCell *zVecListInsertHead(zVecList *list, zVec v)
+{
+  return _zVecListInsertHead( list, v, true );
+}
+
+/* insert a vector list cell at the tail of a list. */
+zVecListCell *zVecListInsertTail(zVecList *list, zVec v)
+{
+  return _zVecListInsertTail( list, v, true );
+}
+
 /* destroy a vector list. */
-void zVecListDestroy(zVecList *list, bool flag)
+void zVecListDestroy(zVecList *list)
 {
   zVecListCell *cell;
 
-  if( flag ){
-    while( !zListIsEmpty( list ) ){
-      zListDeleteHead( list, &cell );
-      zFree( cell->data );
-      zFree( cell );
-    }
-  } else{
-    while( !zListIsEmpty( list ) ){
-      zListDeleteHead( list, &cell );
-      zFree( cell );
-    }
+  while( !zListIsEmpty( list ) ){
+    zListDeleteHead( list, &cell );
+    zFree( cell->data );
+    zFree( cell );
   }
 }
 
@@ -94,4 +100,32 @@ void zVecListFPrint(FILE *fp, zVecList *list)
 
   zListForEach( list, cp )
     zVecDataFPrint( fp, cp->data );
+}
+
+/* ********************************************************** */
+/* CLASS: zVecAddrList
+ * vector address list class.
+ * ********************************************************** */
+
+/* insert a pointer to a vector to a list at the head. */
+zVecListCell *zVecAddrListInsertHead(zVecAddrList *list, zVec v)
+{
+  return _zVecListInsertHead( list, v, false );
+}
+
+/* insert a pointer to a vector to a list at the tail. */
+zVecListCell *zVecAddrListInsertTail(zVecAddrList *list, zVec v)
+{
+  return _zVecListInsertTail( list, v, false );
+}
+
+/* destroy a vector list. */
+void zVecAddrListDestroy(zVecList *list)
+{
+  zVecListCell *cell;
+
+  while( !zListIsEmpty( list ) ){
+    zListDeleteHead( list, &cell );
+    zFree( cell );
+  }
 }

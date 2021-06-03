@@ -134,11 +134,11 @@ static void _zRRTPath(zRRT *rrt, zVecList *path)
 
   zListInit( path );
   for( node=&zListHead(&rrt->slist)->data; ; node=node->parent ){
-    zVecListInsertTail( path, node->v, true );
+    zVecListInsertTail( path, node->v );
     if( !node->parent ) break;
   }
   for( node=&zListHead(&rrt->glist)->data; ; node=node->parent ){
-    zVecListInsertHead( path, node->v, true );
+    zVecListInsertHead( path, node->v );
     if( !node->parent ) break;
   }
 }

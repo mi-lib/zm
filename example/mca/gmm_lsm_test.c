@@ -97,11 +97,11 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double zmin
       x = zRandF( xmin, xmax );
       y = zRandF( ymin, ymax );
       z = a*x + b*y + c;
-      e = zRandFND(0,1.0);
+      e = zRandND0( NULL );
       zVecSetElem( vc, 0, x + e * a );
       zVecSetElem( vc, 1, y + e * b );
       zVecSetElem( vc, 2, z + e );
-      zVecListInsertHead( vl, vc, true );
+      zVecListInsertHead( vl, vc );
     }
   }
   zVecFree( vc );
@@ -156,6 +156,6 @@ int main(int argc, char *argv[])
   zGMMCreateEM( &gmm, &points, nc, NULL, NULL );
   gmm_output( &gmm );
   zGMMDestroy( &gmm );
-  zVecListDestroy( &points, true );
+  zVecListDestroy( &points );
   return 0;
 }

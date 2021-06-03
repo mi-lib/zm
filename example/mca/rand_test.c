@@ -22,43 +22,36 @@ void gen_vec(zVecList *vl, int n, double xc, double yc, double r1, double r2, do
 
 #define N   1000
 #define DIM    2
-#define CR     0.9
 
 int main(int argc, char *argv[])
 {
-  zVecList points;
-  zVecListCell *pc;
-  zVec p, mean, score;
-  zMat loading;
-  double cr;
+  zVecList src, dest;
+  zVec p, mean;
+  zMat cov;
   int n;
   FILE *fp;
 
   zRandInit();
   n = argc > 1 ? atoi( argv[1] ) : N;
-  cr = argc > 2 ? atof( argv[2] ) : CR;
-  gen_vec( &points, n, 10, 10, 10, 5, zDeg2Rad(30) );
+  gen_vec( &src, n, 10, 10, 10, 5, zDeg2Rad(30) );
   fp = fopen( "s", "w" );
-  zVecListFPrint( fp, &points );
+  zVecListFPrint( fp, &src );
   fclose( fp );
 
   p = zVecAlloc( DIM );
   mean = zVecAlloc( DIM );
-  score = zVecAlloc( DIM );
-  loading = zMatAllocSqr( DIM );
-  printf( "executing PCA. the number of PC = %d\n",
-    zPCA( &points, cr, mean, score, loading ) );
+  cov = zMatAllocSqr( DIM );
+  zVecListMeanCov( &src, mean, cov );
 
-  fp = fopen( "a", "w" );
-  zListForEach( &points, pc ){
-    zVecSub( pc->data, mean, p );
-    zMulMatTVec( loading, p, score );
-    zVecDataFPrint( fp, score );
-  }
+  zVecListGenRandND( &dest, N, mean, cov );
+  fp = fopen( "d", "w" );
+  zVecListFPrint( fp, &dest );
   fclose( fp );
 
-  zVecListDestroy( &points );
-  zVecFreeAO( 3, p, mean, score );
-  zMatFree( loading );
+  zVecListDestroy( &src );
+  zVecListDestroy( &dest );
+  zVecFree( p );
+  zVecFree( mean );
+  zMatFree( cov );
   return 0;
 }

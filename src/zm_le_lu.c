@@ -47,8 +47,7 @@ int zLUDecomp(zMat m, zMat l, zMat u, zIndex idx)
     ZRUNERROR( ZM_ERR_NONSQR_MAT );
     return -1;
   }
-  if( !zMatRowSizeIsEqual(m,l) ||
-      !zMatSizeIsEqual(m,u) ){
+  if( !zMatRowSizeIsEqual(m,l) || !zMatSizeIsEqual(m,u) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MAT );
     return -1;
   }
@@ -70,8 +69,8 @@ int zLUDecompReg(zMat m, zMat l, zMat u, zIndex idx)
   int rank;
 
   if( ( rank = zLUDecomp( m, l, u, idx ) ) < zMatRowSizeNC(m) ){
-    zMatColReg( l, rank ); /* lower triangle regeression */
-    zMatRowReg( u, rank ); /* upper triangle regeression */
+    zMatColReg( l, rank ); /* lower triangle regression */
+    zMatRowReg( u, rank ); /* upper triangle regression */
   }
   return rank;
 }
@@ -161,7 +160,7 @@ int zCholeskyDecompReg(zMat m, zMat l, zIndex idx)
 
   rank = zCholeskyDecomp( m, l, idx );
   if( rank > 0 && rank < zMatRowSizeNC(m) )
-    zMatColReg( l, rank ); /* lower triangle regeression */
+    zMatColReg( l, rank ); /* lower triangle regression */
   return rank;
 }
 

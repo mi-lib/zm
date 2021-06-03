@@ -144,11 +144,11 @@ __EXPORT double zDataAbsMin(double *data, int size, int *im);
  */
 __EXPORT double zDataSum(double *data, int size);
 
-/*! \brief the average of data.
+/*! \brief the mean of data.
  *
  * \a size is the size of data.
  */
-__EXPORT double zDataAve(double *data, int size);
+__EXPORT double zDataMean(double *data, int size);
 
 /*! \brief the variance of data.
  *

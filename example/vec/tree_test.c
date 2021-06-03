@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
   v = zVecAlloc( dim );
   for( i=0; i<n; i++ ){
     zVecRandUniform( v, -10, 10 );
-    zVecListInsertHead( &list, v, true );
+    zVecListInsertHead( &list, v );
     zVecTreeAdd( &tree, v );
   }
   zVecRandUniform( v, -10, 10 );
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
   eprintf( "naive  : %g - ", dmin2 ); zVecFPrint( stderr, nn );
   printf( "Tn=%d\n", deltatime(&tv1,&tv2) );
 
-  zVecListDestroy( &list, true );
+  zVecListDestroy( &list );
   zVecTreeDestroy( &tree );
   return 0;
 }

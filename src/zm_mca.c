@@ -5,6 +5,7 @@
  */
 
 #include <zm/zm_mca.h>
+#include <zm/zm_rand.h>
 
 /* sum up all vectors in a list. */
 zVec zVecListSum(zVecList *list, zVec sum)
@@ -17,44 +18,44 @@ zVec zVecListSum(zVecList *list, zVec sum)
   return sum;
 }
 
-/* average of all vectors in a list. */
-zVec zVecListAve(zVecList *list, zVec ave)
+/* mean of all vectors in a list. */
+zVec zVecListMean(zVecList *list, zVec mean)
 {
-  zVecListSum( list, ave );
-  return zVecDivDRC( ave, zListSize(list) );
+  zVecListSum( list, mean );
+  return zVecDivDRC( mean, zListSize(list) );
 }
 
 /* variance of all vectors in a list. */
-double zVecListVar(zVecList *list, zVec ave)
+double zVecListVar(zVecList *list, zVec mean)
 {
   zVecListCell *vc;
   double var = 0;
 
-  if( !zVecSizeIsEqual( ave, zListHead(list)->data ) ){
+  if( !zVecSizeIsEqual( mean, zListHead(list)->data ) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return HUGE_VAL;
   }
   zListForEach( list, vc )
-    var += zVecSqrDist( vc->data, ave );
+    var += zVecSqrDist( vc->data, mean );
   return var / zListSize(list);
 }
 
-/* average and variance of all vectors in a list. */
-double zVecListAveVar(zVecList *list, zVec ave)
+/* mean and variance of all vectors in a list. */
+double zVecListMeanVar(zVecList *list, zVec mean)
 {
-  zVecListAve( list, ave );
-  return zVecListVar( list, ave );
+  zVecListMean( list, mean );
+  return zVecListVar( list, mean );
 }
 
 /* variance-covariance matrix of all vectors in a list. */
-zMat zVecListCov(zVecList *list, zVec ave, zMat cov)
+zMat zVecListCov(zVecList *list, zVec mean, zMat cov)
 {
   zVec v;
   zVecListCell *vc;
   int s;
 
   s = zVecSize( zListHead(list)->data );
-  if( zVecSizeNC(ave) != s ){
+  if( zVecSizeNC(mean) != s ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return NULL;
   }
@@ -68,35 +69,35 @@ zMat zVecListCov(zVecList *list, zVec ave, zMat cov)
   }
   zMatZero( cov );
   zListForEach( list, vc ){
-    zVecSub( vc->data, ave, v );
+    zVecSub( vc->data, mean, v );
     zMatAddDyadNC( cov, v, v );
   }
   zVecFree( v );
   return zMatDivDRC( cov, zListSize(list) );
 }
 
-/* average and variance-covariance matrix of all vectors in a list. */
-zMat zVecListAveCov(zVecList *list, zVec ave, zMat cov)
+/* mean and variance-covariance matrix of all vectors in a list. */
+zMat zVecListMeanCov(zVecList *list, zVec mean, zMat cov)
 {
-  zVecListAve( list, ave );
-  return zVecListCov( list, ave, cov );
+  zVecListMean( list, mean );
+  return zVecListCov( list, mean, cov );
 }
 
 /* principal component analysis. */
-int zPCA(zVecList *points, double cr, zVec ave, zVec score, zMat loading)
+int zPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loading)
 {
   zMat cov;
   int s, n;
   double score_th, score_sum;
 
   s = zVecSize( zListHead(points)->data );
-  if( ( cov = zMatAllocSqr(s) ) == NULL ){
+  if( !( cov = zMatAllocSqr(s) ) ){
     ZALLOCERROR();
     n = -1;
     goto TERMINATE;
   }
-  if( zVecListAveCov( points, ave, cov ) == NULL ||
-      zEigSymJacobi( cov, score, loading ) == NULL ){
+  if( !zVecListMeanCov( points, mean, cov ) ||
+      !zEigSymJacobi( cov, score, loading ) ){
     n = -1;
     goto TERMINATE;
   }
@@ -110,4 +111,42 @@ int zPCA(zVecList *points, double cr, zVec ave, zVec score, zMat loading)
  TERMINATE:
   zMatFree( cov );
   return n;
+}
+
+/* generate vectors generate vectors from normal distribution. */
+int zVecListGenRandND(zVecList *vl, int n, zVec mean, zMat cov)
+{
+  register int i = 0, j;
+  zVec v, vo;
+  zMat b = NULL;
+  zIndex idx = NULL;
+
+  if( !zMatIsSqr( cov ) ){
+    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    return 0;
+  }
+  if( !zMatColVecSizeIsEqual( cov, mean ) ){
+    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    return 0;
+  }
+  vo = zVecAlloc( zVecSizeNC(mean) );
+  v = zVecAlloc( zVecSizeNC(mean) );
+  if( !vo || !v || !zCholeskyDecompAlloc( cov, &b, &idx ) ){
+    ZALLOCERROR();
+    goto TERMINATE;
+  }
+  zListInit( vl );
+  for( i=0; i<n; i++ ){
+    for( j=0; j<zVecSizeNC(vo); j++ )
+      zVecSetElemNC( vo, j, zRandND0( NULL ) );
+    zMulMatVecNC( b, vo, v );
+    zVecAddNCDRC( v, mean );
+    if( !zVecListInsertHead( vl, v ) ) break;
+  }
+ TERMINATE:
+  zVecFree( vo );
+  zVecFree( v );
+  zMatFree( b );
+  zIndexFree( idx );
+  return i;
 }

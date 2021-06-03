@@ -46,8 +46,6 @@ __EXPORT void zRRTDestroy(zRRT *rrt);
 __EXPORT bool zRRTConnect(zRRT *rrt, zVec start, zVec goal, int iter, void *util, zVecList *path);
 __EXPORT void zRRTPathShortcut(zRRT *rrt, void *util, zVecList *path);
 
-#define zRRTPathDestroy(path) zVecListDestroy( path, true )
-
 /*! \brief RRT-Escapement solver (proposed by Y. Shimizu in 2012) */
 __EXPORT bool zRRTEsc(zRRT *rrt, zVec start, int iter, void *util, zVec goal);
 
