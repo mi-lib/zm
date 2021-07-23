@@ -1,3 +1,4 @@
+2021. 7.23. Modified zm_seqmod to cope with the size check of sprintf. [app]
 2021. 6. 3. Renamed le, pexp, psolve and seqmod to zm_le, zm_pexp, zm_psolve and zm_seqmod, respectively. [app]
 2021. 6. 3. Added zVecListGenRandND. [zm_mca]
 2021. 6. 3. Abolished zRRTPathDestroy. [zm_rrt]

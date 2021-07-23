@@ -3,8 +3,7 @@
 #include <zm/zm.h>
 
 zSeq seq;
-char *name;
-char seqfile[BUFSIZ];
+char *seqfile;
 
 /* ******************************************************* */
 
@@ -40,8 +39,7 @@ bool seqmodLoadSequence(char *name)
     return false;
   zGetBasename( name, buf, BUFSIZ );
   zCutSuffix( buf );
-  strcpy( seqfile, buf );
-  return true;
+  return ( seqfile = zStrClone( buf ) ) ? true : false;
 }
 
 void seqmodCount(void)
@@ -149,6 +147,7 @@ bool seqmodOperate(int argc, char *argv[])
     seqmodInterpolate( atof(option[SEQMOD_IP].arg) );
   if( option[SEQMOD_REV].flag ) /* reverse sequence */
     seqmodReverse();
+  if( seqfile ) free( seqfile );
   return true;
 }
 
