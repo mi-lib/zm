@@ -1,3 +1,7 @@
+2021. 8.17. Modified zm.h and README.md. [zm]
+2021. 8.17. Added zVecListMinMax. [zm_mca]
+2021. 8.17. Modified ZM_ERR_SIZMIS_VEC and ZM_ERR_SIZMIS_MAT. [zm_errmsg]
+2021. 8.17. Added zm_ave. [app]
 2021. 7.23. Modified zm_seqmod to cope with the size check of sprintf. [app]
 2021. 6. 3. Renamed le, pexp, psolve and seqmod to zm_le, zm_pexp, zm_psolve and zm_seqmod, respectively. [app]
 2021. 6. 3. Added zVecListGenRandND. [zm_mca]

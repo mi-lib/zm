@@ -8,23 +8,21 @@
  ZM is a collection of numerical computation and optimization
  tools including:
  - random number generator (Mersenne twister)
- - statistics
+ - basic statistics tools
  - special functions (Gauss's error, gamma, beta, Bessel)
- - vectors and matrices of real numbers and complex numbers
  - complex number (arithmetics, quadratic/cubic equation solvers)
+ - vectors and matrices of real numbers and complex numbers
  - polynomial expression and equation solver
- - (finite) Fourier series
  - linear equation solvers (generalized, tridiagonal, Lyapunov)
  - matrix decompositions (LU, Choresky, LQ/QR)
  - eigenvalue analysis
- - Fast Fourier Transform
+ - finite Fourier series and Fast Fourier Transform
  - graph search and rapidly-explored random tree.
  - kd-tree
  - vector sequence and interpolations (linear, Lagrange, spline,
    Akima, PCHIP, polynomial fitting, NURBS)
- - data analysis (FFT)
  - numerical integrator
- - optimization tools (line search, linear programming, linear
+ - optimization solvers (line search, linear programming, linear
    complementary programming, quadratic programming, nonlinear
    programming based on descent/non-descent methods)
  - nonlinear equation solvers
@@ -32,7 +30,7 @@
    (Runge-Kutta family, embedded Runge-Kutta family, Adams, Gear,
    backward Euler, Butcher-Kuntzmann family, deferred correction,
    Leapflog)
- - multiple classification analysis (clustering)
+ - multiple classification analysis (K-means, GMM)
  - nonlinear oscillator
  - parser of mathematical expression
  */

@@ -13,6 +13,20 @@
 
 __BEGIN_DECLS
 
+/*! \brief minimum and maximum of all vectors in a list.
+ *
+ * zVecListMinMax() finds the minimum and maximum values of each
+ * component of vectors in a list \a list and put them into \a
+ * min and \a max, respectively.
+ * In other words, vectors \a min and \a max are composed from
+ * the minimum and maximum values of each component.
+ * \return
+ * zVecListMinMax() returns the true value if the sizes of \a min,
+ * \a max and vectors in \a list have the same size. Otherwise,
+ * it returns the false value.
+ */
+__EXPORT bool zVecListMinMax(zVecList *list, zVec min, zVec max);
+
 /*! \brief sum up all vectors in a list.
  *
  * zVecListSum() sums up all vectors of a list \a list to \a sum.

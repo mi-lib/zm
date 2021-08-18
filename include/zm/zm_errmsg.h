@@ -44,8 +44,8 @@
 #define ZM_ERR_STAT_ILLS     "illegal series assigned"
 
 #define ZM_ERR_NULLVEC       "null vector assigned"
-#define ZM_ERR_SIZMIS_VEC    "size mismatch of vector"
-#define ZM_ERR_SIZMIS_MAT    "size mismatch of matrix"
+#define ZM_ERR_SIZMIS_VEC    "size mismatch of vectors"
+#define ZM_ERR_SIZMIS_MAT    "size mismatch of matrices"
 #define ZM_ERR_SIZMIS_MATVEC "size mismatch of matrix and vector"
 #define ZM_ERR_NONSQR_MAT    "not a square matrix"
 

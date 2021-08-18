@@ -7,6 +7,30 @@
 #include <zm/zm_mca.h>
 #include <zm/zm_rand.h>
 
+/* minimum and maximum of all vectors in a list. */
+bool zVecListMinMax(zVecList *list, zVec min, zVec max)
+{
+  zVecListCell *vc;
+  register int i;
+
+  if( !zVecSizeIsEqual( zListHead(list)->data, min ) ||
+      !zVecSizeIsEqual( zListHead(list)->data, max ) ){
+    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    return false;
+  }
+  zVecSetAll( min, HUGE_VAL );
+  zVecSetAll( max,-HUGE_VAL );
+  zListForEach( list, vc ){
+    for( i=0; i<zVecSizeNC(min); i++ ){
+      if( zVecElemNC(min,i) > zVecElemNC(vc->data,i) )
+        zVecSetElemNC( min, i, zVecElemNC(vc->data,i) );
+      if( zVecElemNC(max,i) < zVecElemNC(vc->data,i) )
+        zVecSetElemNC( max, i, zVecElemNC(vc->data,i) );
+    }
+  }
+  return true;
+}
+
 /* sum up all vectors in a list. */
 zVec zVecListSum(zVecList *list, zVec sum)
 {
