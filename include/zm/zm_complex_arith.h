@@ -38,6 +38,13 @@ __EXPORT double zComplexArg(zComplex *c);
 #define _zComplexConj(c,cc) _zComplexCreate( cc, (c)->re, -(c)->im )
 __EXPORT zComplex *zComplexConj(zComplex *c, zComplex *cc);
 
+#define _zComplexCreateAdd(c,r1,i1,r2,i2) _zComplexCreate( c, (r1)+(r2), (i1)+(i2) )
+#define _zComplexCreateSub(c1,c2,c)       _zComplexCreate( c, (r1)-(r2), (i1)-(i2) )
+#define _zComplexCreateRev(c,r,i)         _zComplexCreate( c, -(r), -(i) )
+#define _zComplexCreateMul(c,r,i,k)       _zComplexCreate( c, (k)*(r), (k)*(i) )
+#define _zComplexCreateCMul(c,r1,i1,r2,i2) _zComplexCreate( c, (r1)*(r2) - (i1)*(i2), (r1)*(i2) + (i1)*(r2) )
+#define _zComplexCreateCMulConj(c,r1,i1,r2,i2) _zComplexCreate( c, (r1)*(r2) + (i1)*(i2), -(r1)*(i2) + (i1)*(r2) )
+
 /*! \brief arithmatics of complex numbers.
  *
  * zComplexAdd() adds two complex numbers \a c1 and \a c2.
@@ -82,13 +89,28 @@ __EXPORT zComplex *zComplexMul(zComplex *c, double k, zComplex *ec);
 __EXPORT zComplex *zComplexDiv(zComplex *c, double k, zComplex *rc);
 __EXPORT zComplex *zComplexCMul(zComplex *c1, zComplex *c2, zComplex *c);
 __EXPORT zComplex *zComplexCMulConj(zComplex *c1, zComplex *c2, zComplex *c);
+/*! \brief invert a complex number. */
+__EXPORT zComplex *zComplexInv(zComplex *c, zComplex *ic);
 __EXPORT zComplex *zComplexCDiv(zComplex *c1, zComplex *c2, zComplex *c);
+
+#define _zComplexAddDRC(c1,c2) _zComplexAdd( c1, c2, c1 )
+#define _zComplexSubDRC(c1,c2) _zComplexSub( c1, c2, c1 )
+#define _zComplexRevDRC(c)     _zComplexRev( c, c )
+#define _zComplexMulDRC(c,k)   _zComplexMul( c, k, c )
+#define _zComplexDivDRC(c,k)   _zComplexDiv( c, k, c )
 
 #define zComplexAddDRC(c1,c2) zComplexAdd( c1, c2, c1 )
 #define zComplexSubDRC(c1,c2) zComplexSub( c1, c2, c1 )
 #define zComplexRevDRC(c)     zComplexRev( c, c )
 #define zComplexMulDRC(c,k)   zComplexMul( c, k, c )
 #define zComplexDivDRC(c,k)   zComplexDiv( c, k, c )
+
+/*! \brief multiply two complex numbers. */
+__EXPORT zComplex *zComplexCMulDRC(zComplex *c1, zComplex *c2);
+/*! \brief multiply a complex numbers by the conjugate of another complex number. */
+__EXPORT zComplex *zComplexCMulConjDRC(zComplex *c1, zComplex *c2);
+/*! \brief divide a complex number by another. */
+__EXPORT zComplex *zComplexCDivDRC(zComplex *c1, zComplex *c2);
 
 /*! \brief power and logarithm of complex numbers.
  *

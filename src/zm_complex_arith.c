@@ -85,17 +85,55 @@ zComplex *zComplexCMulConj(zComplex *c1, zComplex *c2, zComplex *c)
   return c;
 }
 
+/* invert a complex number. */
+zComplex *zComplexInv(zComplex *c, zComplex *ic)
+{
+  double r2;
+  zComplex cc;
+
+  r2 = _zComplexSqrAbs( c );
+  _zComplexConj( c, &cc );
+  return zComplexDiv( &cc, r2, ic );
+}
+
 /* divide a complex number by another. */
 zComplex *zComplexCDiv(zComplex *c1, zComplex *c2, zComplex *c)
 {
-  double r;
   zComplex cc;
 
-  r = _zComplexAbs( c2 );
-  _zComplexConj( c2, &cc );
-  zComplexDiv( &cc, r, &cc );
+  zComplexInv( c2, &cc );
   _zComplexCMul( c1, &cc, c );
-  return zComplexDiv( c, r, c );
+  return c;
+}
+
+/* multiply two complex numbers. */
+zComplex *zComplexCMulDRC(zComplex *c1, zComplex *c2)
+{
+  zComplex tmp;
+
+  _zComplexCMul( c1, c2, &tmp );
+  _zComplexCopy( &tmp, c1 );
+  return c1;
+}
+
+/* multiply a complex numbers by the conjugate of another complex number. */
+zComplex *zComplexCMulConjDRC(zComplex *c1, zComplex *c2)
+{
+  zComplex tmp;
+
+  _zComplexCMulConj( c1, c2, &tmp );
+  _zComplexCopy( &tmp, c1 );
+  return c1;
+}
+
+/* divide a complex number by another. */
+zComplex *zComplexCDivDRC(zComplex *c1, zComplex *c2)
+{
+  zComplex tmp;
+
+  zComplexCDiv( c1, c2, &tmp );
+  _zComplexCopy( &tmp, c1 );
+  return c1;
 }
 
 /* power a complex number by a real number. */

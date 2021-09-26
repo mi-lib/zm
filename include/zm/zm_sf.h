@@ -11,8 +11,9 @@
 
 #include <zm/zm_misc.h>
 
-#include <zm/zm_sf_erf.h>    /* Gauss's error function */
-#include <zm/zm_sf_gamma.h>  /* gamma and beta function */
-#include <zm/zm_sf_bessel.h> /* Bessel functions */
+#include <zm/zm_sf_erf.h>     /* Gauss's error function */
+#include <zm/zm_sf_gamma.h>   /* gamma and beta function */
+#include <zm/zm_sf_bessel.h>  /* Bessel functions */
+#include <zm/zm_sf_fresnel.h> /* Fresnel integral */
 
 #endif /* __ZM_SF_H__ */

@@ -6,9 +6,7 @@
 
 #include <zm/zm_sf.h>
 
-/* zErfN
- * - error function approximated by Taylor series.
- */
+/* error function approximated by Taylor series. */
 double zErfN(double x, int n)
 {
   double x2, s, d;

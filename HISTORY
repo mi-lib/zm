@@ -1,3 +1,8 @@
+2021. 9.27. Added Fresnel integral. [zm_sf, zm_sf_fresnel]
+2021. 9.27. Added zComplexCMulDRC, zComplexCMulConjDRC and zComplexCDivDRC. [zm_complex_arith]
+2021. 9.27. Added zComplexInv and modified zComplexCDiv. [zm_complex_arith]
+2021. 9.27. Added _zComplexCreateAdd, _zComplexCreateSub, _zComplexCreateRev, _zComplexCreateMul, _zComplexCreateCMul and _zComplexCreateCMulConj. [zm_complex_arith]
+2021. 9.27. Added _zComplexAddDRC, _zComplexSubDRC, _zComplexRevDRC, _zComplexMulDRC and _zComplexDivDRC. [zm_complex_arith]
 2021. 8.17. Modified zm.h and README.md. [zm]
 2021. 8.17. Added zVecListMinMax. [zm_mca]
 2021. 8.17. Modified ZM_ERR_SIZMIS_VEC and ZM_ERR_SIZMIS_MAT. [zm_errmsg]
