@@ -100,14 +100,19 @@ bool zFresnelIntgPI_2(double x, double *s, double *c)
 }
 
 /* a scaled version of Fresnel integral */
-bool zFresnelIntg(double x, double *s, double *c)
+bool zFresnelIntgScale(double x, double f, double *s, double *c)
 {
-  double f;
   bool ret;
 
-  f = sqrt( zPI_2 );
-  ret = zFresnelIntgPI_2( f*x, s, c );
-  *s /= f;
-  *c /= f;
+  f = sqrt( zPI_2/f );
+  ret = zFresnelIntgPI_2( x/f, s, c );
+  *s *= f;
+  *c *= f;
   return ret;
+}
+
+/* normalized Fresnel integral */
+bool zFresnelIntg(double x, double *s, double *c)
+{
+  return zFresnelIntgScale( x, 1, s, c );
 }

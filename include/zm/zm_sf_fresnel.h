@@ -18,17 +18,23 @@ __BEGIN_DECLS
 /*! \brief Fresnel integral
  *
  * zFresnelIntgPI_2() computes the Fresnel integral, which is defined as
- *  S(x) = int_0^x sin(pi/2 u^2) du
- *  C(x) = int_0^x cos(pi/2 u^2) du
- * zFresnelIntg() finds a scaled version of the Fresnel integral as
- *  S(x) = int_0^x sin(u^2) du
- *  C(x) = int_0^x cos(u^2) du
- * In either case, S(x) and C(x) are stored in \a s and \a c, respectively.
+ *  S(\a x) = int_0^\a x sin(pi/2 u^2) du
+ *  C(\a x) = int_0^\a x cos(pi/2 u^2) du
+ * zFresnelIntgScale() finds a scaled version of the Fresnel integral as
+ *  S(\a x) = int_0^\a x sin(\a f u^2) du
+ *  C(\a x) = int_0^\a x cos(\a f u^2) du
+ * where \a f is a scale factor.
+ * zFresnelIntg() computes the normalized Fresnel integral as
+ *  S(\a x) = int_0^x sin(u^2) du
+ *  C(\a x) = int_0^x cos(u^2) du
+ * In whichever case, S(x) and C(x) are stored in \a s and \a c, respectively.
  * \return
- * zFresnelIntgPI_2() and zFresnelIntg() return the false value if an
- * internal iteration fails. Otherwise, the true value is returned.
+ * zFresnelIntgPI_2(), zFresnelIntgScale() and zFresnelIntg() return the
+ * false value if an internal iteration fails. Otherwise, the true value
+ * is returned.
  */
 __EXPORT bool zFresnelIntgPI_2(double x, double *s, double *c);
+__EXPORT bool zFresnelIntgScale(double x, double f, double *s, double *c);
 __EXPORT bool zFresnelIntg(double x, double *s, double *c);
 
 __END_DECLS
