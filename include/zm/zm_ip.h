@@ -1,7 +1,9 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
- *
- * zm_ip - interpolation.
+ */
+/*! \file zm_ip.h
+ * \brief interpolation.
+ * \author Zhidao
  */
 
 #ifndef __ZM_IP_H__
@@ -102,5 +104,6 @@ __END_DECLS
 
 #include <zm/zm_ip_pex.h>      /* polynomial curve */
 #include <zm/zm_ip_ipio.h>     /* interpolation-in-order */
+#include <zm/zm_ip_clothoid.h> /* clothoid curve interpolation */
 
 #endif /* __ZM_IP_H__ */
