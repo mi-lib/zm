@@ -1,4 +1,6 @@
-2021. 9.28. Added zFresnelIntgScale and reimplemented zFresnelIntg. [zm_sf_fresnel]
+2021. 9.28. Added zFresnelIntgGen. [zm_sf_fresnel]
+2021. 9.27. Debugged zFresnelIntgScale to cope with a negative factor. [zm_sf_fresnel]
+2021. 9.27. Added zFresnelIntgScale and reimplemented zFresnelIntg. [zm_sf_fresnel]
 2021. 9.27. Added Fresnel integral. [zm_sf, zm_sf_fresnel]
 2021. 9.27. Added zComplexCMulDRC, zComplexCMulConjDRC and zComplexCDivDRC. [zm_complex_arith]
 2021. 9.27. Added zComplexInv and modified zComplexCDiv. [zm_complex_arith]

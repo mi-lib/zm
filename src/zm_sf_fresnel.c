@@ -103,11 +103,17 @@ bool zFresnelIntgPI_2(double x, double *s, double *c)
 bool zFresnelIntgScale(double x, double f, double *s, double *c)
 {
   bool ret;
+  double r;
 
-  f = sqrt( zPI_2/f );
-  ret = zFresnelIntgPI_2( x/f, s, c );
-  *s *= f;
-  *c *= f;
+  if( zIsTiny( f ) ){ /* sin 0x = 0, cos 0x = 1 */
+    *s = 0;
+    *c = x;
+    return true;
+  }
+  r = sqrt( zPI_2/fabs(f) );
+  ret = zFresnelIntgPI_2( x/r, s, c );
+  *s *= f > 0 ? r : -r;
+  *c *= r;
   return ret;
 }
 
@@ -115,4 +121,32 @@ bool zFresnelIntgScale(double x, double f, double *s, double *c)
 bool zFresnelIntg(double x, double *s, double *c)
 {
   return zFresnelIntgScale( x, 1, s, c );
+}
+
+/* generalized Fresnel integral */
+bool zFresnelIntgGen(double x, double f0, double f1, double f2, double *s, double *c)
+{
+  double s1, c1, s2, c2;
+  bool ret1 = true, ret2 = true;
+
+  if( zIsTiny( f2 ) ){
+    zSinCos( f0, &s1, &c1 );
+    if( zIsTiny( f1 ) ){
+      *s = x * s1;
+      *c = x * c1;
+    } else{
+      zSinCos( f0 + f1 * x, &s2, &c2 );
+      *s =-( c2 - c1 ) / f1;
+      *c = ( s2 - s1 ) / f1;
+    }
+  } else{
+    ret1 = zFresnelIntgScale( x+0.5*f1/f2, f2, &s1, &c1 );
+    ret2 = zFresnelIntgScale(   0.5*f1/f2, f2, &s2, &c2 );
+    s1 -= s2;
+    c1 -= c2;
+    zSinCos( f0 - 0.25 * f1*f1 / f2, &s2, &c2 );
+    *c = c1*c2 - s1*s2;
+    *s = c1*s2 + s1*c2;
+  }
+  return ret1 && ret2;
 }
