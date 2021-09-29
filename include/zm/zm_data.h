@@ -28,5 +28,6 @@ __EXPORT zIndex zDataSortIndex(double data[], size_t n, zIndex index);
 __END_DECLS
 
 #include <zm/zm_data_fft.h>
+#include <zm/zm_data_ransac.h>
 
 #endif /* __ZM_DATA_H__ */

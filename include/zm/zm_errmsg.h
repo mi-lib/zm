@@ -29,6 +29,8 @@
 
 #define ZM_WARN_PEX_SIZMIS   "polynomial expression has only %d components, while specified size is %d"
 
+#define ZM_WARN_INSUFFICIENT_SAMPLES "maybe insufficient number of samples %d for %d parameters"
+
 #define ZM_WARN_OPT_BADINI   "probably inadequate initial guess"
 
 #define ZM_WARN_ODE_GEAR1    "invalid step number %d, modified to 1"
@@ -79,6 +81,8 @@
 
 #define ZM_ERR_NURBS_INVDIM  "invalid curve dimension"
 #define ZM_ERR_NURBS_INVODR  "invalid order of differentiation"
+
+#define ZM_ERR_INVALID_NUMSAMP "too many samples %d required out of %d"
 
 #define ZM_ERR_OPT_NOEVAL    "no evaluator assigned"
 #define ZM_ERR_OPT_INI       "unable to set the initial point"
