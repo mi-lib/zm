@@ -9,6 +9,12 @@
 
 int q_size = 2;
 
+double y_test(double x)
+{
+  /* plane: y = 5 ( x - 2 ) */
+  return 5 * ( x - 2 );
+}
+
 double error_case(zVec q, zVec sample, void *util)
 {
   return zVecInnerProd( q, sample ) - 1;
@@ -48,6 +54,12 @@ void print_case(zVec q)
 /* test: parabola */
 
 int q_size = 3;
+
+double y_test(double x)
+{
+  /* parabola: y = ( x - 0.5 )^2 - 1 = x^2 - x - 0.75 */
+  return zSqr( x - 0.5 ) - 1;
+}
 
 double error_case(zVec q, zVec sample, void *util)
 {
@@ -90,7 +102,7 @@ void print_case(zVec q)
 
 #endif
 
-void sample_list(zVecList *sample, int n, double r)
+void sample_list(zVecList *sample, int n, double r, double nl)
 {
   zVec v;
   double x, y;
@@ -101,15 +113,7 @@ void sample_list(zVecList *sample, int n, double r)
   fp = fopen( "s", "w" );
   for( i=0; i<n; i++ ){
     v = zVecAlloc( 2 );
-    x = zRandF( -10, 10 );
-#if TEST == 1
-    /* plane: y = 5 ( x - 2 ) */
-    y = 5 * ( x - 2 );
-#else
-    /* parabola: y = ( x - 0.5 )^2 - 1 = x^2 - x - 0.75 */
-    y = zSqr( x - 0.5 ) - 1;
-#endif
-    y += + zRandF(-1.0,1.0);
+    y = y_test( ( x = zRandF( -10, 10 ) ) ) + zRandF(-nl,nl);
     /* an outlier model with a probability of r */
     if( zRandF(0,1) < r ) y += zRandF(-50,50);
     zVecSetElemList( v, x, y );
@@ -120,10 +124,11 @@ void sample_list(zVecList *sample, int n, double r)
 }
 
 #define N  100
-#define R    0.3
+#define R    0.5
 #define NS  20
-#define NT  20
-#define TH   0.1
+#define NT  50
+#define TH   0.5
+#define NL   5.0
 
 int main(int argc, char *argv[])
 {
@@ -131,9 +136,13 @@ int main(int argc, char *argv[])
   zVec q;
 
   zRandInit();
-  sample_list( &sample, N, R );
+  sample_list( &sample, N, R, NL );
   q = zVecAlloc( q_size );
+#if 0
   zRANSAC( q, &sample, fit_case, error_case, NULL, NS, NT, TH );
+#else
+  zRANSACAuto( q, &sample, fit_case, error_case, NULL, R, NL );
+#endif
   print_case( q );
   zVecFree( q );
   zVecListDestroy( &sample );

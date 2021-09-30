@@ -1,4 +1,5 @@
-2021. 9.29. Added RANSAC. [zm_errmsg, zm_data, zm_data_ransac]
+2021. 9.30. Added zRANSACAuto. [zm_data_ransac]
+2021. 9.29. Added zRANSAC. [zm_errmsg, zm_data, zm_data_ransac]
 2021. 9.28. Added clothoid curve interpolation. [zm_ip, zm_ip_clothoid]
 2021. 9.28. Added zFresnelIntgGen. [zm_sf_fresnel]
 2021. 9.27. Debugged zFresnelIntgScale to cope with a negative factor. [zm_sf_fresnel]
