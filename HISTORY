@@ -1,3 +1,7 @@
+2022. 7.19. Renamed _zLP_PDIPIni to _zLP_PDIPInit and debugged it. [zm_opt_lp_pdip]
+2022. 7.19. Debugged _zLPTableauReset. [zm_opt_lp_simplex]
+2022. 7.19. Debugged _zLPTableauFindNA and _zLPTableauFindNA_deg. [zm_opt_lp_simplex]
+2022. 6.12. Redefined _zLPTableauPrint as a macro. [zm_opt_lp_simplex]
 2021. 9.30. Added zRANSACAuto. [zm_data_ransac]
 2021. 9.29. Added zRANSAC. [zm_errmsg, zm_data, zm_data_ransac]
 2021. 9.28. Added clothoid curve interpolation. [zm_ip, zm_ip_clothoid]

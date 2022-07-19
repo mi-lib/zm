@@ -1,19 +1,13 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_le_mpinv - linear equation: Moore=Penrose inverse matrix.
+ * zm_le_mpinv - linear equation: Moore-Penrose inverse matrix.
  */
 
 #include <zm/zm_le.h>
 
-static int _zMPInvAllocWork1(zMat m, zMat *l, zMat *q, zIndex *idx);
-static int _zMPInvAllocWork2(int rank, int row, zMat *tmp1, zMat *tmp2, zMat *tmp3);
-
-/* (static)
- * _zMPInvAllocWork1
- * - initialization: LQ decomposition
- */
-int _zMPInvAllocWork1(zMat m, zMat *l, zMat *q, zIndex *idx)
+/* initialization: LQ decomposition */
+static int _zMPInvAllocWork1(zMat m, zMat *l, zMat *q, zIndex *idx)
 {
   int rank;
 
@@ -25,11 +19,8 @@ int _zMPInvAllocWork1(zMat m, zMat *l, zMat *q, zIndex *idx)
   return rank;
 }
 
-/* (static)
- * _zMPInvAllocWork2
- * - initialization: workspace for matrix computation
- */
-int _zMPInvAllocWork2(int rank, int row, zMat *tmp1, zMat *tmp2, zMat *tmp3)
+/* initialization: workspace for matrix computation */
+static int _zMPInvAllocWork2(int rank, int row, zMat *tmp1, zMat *tmp2, zMat *tmp3)
 {
   *tmp1 = zMatAlloc( rank, row );
   *tmp2 = zMatAllocSqr( rank );
@@ -41,9 +32,7 @@ int _zMPInvAllocWork2(int rank, int row, zMat *tmp1, zMat *tmp2, zMat *tmp3)
   return rank;
 }
 
-/* zMPInv
- * - Moore=Penrose's inverse matrix.
- */
+/* Moore-Penrose's inverse matrix. */
 int zMPInv(zMat m, zMat mp)
 {
   int rank;
@@ -69,9 +58,7 @@ int zMPInv(zMat m, zMat mp)
   return rank;
 }
 
-/* zMPInvNull
- * - Moore=Penrose's inverse matrix with its null space.
- */
+/* Moore-Penrose's inverse matrix with its null space. */
 int zMPInvNull(zMat m, zMat mp, zMat mn)
 {
   int rank;
@@ -101,10 +88,7 @@ int zMPInvNull(zMat m, zMat mp, zMat mn)
   return rank;
 }
 
-/* zMulMPInvMatMat
- * - multiply Moore=Penrose's inverse matrix from the left side to
- *   another matrix.
- */
+/* multiply Moore-Penrose's inverse matrix from the left side to another matrix. */
 zMat zMulMPInvMatMat(zMat m1, zMat m2, zMat m)
 {
   int rank;
@@ -134,10 +118,7 @@ zMat zMulMPInvMatMat(zMat m1, zMat m2, zMat m)
 
 static int _zMPInvPenrose(zMat m, zMat mp);
 
-/* _zMPInvPenrose
- * - internal call of Moore=Penrose inverse matrix based on Penrose's
- *   iterative algorithm.
- */
+/* internal call of Moore-Penrose inverse matrix based on Penrose's iterative algorithm. */
 int _zMPInvPenrose(zMat m, zMat mp)
 {
   zMat b, c, c2, cb;
@@ -170,9 +151,7 @@ int _zMPInvPenrose(zMat m, zMat mp)
   return rank;
 }
 
-/* zMPInvPenrose
- * - Moore=Penrose inverse matrix based on Penrose's iterative algorithm.
- */
+/* Moore-Penrose inverse matrix based on Penrose's iterative algorithm. */
 int zMPInvPenrose(zMat m, zMat mp)
 {
   int rank;
