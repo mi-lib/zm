@@ -16,24 +16,23 @@ void check(zMat a, zVec b, zVec ans, zVec e, const char *key)
 
 void test(zMat a, zVec b, zVec w, zVec w2, zVec e, zVec aux)
 {
-  zMat m;
-  zVec x1, x2, v, s, bb;
-  zIndex idx;
+  zLE le;
+  zVec x1, x2, bb;
 
   x1 = zVecAlloc( N );
   x2 = zVecAlloc( N );
   bb = zVecAlloc( zVecSizeNC(b) );
-  zLEAllocWork( &m, &v, &s, &idx, N );
-  zVecRand( aux, -10, 10 );
+  zLEAlloc( &le, NULL, N );
+  zVecRandUniform( aux, -10, 10 );
 
   zLESolveSRAux( a, b, w, w2, x1, aux );
   check( a, b, x1, e, "SR(aux)" );
-  zLESolveSRAuxDST( a, b, w, w2, x2, aux, m, v, idx, s, bb );
+  zLESolveSRAuxDST( a, b, w, w2, x2, aux, &le, bb );
   check( a, b, x2, e, "SR(aux,DST)" );
-  zVecSub( x1, x2, s );
-  printf( "error = %.10g\n", zVecNorm(s) );
+  zVecSub( x1, x2, le.s );
+  printf( "error = %.10g\n", zVecNorm(le.s) );
 
-  zLEFreeWork( m, v, s, idx );
+  zLEFree( &le );
 }
 
 int main(int argc, char *argv[])

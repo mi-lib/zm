@@ -11,44 +11,40 @@
 
 __BEGIN_DECLS
 
-/* METHOD:
- * zMatDet, zMatDetDST, zMatAdj,
- * zMulInvMatMat, zMulMatInvMat, zMatInv
- * - determinant and inverse of matrix.
+/*! \brief determinant and inverse of matrix.
  *
- * 'zMatDet()' calculates the determinant value of the
- * matrix 'm'.
- * 'zMatDetDST()' destructively modifies 'm' while
- * calculating the determinant.
- * 'index' is an index vector for calculation.
- * Before calling 'zMatDetDST()', 'index' should be
- * ordered by 'zIndexOrder()'.
- * #
- * 'zMatAdj()' calculates adjoint matrix of 'm'.
- * 'm' must be a square matrix.
- * #
- * 'zMulInvMatMat()' calculates a multiplication of
- * inverse matrix of 'm1' and 'm2'. The result is put into 'm'.
- * i.e. 'm' = 'm1'^-1 'm2'.
- * #
- * 'zMulMatInvMat()' calculates a multiplication of
- * 'm1' and inverse matrix of 'm2'. The result is put into 'm'.
- * i.e. 'm' = 'm1' 'm2'^-1.
- * #
- * 'zMatInv()' calculates the inverse matrix of 'm'
- * and set it into 'im'.
- * [RETURN VALUE]
- * 'zMatDet()' and 'zMatDetDST()' return the
- * determinant calculated.
- * #
- * 'zMatAdj()' returns a pointer 'm'.
- * #
- * 'zMulInvMatMat()' returns a pointer to 'm', if succeeding,
- * or the null vector if 'm1' is not full rank.
- * #
- * 'zMatInv()' returns a pointer to 'im', if succeeding,
- * or the null vector if 'm' is not full rank.
- * [SEE ALSO]
+ * zMatDet() calculates the determinant value of the matrix \a m.
+ * zMatDetDST() destructively modifies \a m when calculating the
+ * determinant.
+ * \a index is an index vector for calculation, which has to be
+ * ordered by zIndexOrder() before calling zMatDetDST().
+ *
+ * zMatAdj() calculates the adjoint matrix of \a m.
+ * \a m must be a square matrix.
+ * The result is put into \a adj.
+ *
+ * zMulInvMatMat() calculates a multiplication of the inverse matrix
+ * of \a m1 and \a m2. The result is put into \a m.
+ * i.e. \a m = \a m1^-1 \a m2
+ *
+ * zMulMatInvMat() calculates a multiplication of \a m1 and the
+ * inverse matrix of \a m2. The result is put into \a m.
+ * i.e. \a m = \a m1 \a m2^-1
+ *
+ * zMatInv() calculates the inverse matrix of \a m and set it into
+ * \a im.
+ * \return
+ * zMatDet() and zMatDetDST() return the determinant of the given
+ * matrix.
+ *
+ * zMatAdj() returns a pointer \a adj.
+ *
+ * zMulInvMatMat() returns a pointer \a m, if succeeding.
+ * The null pointer is returned if \a m1 is not full rank.
+ *
+ * zMatInv() returns a pointer \a im, if succeeding.
+ * The null pointer is returned if \a m is not full rank.
+ * \sa
  * zMatInvHotelling
  */
 __EXPORT double zMatDetDST(zMat m, zIndex index);
@@ -58,23 +54,20 @@ __EXPORT zMat zMulInvMatMat(zMat m1, zMat m2, zMat m);
 __EXPORT zMat zMulMatInvMat(zMat m1, zMat m2, zMat m);
 __EXPORT zMat zMatInv(zMat m, zMat im);
 
-/* METHOD:
- * zMatInvHotelling
- * - inverse matrix by Hotelling's method.
+/*! \brief inverse matrix by Hotelling's method.
  *
- * 'zMatInvHotelling()' computes the inverse matrix of
- * a given matrix 'm' by Hotelling s method. The result
- * is put into 'im', if it succeeds.
- * 'tol' is the tollerance of iteration.
- * 'iter' is the maximum number of iteration. If zero is
- * given for it, Z_MAX_ITER_NUM defined in 'zm_misc.h'
- * is used instead.
- * [RETURN VALUES]
- * 'zMatInvHotelling()' returns the pointer 'im' if succeeds.
- * If it fails to allocatewhen working memories, or 'm'
- * is a non-square matrix, or the sizes of 'm' and 'im
- * are mismatch, the null pointer is returned.
- * [SEE ALSO]
+ * zMatInvHotelling() computes the inverse matrix of a given matrix
+ * \a m by Hotelling's method. The result is put into \a im, if it
+ * succeeds.
+ * \a tol is the tollerance of iteration.
+ * \a iter is the maximum number of iteration. If zero is given for
+ * it, Z_MAX_ITER_NUM defined in "zm_misc.h" is used instead.
+ * \return
+ * zMatInvHotelling() returns the pointer \a im if succeeds.
+ * If it fails to allocate for working memories, or \a m is not a
+ * square matrix, or the sizes of \a m'and \a im do not match, the
+ * null pointer is returned.
+ * \sa
  * zMatInv
  */
 __EXPORT zMat zMatInvHotelling(zMat m, zMat im, double tol, int iter);

@@ -6,12 +6,7 @@
 
 #include <zm/zm_le.h>
 
-static zMat _zMulInvMat(zMat m1, zMat m2, zMat m, zIndex idx, zVec s);
-static void _zBalancingMatDST(zMat m1, zMat m2, zVec s);
-
-/* zMatDetDST
- * - determinant of matrix (destructive).
- */
+/* determinant of matrix (destructive). */
 double zMatDetDST(zMat m, zIndex idx)
 {
   register int i, j, k, p, q;
@@ -35,9 +30,7 @@ double zMatDetDST(zMat m, zIndex idx)
   return det;
 }
 
-/* zMatDet
- * - determinant of matrix.
- */
+/* determinant of matrix. */
 double zMatDet(zMat m)
 {
   int n;
@@ -60,9 +53,7 @@ double zMatDet(zMat m)
   return det;
 }
 
-/* zMatAdj
- * - adjoint matrix.
- */
+/* adjoint matrix. */
 zMat zMatAdj(zMat m, zMat adj)
 {
   register int i, j, k, l, u, v;
@@ -105,11 +96,8 @@ zMat zMatAdj(zMat m, zMat adj)
   return adj;
 }
 
-/* (static)
- * _zBalancingMatDST
- * - directly make a matrix row-balanced and column-balanced.
- */
-void _zBalancingMatDST(zMat m1, zMat m2, zVec s)
+/* directly make a matrix row-balanced and column-balanced. */
+static void _zBalancingMatDST(zMat m1, zMat m2, zVec s)
 {
   register int i, j;
   double *mp1, *mp2, tmp;
@@ -137,11 +125,8 @@ void _zBalancingMatDST(zMat m1, zMat m2, zVec s)
   }
 }
 
-/* (static)
- * _zMulInvMat
- * - inner operation of zMulInvMatMat and zMulMatInvMat.
- */
-zMat _zMulInvMat(zMat m1, zMat m2, zMat m, zIndex idx, zVec s)
+/* inner operation of zMulInvMatMat and zMulMatInvMat. */
+static zMat _zMulInvMat(zMat m1, zMat m2, zMat m, zIndex idx, zVec s)
 {
   register int i, j, k;
   int n, p, q;
@@ -190,9 +175,7 @@ zMat _zMulInvMat(zMat m1, zMat m2, zMat m, zIndex idx, zVec s)
   return m;
 }
 
-/* zMulInvMatMatNC
- * - multiplication of inverse matrix and matrix without checking sizes.
- */
+/* multiplication of inverse matrix and matrix without checking sizes. */
 zMat _zMulInvMatMatNC(zMat m1, zMat m2, zMat m)
 /* m = m1^-1 m2 */
 {
@@ -214,9 +197,7 @@ zMat _zMulInvMatMatNC(zMat m1, zMat m2, zMat m)
   return m;
 }
 
-/* zMulInvMatMat
- * - multiplication of inverse matrix and matrix.
- */
+/* multiplication of inverse matrix and matrix. */
 zMat zMulInvMatMat(zMat m1, zMat m2, zMat m)
 /* m = m1^-1 m2 */
 {
@@ -231,9 +212,7 @@ zMat zMulInvMatMat(zMat m1, zMat m2, zMat m)
   return _zMulInvMatMatNC( m1, m2, m );
 }
 
-/* zMulMatInvMat
- * - multiplication of matrix and inverse matrix.
- */
+/* multiplication of matrix and inverse matrix. */
 zMat zMulMatInvMat(zMat m1, zMat m2, zMat m)
 /* m = m1 m2^-1 */
 {
@@ -271,9 +250,7 @@ zMat zMulMatInvMat(zMat m1, zMat m2, zMat m)
   return m;
 }
 
-/* zMatInv
- * - inverse matrix.
- */
+/* inverse matrix. */
 zMat zMatInv(zMat m, zMat im)
 {
   if( !zMatIsSqr(m) ){
@@ -293,9 +270,7 @@ zMat zMatInv(zMat m, zMat im)
   return im;
 }
 
-/* zMatInvHotelling
- * - inverse matrix by Hotelling's method.
- */
+/* inverse matrix by Hotelling's method. */
 zMat zMatInvHotelling(zMat m, zMat im, double tol, int iter)
 {
   register int i, j;

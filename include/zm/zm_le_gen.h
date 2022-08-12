@@ -11,19 +11,33 @@
 
 __BEGIN_DECLS
 
-/*! \brief allocate and free working memory for generalized linear equation solvers.
+/*! \brief workspace for generalized linear equation solvers.
  */
-__EXPORT bool zLEAllocWork(zMat *m, zVec *v, zVec *s, zIndex *idx, int size);
-__EXPORT void zLEFreeWork(zMat m, zVec v, zVec s, zIndex idx);
+typedef struct{
+  zMat m; /*!< internal matrix to be inverted. */
+  zMat l; /*!< left hand matrix for decomposition (LU/LQ) */
+  zMat r; /*!< right hand matrix for decomposition (LU/LQ) */
+  zVec b; /*!< copy of b vector */
+  zVec c;
+  zVec v1;
+  zVec v2;
+  zVec s;
+  zIndex idx1;
+  zIndex idx2;
+} zLE;
+
+/*! \brief allocate and free workspace for generalized linear equation solvers.
+ */
+__EXPORT bool zLEAlloc(zLE *le, zVec b, int size);
+__EXPORT void zLEFree(zLE *le);
 
 /*! \brief generalized linear equation solver.
  *
- * zLESolve function family solves generalized linear
- * equations, in which the coefficient matrix is not square.
- * Suppose 'a x = b' is a given equation, 'a' is 'r'x'c'
- * matrix, 'b' is 'c'x1 vector and 'x', or 'ans', is 'r'x1
- * vector.
- * The answer is put into 'ans'.
+ * zLESolve function family solves generalized linear equations,
+ * in which the coefficient matrix is not necessarily square.
+ * Suppose 'a x = b' is given, where 'a' is a 'r'x'c' matrix, 'b' is
+ * a 'c'x1 vector and 'x', or 'ans', is a 'r'x1 vector.
+ * The answer is put into \a ans.
  *
  * zLESolveNormMinDST() and zLESolveNormMin() solve redundant
  * equations, in which \a r < \a c, so as to minimize the norm
@@ -115,22 +129,22 @@ __EXPORT void zLEFreeWork(zMat m, zVec v, zVec s, zIndex idx);
  * \sa
  * zBalancingDST, zLESolveGaussDST
  */
-__EXPORT zVec zLESolveNormMinDST(zMat a, zVec b, zVec w, zVec ans, zMat m, zVec v, zIndex index, zVec s);
+__EXPORT zVec zLESolveNormMinDST(zMat a, zVec b, zVec w, zVec ans, zLE *le);
 __EXPORT zVec zLESolveNormMin(zMat a, zVec b, zVec w, zVec ans);
-__EXPORT zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zMat m, zVec v, zIndex idx, zVec s);
+__EXPORT zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLE *le);
 __EXPORT zVec zLESolveErrorMin(zMat a, zVec b, zVec w, zVec ans);
-__EXPORT zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zMat m, zVec v1, zVec v2, zIndex index, zVec s);
+__EXPORT zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLE *le);
 __EXPORT zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans);
 __EXPORT zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans);
 __EXPORT zVec zLESolveMPLU(zMat a, zVec b, zVec wn, zVec we, zVec ans);
 __EXPORT zVec zLESolveMPSVD(zMat a, zVec b, zVec ans);
 __EXPORT zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn);
 __EXPORT zVec zLESolveMPAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux);
-__EXPORT zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat m, zVec v, zIndex index, zVec s);
+__EXPORT zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zLE *le);
 __EXPORT zVec zLESolveSR(zMat a, zVec b, zVec wn, zVec we, zVec ans);
-__EXPORT zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zMat m, zVec v, zIndex idx, zVec s, zVec bb);
+__EXPORT zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zLE *le, zVec bb);
 __EXPORT zVec zLESolveSRAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux);
-__EXPORT zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zMat m, zVec v, zIndex index, zVec s);
+__EXPORT zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLE *le);
 __EXPORT zVec zLESolveRSR(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans);
 
 __END_DECLS

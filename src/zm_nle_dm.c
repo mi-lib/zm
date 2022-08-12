@@ -7,23 +7,10 @@
 
 #include <zm/zm_nle.h>
 
-static zMat _zNLEJacobi(zNLE *nle, zVec var, zMat j, void *util);
-static zMat _zNLEJacobiNG(zNLE *nle, zVec var, zMat j, void *util);
-
-static double _zNLEEval(zVec var, void *util);
-static zVec _zNLEGrad(zVec var, zVec grad, void *util);
-static zMat _zNLEHess(zVec var, zMat h, void *util);
-
-static zVec _zNLEStep(zNLE *nle, zVec var, void *util);
-static void _zNLEEvalRes(zNLE *nle, zVec var, void *util, double *err);
-static int _zNLESolveDM(zNLE *nle, zVec var, void *util, double tol, int iter, double *err);
-static int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol, int iter, double *err);
-static int _zNLESolveBroyden(zNLE *nle, zVec var, void *util, double tol, int iter, double *err);
-
-zMat _zNLEJacobi(zNLE *nle, zVec var, zMat j, void *util){
+static zMat _zNLEJacobi(zNLE *nle, zVec var, zMat j, void *util){
   return nle->jac( var, j, util );
 }
-zMat _zNLEJacobiNG(zNLE *nle, zVec var, zMat j, void *util)
+static zMat _zNLEJacobiNG(zNLE *nle, zVec var, zMat j, void *util)
 {
   register int i;
   double org;
@@ -42,7 +29,7 @@ zMat _zNLEJacobiNG(zNLE *nle, zVec var, zMat j, void *util)
   return j;
 }
 
-double _zNLEEval(zVec var, void *util)
+static double _zNLEEval(zVec var, void *util)
 {
   zNLE *nle;
 
@@ -52,7 +39,7 @@ double _zNLEEval(zVec var, void *util)
   return 0.5 * zVecInnerProd( nle->_f, nle->_fw );
 }
 
-zVec _zNLEGrad(zVec var, zVec grad, void *util)
+static zVec _zNLEGrad(zVec var, zVec grad, void *util)
 {
   zNLE *nle;
 
@@ -61,7 +48,7 @@ zVec _zNLEGrad(zVec var, zVec grad, void *util)
   return zMulMatTVecNC( nle->_j, nle->_fw, grad );
 }
 
-zMat _zNLEHess(zVec var, zMat h, void *util)
+static zMat _zNLEHess(zVec var, zMat h, void *util)
 {
   zNLE *nle;
 
@@ -69,11 +56,8 @@ zMat _zNLEHess(zVec var, zMat h, void *util)
   return zMatTQuadNC( nle->_j, nle->we, h );
 }
 
-/* (static)
- * _zNLEStep
- * - update variable vector toward descent direction.
- */
-zVec _zNLEStep(zNLE *nle, zVec var, void *util)
+/* update variable vector toward descent direction. */
+static zVec _zNLEStep(zNLE *nle, zVec var, void *util)
 {
   double a;
 
@@ -88,7 +72,7 @@ zVec _zNLEStep(zNLE *nle, zVec var, void *util)
   return NULL;
 }
 
-void _zNLEEvalRes(zNLE *nle, zVec var, void *util, double *err)
+static void _zNLEEvalRes(zNLE *nle, zVec var, void *util, double *err)
 {
   if( err ){
     nle->util = util;
@@ -96,19 +80,22 @@ void _zNLEEvalRes(zNLE *nle, zVec var, void *util, double *err)
   }
 }
 
-int _zNLESolveDM(zNLE *nle, zVec var, void *util, double tol, int iter, double *err)
+static int _zNLESolveDM(zNLE *nle, zVec var, void *util, double tol, int iter, double *err)
 {
   nle->util = util;
   return zOptDMSolve( &nle->_opt, var, nle, tol, iter, err );
 }
 
-/* zNLESolveNR
- * - Newton-Raphson's method.
- */
-int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol, int iter, double *err)
+/* Newton-Raphson's method. */
+static int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol, int iter, double *err)
 {
   register int i;
+  zLE le;
 
+  le.m = nle->_opt._h;
+  le.v1 = nle->_opt._p;
+  le.idx1 = nle->_opt._idx;
+  le.s = nle->_opt._q;
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){
     nle->f( var, nle->_f, util );
@@ -117,20 +104,16 @@ int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol, int iter, double *
       return i; /* succeed */
     }
     nle->_jac( nle, var, nle->_j, util );
-    /* uses SR-inverse instead of MP-inverse,
-       rather similar to LM method. */
-    zLESolveSRDST( nle->_j, nle->_f, nle->wn, nle->we, nle->_opt._d,
-      nle->_opt._h, nle->_opt._p, nle->_opt._idx, nle->_opt._q );
+    /* uses SR-inverse instead of MP-inverse, similar to LM method. */
+    zLESolveSRDST( nle->_j, nle->_f, nle->wn, nle->we, nle->_opt._d, &le );
     if( !_zNLEStep( nle, var, util ) ) break;
   }
   ZITERWARN( iter );
   return -1;
 }
 
-/* zNLESolveBroyden
- * - solve simultaneous nonlinear equations by Broyden's method.
- */
-int _zNLESolveBroyden(zNLE *nle, zVec var, void *util, double tol, int iter, double *err)
+/* solve simultaneous nonlinear equations by Broyden's method. */
+static int _zNLESolveBroyden(zNLE *nle, zVec var, void *util, double tol, int iter, double *err)
 {
   register int i;
 

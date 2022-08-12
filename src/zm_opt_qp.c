@@ -86,10 +86,8 @@ bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
   return true;
 }
 
-/* (static)
- * transform a quadratic programming problem to a linear complementary problem. */
-static bool _zQP2LCP(zMat q, zVec c, zMat a, zVec b, zMat *lm, zVec *lq, zVec *z);
-bool _zQP2LCP(zMat q, zVec c, zMat a, zVec b, zMat *lm, zVec *lq, zVec *z)
+/* transform a quadratic programming problem to a linear complementary problem. */
+static bool _zQP2LCP(zMat q, zVec c, zMat a, zVec b, zMat *lm, zVec *lq, zVec *z)
 {
   register int i, j;
 
@@ -141,9 +139,8 @@ zQPSolverDef( Lemke )
 /* solve quadratic programming problem with interior-point method. */
 zQPSolverDef( IP )
 
-/* zQPSolveASM
- * - solve a quadratic programming by active set method
- *   implemented by N. Wakisaka
+/* solve a quadratic programming by active set method
+ * (implemented by N. Wakisaka)
  */
 typedef struct{ /* list of active set indices */
   zIndex idx;
@@ -151,17 +148,17 @@ typedef struct{ /* list of active set indices */
 } _zQPASMIndexData;
 zListClass( _zQPASMIndexList, _zQPASMIndex, _zQPASMIndexData );
 
-zVec _zQPSolveASMInitDefault(zMat a, zVec b, zVec ans, void *util)
+static zVec _zQPSolveASMInitDefault(zMat a, zVec b, zVec ans, void *util)
 {
   return zVecZero( ans );
 }
 
-double _zQPSolveASMConditionDefault(zMat a, zVec ans, int i, void *util)
+static double _zQPSolveASMConditionDefault(zMat a, zVec ans, int i, void *util)
 {
   return zRawVecInnerProd(zMatRowBuf(a,i),zVecBuf(ans),zVecSizeNC(ans));
 }
 
-int _zQPSolveASMInitIndex(zIndex idx, zMat a, zVec b, zVec ans, void *util, double cond(zMat,zVec,int,void*))
+static int _zQPSolveASMInitIndex(zIndex idx, zMat a, zVec b, zVec ans, void *util, double cond(zMat,zVec,int,void*))
 {
   int m, i;
 
@@ -177,7 +174,7 @@ int _zQPSolveASMInitIndex(zIndex idx, zMat a, zVec b, zVec ans, void *util, doub
 }
 
 #define ZM_OPT_QP_ASM_TOL ( 1.0e-8 )
-bool _zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, zIndex idx, void *util, double cond(zMat,zVec,int,void*))
+static bool _zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, zIndex idx, void *util, double cond(zMat,zVec,int,void*))
 {
   zMat qa;
   zVec xy, cb, d;

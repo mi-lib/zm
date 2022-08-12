@@ -94,8 +94,7 @@ zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
       zMatElemNC(a,p,j) *= ahead;
     zVecElemNC(b,p) *= ahead;
     for( j=i+1; j<n; j++ ){
-      q = zIndexElemNC( idx, j );
-      if( !zIsTiny( ahead = zMatElemNC(a,q,i) ) ){
+      if( !zIsTiny( ahead = zMatElemNC(a,(q=zIndexElemNC(idx,j)),i) ) ){
         for( k=i+1; k<n; k++ )
           zMatElemNC(a,q,k) -= zMatElemNC(a,p,k) * ahead;
         zVecElemNC(b,q) -= zVecElemNC(b,p) * ahead;
@@ -105,8 +104,7 @@ zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
   }
   /* backward elimination */
   for( i=n-1; i>=0; i-- ){
-    p = zIndexElemNC( idx, i );
-    x = zVecElemNC( b, p );
+    x = zVecElemNC( b, ( p = zIndexElemNC(idx,i) ) );
     for( j=n-1; j>i; j-- )
       x -= zMatElemNC(a,p,j)*zVecElemNC(ans,j);
     zVecSetElemNC( ans, i, x );

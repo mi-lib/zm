@@ -1,3 +1,5 @@
+2022. 8.13. Added zLE for generalized linear equation solver. [zm_le_gen, zm_nle_dm]
+2022. 8.12. Renamed zQRDecomp*to zMatDecompQR. [zm_le_lq]
 2022. 8.12. Renamed zLQDecomp* to zMatDecompLQ*. [zm_le_lq, zm_le, zm_le_gen, zm_le_mpinv]
 2022. 8.12. Renamed zCholeskyDecomp* to zMatDecompCholesky*. [zm_le_lu, zm_mca]
 2022. 8.12. Renamed zLUDecomp* to zMatDecompLU*. [zm_le_lu, zm_le, zm_le_gen, zm_opt_lp_pdip]

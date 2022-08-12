@@ -10,7 +10,7 @@ void test(zMat a, zVec b, zVec w, zVec d, zVec x, zVec y)
   zVecSubDRC( y, b );
   zVecSub( d, x ,tmp );
   zVecAmp( tmp, w, x );
-  printf( "|residual|=%.10f |error|=%.10f\n", zVecInnerProd(tmp,x), zVecNorm(y) );
+  printf( "|residual|=%.10g |error|=%.10g\n", zVecInnerProd(tmp,x), zVecNorm(y) );
   zVecFree( tmp );
 }
 
@@ -23,8 +23,8 @@ int main(void)
   register int i;
 
   zRandInit();
-  a = zMatAlloc( N, M ); zMatRand( a, -10, 10 );
-  b = zVecAlloc( N ); zVecRand( b, -10, 10 );
+  a = zMatAlloc( N, M ); zMatRandUniform( a, -10, 10 );
+  b = zVecAlloc( N ); zVecRandUniform( b, -10, 10 );
   w = zVecAlloc( M );
   d = zVecAlloc( M );
   x = zVecAlloc( M );
@@ -32,7 +32,7 @@ int main(void)
 
   zLESolveNormMin( a, b, NULL, d );
   for( i=0; i<zVecSizeNC(d); i++ )
-    zVecElem(d,i) += zRandF(-10.0,10.0);
+    zVecElemNC(d,i) += zRandF(-10.0,10.0);
 
   zVecSetAll( w, 1.0 );
   test( a, b, w, d, x, y );

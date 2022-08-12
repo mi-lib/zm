@@ -18,7 +18,7 @@ void test(zMat a, zVec b, zVec w, zVec w2, zVec x, zVec e, zVec aux)
 {
   clock_t c1, c2;
 
-  zVecRand( aux, -10, 10 );
+  zVecRandUniform( aux, -10, 10 );
 
   c1 = clock();
   zLESolveSR( a, b, w, w2, x );
