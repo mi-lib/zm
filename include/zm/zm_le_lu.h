@@ -13,40 +13,40 @@ __BEGIN_DECLS
 
 /* LU decomposition.
  *
- * zLUDecomp() decomposes the matrix \a m into a lower
+ * zMatDecompLU() decomposes the matrix \a m into a lower
  * triangular matrix \a l and an upper triangular matrix \a u
  * with Crout method.
  * \a index is an index vector for order discription.
  *
- * zLUDecompReg() regresses \a l and \a u after decomposing
+ * zMatDecompLUReg() regresses \a l and \a u after decomposing
  * \a m, if the rank of \a m less than its size.
  *
- * zLUDecompDST() destroys \a m during decomposition.
+ * zMatDecompLUDST() destroys \a m during decomposition.
  * \return
- * zLUDecompDST(), zLUDecomp() and zLUDecompReg() return the
+ * zMatDecompLUDST(), zMatDecompLU() and zMatDecompLUReg() return the
  * rank of \a m, which becomes the same with the minimum of
  * the row and column size of \a m when \a m is full rank.
  */
-__EXPORT int zLUDecompDST(zMat m, zMat l, zMat u, zIndex idx);
-__EXPORT int zLUDecomp(zMat m, zMat l, zMat u, zIndex idx);
-__EXPORT int zLUDecompReg(zMat m, zMat l, zMat u, zIndex idx);
-__EXPORT int zLUDecompAlloc(zMat m, zMat *l, zMat *u, zIndex *idx);
+__EXPORT int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx);
+__EXPORT int zMatDecompLU(zMat m, zMat l, zMat u, zIndex idx);
+__EXPORT int zMatDecompLUReg(zMat m, zMat l, zMat u, zIndex idx);
+__EXPORT int zMatDecompLUAlloc(zMat m, zMat *l, zMat *u, zIndex *idx);
 
 /* Cholesky decomposition.
  *
- * zCholeskyDecomp() decomposes a symmetric matrix \a m into
+ * zMatDecompCholesky() decomposes a symmetric matrix \a m into
  * \a l \a l ^T.
  *
- * zCholeskyDecompDST() destroys \a m during decomposition.
+ * zMatDecompCholeskyDST() destroys \a m during decomposition.
  * \return
- * zCholeskyDecompDST() and zCholeskyDecomp() return the rank
+ * zMatDecompCholeskyDST() and zMatDecompCholesky() return the rank
  * of \a m. In case they fail to allocate internal memory for
  * the computation, -1 is returned.
  */
-__EXPORT int zCholeskyDecompDST(zMat m, zMat l, zIndex index);
-__EXPORT int zCholeskyDecomp(zMat m, zMat l, zIndex index);
-__EXPORT int zCholeskyDecompReg(zMat m, zMat l, zIndex idx);
-__EXPORT int zCholeskyDecompAlloc(zMat m, zMat *l, zIndex *idx);
+__EXPORT int zMatDecompCholeskyDST(zMat m, zMat l, zIndex index);
+__EXPORT int zMatDecompCholesky(zMat m, zMat l, zIndex index);
+__EXPORT int zMatDecompCholeskyReg(zMat m, zMat l, zIndex idx);
+__EXPORT int zMatDecompCholeskyAlloc(zMat m, zMat *l, zIndex *idx);
 
 __END_DECLS
 

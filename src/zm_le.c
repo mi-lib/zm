@@ -219,7 +219,7 @@ zVec zLESolveRI(zMat a, zVec b, zVec ans)
   idx = zIndexCreate( n );
   if( !l || !u || !res || !err || !idx ) goto TERMINATE;
 
-  if( zLUDecomp( a, l, u, idx ) < zMatRowSizeNC(a) ){
+  if( zMatDecompLU( a, l, u, idx ) < zMatRowSizeNC(a) ){
     ZRUNERROR( ZM_ERR_LE_SINGULAR );
     ans = NULL;
     goto TERMINATE;

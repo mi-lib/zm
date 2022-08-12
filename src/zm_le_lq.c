@@ -7,7 +7,7 @@
 #include <zm/zm_le.h>
 
 /* LQ decomposition based on Gram=Schmidt's method. (destructive) */
-int zLQDecompDST(zMat m, zMat l, zMat q, zIndex idx)
+int zMatDecompLQDST(zMat m, zMat l, zMat q, zIndex idx)
 {
   register int i, j, rank;
   double *mp, r;
@@ -33,7 +33,7 @@ int zLQDecompDST(zMat m, zMat l, zMat q, zIndex idx)
 }
 
 /* LQ decomposition based on Gram=Schmidt's method. */
-int zLQDecomp(zMat m, zMat l, zMat q, zIndex idx)
+int zMatDecompLQ(zMat m, zMat l, zMat q, zIndex idx)
 {
   zMat mcp;
   int rank;
@@ -42,17 +42,17 @@ int zLQDecomp(zMat m, zMat l, zMat q, zIndex idx)
     ZALLOCERROR();
     return 0;
   }
-  rank = zLQDecompDST( mcp, l, q, idx );
+  rank = zMatDecompLQDST( mcp, l, q, idx );
   zMatFree( mcp );
   return rank;
 }
 
 /* LQ decomposition and regression. */
-int zLQDecompReg(zMat m, zMat l, zMat q, zIndex idx)
+int zMatDecompLQReg(zMat m, zMat l, zMat q, zIndex idx)
 {
   int rank;
 
-  if( ( rank = zLQDecomp( m, l, q, idx ) ) < zMatRowSizeNC(m) ){
+  if( ( rank = zMatDecompLQ( m, l, q, idx ) ) < zMatRowSizeNC(m) ){
     zMatColReg( l, rank );
     zMatRowReg( q, rank );
   }
@@ -60,7 +60,7 @@ int zLQDecompReg(zMat m, zMat l, zMat q, zIndex idx)
 }
 
 /* LQ decomposition with an automatic matrix allocation and resize. */
-int zLQDecompAlloc(zMat m, zMat *l, zMat *q, zIndex *idx)
+int zMatDecompLQAlloc(zMat m, zMat *l, zMat *q, zIndex *idx)
 {
   *l = zMatAllocSqr( zMatRowSizeNC(m) );
   *q = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
@@ -71,11 +71,11 @@ int zLQDecompAlloc(zMat m, zMat *l, zMat *q, zIndex *idx)
     zIndexFree( *idx );
     return 0;
   }
-  return zLQDecompReg( m, *l, *q, *idx );
+  return zMatDecompLQReg( m, *l, *q, *idx );
 }
 
 /* QR decomposition based on Gram=Schmidt's method. */
-int zQRDecomp(zMat m, zMat q, zMat r, zIndex idx)
+int zMatDecompQR(zMat m, zMat q, zMat r, zIndex idx)
 {
   zMat mcp, qcp, rcp;
   int rank = 0;
@@ -88,7 +88,7 @@ int zQRDecomp(zMat m, zMat q, zMat r, zIndex idx)
     goto TERMINATE;
   }
   zMatTNC( m, mcp );
-  rank = zLQDecompDST( mcp, rcp, qcp, idx );
+  rank = zMatDecompLQDST( mcp, rcp, qcp, idx );
   zMatTNC( qcp, q );
   if( r ) zMatTNC( rcp, r );
 

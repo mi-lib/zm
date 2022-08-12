@@ -7,7 +7,7 @@
 #include <zm/zm_le.h>
 
 /* LU decomposition of a matrix (destructive). */
-int zLUDecompDST(zMat m, zMat l, zMat u, zIndex idx)
+int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx)
 {
   register int r, c, i, j;
   int p, q;
@@ -38,7 +38,7 @@ int zLUDecompDST(zMat m, zMat l, zMat u, zIndex idx)
 }
 
 /* LU decomposition of a matrix. */
-int zLUDecomp(zMat m, zMat l, zMat u, zIndex idx)
+int zMatDecompLU(zMat m, zMat l, zMat u, zIndex idx)
 {
   int n, rank;
   zMat mc;
@@ -58,17 +58,17 @@ int zLUDecomp(zMat m, zMat l, zMat u, zIndex idx)
   zIndexOrder( idx, 0 );
   if( !( mc = zMatClone(m) ) ) return -1;
 
-  rank = zLUDecompDST( mc, l, u, idx );
+  rank = zMatDecompLUDST( mc, l, u, idx );
   zMatFree( mc );
   return rank;
 }
 
 /* LU decomposition and regression of a matrix. */
-int zLUDecompReg(zMat m, zMat l, zMat u, zIndex idx)
+int zMatDecompLUReg(zMat m, zMat l, zMat u, zIndex idx)
 {
   int rank;
 
-  if( ( rank = zLUDecomp( m, l, u, idx ) ) < zMatRowSizeNC(m) ){
+  if( ( rank = zMatDecompLU( m, l, u, idx ) ) < zMatRowSizeNC(m) ){
     zMatColReg( l, rank ); /* lower triangle regression */
     zMatRowReg( u, rank ); /* upper triangle regression */
   }
@@ -76,7 +76,7 @@ int zLUDecompReg(zMat m, zMat l, zMat u, zIndex idx)
 }
 
 /* LU decomposition with an automatic matrix allocation and resize. */
-int zLUDecompAlloc(zMat m, zMat *l, zMat *u, zIndex *idx)
+int zMatDecompLUAlloc(zMat m, zMat *l, zMat *u, zIndex *idx)
 {
   *l = zMatAllocSqr( zMatRowSizeNC(m) );
   *u = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
@@ -87,11 +87,11 @@ int zLUDecompAlloc(zMat m, zMat *l, zMat *u, zIndex *idx)
     zIndexFree( *idx );
     return 0;
   }
-  return zLUDecompReg( m, *l, *u, *idx );
+  return zMatDecompLUReg( m, *l, *u, *idx );
 }
 
 /* Cholesky decomposition of a matrix (destructive). */
-int zCholeskyDecompDST(zMat m, zMat l, zIndex idx)
+int zMatDecompCholeskyDST(zMat m, zMat l, zIndex idx)
 {
   register int i, j, k;
   int n, p, rank;
@@ -132,7 +132,7 @@ int zCholeskyDecompDST(zMat m, zMat l, zIndex idx)
 }
 
 /* Cholesky decomposition of a matrix */
-int zCholeskyDecomp(zMat m, zMat l, zIndex idx)
+int zMatDecompCholesky(zMat m, zMat l, zIndex idx)
 {
   int rank;
   zMat mc;
@@ -148,24 +148,24 @@ int zCholeskyDecomp(zMat m, zMat l, zIndex idx)
   }
   zIndexOrder( idx, 0 );
   if( !( mc = zMatClone( m ) ) ) return -1;
-  rank = zCholeskyDecompDST( mc, l, idx );
+  rank = zMatDecompCholeskyDST( mc, l, idx );
   zMatFree( mc );
   return rank;
 }
 
 /* Cholesky decomposition and regression of a matrix. */
-int zCholeskyDecompReg(zMat m, zMat l, zIndex idx)
+int zMatDecompCholeskyReg(zMat m, zMat l, zIndex idx)
 {
   int rank;
 
-  rank = zCholeskyDecomp( m, l, idx );
+  rank = zMatDecompCholesky( m, l, idx );
   if( rank > 0 && rank < zMatRowSizeNC(m) )
     zMatColReg( l, rank ); /* lower triangle regression */
   return rank;
 }
 
 /* Cholesky decomposition with an automatic matrix allocation and resize. */
-int zCholeskyDecompAlloc(zMat m, zMat *l, zIndex *idx)
+int zMatDecompCholeskyAlloc(zMat m, zMat *l, zIndex *idx)
 {
   *l = zMatAllocSqr( zMatRowSizeNC(m) );
   *idx = zIndexCreate( zMatRowSizeNC(m) );
@@ -174,5 +174,5 @@ int zCholeskyDecompAlloc(zMat m, zMat *l, zIndex *idx)
     zIndexFree( *idx );
     return 0;
   }
-  return zCholeskyDecompReg( m, *l, *idx );
+  return zMatDecompCholeskyReg( m, *l, *idx );
 }

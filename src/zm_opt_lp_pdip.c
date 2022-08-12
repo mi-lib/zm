@@ -89,7 +89,7 @@ static bool _zLP_PDIPEqLUDecomp(_zLP_PDIP *dat)
 {
   zVecDemNC( dat->x, dat->z, dat->xz ); /* xz = x / z */
   zMatQuadNC( dat->a, dat->xz, dat->axza ); /* Ax/zA^T */
-  if( zLUDecomp( dat->axza, dat->l, dat->u, dat->idx ) == zMatRowSizeNC(dat->a) )
+  if( zMatDecompLU( dat->axza, dat->l, dat->u, dat->idx ) == zMatRowSizeNC(dat->a) )
     return true;
   ZRUNERROR( ZM_ERR_LE_SINGULAR );
   return false;
@@ -99,7 +99,7 @@ static int _zLP_PDIPEqLUDecomp(_zLP_PDIP *dat)
 {
   zVecDemNC( dat->x, dat->z, dat->xz ); /* xz = x / z */
   zMatQuadNC( dat->a, dat->xz, dat->axza ); /* Ax/zA^T */
-  return zLUDecomp( dat->axza, dat->l, dat->u, dat->idx );
+  return zMatDecompLU( dat->axza, dat->l, dat->u, dat->idx );
 }
 #endif
 

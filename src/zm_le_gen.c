@@ -187,7 +187,7 @@ zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans)
   zIndex idx1, idx2;
 
   if( !_zLEAllocWorkMP( a, b, &l, &q, &bcp, &idx1 ) ) goto TERMINATE2;
-  if( ( rank = zLQDecomp( a, l, q, idx1 ) ) == 0 )
+  if( ( rank = zMatDecompLQ( a, l, q, idx1 ) ) == 0 )
     goto TERMINATE2; /* extremely irregular case */
   c = zVecAlloc( rank );
   zLEAllocWork( &m, &v, &s, &idx2, rank );
@@ -216,7 +216,7 @@ zVec zLESolveMPLU(zMat a, zVec b, zVec wn, zVec we, zVec ans)
   zIndex idx1, idx2;
 
   if( !_zLEAllocWorkMP( a, b, &l, &u, &bcp, &idx1 ) ) goto TERMINATE2;
-  if( ( rank = zLUDecomp( a, l, u, idx1 ) ) == 0 )
+  if( ( rank = zMatDecompLU( a, l, u, idx1 ) ) == 0 )
     goto TERMINATE2; /* extremely irregular case */
   c = zVecAlloc( rank );
   zLEAllocWork( &m, &v, &s, &idx2, rank );
@@ -278,7 +278,7 @@ zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn)
   register int i;
 
   if( !_zLEAllocWorkMP( a, b, &l, &q, &bcp, &idx1 ) ) goto TERMINATE2;
-  if( ( rank = zLQDecomp( a, l, q, idx1 ) ) == 0 )
+  if( ( rank = zMatDecompLQ( a, l, q, idx1 ) ) == 0 )
     goto TERMINATE2; /* extremely irregular case */
   c = zVecAlloc( rank );
   zLEAllocWork( &m, &v, &s, &idx2, rank );

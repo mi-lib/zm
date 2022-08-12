@@ -155,7 +155,7 @@ int zVecListGenRandND(zVecList *vl, int n, zVec mean, zMat cov)
   }
   vo = zVecAlloc( zVecSizeNC(mean) );
   v = zVecAlloc( zVecSizeNC(mean) );
-  if( !vo || !v || !zCholeskyDecompAlloc( cov, &b, &idx ) ){
+  if( !vo || !v || !zMatDecompCholeskyAlloc( cov, &b, &idx ) ){
     ZALLOCERROR();
     goto TERMINATE;
   }

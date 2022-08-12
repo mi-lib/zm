@@ -11,7 +11,7 @@ static int _zMPInvAllocWork1(zMat m, zMat *l, zMat *q, zIndex *idx)
 {
   int rank;
 
-  if( ( rank = zLQDecompAlloc( m, l, q, idx ) ) == -1 ){
+  if( ( rank = zMatDecompLQAlloc( m, l, q, idx ) ) == -1 ){
     zMatFreeAO( 2, *l, *q );
     zIndexFree( *idx );
     return -1;
