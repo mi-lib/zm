@@ -13,6 +13,7 @@ typedef struct{
   zVec b, c;
   double d;
   zIndex ib, in;
+  zIndex ir;
 } _zLPTableau;
 
 #ifdef DEBUG
@@ -25,6 +26,7 @@ static void _zLPTableauFPrint(FILE *fp, _zLPTableau *tab)
   fprintf( fp, "d: = %f\n", tab->d );
   fprintf( fp, "(Ib): " ); zIndexFPrint( fp, tab->ib );
   fprintf( fp, "(In): " ); zIndexFPrint( fp, tab->in );
+  fprintf( fp, "(Ir): " ); zIndexFPrint( fp, tab->ir );
 }
 #define _zLPTableauPrint( tab )  _zLPTableauFPrint( stdout, tab )
 #endif /* DEBUG */
@@ -39,7 +41,8 @@ static bool _zLPTableauCreate(_zLPTableau *tab, zMat a, zVec b)
   tab->c = zVecAlloc( zMatColSizeNC(tab->a) );
   tab->ib = zIndexCreate( zMatRowSizeNC(a) );
   tab->in = zIndexCreate( zMatColSizeNC(a) );
-  if( !tab->a || !tab->b ||!tab->c || !tab->ib || !tab->in )
+  tab->ir = zIndexCreate( zMatRowSizeNC(a) );
+  if( !tab->a || !tab->b ||!tab->c || !tab->ib || !tab->in || !tab->ir )
     return false;
   for( i=0; i<zVecSizeNC(b); i++ ){
     if( zVecElemNC(b,i) >= 0 ){
@@ -56,6 +59,7 @@ static bool _zLPTableauCreate(_zLPTableau *tab, zMat a, zVec b)
   tab->d = 0;
   zIndexOrder( tab->ib, zMatColSizeNC(a) );
   zIndexOrder( tab->in, 0 );
+  zIndexOrder( tab->ir, 0 );
   return true;
 }
 
@@ -67,6 +71,7 @@ static void _zLPTableauDestroy(_zLPTableau *tab)
   zVecFree( tab->c );
   zIndexFree( tab->ib );
   zIndexFree( tab->in );
+  zIndexFree( tab->ir );
 }
 
 /* sweep-out one coefficient of cost function corresponding to old bases. */
@@ -75,11 +80,11 @@ static void _zLPTableauSweepC1(_zLPTableau *tab, int p)
   register int i;
   double cp;
 
-  cp = zVecElemNC( tab->c, zIndexElemNC(tab->ib,p) );
+  cp = zVecElemNC(tab->c,zIndexElemNC(tab->ib,p));
   for( i=0; i<zArraySize(tab->in); i++ )
     zVecElemNC(tab->c,zIndexElemNC(tab->in,i))
-      -= zMatElemNC(tab->a,p,zIndexElemNC(tab->in,i)) * cp;
-  tab->d += zVecElemNC(tab->b,p) * cp;
+      -= zMatElemNC(tab->a,zIndexElemNC(tab->ir,p),zIndexElemNC(tab->in,i)) * cp;
+  tab->d += zVecElemNC(tab->b,zIndexElemNC(tab->ir,p)) * cp;
   zVecSetElemNC( tab->c, zIndexElemNC(tab->ib,p), 0 );
 }
 
@@ -108,12 +113,16 @@ static int _zLPTableauFindNA(_zLPTableau *tab)
 /* find next axis column of tableau in degenerate case. */
 static int _zLPTableauFindNA_deg(_zLPTableau *tab)
 { /* next axis for degenerated case */
-  register int i;
+  register int i, na = -1, idx_min = INT_MAX;
 
   for( i=0; i<zArraySize(tab->in); i++ )
-    if( zVecElemNC(tab->c,zIndexElemNC(tab->in,i)) < -zTOL )
-      return i;
-  return -1;
+    if( zVecElemNC(tab->c,zIndexElemNC(tab->in,i)) < -zTOL ){
+      if( zIndexElemNC(tab->in,i) < idx_min ){
+        idx_min = zIndexElemNC(tab->in,i);
+        na = i;
+      }
+    }
+  return na;
 }
 
 /* find next pivot in axis column to be sweeped-out. */
@@ -124,11 +133,12 @@ static int _zLPTableauFindNP(_zLPTableau *tab, int *na)
   bool f_try = true;
 
  RETRY:
-  for( p_min=HUGE_VAL, np=-1, i=0; i<zVecSizeNC(tab->b); i++ ){
-    if( ( a = zMatElemNC(tab->a,i,zIndexElemNC(tab->in,*na)) ) < zTOL )
+  for( p_min=HUGE_VAL, np=-1, i=0; i<zArraySize(tab->ir); i++ ){
+    /* a should be comared with 0 in theory. But zTOL instead of 0 does work. */
+    if( ( a = zMatElemNC(tab->a,zIndexElemNC(tab->ir,i),zIndexElemNC(tab->in,*na)) ) < zTOL )
       continue;
-    p = zVecElemNC(tab->b,i) / a;
-    if( zIsTiny( p ) && f_try ){ /* generated case */
+    p = zVecElemNC(tab->b,zIndexElemNC(tab->ir,i)) / a;
+    if( zIsTiny( p ) && f_try ){ /* degenerated case */
       *na = _zLPTableauFindNA_deg( tab );
       f_try = false;
       goto RETRY;
@@ -144,25 +154,26 @@ static int _zLPTableauFindNP(_zLPTableau *tab, int *na)
 /* sweep-out tabeau matrix of constraint equation. */
 static void _zLPTableauSweepA(_zLPTableau *tab, int np, int na)
 {
-  register int i, j;
+  register int i, j, r;
   double ap;
 
   /* normalize pivot row */
-  ap = zMatElemNC( tab->a, np, zIndexElemNC(tab->in,na) );
+  ap = zMatElemNC(tab->a,zIndexElemNC(tab->ir,np),zIndexElemNC(tab->in,na));
   for( j=0; j<zArraySize(tab->in); j++ )
-    zMatElemNC( tab->a, np, zIndexElemNC(tab->in,j) ) /= ap;
-  zMatElemNC( tab->a, np, zIndexElemNC(tab->ib,np) ) /= ap;
-  zVecElemNC(tab->b,np) /= ap;
+    zMatElemNC(tab->a,zIndexElemNC(tab->ir,np),zIndexElemNC(tab->in,j)) /= ap;
+  zMatElemNC(tab->a,zIndexElemNC(tab->ir,np),zIndexElemNC(tab->ib,np)) /= ap;
+  zVecElemNC(tab->b,zIndexElemNC(tab->ir,np)) /= ap;
   /* sweep-out rest row */
-  for( i=0; i<zVecSizeNC(tab->b); i++ ){
+  for( i=0; i<zArraySize(tab->ir); i++ ){
     if( i == np ) continue;
-    ap = zMatElemNC( tab->a, i, zIndexElemNC(tab->in,na) );
+    r = zIndexElemNC(tab->ir,i);
+    ap = zMatElemNC(tab->a,r,zIndexElemNC(tab->in,na));
     for( j=0; j<zArraySize(tab->in); j++ )
-      zMatElemNC( tab->a, i, zIndexElemNC(tab->in,j) )
-        -= zMatElemNC( tab->a, np, zIndexElemNC(tab->in,j) ) * ap;
-    zMatElemNC( tab->a, i, zIndexElemNC(tab->ib,np) )
-      =- zMatElemNC( tab->a, np, zIndexElemNC(tab->ib,np) ) * ap;
-    zVecElemNC(tab->b,i) -= zVecElemNC(tab->b,np) * ap;
+      zMatElemNC(tab->a,r,zIndexElemNC(tab->in,j))
+        -= zMatElemNC(tab->a,zIndexElemNC(tab->ir,np),zIndexElemNC(tab->in,j)) * ap;
+    zMatElemNC(tab->a,r,zIndexElemNC(tab->ib,np))
+      -= zMatElemNC(tab->a,zIndexElemNC(tab->ir,np),zIndexElemNC(tab->ib,np)) * ap;
+    zVecElemNC(tab->b,r) -= zVecElemNC(tab->b,zIndexElemNC(tab->ir,np)) * ap;
   }
 }
 
@@ -207,34 +218,32 @@ static bool _zLPTableauSimplex(_zLPTableau *tab)
 /* reset tableau to the second stage. */
 static bool _zLPTableauReset(_zLPTableau *tab, zVec c)
 {
-  register int i, j, n, m;
+  register int i, j, n;
 
   tab->d = 0; /* precautionary touch-up */
   n = zVecSizeNC(tab->c) - zVecSizeNC(tab->b);
-  m = n - zVecSizeNC(tab->b);
   for( i=0; i<zArraySize(tab->ib); i++ ){
     if( zIndexElemNC(tab->ib,i) < n ) continue;
     for( j=0; j<zArraySize(tab->in); j++ ){
-      if( zIndexElemNC(tab->in,j) < n && zVecElemNC(tab->c,zIndexElemNC(tab->in,j)) > -zTOL ){
+      if( zIndexElemNC(tab->in,j) < n && !zIsTiny( zMatElemNC(tab->a,i,zIndexElemNC(tab->in,j)) ) ){
+        _zLPTableauSweepA( tab, i, j );
         _zLPTableauSwapPivot( tab, i, j );
         goto NEXT;
       }
     }
-    ZRUNERROR( ZM_ERR_FATAL );
-    return false;
+    zIndexRemove( tab->ir, i );
+    zIndexRemove( tab->ib, i );
+    i--;
    NEXT: ;
   }
   /* rearrange nonfeasible bases */
-  for( i=0, j=zArraySize(tab->in)-1; j>=m; j-- ){
-    if( zIndexElemNC(tab->in,j) < n ){
-      while( zIndexElemNC(tab->in,i) < n ) i++;
-      zIndexSwap( tab->in, i, j );
-      i++;
+  for( i=0; i<zArraySize(tab->in); i++ )
+    if( zIndexElemNC(tab->in,i) >= n ){
+      zIndexRemove( tab->in, i );
+      i--;
     }
-  }
-  zArraySize(tab->in) = m;
   zVecSetSize( tab->c, zVecSizeNC(c) );
-  zVecCopy( c, tab->c );
+  zVecCopyNC( c, tab->c );
   return true;
 }
 
@@ -263,8 +272,8 @@ bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost)
     return false;
   }
   if( !_zLPTableauCreate( &tab, a, b ) ){
-    ZALLOCERROR();
-    return false;
+    ret = false;
+    goto TERMINATE;
   }
   /* first phase: feasible base */
   if( !_zLPTableauSimplex( &tab ) || !zIsTiny(tab.d) ){
@@ -272,7 +281,6 @@ bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost)
     goto TERMINATE;
   }
   _zLPTableauReset( &tab, c );
-  _zLPTableauSweepC( &tab );
   /* second phase: body problem */
   if( !_zLPTableauSimplex( &tab ) ){
     ZRUNERROR( ZM_ERR_OPT_INF );

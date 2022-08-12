@@ -1,3 +1,7 @@
+2022. 8.12. Applied zIndexRemove in _zLPTableauReset. [zm_opt_lp_simplex]
+2022. 8.11. Debugged _zLPTableauFindNA_deg. [zm_opt_lp_simplex]
+2022. 7.21. Avoided possible leakage of memory in zLPSolveSimplex. [zm_opt_lp_simplex]
+2022. 7.21. Removed unnecessary sweeping-out in zLPSolveSimplex. [zm_opt_lp_simplex]
 2022. 7.19. Renamed _zLP_PDIPIni to _zLP_PDIPInit and debugged it. [zm_opt_lp_pdip]
 2022. 7.19. Debugged _zLPTableauReset. [zm_opt_lp_simplex]
 2022. 7.19. Debugged _zLPTableauFindNA and _zLPTableauFindNA_deg. [zm_opt_lp_simplex]

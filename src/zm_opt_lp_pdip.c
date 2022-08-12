@@ -84,6 +84,7 @@ static bool _zLP_PDIPInit(_zLP_PDIP *dat)
 }
 
 /* LU decomposition of gradient matrix for PD-IP. */
+#if 0
 static bool _zLP_PDIPEqLUDecomp(_zLP_PDIP *dat)
 {
   zVecDemNC( dat->x, dat->z, dat->xz ); /* xz = x / z */
@@ -93,8 +94,17 @@ static bool _zLP_PDIPEqLUDecomp(_zLP_PDIP *dat)
   ZRUNERROR( ZM_ERR_LE_SINGULAR );
   return false;
 }
+#else
+static int _zLP_PDIPEqLUDecomp(_zLP_PDIP *dat)
+{
+  zVecDemNC( dat->x, dat->z, dat->xz ); /* xz = x / z */
+  zMatQuadNC( dat->a, dat->xz, dat->axza ); /* Ax/zA^T */
+  return zLUDecomp( dat->axza, dat->l, dat->u, dat->idx );
+}
+#endif
 
 /* solve gradient equation by LU factorization for PD-IP. */
+#if 0
 static void _zLP_PDIPEqLU(_zLP_PDIP *dat, zVec v1, zVec v2, zVec v3, zVec dx, zVec dy, zVec dz)
 {
   /* dy (dz for temporary working space) */
@@ -115,6 +125,47 @@ static void _zLP_PDIPEqLU(_zLP_PDIP *dat, zVec v1, zVec v2, zVec v3, zVec dx, zV
   zVecDemNCDRC( dx, dat->z );
   zVecRevNCDRC( dx );
 }
+#else
+zVec zLESolveLU_deg(zMat l, zMat u, int rank, zVec b, zVec ans, zIndex idx)
+{
+  zVec c;
+
+  if( !( c = zVecAlloc( rank ) ) ) return NULL;
+  zMatColReg( l, rank );
+  zMatRowReg( u, rank );
+  zLESolveErrorMin( l, b, NULL, c );
+  zLESolveNormMin( u, c, NULL, ans );
+  zVecFree( c );
+  zMatSetColSizeNC( l, zMatRowSizeNC(l) );
+  zMatSetRowSizeNC( u, zMatColSizeNC(u) );
+  return ans;
+}
+
+static void _zLP_PDIPEqLU(_zLP_PDIP *dat, int rank, zVec v1, zVec v2, zVec v3, zVec dx, zVec dy, zVec dz)
+{
+  /* dy (dz for temporary working space) */
+  v2 ? zVecAmpNC( v2, dat->x, dz ) : zVecZero( dz );
+  zVecSubNCDRC( dz, v3 );
+  zVecDemNCDRC( dz, dat->z );
+  zMulMatVecNC( dat->a, dz, dat->tmp );
+  if( v1 ) zVecAddNCDRC( dat->tmp, v1 );
+  zVecRevNCDRC( dat->tmp );
+  if( zMatRowSizeNC(dat->a) == rank )
+    zLESolveLU( dat->l, dat->u, dat->tmp, dy, dat->idx );
+  else
+    zLESolveLU_deg( dat->l, dat->u, rank, dat->tmp, dy, dat->idx );
+
+  /* dz */
+  zMulMatTVecNC( dat->a, dy, dz );
+  if( v2 ) zVecAddNCDRC( dz, v2 );
+  zVecRevNCDRC( dz );
+  /* dx */
+  zVecAmpNC( dat->x, dz, dx );
+  zVecAddNCDRC( dx, v3 );
+  zVecDemNCDRC( dx, dat->z );
+  zVecRevNCDRC( dx );
+}
+#endif
 
 /* Mehrotra's predictor-corrector method */
 typedef struct{
@@ -222,15 +273,28 @@ bool zLPSolvePDIP_PC(zMat a, zVec b, zVec c, zVec x, double *cost)
   for( i=0; i<iter; i++ ){
     e = _zLP_PDIP_PCErr( &dat );
     if( zVecIsTiny(dat.v1) && zVecIsTiny(dat.v2) && zIsTiny(e) ) goto TERMINATE0;
+#if 0
     if( !_zLP_PDIPEqLUDecomp( &dat ) ) goto TERMINATE1;
+#else
+    int rank;
+    rank = _zLP_PDIPEqLUDecomp( &dat );
+#endif
     /* predictor */
+#if 0
     _zLP_PDIPEqLU( &dat, dat.v1, dat.v2, dat.v3, pc.dx, pc.dy, pc.dz );
+#else
+    _zLP_PDIPEqLU( &dat, rank, dat.v1, dat.v2, dat.v3, pc.dx, pc.dy, pc.dz );
+#endif
     ap = _zLP_PDIP_PCStep( dat.x, pc.dx );
     ad = _zLP_PDIP_PCStep( dat.z, pc.dz );
     if( zIsTiny(ap) && zIsTiny(ad) ) goto TERMINATE0;
     _zLP_PDIP_PCCorrect( &dat, &pc, ap, ad, e );
     /* corrector */
+#if 0
     _zLP_PDIPEqLU( &dat, NULL, NULL, dat.v3, pc.dx2, pc.dy2, pc.dz2 );
+#else
+    _zLP_PDIPEqLU( &dat, rank, NULL, NULL, dat.v3, pc.dx2, pc.dy2, pc.dz2 );
+#endif
     zVecAddNCDRC( pc.dx, pc.dx2 );
     zVecAddNCDRC( pc.dy, pc.dy2 );
     zVecAddNCDRC( pc.dz, pc.dz2 );
