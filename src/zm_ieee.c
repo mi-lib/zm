@@ -8,7 +8,6 @@
 
 /* define HUGE_VAL, if not. conforming to C99. */
 #ifdef __ZM_NEED_HUGE_VAL
-# include <endian.h>
 __ieee_fp_t __huge_val = {
 # if __BYTE_ORDER == __BIG_ENDIAN
   { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 }
@@ -33,7 +32,6 @@ int zIsInf(double x)
 
 /* define NAN, if not. conforming to C99. */
 #ifdef __ZM_NEED_NAN
-# include <endian.h>
 __ieee_fp_t __nan_val = {
 # if __BYTE_ORDER == __BIG_ENDIAN
   { 0x7f, 0xf8, 0, 0, 0, 0, 0, 0 }
