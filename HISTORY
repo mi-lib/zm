@@ -1,3 +1,4 @@
+2022. 8.13. Added _zLESolveLUDeg, and modified _zLP_PDIPEqLUDecomp, _zLP_PDIPEqLU, and zLPSolvePDIP_PC for degenerated cases. [zm_opt_lp_pdip]
 2022. 8.13. Added zLE for generalized linear equation solver. [zm_le_gen, zm_nle_dm]
 2022. 8.12. Renamed zQRDecomp*to zMatDecompQR. [zm_le_lq]
 2022. 8.12. Renamed zLQDecomp* to zMatDecompLQ*. [zm_le_lq, zm_le, zm_le_gen, zm_le_mpinv]
