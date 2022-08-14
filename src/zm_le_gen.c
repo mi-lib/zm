@@ -7,6 +7,14 @@
 #include <zm/zm_le.h>
 #include <zm/zm_eig.h> /* for MP-inverse and SVD */
 
+/* initialize workspace for generalized linear equation solver. */
+void zLEInit(zLE *le)
+{
+  le->m = le->l = le->r = NULL;
+  le->b = le->c = le->v1 = le->v2 = le->s = NULL;
+  le->idx1 = le->idx2 = NULL;
+}
+
 /* allocate workspace for generalized linear equation solvers. */
 bool zLEAlloc(zLE *le, zVec b, int size)
 {

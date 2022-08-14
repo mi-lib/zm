@@ -26,8 +26,10 @@ typedef struct{
   zIndex idx2;
 } zLE;
 
-/*! \brief allocate and free workspace for generalized linear equation solvers.
- */
+/*! \brief initialize workspace for generalized linear equation solver. */
+__EXPORT void zLEInit(zLE *le);
+
+/*! \brief allocate and free workspace for generalized linear equation solvers. */
 __EXPORT bool zLEAlloc(zLE *le, zVec b, int size);
 __EXPORT void zLEFree(zLE *le);
 
