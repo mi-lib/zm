@@ -1,5 +1,12 @@
+/* ZM - Z's Mathematics Toolbox
+ * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
+ *
+ * zm_ip_chebyshev - interpolation: Chebyshev's interpolation.
+ */
+
 #include <zm/zm_ip.h>
 
+/* scaling of abscissa. */
 static double _zIPScaleChebyshev(double t, double tmin, double tmax)
 {
   return ( 2 * t - ( tmax + tmin ) ) / ( tmax - tmin );
@@ -92,7 +99,7 @@ static zVec _zIPSecAccChebyshev(zIPData *dat, int i, zVec v)
 }
 
 /* methods */
-static zIPCom _zm_ip_com_tchebychev = {
+static zIPCom _zm_ip_com_chebyshev = {
   _zIPVecChebyshev,
   _zIPVelChebyshev,
   _zIPAccChebyshev,
@@ -134,54 +141,8 @@ bool zIPCreateChebyshev(zIP *ip, zSeq *seq)
   for( i=0; i<zIPSize(&ip->dat); i++ )
     zMatGetRowNC( v, i, *zArrayElem(&ip->dat.va,i) );
 
-  ip->com = &_zm_ip_com_tchebychev;
+  ip->com = &_zm_ip_com_chebyshev;
  TERMINATE:
   zMatFreeAO( 3, r, p, v );
   return ret;
-}
-
-
-
-int main(int argc, char *argv[])
-{
-  zSeq seq;
-  zIP ip;
-  zVec v;
-  int point_num;
-  double t, tmax;
-  register int i;
-  /* example data array */
-  double tp[] = { 0, 2, 3, 5, 6 };
-  double vp1[] = { 0, 3, 1,-2, 4 };
-  double vp2[] = { 1, 2,-3, 4, 2 };
-
-  /* creation of x-values and y-values vector */
-  point_num = sizeof(tp) / sizeof(double);
-  zSeqInit( &seq );
-  for( t=0, i=0; i<point_num; i++ ){
-    v = zVecCreateList( 2, vp1[i], vp2[i] );
-    zSeqEnqueue( &seq, v, tp[i]-t );
-    t = tp[i];
-  }
-  /* creation of Chebyshev interpolator */
-  if( !zIPCreateChebyshev( &ip, &seq ) ) return 1;
-
-  /* value, velocity, acceleration */
-  tmax = tp[point_num-1];
-  v = zVecAlloc( 2 );
-  for( i=0; ; i++ ){
-    t = tp[0] + 0.1 * i;
-    zIPVec( &ip, t, v );
-    printf( "%f %f %f ", t, zVecElem(v,0), zVecElem(v,1) );
-    zIPVel( &ip, t, v );
-    printf( "%f %f ", zVecElem(v,0), zVecElem(v,1) );
-    zIPAcc( &ip, t, v );
-    printf( "%f %f\n", zVecElem(v,0), zVecElem(v,1) );
-    if( t > tmax ) break;
-  }
-
-  /* destruction of instances */
-  zIPDestroy( &ip );
-  zVecFree( v );
-  return 0;
 }

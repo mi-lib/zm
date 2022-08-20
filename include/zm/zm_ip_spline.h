@@ -23,18 +23,18 @@ enum{ ZSPLINE_INVALID, ZSPLINE_FIX_EDGE, ZSPLINE_FREE_EDGE };
 
 /* \brief create spline interpolator.
  *
- * zIPCreateSpring() creates an interpolator \a ip.
+ * zIPCreateSpline() creates a 3rd-order spline interpolator \a ip.
  * \a etype1 and \a etype2 are the types of edges at the
  * beginning point and the termination point, respectively.
  * They should be chosen from ZSPLINE_FIX_EDGE and
  * ZSPLINE_FREE_EDGE, which are for fixed-edge and free-edge,
  * respectively.
- * One can set the velocity at each endpoint for \a v1
- * (or \a v2) with choosing ZSPLINE_FIX_EDGE.
- * When ZSPLINE_FREE_EDGE is chosen, \a v1 (or \a v2) is ignored.
+ * One can set the velocity at each endpoint for \a v1 (or \a v2)
+ * by choosing ZSPLINE_FIX_EDGE. When ZSPLINE_FREE_EDGE is specified,
+ * \a v1 (or \a v2) is ignored.
  * \return
- * zIPCreate() returns a pointer \a ip when it succeeds
- * to create interpolator, or the null pointer otherwise.
+ * zIPCreateSpline() returns a pointer \a ip when it succeeds to
+ * create the interpolator, or the null pointer otherwise.
  */
 __EXPORT bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v2);
 

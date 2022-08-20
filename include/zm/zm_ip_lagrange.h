@@ -11,8 +11,8 @@
 
 __BEGIN_DECLS
 
-/* Lagrange interpolation, which connects the 'n' sections
- * by 'n' th order polynomial curve. */
+/* Lagrange interpolation, which interpolates n points by n-1 th order
+ * polynomial curve. */
 __EXPORT bool zIPCreateLagrange(zIP *ip, zSeq *seq);
 
 __END_DECLS
