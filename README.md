@@ -20,8 +20,8 @@ including:
 - finite Fourier series and Fast Fourier Transform
 - graph search and rapidly-explored random tree.
 - kd-tree
-- vector sequence and interpolations (linear, Lagrange, spline
-  Akima, PCHIP, polynomial fitting, NURBS)
+- vector sequence and interpolations (linear, Lagrange, Chebyshev,
+  spline, Akima, PCHIP, polynomial fitting, NURBS)
 - numerical integrator
 - optimization solvers (line search, linear programming, linear
   complementary programming, quadratic programming, nonlinear

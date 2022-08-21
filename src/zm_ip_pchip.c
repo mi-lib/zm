@@ -15,6 +15,16 @@ static double _zPCHIPBaseVel2(double t){ return ( 3*t - 2 )*t; }
 static double _zPCHIPBaseAcc1(double t){ return 6*( 1 - 2*t ); }
 static double _zPCHIPBaseAcc2(double t){ return 2*( 3*t - 1 ); }
 
+/* value on Ferguson curve. */
+double zFergusonVal(double t, double term, double x0, double v0, double x1, double v1)
+{
+  double dt1, dt2;
+
+  dt1 = 1 - ( dt2 = t / term );
+  return _zPCHIPBase1(dt1) * x0 + _zPCHIPBase1(dt2) * x1
+         + term * ( -_zPCHIPBase2(dt1) * v0 + _zPCHIPBase2(dt2) * v1 );
+}
+
 /* vector on PCHIP interpolation */
 static zVec _zIPVecPCHIP(zIPData *dat, double t, zVec v)
 {

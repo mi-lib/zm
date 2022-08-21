@@ -1,3 +1,5 @@
+2022. 8.21. Debugged and reimplemented zFergusonVal(). [zm_ip_pchip]
+2022. 8.21. Abolished zm_ip_ipio. [zm_ip_ipio, zm_ip]
 2022. 8.20. Added Chebyshev interpolator. [zm_ip_chebyshev, zm_ip]
 2022. 8.14. Added zLEInit. [zm_le_gen]
 2022. 8.13. Removed inclusion of endian.h from zm_ieee.c. [zm_ieee]
