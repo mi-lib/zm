@@ -34,7 +34,7 @@ __BEGIN_DECLS
 #define zIsTiny(x)    zIsTol( x, zTOL )
 
 /*! \brief check if two values are equal. */
-#define zIsEqual(a,b,tol) ( ( zIsTol(a,tol) && zIsTol(b,tol) ) || zIsTol( (a)/(b) - 1.0, tol ) )
+__EXPORT bool zIsEqual(double a, double b, double tol);
 
 /*! \brief checks if an integer value \a d is an even number. */
 #define zIsEven(d)    (~(d) & 0x1 )

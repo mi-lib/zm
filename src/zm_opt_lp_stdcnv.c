@@ -7,9 +7,8 @@
 
 #include <zm/zm_opt.h>
 
-/* zLPIneq2Std
- * - convert linear programming problem from inequality
- *   constraint form to standard equation form.
+/* convert linear programming problem from inequality constraint form
+ * to standard equation form.
  */
 bool zLPIneq2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs)
 {
@@ -26,10 +25,8 @@ bool zLPIneq2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs)
   return true;
 }
 
-/* zLPUnb2Std
- * - convert linear programming problem from inequality
- *   constraint form with unbounded variables to standard
- *   equation form with positive variables.
+/* convert linear programming problem from inequality constraint form
+ * with unbounded variables to standard equation form with positive variables.
  */
 bool zLPUnb2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs)
 {

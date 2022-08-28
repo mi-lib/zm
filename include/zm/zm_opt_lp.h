@@ -11,6 +11,26 @@
 
 __BEGIN_DECLS
 
+/*! \brief simplex method tableau. */
+typedef struct{
+  zMat a;    /*!< coefficient matrix */
+  zVec b;    /*!< constraint vector */
+  zVec c;    /*!< cost vector */
+  double d;  /*!< cost */
+  zIndex ib; /*!< base index */
+  zIndex in; /*!< non-base index */
+  zIndex ir; /*!< relevant constraint index */
+} zLPTableau;
+
+/*! \brief create initial simplex tableau with slack variables. */
+__EXPORT bool zLPTableauCreate(zLPTableau *tab, zMat a, zVec b);
+/*! \brief destroy simplex tableau. */
+__EXPORT void zLPTableauDestroy(zLPTableau *tab);
+/*! \brief simplex method for initialized tableau. */
+__EXPORT bool zLPTableauSimplex(zLPTableau *tab);
+/*! \brief find initial feasible base for the second stage from tableau. */
+__EXPORT bool zLPTableauFindBase(zLPTableau *tab);
+
 /*! \brief convert linear programming problem from inequality
  * constraint to standard equation form.
  *

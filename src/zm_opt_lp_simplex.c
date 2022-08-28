@@ -7,18 +7,9 @@
 
 #include <zm/zm_opt.h>
 
-/* simplex method tableau */
-typedef struct{
-  zMat a;
-  zVec b, c;
-  double d;
-  zIndex ib, in;
-  zIndex ir;
-} _zLPTableau;
-
 #ifdef DEBUG
 /* print out tableau contents to a file (for debug). */
-static void _zLPTableauFPrint(FILE *fp, _zLPTableau *tab)
+static void _zLPTableauFPrint(FILE *fp, zLPTableau *tab)
 {
   fprintf( fp, "A: " ); zMatFPrint( fp, tab->a );
   fprintf( fp, "b: " ); zVecFPrint( fp, tab->b );
@@ -32,7 +23,7 @@ static void _zLPTableauFPrint(FILE *fp, _zLPTableau *tab)
 #endif /* DEBUG */
 
 /* create initial simplex tableau with slack variables. */
-static bool _zLPTableauCreate(_zLPTableau *tab, zMat a, zVec b)
+bool zLPTableauCreate(zLPTableau *tab, zMat a, zVec b)
 {
   register int i;
 
@@ -64,7 +55,7 @@ static bool _zLPTableauCreate(_zLPTableau *tab, zMat a, zVec b)
 }
 
 /* destroy simplex tableau. */
-static void _zLPTableauDestroy(_zLPTableau *tab)
+void zLPTableauDestroy(zLPTableau *tab)
 {
   zMatFree( tab->a );
   zVecFree( tab->b );
@@ -75,7 +66,7 @@ static void _zLPTableauDestroy(_zLPTableau *tab)
 }
 
 /* sweep-out one coefficient of cost function corresponding to old bases. */
-static void _zLPTableauSweepC1(_zLPTableau *tab, int p)
+static void _zLPTableauSweepC1(zLPTableau *tab, int p)
 {
   register int i;
   double cp;
@@ -89,7 +80,7 @@ static void _zLPTableauSweepC1(_zLPTableau *tab, int p)
 }
 
 /* sweep-out coefficients of cost function corresponding to bases. */
-static void _zLPTableauSweepC(_zLPTableau *tab)
+static void _zLPTableauSweepC(zLPTableau *tab)
 {
   register int i;
 
@@ -98,7 +89,7 @@ static void _zLPTableauSweepC(_zLPTableau *tab)
 }
 
 /* find next axis column of tableau to be sweeped-out. */
-static int _zLPTableauFindNA(_zLPTableau *tab)
+static int _zLPTableauFindNA(zLPTableau *tab)
 { /* next axis for normal case */
   register int i, na;
   double c_min;
@@ -111,7 +102,7 @@ static int _zLPTableauFindNA(_zLPTableau *tab)
 }
 
 /* find next axis column of tableau in degenerate case. */
-static int _zLPTableauFindNA_deg(_zLPTableau *tab)
+static int _zLPTableauFindNA_deg(zLPTableau *tab)
 { /* next axis for degenerated case */
   register int i, na = -1, idx_min = INT_MAX;
 
@@ -126,7 +117,7 @@ static int _zLPTableauFindNA_deg(_zLPTableau *tab)
 }
 
 /* find next pivot in axis column to be sweeped-out. */
-static int _zLPTableauFindNP(_zLPTableau *tab, int *na)
+static int _zLPTableauFindNP(zLPTableau *tab, int *na)
 { /* next pivot */
   register int i, np;
   double a, p, p_min;
@@ -152,7 +143,7 @@ static int _zLPTableauFindNP(_zLPTableau *tab, int *na)
 }
 
 /* sweep-out tabeau matrix of constraint equation. */
-static void _zLPTableauSweepA(_zLPTableau *tab, int np, int na)
+static void _zLPTableauSweepA(zLPTableau *tab, int np, int na)
 {
   register int i, j, r;
   double ap;
@@ -178,7 +169,7 @@ static void _zLPTableauSweepA(_zLPTableau *tab, int np, int na)
 }
 
 /* swap base/non-base pivot. */
-static void _zLPTableauSwapPivot(_zLPTableau *tab, int np, int na)
+static void _zLPTableauSwapPivot(zLPTableau *tab, int np, int na)
 {
   int tmp;
 
@@ -197,7 +188,7 @@ static void _zLPTableauSwapPivot(_zLPTableau *tab, int np, int na)
  *
  *   Ib= [1 ... m], In= [m+1 ... n+m]
  */
-static bool _zLPTableauSimplex(_zLPTableau *tab)
+bool zLPTableauSimplex(zLPTableau *tab)
 {
   int na, np;
   register int i = 0;
@@ -215,8 +206,8 @@ static bool _zLPTableauSimplex(_zLPTableau *tab)
   return true;
 }
 
-/* reset tableau to the second stage. */
-static bool _zLPTableauReset(_zLPTableau *tab, zVec c)
+/* find initial feasible base for the second stage from tableau. */
+bool zLPTableauFindBase(zLPTableau *tab)
 {
   register int i, j, n;
 
@@ -242,13 +233,17 @@ static bool _zLPTableauReset(_zLPTableau *tab, zVec c)
       zIndexRemove( tab->in, i );
       i--;
     }
-  zVecSetSize( tab->c, zVecSizeNC(c) );
-  zVecCopyNC( c, tab->c );
   return true;
 }
 
+static void _zLTableauSetC(zLPTableau *tab, zVec c)
+{
+  zVecSetSize( tab->c, zVecSizeNC(c) );
+  zVecCopyNC( c, tab->c );
+}
+
 /* arrange answer vector. */
-static void _zLPTableauAns(_zLPTableau *tab, zVec ans)
+static void _zLPTableauAns(zLPTableau *tab, zVec ans)
 {
   register int i;
 
@@ -260,7 +255,7 @@ static void _zLPTableauAns(_zLPTableau *tab, zVec ans)
 /* dual-phase simplex method for linear programming. */
 bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost)
 {
-  _zLPTableau tab;
+  zLPTableau tab;
   bool ret = false;
 
   if( !zMatColVecSizeIsEqual(a,ans) || !zMatRowVecSizeIsEqual(a,b) ){
@@ -271,18 +266,19 @@ bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost)
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );
     return false;
   }
-  if( !_zLPTableauCreate( &tab, a, b ) ){
+  if( !zLPTableauCreate( &tab, a, b ) ){
     ret = false;
     goto TERMINATE;
   }
-  /* first phase: feasible base */
-  if( !_zLPTableauSimplex( &tab ) || !zIsTiny(tab.d) ){
+  /* first phase: initial feasible base */
+  if( !zLPTableauSimplex( &tab ) || !zIsTiny(tab.d) ){
     ZRUNWARN( ZM_ERR_OPT_UNSOLVE );
     goto TERMINATE;
   }
-  _zLPTableauReset( &tab, c );
+  zLPTableauFindBase( &tab );
   /* second phase: body problem */
-  if( !_zLPTableauSimplex( &tab ) ){
+  _zLTableauSetC( &tab, c );
+  if( !zLPTableauSimplex( &tab ) ){
     ZRUNERROR( ZM_ERR_OPT_INF );
     goto TERMINATE;
   }
@@ -290,30 +286,30 @@ bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost)
   _zLPTableauAns( &tab, ans );
   ret = true;
  TERMINATE:
-  _zLPTableauDestroy( &tab );
+  zLPTableauDestroy( &tab );
   return ret;
 }
 
 /* find a feasible base under Ax=b and x>=0 based on simplex method. */
 bool zLPFeasibleBase(zMat a, zVec b, zVec base)
 {
-  _zLPTableau tab;
+  zLPTableau tab;
   bool ret = false;
 
   if( !zMatRowVecSizeIsEqual(a,b) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return false;
   }
-  if( !_zLPTableauCreate( &tab, a, b ) ){
+  if( !zLPTableauCreate( &tab, a, b ) ){
     ZALLOCERROR();
     return false;
   }
-  if( !_zLPTableauSimplex( &tab ) || !zIsTiny(tab.d) ){
+  if( !zLPTableauSimplex( &tab ) || !zIsTiny(tab.d) ){
     ZRUNWARN( ZM_ERR_OPT_UNSOLVE );
   } else{
     _zLPTableauAns( &tab, base );
     ret = true;
   }
-  _zLPTableauDestroy( &tab );
+  zLPTableauDestroy( &tab );
   return ret;
 }

@@ -6,6 +6,12 @@
 
 #include <zm/zm_misc.h>
 
+/* check if two values are equal. */
+bool zIsEqual(double a, double b, double tol)
+{
+  return zIsTol( a-b, tol*zMax( 1, zMax( fabs(a), fabs(b) ) ) );
+}
+
 /* check if signs of two values are opposite. */
 bool zIsSgnOpp(double a, double b)
 {

@@ -1,7 +1,7 @@
 #include <zm/zm_ip.h>
 
-#define TEST 1
-#define DT   0.1
+#define TEST 0
+#define DT   0.01
 
 int enqueue(zSeq *seq, int point_num, double tp[], double vp[])
 {
@@ -43,23 +43,24 @@ void output(zIP *ip, int point_num, double tp[], double dt, const char *filename
   fclose( fp );
 }
 
-void output_plotscript(void)
+void output_plotscript_one(char *type, double tmin, double tmax)
 {
-  printf( "set terminal png\n" );
-  printf( "set output 'ip.png'\n" );
+  printf( "set output 'ip_%s_p.png'\n", type );
+  printf( "plot [%g:%g] 0, '%s' u 1:2 w l, 'ip.dat' w p pt 7 lt 8\n", tmin, tmax, type );
+  printf( "set output 'ip_%s_v.png'\n", type );
+  printf( "plot [%g:%g] 0, '%s' u 1:3 w l\n", tmin, tmax, type );
+  printf( "set output 'ip_%s_a.png'\n", type );
+  printf( "plot [%g:%g] 0, '%s' u 1:4 w l\n", tmin, tmax, type );
+}
+
+void output_plotscript(double tmin, double tmax)
+{
   printf( "unset key\n" );
-  printf( "set multiplot\n" );
-  printf( "set size 0.5, 0.5\n" );
-  printf( "set origin 0, 0\n" );
-  printf( "plot [0:6][-4:5] 0, 'lag' u 1:2 w l, 'lin' u 1:2 w l lt 4, 'ip.dat' w p pt 7 lt 8\n" );
-  printf( "plot [0:6][-4:5] 0, 'che' u 1:2 w l, 'ip.dat' w p pt 7 lt 8\n" );
-  printf( "set origin 0, 0.5\n" );
-  printf( "plot [0:6][-4:5] 0, 'sp1' u 1:2 w l, 'ip.dat' w p pt 7 lt 8\n" );
-  printf( "set origin 0.5, 0.5\n" );
-  printf( "plot [0:6][-4:5] 0, 'sp2' u 1:2 w l, 'ip.dat' w p pt 7 lt 8\n" );
-  printf( "set origin 0.5, 0\n" );
-  printf( "plot [0:6][-4:5] 0, 'aki' u 1:2 w l, 'ip.dat' w p pt 7 lt 8\n" );
-  printf( "unset multiplot\n" );
+  printf( "set terminal png\n" );
+  output_plotscript_one( "lag", tmin, tmax );
+  output_plotscript_one( "sp2", tmin, tmax );
+  output_plotscript_one( "aki", tmin, tmax );
+  output_plotscript_one( "pch", tmin, tmax );
 }
 
 int main(int argc, char *argv[])
@@ -75,6 +76,10 @@ int main(int argc, char *argv[])
 #elif TEST == 2
   double tp[] = { 0, 2, 3, 5, 6 };
   double vp[] = { 1, 2,-3, 4, 2 };
+#elif TEST == 3
+  /* Cauchy-Lorentz function */
+  double tp[] = { -1.0, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1.0 };
+  double vp[] = { 1.0/26.0, 16.0/241.0, 4.0/29.0, 16.0/41.0, 1.0, 16.0/41.0, 4.0/29.0, 16.0/241.0, 1.0/26.0 };
 #else
   double tp[]  = { 0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15 };
   double vp[] = { 10, 10, 10, 10, 10, 10, 10.5, 15, 50, 60, 85 };
@@ -120,6 +125,6 @@ int main(int argc, char *argv[])
 
   zSeqFree( &seq );
 
-  output_plotscript();
+  output_plotscript( tp[0], tp[point_num-1] );
   return 0;  
 }
