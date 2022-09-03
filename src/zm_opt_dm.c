@@ -13,7 +13,7 @@ static zVec _zOptDMGrad(zOptDM *opt, zVec var, zVec g, void *util){
 }
 static zVec _zOptDMGradNG(zOptDM *opt, zVec var, zVec g, void *util)
 {
-  register int i;
+  int i;
   double adv, prv, org;
 
   for( i=0; i<zVecSizeNC(var); i++ ){
@@ -35,7 +35,7 @@ static zMat _zOptDMHess(zOptDM *opt, zVec var, zMat h, void *util){
 }
 static zMat _zOptDMHessNG(zOptDM *opt, zVec var, zMat h, void *util)
 {
-  register int i;
+  int i;
   double org;
   zVec adg, prg;
 
@@ -279,7 +279,7 @@ static zMat _zOptDMUpdateDFP(zOptDM *opt, int count) /* Davidon-Fletcher-Powell 
 }
 static zMat _zOptDMUpdateBFGS(zOptDM *opt, int count) /* Broyden-Fletcher-Goldfalb-Shanno */
 {
-  register int i, j;
+  int i, j;
   double k, l, pi, pj, ri, rj;
 
   zMulMatVecNC( opt->_h, opt->_q, opt->_r );
@@ -308,7 +308,7 @@ static zVec _zOptDMVecSD(zOptDM *opt, zVec var, zVec d, void *util)
 /* Levenberg-Marquardt method */
 static zVec _zOptDMVecLM(zOptDM *opt, zVec var, zVec d, void *util)
 {
-  register int i;
+  int i;
   double m;
 
   opt->_hess( opt, var, opt->_h, util );
@@ -431,7 +431,7 @@ void zOptDMDestroy(zOptDM *opt)
 
 int zOptDMSolve(zOptDM *opt, zVec var, void *util, double tol, int iter, double *eval)
 {
-  register int i;
+  int i;
   double _e_dummy, e;
 
   if( !eval ) eval = &_e_dummy;

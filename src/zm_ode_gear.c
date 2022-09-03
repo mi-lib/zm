@@ -17,17 +17,12 @@ typedef struct{
   zNLE nle;
 } _zODE_Gear;
 
-static zVec _zODE_Gear_Func(zVec x, zVec y, void *util);
-
-/* (static)
- * _zODE_Gear_Func
- * - algebraic equation for Gear method.
- */
-zVec _zODE_Gear_Func(zVec x, zVec y, void *util)
+/* algebraic equation for Gear method. */
+static zVec _zODE_Gear_Func(zVec x, zVec y, void *util)
 {
   zODE *ode = util;
   _zODE_Gear *ws = ode->_ws;
-  register int i;
+  int i;
 
   zVecCopyNC( x, y );
   for( i=0; i<zVecSizeNC(ws->a); i++ )
@@ -37,9 +32,7 @@ zVec _zODE_Gear_Func(zVec x, zVec y, void *util)
   return y;
 }
 
-/* zODEInit_Gear
- * - initialize ODE solver based on Gear method.
- */
+/* initialize ODE solver based on Gear method. */
 zODE* zODEInit_Gear(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_Gear *ws;
@@ -80,9 +73,7 @@ zODE* zODEInit_Gear(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,z
   return ode;
 }
 
-/* zODEDestroy_Gear
- * - destroy ODE solver.
- */
+/* destroy ODE solver. */
 void zODEDestroy_Gear(zODE *ode)
 {
   _zODE_Gear *ws = ode->_ws;
@@ -94,17 +85,13 @@ void zODEDestroy_Gear(zODE *ode)
   zFree( ode->_ws );
 }
 
-/* zODEInitHist_Gear
- * - initialize history with a given vector.
- */
+/* initialize history with a given vector. */
 void zODEInitHist_Gear(zODE *ode, zVec x)
 {
   zVecRingFill( &((_zODE_Gear*)ode->_ws)->hist, x );
 }
 
-/* zODEUpdate_Gear
- * - directly integrate variable by ODE based on Gear method.
- */
+/* directly integrate variable by ODE based on Gear method. */
 zVec zODEUpdate_Gear(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_Gear *ws = ode->_ws;

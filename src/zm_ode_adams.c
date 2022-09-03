@@ -16,15 +16,8 @@ typedef struct{
   zVecRing hist; /* history of differential values */
 } _zODE_Adams;
 
-static zODE *_zODEAlloc_Adams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec));
-static void _zODESetWeight_Adams(zVec w, int step, double g0);
-static zVec _zODEUpdate_Adams(zODE *ode, double t, zVec x, zVec xorg, zVec xnew, zVec w, double dt, void *util);
-
-/* _zODEAlloc_Adams
- * - allocate working space for zODE_Adams.
- *  (static)
- */
-zODE *_zODEAlloc_Adams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
+/* allocate working space for zODE_Adams. */
+static zODE *_zODEAlloc_Adams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_Adams *ws;
 
@@ -44,13 +37,10 @@ zODE *_zODEAlloc_Adams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void
   return ode;
 }
 
-/* _zODESetWeight_Adams
- * - set weighting coefficients for linear multistep method.
- *   (static)
- */
-void _zODESetWeight_Adams(zVec w, int step, double g0)
+/* set weighting coefficients for linear multistep method. */
+static void _zODESetWeight_Adams(zVec w, int step, double g0)
 {
-  register int i, j;
+  int i, j;
   zVec g;
 
   if( !( g = zVecAlloc( step ) ) ){
@@ -70,11 +60,8 @@ void _zODESetWeight_Adams(zVec w, int step, double g0)
   zVecFree( g );
 }
 
-/* (static)
- * _zODEUpdate_Adams
- * - inner computation of Adams's method.
- */
-zVec _zODEUpdate_Adams(zODE *ode, double t, zVec x, zVec xorg, zVec xnew, zVec w, double dt, void *util)
+/* inner computation of Adams's method. */
+static zVec _zODEUpdate_Adams(zODE *ode, double t, zVec x, zVec xorg, zVec xnew, zVec w, double dt, void *util)
 {
   _zODE_Adams *ws;
 
@@ -84,10 +71,8 @@ zVec _zODEUpdate_Adams(zODE *ode, double t, zVec x, zVec xorg, zVec xnew, zVec w
   return ode->cat( x, dt, ws->dx, xnew, util );
 }
 
-/* zODEInit_Adams
- * - initialize ODE solver based on Predictor-Corrector method
- *   with Adams=Bashforth / Adams=Moulton's formulae.
- */
+/* initialize ODE solver based on Predictor-Corrector method with
+ * Adams=Bashforth / Adams=Moulton's formulae. */
 zODE *zODEInit_Adams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_Adams *ws;
@@ -100,9 +85,7 @@ zODE *zODEInit_Adams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,
   return ode;
 }
 
-/* zODEDestroy_Adams
- * - destroy ODE solver.
- */
+/* destroy ODE solver. */
 void zODEDestroy_Adams(zODE *ode)
 {
   _zODE_Adams *ws;
@@ -115,16 +98,13 @@ void zODEDestroy_Adams(zODE *ode)
   zFree( ode->_ws );
 }
 
-/* zODEUpdate_Adams
- * - directly integrate variable by ODE based on
- *   Predictor-Corrector method.
- */
+/* directly integrate variable by ODE based on Predictor-Corrector method. */
 zVec zODEUpdate_Adams(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_Adams *ws;
   double t2;
   zVec xnew, xold;
-  register int i, iter = 0;
+  int i, iter = 0;
 
   ws = ode->_ws;
   t2 = t + dt;

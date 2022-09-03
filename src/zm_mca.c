@@ -11,7 +11,7 @@
 bool zVecListMinMax(zVecList *list, zVec min, zVec max)
 {
   zVecListCell *vc;
-  register int i;
+  int i;
 
   if( !zVecSizeIsEqual( zListHead(list)->data, min ) ||
       !zVecSizeIsEqual( zListHead(list)->data, max ) ){
@@ -140,7 +140,7 @@ int zPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loading)
 /* generate vectors generate vectors from normal distribution. */
 int zVecListGenRandND(zVecList *vl, int n, zVec mean, zMat cov)
 {
-  register int i = 0, j;
+  int i = 0, j;
   zVec v, vo;
   zMat b = NULL;
   zIndex idx = NULL;

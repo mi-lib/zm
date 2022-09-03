@@ -176,7 +176,7 @@ static double _zLP_PDIP_PCErr(_zLP_PDIP *dat)
 /* updating step of PD-IP-PC. */
 static double _zLP_PDIP_PCStep(zVec x, zVec dx)
 {
-  register int i;
+  int i;
   bool max_ok = false, min_ok = false;
   double max, min, val, d;
 
@@ -230,7 +230,7 @@ bool zLPSolvePDIP_PC(zMat a, zVec b, zVec c, zVec x, double *cost)
   bool ret = false;
   int rank;
   int iter = 0;
-  register int i;
+  int i;
 
   if( !_zLP_PDIPAlloc( &dat, a, b, c, x ) ) goto TERMINATE2;
   if( !_zLP_PDIP_PCAlloc( &pc, b, c ) ) goto TERMINATE1;

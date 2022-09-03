@@ -103,7 +103,7 @@ zCVec zPexBH(zPex a, zCVec ans, double tol, int iter)
 /* numerical solution of polynomial equation based on Durand-Kerner-Aberth's method. */
 zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter)
 {
-  register int i, j, k, n;
+  int i, j, k, n;
   bool flag;
   char buf[BUFSIZ];
   double s, r, r0;

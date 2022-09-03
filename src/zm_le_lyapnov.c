@@ -6,16 +6,14 @@
 
 #include <zm/zm_le.h>
 
-/* zLyapnovSolve
- * - Lyapnov equation solver.
- */
+/* Lyapnov equation solver. */
 zMat zLyapnovSolve(zMat a, zMat b, zMat ans)
 {
   zVecStruct bvec, ansvec;
   zVec s;
   zMat aw, bt;
   zIndex idx;
-  register int n, nn, i, j, k;
+  int n, nn, i, j, k;
 
   if( !zMatIsSqr(a) || !zMatIsSqr(b) || !zMatIsSqr(ans) ){
     ZRUNERROR( ZM_ERR_NONSQR_MAT );
@@ -32,7 +30,6 @@ zMat zLyapnovSolve(zMat a, zMat b, zMat ans)
   idx = zIndexCreate( nn );
   s = zVecAlloc( nn );
   if( !bt || !aw || !idx || !s ){
-    ZALLOCERROR();
     ans = NULL;
     goto TERMINATE;
   }

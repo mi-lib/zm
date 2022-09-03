@@ -9,7 +9,7 @@
 /* value on linear interpolation */
 static zVec _zIPVecLinear(zIPData *dat, double t, zVec v)
 {
-  register int i;
+  int i;
 
   i = zIPSeg( dat, t );
   return zVecCatNC( zIPSecVec(dat,i), t - zIPTime(dat,i), *zArrayElem(&dat->va,i), v );
@@ -25,7 +25,7 @@ static zVec _zIPSecVelLinear(zIPData *dat, int i, zVec v)
 /* acceleration at section on linear interpolation */
 static zVec _zIPSecAccLinear(zIPData *dat, int i, zVec v)
 {
-  register int j;
+  int j;
 
   if( i <= 0 || i >= zIPSize(dat)-1 ) return zVecZero(v);
   for( j=0; j<zVecSizeNC(v); j++ )
@@ -44,7 +44,7 @@ static zVec _zIPVelLinear(zIPData *dat, double t, zVec v)
 /* acceleration on linear interpolation */
 static zVec _zIPAccLinear(zIPData *dat, double t, zVec v)
 {
-  register int i;
+  int i;
 
   return zIsTiny( zIPTime( dat, ( i = zIPSeg(dat,t) ) ) - t ) ?
     _zIPSecAccLinear( dat, i, v ) : zVecZero( v );
@@ -62,7 +62,7 @@ static zIPCom _zm_ip_com_linear = {
 /* create linear interpolator */
 bool zIPCreateLinear(zIP *ip, zSeq *seq)
 {
-  register int i;
+  int i;
 
   if( !zIPDataAlloc( &ip->dat, seq ) ) return false;
   for( i=1; i<zIPSize(&ip->dat); i++ ){

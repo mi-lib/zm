@@ -6,12 +6,10 @@
 
 #include <zm/zm_vec.h>
 
-/* zVecArrayAlloc
- * - allocate a vector array.
- */
+/* allocate a vector array. */
 bool zVecArrayAlloc(zVecArray *array, int dim, int num)
 {
-  register int i;
+  int i;
 
   zArrayAlloc( array, zVec, num );
   for( i=0; i<num; i++ )
@@ -23,12 +21,10 @@ bool zVecArrayAlloc(zVecArray *array, int dim, int num)
   return true;
 }
 
-/* zVecArrayFree
- * - free vector array.
- */
+/* free vector array. */
 void zVecArrayFree(zVecArray *array)
 {
-  register int i;
+  int i;
 
   if( zArrayBuf(array) )
     for( i=0; i<zArraySize(array); i++ )
@@ -36,12 +32,10 @@ void zVecArrayFree(zVecArray *array)
   zArrayFree( array );
 }
 
-/* zVecArrayFill
- * - fill the array with the same vector.
- */
+/* fill the array with the same vector. */
 zVec zVecArrayFill(zVecArray *array, zVec v)
 {
-  register int i;
+  int i;
 
   if( !zVecSizeIsEqual(*zArrayHead(array),v) ){
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );

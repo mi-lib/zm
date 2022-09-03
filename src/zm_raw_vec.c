@@ -22,7 +22,7 @@ void zRawVecSetAll(double *v, int size, double val)
 /* create a linear space in a raw vector. */
 void zRawVecLinSpace(double *v, int size, double from, double to)
 {
-  register int i = 0, n;
+  int i = 0, n;
   double range;
 
   range = to - from;
@@ -173,7 +173,7 @@ void zRawVecCatDRC(double *v1, double k, double *v2, int size)
  * which is internally called to manage variable arguments. */
 static void _zRawVecCats(double *v, int size, int n, va_list args)
 {
-  register int i;
+  int i;
   double k, *vec;
 
   for( i=0; i<n; i++ ){
@@ -282,7 +282,7 @@ double *zRawVecNormalize(double *src, int size, double *dest)
 /* squared distance between two raw vectors. */
 double zRawVecSqrDist(double *v1, double *v2, int size)
 {
-  register int i;
+  int i;
   double d;
 
   for( d=0, i=0; i<size; i++ )

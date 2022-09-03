@@ -33,7 +33,7 @@ double zCombi(int n, int i)
 /* series of combination. */
 double *zCombiSeries(int n, size_t size, double c[])
 {
-  register int i, j;
+  int i, j;
 
   if( n < 0 || n >= size ){
     ZRUNERROR( ZM_ERR_STAT_ILLS );
@@ -59,7 +59,7 @@ double zNormalDistrib(double x, double mu, double sigma)
 #define Z_ND_CUM_MAX 200
 double zNormalCumDistrib(double x, double mu, double sigma)
 {
-  register int i;
+  int i;
   double x2, p, pp, t;
 
   x -= mu;
@@ -94,7 +94,7 @@ double zChi2Distrib(double x, int k)
 /* chi-squared cumulative distribution. */
 double zChi2CumDistrib(double x, int k)
 {
-  register int i;
+  int i;
   double s, t, chi;
 
   if( k == 1 )
@@ -116,7 +116,7 @@ double zChi2CumDistrib(double x, int k)
 /* maximum component of data. */
 double zDataMax(double *data, int size, int *im)
 {
-  register int i;
+  int i;
   double max;
 
   if( im ) *im = 0;
@@ -131,7 +131,7 @@ double zDataMax(double *data, int size, int *im)
 /* minimum component of data. */
 double zDataMin(double *data, int size, int *im)
 {
-  register int i;
+  int i;
   double min;
 
   if( im ) *im = 0;
@@ -146,7 +146,7 @@ double zDataMin(double *data, int size, int *im)
 /* maximum absolute component of data. */
 double zDataAbsMax(double *data, int size, int *im)
 {
-  register int i;
+  int i;
   double val, max;
 
   if( im ) *im = 0;
@@ -161,7 +161,7 @@ double zDataAbsMax(double *data, int size, int *im)
 /* minimum absolute component of data. */
 double zDataAbsMin(double *data, int size, int *im)
 {
-  register int i;
+  int i;
   double val, min;
 
   if( im ) *im = 0;
@@ -177,7 +177,7 @@ double zDataAbsMin(double *data, int size, int *im)
 double zDataSum(double *data, int size)
 {
   double s=0, s_prev=0, q=0, r;
-  register int i;
+  int i;
 
   for( i=0; i<size; i++ ){
     s = s_prev + data[i];
@@ -197,7 +197,7 @@ double zDataMean(double *data, int size)
 /* calculate the variance of data. */
 double zDataVar(double *data, int size)
 {
-  register int i;
+  int i;
   double mean, result;
 
   mean = zDataMean( data, size );
@@ -215,7 +215,7 @@ double zDataSD(double *data, int size)
 /* check if a value is a member of data. */
 bool zDataIsIncluded(double *data, int size, double val, double tol)
 {
-  register int i;
+  int i;
 
   for( i=0; i<size; i++ )
     if( zIsEqual( data[i], val, tol ) ) return true;

@@ -9,7 +9,7 @@
 /* golden section method. */
 double zOptLineGSEC(double (*eval)(double,void*), double a, double b, void *util, int iter)
 {
-  register int i;
+  int i;
   double c, d, e1, e2, x;
 
   ZITERINIT( iter );
@@ -30,7 +30,7 @@ double zOptLineGSEC(double (*eval)(double,void*), double a, double b, void *util
 /* bisection method. */
 double zOptLineBisec(double (*eval)(double,void*), double a, double b, void *util, int iter)
 {
-  register int i;
+  int i;
   double x, e1, e2, e3;
 
   e1 = eval( a, util );
@@ -55,7 +55,7 @@ double zOptLineBisec(double (*eval)(double,void*), double a, double b, void *uti
 /* Brent's method. */
 double zOptLineBrent(double (*eval)(double,void*), double a, double b, void *util, int iter)
 {
-  register int i;
+  int i;
   double u, v, w, x, xm, eu, ev, ew, ex, dm, da, db;
   double d = 0, s = 0; /* second last step */
   double p, q, r, tol1, tol2;

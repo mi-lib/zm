@@ -23,20 +23,16 @@ typedef struct{
 #define _Z_LCPIP_PC_B 0.50
 #define _Z_LCPIP_PC_R 100.0
 
-static bool _zLCPIP_PCAlloc(_zLCPIP_PC *wm, int n);
-static void _zLCPIP_PCFree(_zLCPIP_PC *wm);
-static bool _zLCPIP_PCIni(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z);
-static void _zLCPIP_PCErr(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z);
-static bool _zLCPIP_PCGrad(_zLCPIP_PC *wm, zMat m, zVec w, zVec z);
-static bool _zLCPIP_PCPred(_zLCPIP_PC *wm, zMat m, zVec w, zVec z);
-static bool _zLCPIP_PCCorr(_zLCPIP_PC *wm, zMat m, zVec w, zVec z);
-static bool _zLCPIP_PCStep(_zLCPIP_PC *wm, zVec w, zVec z, double *step);
+/* free internal working memory for LCP-IP-PC. */
+static void _zLCPIP_PCFree(_zLCPIP_PC *wm)
+{
+  zMatFree( wm->g );
+  zVecFreeAO( 6, wm->r, wm->dz, wm->dw, wm->b, wm->c, wm->s );
+  zIndexFree( wm->idx );
+}
 
-/* (static)
- * _zLCPIP_PCAlloc
- * - allocate internal working memory for LCP-IP-PC.
- */
-bool _zLCPIP_PCAlloc(_zLCPIP_PC *wm, int n)
+/* allocate internal working memory for LCP-IP-PC. */
+static bool _zLCPIP_PCAlloc(_zLCPIP_PC *wm, int n)
 {
   wm->g = zMatAllocSqr( n );
   wm->r = zVecAlloc( n );
@@ -55,22 +51,8 @@ bool _zLCPIP_PCAlloc(_zLCPIP_PC *wm, int n)
   return true;
 }
 
-/* (static)
- * _zLCPIP_PCFree
- * - free internal working memory for LCP-IP-PC.
- */
-void _zLCPIP_PCFree(_zLCPIP_PC *wm)
-{
-  zMatFree( wm->g );
-  zVecFreeAO( 6, wm->r, wm->dz, wm->dw, wm->b, wm->c, wm->s );
-  zIndexFree( wm->idx );
-}
-
-/* (static)
- * _zLCPIP_PCIni
- * - heuristicly initialize vectors for LCP-IP-PC.
- */
-bool _zLCPIP_PCIni(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z)
+/* heuristicly initialize vectors for LCP-IP-PC. */
+static bool _zLCPIP_PCIni(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z)
 {
   zVecSetAll( z, _Z_LCPIP_PC_R / zVecSizeNC(z) );
   zVecSetAll( w, _Z_LCPIP_PC_R / zVecSizeNC(w) );
@@ -79,11 +61,8 @@ bool _zLCPIP_PCIni(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z)
   return true;
 }
 
-/* (static)
- * _zLCPIP_PCErr
- * - compute residual vector and complementarity gap for LCP-IP-PC.
- */
-void _zLCPIP_PCErr(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z)
+/* compute residual vector and complementarity gap for LCP-IP-PC. */
+static void _zLCPIP_PCErr(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z)
 {
   /* residual vector */
   zMulMatVecNC( m, z, wm->r );
@@ -93,13 +72,10 @@ void _zLCPIP_PCErr(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z)
   wm->e = zVecInnerProd( w, z );
 }
 
-/* (static)
- * _zLCPIP_PCGrad
- * - gradient matrix and its inverse for LCP-IP-PC.
- */
-bool _zLCPIP_PCGrad(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
+/* gradient matrix and its inverse for LCP-IP-PC. */
+static bool _zLCPIP_PCGrad(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
 {
-  register int i;
+  int i;
 
   for( i=0; i<zVecSizeNC(w); i++ ){
     zRawVecMul( zMatRowBuf(m,i), zVecElemNC(z,i), zMatRowBuf(wm->g,i), zMatColSizeNC(m) );
@@ -108,11 +84,8 @@ bool _zLCPIP_PCGrad(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
   return zLESolveGaussDST( wm->g, wm->b, wm->dz, wm->idx, wm->s ) ? true : false;
 }
 
-/* (static)
- * _zLCPIP_PCPred
- * - predictor direction vector for LCP-IP-PC.
- */
-bool _zLCPIP_PCPred(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
+/* predictor direction vector for LCP-IP-PC. */
+static bool _zLCPIP_PCPred(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
 {
   zVecAddNC( w, wm->r, wm->b );
   zVecAmpNCDRC( wm->b, z );
@@ -123,13 +96,10 @@ bool _zLCPIP_PCPred(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
   return true;
 }
 
-/* (static)
- * _zLCPIP_PCCorr
- * - corrector (centering) direction vector for LCP-IP-PC.
- */
-bool _zLCPIP_PCCorr(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
+/* corrector (centering) direction vector for LCP-IP-PC. */
+static bool _zLCPIP_PCCorr(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
 {
-  register int i;
+  int i;
 
   zVecAmpNC( w, z, wm->b );
   for( i=0; i<zVecSizeNC(wm->b); i++ )
@@ -139,14 +109,11 @@ bool _zLCPIP_PCCorr(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
   return true;
 }
 
-/* (static)
- * _zLCPIP_PCStep
- * - updating step of LCP-IP-PC.
- */
-bool _zLCPIP_PCStep(_zLCPIP_PC *wm, zVec w, zVec z, double *step)
+/* updating step of LCP-IP-PC. */
+static bool _zLCPIP_PCStep(_zLCPIP_PC *wm, zVec w, zVec z, double *step)
 {
   double k1, k2, a;
-  register int i;
+  int i;
 
   zVecAmpNC( w, z, wm->b );
   for( i=0; i<zVecSizeNC(wm->b); i++ )
@@ -164,11 +131,8 @@ bool _zLCPIP_PCStep(_zLCPIP_PC *wm, zVec w, zVec z, double *step)
   return true;
 }
 
-/* zLCPSolveIP
- * - solve linear complementarity problem by Potra's
- *   predictor-corrector algorithm on infeasible-interior-point
- *   method.
- */
+/* solve linear complementarity problem by Potra's predictor-corrector algorithm
+ * on infeasible-interior-point method. */
 bool zLCPSolveIP(zMat m, zVec q, zVec w, zVec z)
 {
   _zLCPIP_PC wm;
@@ -176,7 +140,7 @@ bool zLCPSolveIP(zMat m, zVec q, zVec w, zVec z)
   double a;
   int iter = 0;
   bool ret = false;
-  register int i;
+  int i;
 
   if( !zMatIsSqr(m) ){
     ZRUNERROR( ZM_ERR_NONSQR_MAT );

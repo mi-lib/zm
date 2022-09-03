@@ -12,12 +12,10 @@
  * NOTES: each element of matrix(size=r*c) is at (0 - r-1,0 - c-1).
  * ********************************************************** */
 
-static zMat _zMatSetElemList(zMat m, va_list args);
-
 /* set matrix components from value list. */
-zMat _zMatSetElemList(zMat m, va_list args)
+static zMat _zMatSetElemList(zMat m, va_list args)
 {
-  register int i, j;
+  int i, j;
 
   for( i=0; i<zMatRowSizeNC(m); i++ )
     for( j=0; j<zMatColSizeNC(m); j++ )
@@ -81,7 +79,7 @@ void zMatFreeAO(int n, ...)
 {
   va_list arg;
   zMat m;
-  register int i;
+  int i;
 
   va_start( arg, n );
   for( i=0; i<n; i++ ){
@@ -398,7 +396,7 @@ zMat zMatSwapCol(zMat m, int c1, int c2)
 /* shift diagonal values of a matrix. */
 void zMatShift(zMat m, double shift)
 {
-  register int i;
+  int i;
 
   for( i=0; i<zMatRowSizeNC(m); i++ )
     zMatElemNC( m, i, i ) += shift;
@@ -407,7 +405,7 @@ void zMatShift(zMat m, double shift)
 /* see if two matrices are equal. */
 bool zMatIsEqual(zMat m1, zMat m2, double tol)
 {
-  register int i, j;
+  int i, j;
 
   if( !zMatSizeIsEqual( m1, m2 ) ) return false;
   for( i=0; i<zMatRowSizeNC(m1); i++ )
@@ -432,7 +430,7 @@ zMat zMatRowReg(zMat m, int rank)
 /* column regression of a matrix. */
 zMat zMatColReg(zMat m, int rank)
 {
-  register int i;
+  int i;
   double *sp, *dp;
 
   if( rank < zMatColSizeNC(m) ){
@@ -559,7 +557,7 @@ double zMatSqrNorm(zMat m)
 double zMatInfNorm(zMat m)
 {
   double *mp, rs, rsmax = 0;
-  register int i, j;
+  int i, j;
 
   mp = zMatBufNC(m);
   for( i=0; i<zMatRowSizeNC(m); i++ ){
@@ -812,7 +810,7 @@ zVec zMulMatTVecDRC(zMat m, zVec v)
 /* quadratic multiplication of matrices ('q = a diag{w} a^T') without checking size consistency. */
 zMat zMatQuadNC(zMat a, zVec w, zMat q)
 {
-  register int i, j, k;
+  int i, j, k;
   double wa;
 
   zMatZero( q );
@@ -849,7 +847,7 @@ zMat zMatQuad(zMat a, zVec w, zMat q)
 /* quadratic multiplication of matrices ('q = a^T diag{w} a') without checking size consistency. */
 zMat zMatTQuadNC(zMat a, zVec w, zMat q)
 {
-  register int i, j, k;
+  int i, j, k;
   double wa;
 
   zMatZero( q );
@@ -890,7 +888,7 @@ zMat zMatTQuad(zMat a, zVec w, zMat q)
 /* read a matrix from a ZTK format processor. */
 zMat zMatFromZTK(ZTK *ztk)
 {
-  register int i, j, row, col;
+  int i, j, row, col;
   zMat m;
 
   row = ZTKInt(ztk);
@@ -905,7 +903,7 @@ zMat zMatFromZTK(ZTK *ztk)
 /* scan information of a matrix from file. */
 zMat zMatFScan(FILE *fp)
 {
-  register unsigned i, j;
+  unsigned i, j;
   int row, col;
   zMat m;
 
@@ -930,7 +928,7 @@ zMat zMatFScan(FILE *fp)
 /* print information of a matrix to file. */
 void zMatFPrint(FILE *fp, zMat m)
 {
-  register int i, j;
+  int i, j;
 
   if( !m )
     fprintf( fp, "(null matrix)\n" );
@@ -952,7 +950,7 @@ void zMatImg(zMat m)
   double max, min, d;
   const char pat_pos[] = ",x*M";
   const char pat_neg[] = ".oO@";
-  register int i, j, c;
+  int i, j, c;
 
   max = fabs( zDataMax( zMatBufNC(m), zMatRowSizeNC(m)*zMatColSizeNC(m), NULL ) );
   min = fabs( zDataMin( zMatBufNC(m), zMatRowSizeNC(m)*zMatColSizeNC(m), NULL ) );

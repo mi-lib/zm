@@ -9,7 +9,7 @@
 /* allocate a vector ring. */
 bool zVecRingAlloc(zVecRing *ring, int dim, int num)
 {
-  register int i;
+  int i;
 
   zRingAlloc( ring, zVec, num );
   for( i=0; i<num; i++ )
@@ -24,7 +24,7 @@ bool zVecRingAlloc(zVecRing *ring, int dim, int num)
 /* free a vector ring. */
 void zVecRingFree(zVecRing *ring)
 {
-  register int i;
+  int i;
 
   if( zRingBuf(ring) )
     for( i=0; i<zRingSize(ring); i++ )
@@ -35,7 +35,7 @@ void zVecRingFree(zVecRing *ring)
 /* fill a ring with the same vector. */
 zVec zVecRingFill(zVecRing *ring, zVec v)
 {
-  register int i;
+  int i;
 
   if( !zVecSizeIsEqual(*zRingHead(ring),v) ){
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );
@@ -49,7 +49,7 @@ zVec zVecRingFill(zVecRing *ring, zVec v)
 /* concatenate vectors of a ring. */
 zVec zVecRingCat(zVec v, zVec c, zVecRing *ring)
 {
-  register int i;
+  int i;
 
   if( !zVecSizeIsEqual(*zRingHead(ring),v) ){
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );

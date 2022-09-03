@@ -267,9 +267,8 @@ zVec zLESolveMPSVD(zMat a, zVec b, zVec ans)
  * (MP-inverse, pseudoinverse) based on LQ decomposition with the null space. */
 zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn)
 {
-  int rank;
+  int i, rank;
   zLE le;
-  register int i;
 
   if( !_zLEAllocLR( &le, a ) ) goto TERMINATE2;
   if( ( rank = zMatDecompLQ( a, le.l, le.r, le.idx2 ) ) == 0 )
@@ -330,7 +329,7 @@ static bool _zLESolveSRSizeIsEqual(zMat a, zVec b, zVec wn, zVec we, zVec ans)
  * (SR-inverse) matrix (destructive). */
 zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zLE *le)
 {
-  register int i;
+  int i;
 
   if( we ) zVecAmpNCDRC( b, we );
   zMulMatTVecNC( a, b, le->v1 );
@@ -382,7 +381,7 @@ zVec zLESolveSRAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
  * inverse matrix (destructive). */
 zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLE *le)
 {
-  register int i;
+  int i;
 
   if( we ) zVecAmpNCDRC( b, we );
   zMulMatTVecNC( a, b, le->v1 );

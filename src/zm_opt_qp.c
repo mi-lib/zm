@@ -9,8 +9,7 @@
 /* calculation of a quadratic value. */
 double zQuadraticValue(zMat q, zVec c, zVec x)
 {
-  register uint i, j;
-  uint n;
+  uint i, j, n;
   double val;
 
   n = zVecSize( x );
@@ -38,8 +37,7 @@ double zQuadraticValue(zMat q, zVec c, zVec x)
 /* NOTE: this function is to be deleted due to mathematical illegality. */
 bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
 {
-  register uint i, j;
-  uint m, n;
+  uint i, j, m, n;
   zMat d;
   zVec f, y;
 
@@ -89,7 +87,7 @@ bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
 /* transform a quadratic programming problem to a linear complementary problem. */
 static bool _zQP2LCP(zMat q, zVec c, zMat a, zVec b, zMat *lm, zVec *lq, zVec *z)
 {
-  register int i, j;
+  int i, j;
 
   *lm = zMatAllocSqr( zMatRowSizeNC(q) + zMatRowSize(a) );
   *lq = zVecAlloc( zVecSizeNC(c) + zVecSize(b) );
@@ -184,7 +182,7 @@ static bool _zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, zIndex idx, v
   bool endflag, ret = true;
   int tempi;
   int n, nm, m;
-  register int i, j, k;
+  int i, j, k;
 
   n = zVecSizeNC(ans);
   zListInit( &ilist );
@@ -323,7 +321,7 @@ double zCGSolve(zMat q, zVec c, zVec ans, int iter)
 {
   zVec d, g, qd;
   double a, b, s, result;
-  register int i=0;
+  int i = 0;
 
   d = zVecAlloc( zVecSizeNC(ans) );
   g = zVecAlloc( zVecSizeNC(ans) );

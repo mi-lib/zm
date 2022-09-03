@@ -9,7 +9,7 @@
 /* internal sub-FFT procedure. */
 void _zFFTInner(zComplex data[], zComplex buf[], size_t n, double theta)
 {
-  register int i, j, k;
+  int i, j, k;
   int radix, n_radix;
   zComplex x, w, tmp;
 
@@ -43,7 +43,7 @@ void _zFFTInner(zComplex data[], zComplex buf[], size_t n, double theta)
 /* Fast Fourier Transformation. */
 bool zFFT(double data[], size_t n, zComplex res[])
 {
-  register int i;
+  int i;
   zComplex *buf;
 
   if( !( buf = zAlloc( zComplex, n ) ) ){
@@ -65,7 +65,7 @@ bool zFFT(double data[], size_t n, zComplex res[])
 /* inverse fast Fourier transformation. */
 bool zFFTInv(zComplex data[], size_t n, double res[])
 {
-  register int i;
+  int i;
   zComplex *buf, *cres;
   bool result = true;
 

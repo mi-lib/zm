@@ -6,13 +6,10 @@
 
 #include <zm/zm_le.h>
 
-/* zPivoting
- * - matrix pivoting.
- */
+/* matrix pivoting. */
 int zPivoting(zMat m, zIndex idx, int r, int c)
 {
-  register int i;
-  int pi;
+  int i, pi;
   double tmp, max;
 
   pi = r;
@@ -27,13 +24,10 @@ int zPivoting(zMat m, zIndex idx, int r, int c)
   return zIndexSwap( idx, pi, r );
 }
 
-/* zPivotingDiag
- * - matrix pivoting in diagonal values.
- */
+/* matrix pivoting in diagonal values. */
 int zPivotingDiag(zMat m, zIndex idx, int i)
 {
-  register int j;
-  int pi;
+  int j, pi;
   double tmp, max;
 
   pi = i;
@@ -48,12 +42,10 @@ int zPivotingDiag(zMat m, zIndex idx, int i)
   return zIndexSwap( idx, pi, i );
 }
 
-/* zSweepOutMat
- * - sweep out matrix column.
- */
+/* sweep out matrix column. */
 double zSweepOutMat(zMat m1, zMat m2, int r, int c)
 {
-  register int i, j;
+  int i, j;
   double value, d, ratio;
 
   value = zMatElemNC( m1, r, c );
@@ -82,12 +74,10 @@ double zSweepOutMat(zMat m1, zMat m2, int r, int c)
   return value;
 }
 
-/* zSweepOutVec
- * - sweep out vector.
- */
+/* sweep out vector. */
 double zSweepOutVec(zMat m, zVec v, int r, int c)
 {
-  register int i, j;
+  int i, j;
   double value, d, ratio;
 
   value = zMatElemNC( m, r, c );

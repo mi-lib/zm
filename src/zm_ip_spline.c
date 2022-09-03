@@ -10,7 +10,7 @@
 /* vector on spline interpolation */
 static zVec _zIPVecSpline(zIPData *dat, double t, zVec v)
 {
-  register int i;
+  int i;
   double r1, r2;
 
   i = zIPSeg( dat, t );
@@ -27,7 +27,7 @@ static zVec _zIPVecSpline(zIPData *dat, double t, zVec v)
 /* velocity on spline interpolation */
 static zVec _zIPVelSpline(zIPData *dat, double t, zVec v)
 {
-  register int i;
+  int i;
   double r1, r2;
 
   i = zIPSeg( dat, t );
@@ -44,7 +44,7 @@ static zVec _zIPVelSpline(zIPData *dat, double t, zVec v)
 /* acceleration on spline interpolation */
 static zVec _zIPAccSpline(zIPData *dat, double t, zVec v)
 {
-  register int i;
+  int i;
   double t1, t2;
 
   i = zIPSeg( dat, t );
@@ -114,8 +114,7 @@ static void _zIPFreeEdgeSpline(zIP *ip, zVec a, zVec b, zVec d, int i, int iv, i
 /* create a spline interpolator */
 bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v2)
 {
-  register int i, j;
-  int n;
+  int i, j, n;
   zVec a, b, c, d, v;
   double r1, r2;
   bool result = false;

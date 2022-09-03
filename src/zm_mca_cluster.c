@@ -32,7 +32,7 @@ void zClusterDestroy(zCluster *c)
 /* print a vector cluster to a file. */
 void zClusterFPrint(FILE *fp, zCluster *c)
 {
-  register int i = 0;
+  int i = 0;
   zVecListCell *vc;
 
   fprintf( fp, "%d members\n", zListSize(&c->vl) );
@@ -70,7 +70,7 @@ static zVec _zClusterMeanDefault(zVecAddrList *pl, void *dummy, zVec mean)
 static zVec _zClusterMeanLoadedDefault(zVecAddrList *pl, double load[], double n, void *dummy, zVec mean)
 {
   zVecListCell *vc;
-  register int i = 0;
+  int i = 0;
 
   zVecZero( mean );
   zListForEach( pl, vc ){
@@ -144,7 +144,7 @@ zMCluster *zMClusterInit(zMCluster *mc, int meansize, zVec (* mean_fp)(zVecAddrL
 zMCluster *zMClusterAlloc(zMCluster *mc, int n)
 {
   zClusterListCell *cc;
-  register int i;
+  int i;
 
   zListInit( &mc->cl );
   for( i=0; i<n; i++ ){
@@ -182,7 +182,7 @@ void zMClusterDestroy(zMCluster *mc)
 /* print multiple vector clusters to a file. */
 void zMClusterFPrint(FILE *fp, zMCluster *mc)
 {
-  register int i = 0;
+  int i = 0;
   zClusterListCell *cc;
 
   zListForEach( &mc->cl, cc ){
@@ -315,8 +315,7 @@ static int _zMClusterKMeansRecluster(zMCluster *mc, void *mean_util, void *err_u
   zVecListCell *pc, *pc_prev;
   bool ismoved;
   double d, dmin;
-  int iter = 0;
-  register int i;
+  int i, iter = 0;
 
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){

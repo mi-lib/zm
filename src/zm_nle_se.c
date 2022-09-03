@@ -14,14 +14,9 @@
   ZRUNWARN( ZM_WARN_NLE_NOROOT );\
 } while(0)
 
-static int _zNLE_Bracket(double (* f)(double,void*), double *x1, double *x2, void *priv, double *f1, double *f2, double tol, int iter);
-
-/* _zNLE_Bracket
- * - find initial bracketing values of function.
- *   it returns 0 for success case, or -1 for failure case.
- *   (static)
- */
-int _zNLE_Bracket(double (* f)(double,void*), double *x1, double *x2, void *priv, double *f1, double *f2, double tol, int iter)
+/* find initial bracketing values of function.
+ * it returns 0 for success case, or -1 for failure case. */
+static int _zNLE_Bracket(double (* f)(double,void*), double *x1, double *x2, void *priv, double *f1, double *f2, double tol, int iter)
 {
   long count = 0;
   double _x1, _x2;
@@ -41,14 +36,12 @@ int _zNLE_Bracket(double (* f)(double,void*), double *x1, double *x2, void *priv
   return -1; /* failure */
 }
 
-/* zNLE_Bisec
- * - bisection method.
- */
+/* bisection method. */
 double zNLE_Bisec(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter)
 {
   double xm;
   double f1, f2, fm;
-  register int i = 0;
+  int i = 0;
 
   ZITERINIT( iter );
   switch( _zNLE_Bracket( f, &x1, &x2, priv, &f1, &f2, tol, iter ) ){
@@ -71,9 +64,7 @@ double zNLE_Bisec(double (* f)(double,void*), double x1, double x2, void *priv, 
   return xm;
 }
 
-/* zNLE_Secant
- * - Secant method.
- */
+/* Secant method. */
 #define ZNLE_D 0.1
 double zNLE_Secant(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter)
 {
@@ -101,9 +92,7 @@ double zNLE_Secant(double (* f)(double,void*), double x1, double x2, void *priv,
   return xc;
 }
 
-/* zNLE_RF
- * - Regula-Falsi method.
- */
+/* Regula-Falsi method. */
 double zNLE_RF(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter)
 {
   double f1, f2, fc, xc = 0 /* dummy */;
@@ -129,9 +118,7 @@ double zNLE_RF(double (* f)(double,void*), double x1, double x2, void *priv, dou
   return xc;
 }
 
-/* zNLE_VDB
- * - Van Wijngaarden-Dekker-Brent method
- */
+/* Van Wijngaarden-Dekker-Brent method */
 double zNLE_VDB(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter)
 {
 #define ZNLE_VDB_TOL zTOL

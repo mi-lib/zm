@@ -12,7 +12,7 @@
  */
 bool zLPIneq2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs)
 {
-  register int i;
+  int i;
 
   *as = zMatAlloc( zMatRowSizeNC(a), zMatColSizeNC(a)+zMatRowSizeNC(a) );
   *cs = zVecAlloc( zVecSizeNC(c)+zMatRowSizeNC(a) );
@@ -30,7 +30,7 @@ bool zLPIneq2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs)
  */
 bool zLPUnb2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs)
 {
-  register int i, j;
+  int i, j;
 
   *as = zMatAlloc( zMatRowSizeNC(a), zMatColSizeNC(a)*2+zMatRowSizeNC(a) );
   *cs = zVecAlloc( zVecSizeNC(c)*2+zMatRowSizeNC(a) );

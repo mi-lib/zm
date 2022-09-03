@@ -30,7 +30,7 @@ void zFourierFree(zFourier *f)
 /* value of a Fourier series. */
 double zFourierVal(zFourier *f, double t)
 {
-  register int i;
+  int i;
   double s, c, val = 0;
 
   for( i=0; i<f->n; i++ ){
@@ -43,7 +43,7 @@ double zFourierVal(zFourier *f, double t)
 /* velocity of a Fourier series. */
 double zFourierVel(zFourier *f, double t)
 {
-  register int i;
+  int i;
   double s, c, val = 0;
 
   for( i=0; i<f->n; i++ ){
@@ -56,7 +56,7 @@ double zFourierVel(zFourier *f, double t)
 /* acceleration of a Fourier series. */
 double zFourierAcc(zFourier *f, double t)
 {
-  register int i;
+  int i;
   double s, c, val = 0;
 
   for( i=0; i<f->n; i++ ){

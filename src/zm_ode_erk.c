@@ -15,12 +15,10 @@ typedef struct{
   zVec *k;
 } _zODE_ERK;
 
-/* _zODEInit_ERK
- * - initialize ODE solver based on embedded Runge-Kutta method.
- */
-zODE* _zODEInit_ERK(zODE *ode, int dim, int stepsize, zVec (* f)(double,zVec,void*,zVec))
+/* initialize ODE solver based on embedded Runge-Kutta method. */
+static zODE* _zODEInit_ERK(zODE *ode, int dim, int stepsize, zVec (* f)(double,zVec,void*,zVec))
 {
-  register int i;
+  int i;
   _zODE_ERK *ws;
   bool check = true;
 
@@ -43,12 +41,10 @@ zODE* _zODEInit_ERK(zODE *ode, int dim, int stepsize, zVec (* f)(double,zVec,voi
   return ode;
 }
 
-/* _zODEDestroy_ERK
- * - destroy ODE solver.
- */
-void _zODEDestroy_ERK(zODE *ode)
+/* destroy ODE solver. */
+static void _zODEDestroy_ERK(zODE *ode)
 {
-  register int i;
+  int i;
   _zODE_ERK *ws;
 
   ws = ode->_ws;
@@ -60,12 +56,10 @@ void _zODEDestroy_ERK(zODE *ode)
   ode->f = NULL;
 }
 
-/* _zODEUpdate_ERK
- * - directly integrate variable by ODE based on embedded Runge-Kutta method.
- */
-zVec _zODEUpdate_ERK(zODE *ode, double t, zVec x, double dt, double a[], double bc[], double bf[], double c[], void *util)
+/* directly integrate variable by ODE based on embedded Runge-Kutta method. */
+static zVec _zODEUpdate_ERK(zODE *ode, double t, zVec x, double dt, double a[], double bc[], double bf[], double c[], void *util)
 {
-  register int i, j, l;
+  int i, j, l;
   _zODE_ERK *ws;
 
   ws = ode->_ws;

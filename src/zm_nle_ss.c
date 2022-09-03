@@ -6,11 +6,10 @@
 
 #include <zm/zm_nle.h>
 
-/* successive substitution method to solve equation x=f(x).
- */
+/* successive substitution method to solve equation x=f(x). */
 zVec zSSSolve(zVec (* f)(zVec,zVec,void*), zVec x, void *util, int iter)
 {
-  register int i;
+  int i;
   zVec y, e;
 
   y = zVecAlloc( zVecSizeNC(x) );

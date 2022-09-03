@@ -9,7 +9,7 @@
 /* LQ decomposition based on Gram=Schmidt's method. (destructive) */
 int zMatDecompLQDST(zMat m, zMat l, zMat q, zIndex idx)
 {
-  register int i, j, rank;
+  int i, j, rank;
   double *mp, r;
 
   zMatZero( l );

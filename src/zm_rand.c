@@ -167,7 +167,7 @@ double zRandWeibull(zRandMT *mt, double alpha)
 /* binomial distribution. */
 int zRandBinom(zRandMT *mt, int n, double p)
 {
-  register int i, r;
+  int i, r;
 
   for( r=0, i=0; i<n; i++ )
     if( zRandMTN(mt) < p ) r++;

@@ -55,7 +55,7 @@ static double _zOptDIRECTRectEval(zOptDIRECTRect *rect, double (* f)(zVec,void*)
 /* print out properties of a hyper-rectangle region */
 static void _zOptDIRECTRectFPrint(FILE *fp, zOptDIRECTRect *rect)
 {
-  register int i;
+  int i;
 
   fprintf( fp, "center: " );
   zVecFPrint( fp, rect->x );
@@ -112,7 +112,7 @@ static void _zOptDIRECTRectListFPrint(FILE *fp, zOptDIRECTRectList *list)
 static void _zOptDIRECTRectListCenterFPrint(FILE *fp, zOptDIRECTRectList *list)
 {
   zOptDIRECTRectListCell *cp;
-  register int i;
+  int i;
 
   zListForEach( list, cp ){
     for( i=0; i<zVecSizeNC(cp->data->x); i++ )
@@ -133,7 +133,7 @@ typedef struct{
 /* allocate a set of hyper-rectangle regions */
 static zOptDIRECTRectSet *_zOptDIRECTRectSetAlloc(zOptDIRECTRectSet *set, int level_max)
 {
-  register int i;
+  int i;
 
   if( !( set->list = zAlloc( zOptDIRECTRectList, level_max+1 ) ) ) return NULL;
   for( i=0; i<=level_max; i++ )
@@ -146,7 +146,7 @@ static zOptDIRECTRectSet *_zOptDIRECTRectSetAlloc(zOptDIRECTRectSet *set, int le
 /* destroy a set of hyper-rectangle regions */
 static void _zOptDIRECTRectSetDestroy(zOptDIRECTRectSet *set)
 {
-  register int i;
+  int i;
 
   for( i=0; i<=set->level_max; i++ )
     _zOptDIRECTRectListDestroy( &set->list[i] );
@@ -185,7 +185,7 @@ static zOptDIRECTRectSet *_zOptDIRECTRectSetInit(zOptDIRECTRectSet *set, double 
 /* find the minimum value in a set of hyper-rectangle regions */
 static bool _zOptDIRECTRectSetFindMin(zOptDIRECTRectSet *set)
 {
-  register int i = 0;
+  int i = 0;
 
   while( zListIsEmpty( &set->list[i] ) ) i++;
   if( i > set->level_max ){
@@ -213,7 +213,7 @@ typedef struct{
 static zOptDIRECTRectPattern *_zOptDIRECTRectPatternAlloc(int dim)
 {
   zOptDIRECTRectPattern *pat;
-  register int i;
+  int i;
 
   if( !( pat = zAlloc( zOptDIRECTRectPattern, dim ) ) ) return NULL;
   for( i=0; i<dim; i++ ){
@@ -227,7 +227,7 @@ static zOptDIRECTRectPattern *_zOptDIRECTRectPatternAlloc(int dim)
 /* destroy a dividing pattern of a hyper-rectangle region */
 static void _zOptDIRECTRectPatternDestroy(zOptDIRECTRectPattern *pat, int dim)
 {
-  register int i;
+  int i;
 
   for( i=0; i<dim; i++ ){
     pat[i].is_active = false;
@@ -265,7 +265,7 @@ static bool _zOptDIRECTRectSetRectDivide(zOptDIRECTRectSet *set, int level, zOpt
   zIntList index;
   zIntListCell *cp, *ncp;
   bool ret = true;
-  register int i;
+  int i;
 
   zListInit( &index );
   if( !( pat = _zOptDIRECTRectPatternAlloc( zVecSizeNC(rect->x) ) ) ) return false;
@@ -321,7 +321,7 @@ static void _zOptDIRECTRectSetFPrint(FILE *fp, zOptDIRECTRectSet *set)
 /* print out centers of hyper-rectangle regions in a set */
 static void _zOptDIRECTRectSetCenterFPrint(FILE *fp, zOptDIRECTRectSet *set)
 {
-  register int i;
+  int i;
 
   for( i=0; i<=set->level_max; i++ )
     _zOptDIRECTRectListCenterFPrint( fp, &set->list[i] );
@@ -337,7 +337,7 @@ typedef struct{
 /* allocate memory for a set of potentially optimal hyper-rectangle regions */
 static zOptDIRECTRectPOR *_zOptDIRECTRectPORAlloc(zOptDIRECTRectPOR *por, int level_max)
 {
-  register int i;
+  int i;
 
   if( !( por->cell = zAlloc( zOptDIRECTRectListCell*, level_max+1 ) ) ) return NULL;
   por->level_max = level_max;
@@ -364,7 +364,7 @@ static bool _zOptDIRECTRectPORIdent(zOptDIRECTRectPOR *por, zOptDIRECTRectSet *s
 {
   zOptDIRECTRectListCell *cell;
   double gmax, g;
-  register int i = 0, j, k;
+  int i = 0, j, k;
 
   if( !_zOptDIRECTRectSetFindMin( set ) ) return false;
   if( set->min_level == set->level_max ) return true;
@@ -391,7 +391,7 @@ static bool _zOptDIRECTRectPORIdent(zOptDIRECTRectPOR *por, zOptDIRECTRectSet *s
 /* divide potentially optimal hyper-rectangle regions */
 static bool _zOptDIRECTRectPORSetDivide(zOptDIRECTRectPOR *por, zOptDIRECTRectSet *set, double (* f)(zVec,void*), void *util, zVec min, zVec max, zVec x)
 {
-  register int i;
+  int i;
 
   for( i=0; i<por->level_max; i++ ){
     if( por->cell[i] )
@@ -405,7 +405,7 @@ static bool _zOptDIRECTRectPORSetDivide(zOptDIRECTRectPOR *por, zOptDIRECTRectSe
 /* print out a set of potentially optimal hyper-rectangle regions */
 static void _zOptDIRECTRectPORFPrint(FILE *fp, zOptDIRECTRectPOR *por)
 {
-  register int i;
+  int i;
 
   fprintf( fp, "*** potentially optimal rectangle set ***\n" );
   for( i=0; i<=por->level_max; i++ ){
@@ -422,7 +422,7 @@ int zOptSolveDIRECT(double (* f)(zVec,void*), void *util, zVec min, zVec max, in
   zOptDIRECTRectSet set;
   zOptDIRECTRectPOR por;
   int level_max;
-  register int i = 0;
+  int i = 0;
 
   if( !zVecSizeIsEqual( min, ans ) || !zVecSizeIsEqual( max, ans ) ){
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );

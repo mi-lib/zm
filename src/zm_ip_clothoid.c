@@ -21,8 +21,7 @@ zClothoid *zClothoidCreateSegment(zClothoid *cl, double x0, double y0, double f0
 {
   double a, a0, a1, am, s, c;
   double fs, fs0, fs1;
-  int iter = 0;
-  register int i;
+  int i, iter = 0;
 
   a = atan2( y1 - y0, x1 - x0 );
   a0 = _zClothoidArg( x0, y0, f0, f1, ( fs0 =-2*zPI ) );

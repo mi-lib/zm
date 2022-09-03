@@ -48,7 +48,7 @@ zOptPSOParticle *_zOptPSOParticleCreate(zOptPSOParticle *p, zVec min, zVec max, 
 /* update a particle */
 bool _zOptPSOParticleUpdate(zOptPSOParticle *p, zVec min, zVec max, zVec vmin, zVec vmax, zVec best, double c1, double c2, double (* f)(zVec,void*), void *util)
 {
-  register int i;
+  int i;
   double eval;
 
   zVecSubNC( p->mybest, p->x, p->dmybest );
@@ -92,7 +92,7 @@ typedef struct{
 /* find the best evaluation value of a swarm of particles */
 double _zOptPSOSwarmFindBest(zOptPSOSwarm *swarm)
 {
-  register int i;
+  int i;
 
   swarm->best = swarm->particle[0].mybest;
   swarm->eval = swarm->particle[0].eval;
@@ -108,7 +108,7 @@ double _zOptPSOSwarmFindBest(zOptPSOSwarm *swarm)
 /* destroy a swarm of particles */
 void _zOptPSOSwarmDestroy(zOptPSOSwarm *swarm)
 {
-  register int i;
+  int i;
 
   for( i=0; i<swarm->num; i++ )
     _zOptPSOParticleFree( &swarm->particle[i] );
@@ -118,7 +118,7 @@ void _zOptPSOSwarmDestroy(zOptPSOSwarm *swarm)
 /* create a swarm of particles */
 bool _zOptPSOSwarmCreate(zOptPSOSwarm *swarm, int num, zVec min, zVec max, zVec vmin, zVec vmax, double (* f)(zVec,void*), void *util, double c1, double c2)
 {
-  register int i;
+  int i;
 
   if( !( swarm->particle = zAlloc( zOptPSOParticle, num ) ) ) return false;
   swarm->num = num;
@@ -137,7 +137,7 @@ bool _zOptPSOSwarmCreate(zOptPSOSwarm *swarm, int num, zVec min, zVec max, zVec 
 /* update a swarm of particles */
 bool _zOptPSOSwarmUpdate(zOptPSOSwarm *swarm, zVec min, zVec max, zVec vmin, zVec vmax, double (* f)(zVec,void*), void *util)
 {
-  register int i;
+  int i;
   bool is_converged = true;
 
   _zOptPSOSwarmFindBest( swarm );
@@ -151,7 +151,7 @@ bool _zOptPSOSwarmUpdate(zOptPSOSwarm *swarm, zVec min, zVec max, zVec vmin, zVe
 #ifdef DEBUG
 void zOptPSOSwarmFPrint(FILE *fp, zOptPSOSwarm *swarm)
 {
-  register int i;
+  int i;
 
   for( i=0; i<swarm->num; i++ ){
     fprintf( fp, "%.10g ", swarm->particle[i].eval );
@@ -165,7 +165,7 @@ int zOptSolvePSO(double (* f)(zVec,void*), void *util, zVec min, zVec max, int i
 {
   zOptPSOSwarm swarm;
   zVec vmin, vmax;
-  register int i=-1;
+  int i = -1;
 
   if( !zVecSizeIsEqual( min, ans ) || !zVecSizeIsEqual( max, ans ) ){
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );

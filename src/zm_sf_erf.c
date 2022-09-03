@@ -10,7 +10,7 @@
 double zErfN(double x, int n)
 {
   double x2, s, d;
-  register int i, j;
+  int i, j;
 
   x2 = x*x;
   for( s=0, i=0; i<=n; i++ ){

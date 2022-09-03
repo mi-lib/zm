@@ -39,7 +39,7 @@ static void _zLemkeDestroy(_zLemke *tab)
 /* create Lemke tableau and lexicon. */
 static _zLemke *_zLemkeCreate(_zLemke *tab, zMat m, zVec q)
 {
-  register int i, j, n;
+  int i, j, n;
 
   n = zMatRowSizeNC(m);
   tab->m = zMatAlloc( n, 2*n+1 );
@@ -66,7 +66,7 @@ static _zLemke *_zLemkeCreate(_zLemke *tab, zMat m, zVec q)
 /* sweep-out the active column of Lemke tableau. */
 static void _zLemkeSweep(_zLemke *tab, int p)
 {
-  register int i, j;
+  int i, j;
   double ap;
 
   /* normalize pivot row */
@@ -93,7 +93,7 @@ static void _zLemkeSweep(_zLemke *tab, int p)
 /* swap Lemke lexicon and active variable index. */
 static bool _zLemkeSwap(_zLemke *tab, int p)
 {
-  register int i, ib;
+  int i, ib;
 
   ib = zIndexElemNC(tab->ib,p);
   zIndexSetElemNC( tab->ib, p, tab->act );
@@ -110,7 +110,7 @@ static bool _zLemkeSwap(_zLemke *tab, int p)
 /* find next pivot in Lemke tableau. */
 static int _zLemkePivot(_zLemke *tab)
 {
-  register int i, np;
+  int i, np;
   double a, p, p_min;
 
   for( p_min=HUGE_VAL, np=-1, i=0; i<zVecSizeNC(tab->q); i++ ){
@@ -143,7 +143,7 @@ static bool _zLemkeIter(_zLemke *tab)
 /* complementary vectors. */
 static void _zLemkeAnswer(_zLemke *tab, zVec w, zVec z)
 {
-  register int i, idx;
+  int i, idx;
 
   if( w ){
     zVecZero( w );

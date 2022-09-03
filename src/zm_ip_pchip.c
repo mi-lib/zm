@@ -104,7 +104,7 @@ static zIPCom _zm_ip_com_pchip = {
 /* initialize gradient vectors by three-point cubic interpolation */
 static void _zIPInitPCHIP(zIP *ip)
 {
-  register int i, n;
+  int i, n;
   double dt1, dt2, dt3;
 
   dt1 = zIPDelta(&ip->dat,1);
@@ -136,7 +136,7 @@ static void _zIPInitPCHIP(zIP *ip)
 /* modify gradient vectors */
 static void _zIPModifyPCHIP(zIP *ip)
 {
-  register int i, j, m;
+  int i, j, m;
   double d, a, b, l;
 
   m = zVecSizeNC( zIPSecVec(&ip->dat,0) );

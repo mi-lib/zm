@@ -20,7 +20,7 @@ zIndex zDataPeak(double src[], size_t n, int w)
   zIndex peakidx = NULL;
   zIntList list;
   zIntListCell *cp;
-  register int i;
+  int i;
 
   zListInit( &list );
   for( i=1; i<n; i++ ){
@@ -48,7 +48,7 @@ static bool _zDataSmoothSG(double src[], size_t n, size_t w, int dim, double des
   zVec ts; /* timestamp */
   zVecStruct window;
   int wh, nw;
-  register int i;
+  int i;
   bool result = true;
 
   ts = zVecAlloc( w );
@@ -100,7 +100,7 @@ zIndex zDataPeakSG(double src[], size_t n, int w, int dim)
   zIndex peakidx = NULL;
   zIntList list;
   double *g;
-  register int i;
+  int i;
 
   if( !( g = zAlloc( double, n ) ) ) return NULL;
   if( !zDataSmoothVelSG( src, n, w, dim, g ) ) goto TERMINATE;

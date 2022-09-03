@@ -6,12 +6,10 @@
 
 #include <zm/zm_le.h>
 
-/* zTridiagSolveDST
- * - tridiagonal equation solver (destructive).
- */
+/* tridiagonal equation solver (destructive). */
 zVec zTridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans)
 {
-  register int i;
+  int i;
   int n;
 
   n = zVecSize( a );
@@ -31,9 +29,7 @@ zVec zTridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans)
   return ans;
 }
 
-/* zTridiagSolve
- * - tridiagonal equation solver.
- */
+/* tridiagonal equation solver. */
 zVec zTridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans)
 {
   zVec acp, bcp, dcp;

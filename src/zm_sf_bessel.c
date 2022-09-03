@@ -18,7 +18,7 @@ static double _zBesselRec(double *c, int dim, double x);
 
 double _zBesselRec(double *c, int dim, double x)
 {
-  register int i;
+  int i;
   double ret;
 
   for( ret=c[0], i=1; i<dim; i++ ){
@@ -28,9 +28,7 @@ double _zBesselRec(double *c, int dim, double x)
   return ret;
 }
 
-/* zBesselJ0
- * - Bessel J0 function.
- */
+/* Bessel J0 function. */
 double zBesselJ0(double x)
 {
   static double a[] = {
@@ -163,9 +161,7 @@ double zBesselJ0(double x)
     * cos( x + _zBesselRec( d+k+7, 6, t ) * v - 0.78539816339744830962 );
 }
 
-/* zBesselJ1
- * - Bessel J1 function.
- */
+/* Bessel J1 function. */
 double zBesselJ1(double x)
 {
   static double a[] = {
@@ -298,15 +294,13 @@ double zBesselJ1(double x)
     * sin( x + _zBesselRec( d+k+7, 6, t ) * v - 0.78539816339744830962 );
 }
 
-/* zBesselJ
- * - Bessel Jn function with an integer index.
- */
+/* Bessel Jn function with an integer index. */
 double zBesselJ(int n, double x)
 {
   double ret;
   double ax, j0, j1, j, s;
   bool sw;
-  register int i;
+  int i;
 
   if( n < 0 ){
     ZRUNWARN( ZM_WARN_BESSEL_UNDEF );
@@ -343,9 +337,7 @@ double zBesselJ(int n, double x)
   return x < 0 && zIsOdd(n) ? -ret : ret;
 }
 
-/* zBesselY0
- * - Bessel Y0 function.
- */
+/* Bessel Y0 function. */
 double zBesselY0(double x)
 {
   static double a[] = {
@@ -533,9 +525,7 @@ double zBesselY0(double x)
     * sin( x + _zBesselRec( d+k+7, 6, t ) * v - 0.78539816339744830962 );
 }
 
-/* zBesselY1
- * - Bessel Y1 function.
- */
+/* Bessel Y1 function. */
 double zBesselY1(double x)
 {
   static double a[] = {
@@ -723,13 +713,11 @@ double zBesselY1(double x)
     * cos( x + _zBesselRec( d+k+7, 6, t ) * v - 0.78539816339744830962 );
 }
 
-/* zBesselY
- * - Bessel Yn function with an integer index.
- */
+/* Bessel Yn function with an integer index. */
 double zBesselY(int n, double x)
 {
   double y0, y1, y;
-  register int i;
+  int i;
 
   if( n < 0 ){
     ZRUNWARN( ZM_WARN_BESSEL_UNDEF );
@@ -748,9 +736,7 @@ double zBesselY(int n, double x)
   return y1;
 }
 
-/* zBesselI0
- * - modified Bessel I0 function.
- */
+/* modified Bessel I0 function. */
 double zBesselI0(double x)
 {
   static double a[] = {
@@ -869,9 +855,7 @@ double zBesselI0(double x)
   return _zBesselRec( c+k, 9, t ) * sqrt(t) * exp(x);
 }
 
-/* zBesselI1
- * - modified Bessel I1 function.
- */
+/* modified Bessel I1 function. */
 double zBesselI1(double x)
 {
   static double a[] = {
@@ -985,14 +969,12 @@ double zBesselI1(double x)
   return _zBesselRec( c+k, 9, t ) * sqrt(t) * exp(x);
 }
 
-/* zBesselI
- * - modified Bessel In function with an integer index.
- */
+/* modified Bessel In function with an integer index. */
 double zBesselI(int n, double x)
 {
   double ax;
   double i0, i1, in, ret;
-  register int i;
+  int i;
 
   if( n < 0 ){
     ZRUNWARN( ZM_WARN_BESSEL_UNDEF );
@@ -1014,9 +996,7 @@ double zBesselI(int n, double x)
   return x < 0 && zIsOdd(n) ? -ret : ret;
 }
 
-/* zBesselK0
- * - modified Bessel K0 function.
- */
+/* modified Bessel K0 function. */
 double zBesselK0(double x)
 {
   static double a[] = {
@@ -1203,9 +1183,7 @@ double zBesselK0(double x)
   return _zBesselRec( d+k, 8, t ) * sqrt(t) * exp(-x);
 }
 
-/* zBesselK1
- * - modified Bessel K1 function.
- */
+/* modified Bessel K1 function. */
 double zBesselK1(double x)
 {
   static double a[] = {
@@ -1391,13 +1369,11 @@ double zBesselK1(double x)
   return _zBesselRec( d+k, 8, t ) * sqrt(t) * exp(-x);
 }
 
-/* zBesselK
- * - modified Bessel Kn function with an integer index.
- */
+/* modified Bessel Kn function with an integer index. */
 double zBesselK(int n, double x)
 {
   double k0, k1, k;
-  register int i;
+  int i;
 
   if( n < 0 ){
     ZRUNWARN( ZM_WARN_BESSEL_UNDEF );

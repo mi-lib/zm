@@ -9,7 +9,7 @@
 /* set knots & assign control points & initialize weight uniformly. */
 static void _zNURBSKnotInit(zNURBS *nurbs)
 {
-  register int j;
+  int j;
 
   for( j=0; j<=nurbs->dim; j++ )
     zNURBSSetKnot( nurbs, j, 0 );
@@ -22,7 +22,7 @@ static void _zNURBSKnotInit(zNURBS *nurbs)
 /* create a NURBS curve. */
 bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int dim)
 {
-  register int i;
+  int i;
   zSeqListCell *cp;
   bool ret = true;
 
@@ -55,7 +55,7 @@ bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int dim)
 /* destroy a NURBS curve. */
 void zNURBSDestroy(zNURBS *nurbs)
 {
-  register int i;
+  int i;
 
   nurbs->dim = 0;
   zVecFree( nurbs->knot );
@@ -75,7 +75,7 @@ void zNURBSKnotNormalize(zNURBS *nurbs)
 /* find a knot segment that includes the given parameter. */
 static int _zNURBSSeg(zNURBS *nurbs, double t)
 {
-  register int i, j, k;
+  int i, j, k;
 
   for( i=nurbs->dim, j=zNURBSCPNum(nurbs); ; ){
     while( zNURBSKnot(nurbs,i+1) == zNURBSKnot(nurbs,i) ) i++;
@@ -115,7 +115,7 @@ static double _zNURBSBasis(zNURBS *nurbs, double t, int i, int r, int seg)
 /* compute a vector on a NURBS curve. */
 zVec zNURBSVec(zNURBS *nurbs, double t, zVec v)
 {
-  register int s, i;
+  int s, i;
   double b, den;
 
   s = _zNURBSSeg( nurbs, t );
@@ -150,7 +150,7 @@ static double _zNURBSBasisDiff(zNURBS *nurbs, double t, int i, int r, int seg, i
 /* derivative of the denominator of NURBS. */
 static double _zNURBSDenDiff(zNURBS *nurbs, double t, int s, int diff)
 {
-  register int i;
+  int i;
   double den;
 
   for( den=0, i=s-nurbs->dim; i<=s; i++ )
@@ -161,7 +161,7 @@ static double _zNURBSDenDiff(zNURBS *nurbs, double t, int s, int diff)
 /* compute the derivative a NURBS curve. */
 zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v)
 {
-  register int s, i;
+  int s, i;
   double den, b;
   zVec tmp;
 
@@ -198,8 +198,7 @@ double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn)
   double s1, s2, s1old, s2old, sj;
   double d, dmin1, dmin2;
   zVec vs;
-  register int i, j;
-  int iter = 0;
+  int i, j, iter = 0;
 
   if( !( vs = zVecAlloc( zVecSizeNC(v) ) ) )
     return zNURBSKnotS(nurbs); /* dummy */
@@ -235,7 +234,7 @@ double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn)
 /* print control points of a NURBS curve out to a file. */
 void zNURBSCPFPrint(FILE *fp, zNURBS *nurbs)
 {
-  register int i;
+  int i;
 
   for( i=0; i<zNURBSCPNum(nurbs); i++ ){
     fprintf( fp, "[%03d] (%g) ", i, zNURBSWeight(nurbs,i) );

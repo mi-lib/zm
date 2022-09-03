@@ -18,7 +18,7 @@ typedef struct{
 /* create solver, allocating internal working space. */
 static zOptNM *_zOptNMCreate(zOptNM *opt, int dim)
 {
-  register int i;
+  int i;
   bool check = true;
 
   opt->num = dim+1;
@@ -42,7 +42,7 @@ static zOptNM *_zOptNMCreate(zOptNM *opt, int dim)
 /* destroy internal workspace. */
 static void _zOptNMDestroy(zOptNM *opt)
 {
-  register int i;
+  int i;
 
   if( opt->e ){
     for( i=0; i<opt->num; i++ )
@@ -56,7 +56,7 @@ static void _zOptNMDestroy(zOptNM *opt)
 /* initialize internal workspace. */
 static void _zOptNMInit(zOptNM *opt, zVec min, zVec max)
 {
-  register int i;
+  int i;
 
   zVecMid( min, max, opt->e[0] );
   for( i=1; i<opt->num; i++ ){
@@ -68,7 +68,7 @@ static void _zOptNMInit(zOptNM *opt, zVec min, zVec max)
 /* evaluate all vertices. */
 static void _zOptNMEvalAll(zOptNM *opt, double (* f)(zVec,void*), void *util)
 {
-  register int i;
+  int i;
 
   for( i=0; i<opt->num; i++ )
     zVecSetElemNC( opt->eval, i, f( opt->e[i], util ) );
@@ -78,7 +78,7 @@ static void _zOptNMEvalAll(zOptNM *opt, double (* f)(zVec,void*), void *util)
 /* reorder the working vertex according to evaluation. */
 static void _zOptNMReord(zOptNM *opt)
 {
-  register int i;
+  int i;
 
   for( i=0; i<opt->num; i++ )
     if( zVecElemNC(opt->eval,zIndexElemNC(opt->index,i)) > zVecElemNC(opt->eval,zIndexHead(opt->index)) ){
@@ -91,7 +91,7 @@ static void _zOptNMReord(zOptNM *opt)
  * to manipulate working vertex. */
 static zVec _zOptNMPin(zOptNM *opt)
 {
-  register int i;
+  int i;
 
   zVecZero( opt->pin );
   for( i=1; i<opt->num; i++ )
@@ -123,7 +123,7 @@ static zVec _zOptNMShrink(zOptNM *opt)
 /* crunch the working vertex towards the best vertex. */
 static void _zOptNMCrunch(zOptNM *opt)
 {
-  register int i;
+  int i;
 
   for( i=0; i<opt->num; i++ )
     if( i != zIndexTail(opt->index) ){
@@ -135,7 +135,7 @@ static void _zOptNMCrunch(zOptNM *opt)
 /* check if the volume of simplex is tiny. */
 static bool _zOptNMCheck(zOptNM *opt, double tol)
 {
-  register int i;
+  int i;
 
   for( i=1; i<opt->num; i++ )
     if( !zIsTol( zVecDist(opt->e[0],opt->e[i]), tol ) )
@@ -146,7 +146,7 @@ static bool _zOptNMCheck(zOptNM *opt, double tol)
 /* amoeba-like iteration procedure of polytope method. */
 static int _zOptNMTry(zOptNM *opt, zVec var, double (* f)(zVec,void*), void *util, int iter, double tol, double *eval)
 {
-  register int i;
+  int i;
   double newval, bestval;
 
   ZITERINIT( iter );

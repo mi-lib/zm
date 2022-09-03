@@ -61,10 +61,9 @@ int zMPInv(zMat m, zMat mp)
 /* Moore-Penrose's inverse matrix with its null space. */
 int zMPInvNull(zMat m, zMat mp, zMat mn)
 {
-  int rank;
+  int i, rank;
   zMat l, q, tmp1, tmp2, tmp3;
   zIndex idx;
-  register int i;
 
   if( ( rank = _zMPInvAllocWork1( m, &l, &q, &idx ) ) == -1 )
     return -1;

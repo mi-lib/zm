@@ -31,7 +31,7 @@ zPex zPexRgl(zPex *p)
 /* add a polynomial expression directly to another. */
 zPex zPexAddDRC(zPex p1, zPex p2)
 {
-  register int i, dim;
+  int i, dim;
 
   if( zPexDim(p1) < ( dim = zPexDim(p2) ) ){
     ZRUNERROR( ZM_ERR_PEX_DIMMIS );
@@ -45,7 +45,7 @@ zPex zPexAddDRC(zPex p1, zPex p2)
 /* subtract a polynomial expression directly from another. */
 zPex zPexSubDRC(zPex p1, zPex p2)
 {
-  register int i, dim;
+  int i, dim;
 
   if( zPexDim(p1) < ( dim = zPexDim(p2) ) ){
     ZRUNERROR( ZM_ERR_PEX_DIMMIS );
@@ -83,7 +83,7 @@ zPex zPexSub(zPex p1, zPex p2)
 /* multiply a polynomial expression by another. */
 zPex zPexMul(zPex p1, zPex p2)
 {
-  register int i, j, dim1, dim2;
+  int i, j, dim1, dim2;
   zPex p;
 
   dim1 = zPexDim( p1 );
@@ -99,7 +99,7 @@ zPex zPexMul(zPex p1, zPex p2)
 /* divide a polynomial expression directly by another. */
 static void _zPexDivDRC(zPex p, zPex f, zPex q, zPex *r)
 {
-  register int i, n, m;
+  int i, n, m;
   double a;
 
   n = zPexDim( p );
@@ -239,7 +239,7 @@ zPex zPexCExp(zCVec factor)
 /* modulo of a primary expression. */
 zPex zPexModulo(zPex p1, double a, zPex p2)
 {
-  register int i, j;
+  int i, j;
 
   if( !zPexCopy( p1, p2 ) ){
     ZRUNERROR( ZM_ERR_PEX_DIMMIS );
@@ -254,7 +254,7 @@ zPex zPexModulo(zPex p1, double a, zPex p2)
 /* differentiate a polynomial expression. */
 zPex zPexDif(zPex p)
 {
-  register int i, dim;
+  int i, dim;
   zPex q;
 
   if( !( q = zPexAlloc( ( dim = zPexDim(p) - 1 ) ) ) ) return NULL;
@@ -266,7 +266,7 @@ zPex zPexDif(zPex p)
 /* integrate a polynomial expression. */
 zPex zPexIntg(zPex p)
 {
-  register int i, dim;
+  int i, dim;
   zPex q;
 
   if( !( q = zPexAlloc( ( dim=zPexDim(p) ) + 1 ) ) ) return NULL;
@@ -278,7 +278,7 @@ zPex zPexIntg(zPex p)
 /* evaluate a polynomial expression given an argument. */
 double zPexVal(zPex p, double arg)
 {
-  register int i, n;
+  int i, n;
   double val = 0, term;
 
   if( arg == 0 ) return zPexCoeff( p, 0 );
@@ -295,7 +295,7 @@ double zPexVal(zPex p, double arg)
 /* evaluate a polynomial expression given a complex number argument. */
 zComplex *zPexCVal(zPex p, zComplex *arg, zComplex *c)
 {
-  register int i;
+  int i;
   zComplex tmp;
 
   i = zPexDim(p);
@@ -310,7 +310,7 @@ zComplex *zPexCVal(zPex p, zComplex *arg, zComplex *c)
 /* evaluate the differential value of a polynomial expression. */
 double zPexDifVal(zPex p, int dim, double arg)
 {
-  register int i;
+  int i;
   double c, result;
 
   i = zPexDim( p );
@@ -326,7 +326,7 @@ double zPexDifVal(zPex p, int dim, double arg)
 /* scan a polynomial expression from a ZTK processor. */
 zPex zPexFromZTK(ZTK *ztk)
 {
-  register int i, dim;
+  int i, dim;
   zPex p;
 
   if( !( p = zPexAlloc( ( dim = ZTKInt(ztk) ) ) ) ) return NULL;
@@ -338,8 +338,7 @@ zPex zPexFromZTK(ZTK *ztk)
 /* scan a polynomial expression from a file. */
 zPex zPexFScan(FILE *fp)
 {
-  register int i;
-  int dim;
+  int i, dim;
   zPex p;
 
   if( !zFInt( fp, &dim ) ){
@@ -357,7 +356,7 @@ zPex zPexFScan(FILE *fp)
 /* print a polynomial expression to a file. */
 void zPexFPrint(FILE *fp, zPex p)
 {
-  register int i;
+  int i;
 
   if( !p ) return;
   fprintf( fp, "%d (", zPexDim(p) );
@@ -376,10 +375,9 @@ void zPexFPrint(FILE *fp, zPex p)
 /* express a polynomial expression to a string. */
 char *zPexSExpr(char *str, size_t size, zPex p, char c)
 {
-  register int i, dim;
+  int i, dim, len;
   char buf[BUFSIZ];
   double coeff;
-  int len;
 
   if( ( dim = zPexDim(p) ) < 0 )
     sprintf( str, "0" );

@@ -17,7 +17,7 @@ bool zIPDataAlloc(zIPData *dat, zSeq *seq)
   zSeqListCell *cp;
   zIPKnotCell *kp;
   double t = 0;
-  register int i = 0;
+  int i = 0;
 
   if( zListIsEmpty(seq) ){
     ZRUNWARN( ZM_WARN_SEQ_EMPTY );
@@ -50,7 +50,7 @@ void zIPDataFree(zIPData *dat)
 /* find a segment in which the absessi is included. */
 int zIPSeg(zIPData *dat, double t)
 {
-  register int i, j, k;
+  int i, j, k;
 
   for( i=0, j=zIPSize(dat)-1; ; ){
     if( ( k = ( i + j ) / 2 ) == i ) break;

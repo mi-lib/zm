@@ -12,7 +12,7 @@ static zMat _zNLEJacobi(zNLE *nle, zVec var, zMat j, void *util){
 }
 static zMat _zNLEJacobiNG(zNLE *nle, zVec var, zMat j, void *util)
 {
-  register int i;
+  int i;
   double org;
 
   for( i=0; i<zVecSizeNC(var); i++ ){
@@ -89,7 +89,7 @@ static int _zNLESolveDM(zNLE *nle, zVec var, void *util, double tol, int iter, d
 /* Newton-Raphson's method. */
 static int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol, int iter, double *err)
 {
-  register int i;
+  int i;
   zLE le;
 
   le.m = nle->_opt._h;
@@ -115,7 +115,7 @@ static int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol, int iter, d
 /* solve simultaneous nonlinear equations by Broyden's method. */
 static int _zNLESolveBroyden(zNLE *nle, zVec var, void *util, double tol, int iter, double *err)
 {
-  register int i;
+  int i;
 
   nle->f( var, nle->_f, util );
   if( zVecIsTol( nle->_f, tol ) ){

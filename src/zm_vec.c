@@ -14,7 +14,7 @@
 /* set vector components from variable argument list. */
 zVec zVecSetElemVList(zVec v, va_list args)
 {
-  register int i;
+  int i;
 
   for( i=0; i<zVecSizeNC(v); i++ )
     zVecSetElemNC( v, i, (double)va_arg( args, double ) );
@@ -76,7 +76,7 @@ void zVecFreeAO(int n, ...)
 {
   va_list arg;
   zVec v;
-  register int i;
+  int i;
 
   va_start( arg, n );
   for( i=0; i<n; i++ ){
@@ -252,7 +252,7 @@ void zVecSort(zVec v, zIndex idx)
 /* check if two vectors are equal. */
 bool zVecIsEqual(zVec v1, zVec v2, double tol)
 {
-  register int i;
+  int i;
 
   if( !zVecSizeIsEqual( v1, v2 ) ) return false;
   for( i=0; i<zVecSizeNC(v1); i++ )
@@ -406,7 +406,7 @@ zVec zVecCat(zVec v1, double k, zVec v2, zVec v)
  */
 static void _zVecCats(zVec v, int n, va_list args)
 {
-  register int i;
+  int i;
   double k;
   zVec vec;
 
@@ -520,7 +520,7 @@ zVec zVecNormalize(zVec src, zVec dest)
 /* read a vector from a ZTK format processor. */
 zVec zVecFromZTK(ZTK *ztk)
 {
-  register int i, size;
+  int i, size;
   zVec v;
 
   size = ZTKInt(ztk);
@@ -533,7 +533,7 @@ zVec zVecFromZTK(ZTK *ztk)
 /* scan a vector from a file. */
 zVec zVecFScan(FILE *fp)
 {
-  register int i;
+  int i;
   int size;
   zVec v;
 
@@ -554,7 +554,7 @@ zVec zVecFScan(FILE *fp)
 /* print a vector out to a file. */
 void zVecFPrint(FILE *fp, zVec v)
 {
-  register int i;
+  int i;
 
   if( !v )
     fprintf( fp, "(null vector)\n" );
@@ -569,7 +569,7 @@ void zVecFPrint(FILE *fp, zVec v)
 /* print a vector out to a file. */
 void zVecDataFPrint(FILE *fp, zVec v)
 {
-  register int i;
+  int i;
 
   if( !v ) return;
   for( i=0; i<zVecSizeNC(v); i++ )
