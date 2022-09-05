@@ -11,24 +11,20 @@
 
 __BEGIN_DECLS
 
-/* METHOD:
- * zMPInv - Moore=Penrose inverse matrix.
+/*! \brief Moore=Penrose inverse matrix.
  *
- * 'zMPInv()' calculates Moore=Penrose inverse matrix
- * of an arbitrary matrix 'm'. The result is put into
- * 'mp'. Suppose a matrix B is Moore=Penrose inverse
- * matrix of a matrix A, and the following relations
- * are satisfied.
+ * zMPInv() calculates the Moore=Penrose inverse matrix of an
+ * arbitrary matrix \a m. The result is put into \a mp.
+ * Suppose a matrix B is the Moore=Penrose inverse matrix of
+ * a matrix A. The following relations are satisfied.
  *   A B A = A
  *   B A B = B
  *   ( A B )^T = A B
  *   ( B A )^T = B A
- * #
- * The computation algorithm is based on Penrose s
- * iterative method.
- * [RETURN VALUE]
- * 'zMPInv()' returns the rank of the original matrix
- * 'm'.
+ *
+ * The computation algorithm is based on Penrose s iterative method.
+ * \return
+ * zMPInv() returns the rank of the original matrix \a m.
  */
 __EXPORT int zMPInv(zMat m, zMat mp);
 __EXPORT int zMPInvPenrose(zMat m, zMat mp);

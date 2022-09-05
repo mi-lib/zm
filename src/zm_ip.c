@@ -48,9 +48,9 @@ void zIPDataFree(zIPData *dat)
 }
 
 /* find a segment in which the absessi is included. */
-int zIPSeg(zIPData *dat, double t)
+uint zIPSeg(zIPData *dat, double t)
 {
-  int i, j, k;
+  uint i, j, k;
 
   for( i=0, j=zIPSize(dat)-1; ; ){
     if( ( k = ( i + j ) / 2 ) == i ) break;

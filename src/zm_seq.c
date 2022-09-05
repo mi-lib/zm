@@ -82,7 +82,7 @@ bool zSeqScanFile(zSeq *seq, char filename[])
 {
   FILE *fp;
 
-  if( !( fp = zOpenFile( filename, ZSEQ_SUFFIX, "r" ) ) )
+  if( !( fp = zOpenFile( filename, (char *)ZSEQ_SUFFIX, (char *)"r" ) ) )
     return false;
   zSeqFScan( fp, seq );
   fclose( fp );
@@ -121,7 +121,7 @@ bool zSeqPrintFile(zSeq *seq, char filename[])
   char fname[BUFSIZ];
   FILE *fp;
 
-  zAddSuffix( filename, ZSEQ_SUFFIX, fname, BUFSIZ );
+  zAddSuffix( filename, (char *)ZSEQ_SUFFIX, fname, BUFSIZ );
   if( !( fp = fopen( fname, "w" ) ) ){
     ZOPENERROR( fname );
     return false;

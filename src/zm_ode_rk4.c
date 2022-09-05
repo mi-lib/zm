@@ -11,9 +11,7 @@ typedef struct{
   zVec x, k[4];
 } _zODE_RK4;
 
-/* zODEInit_RK4
- * - initialize ODE solver based on classical Runge-Kutta method.
- */
+/* initialize ODE solver based on classical Runge-Kutta method. */
 zODE* zODEInit_RK4(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_RK4 *ws;
@@ -32,28 +30,24 @@ zODE* zODEInit_RK4(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,z
   return ode;
 }
 
-/* zODEDestroy_RK4
- * - destroy ODE solver.
- */
+/* destroy ODE solver. */
 void zODEDestroy_RK4(zODE *ode)
 {
   _zODE_RK4 *ws;
 
-  ws = ode->_ws;
+  ws = (_zODE_RK4 *)ode->_ws;
   zVecFreeAO( 5, ws->x, ws->k[0], ws->k[1], ws->k[2], ws->k[3] );
   zFree( ode->_ws );
   ode->f = NULL;
 }
 
-/* zODEUpdate_RK4
- * - directly integrate variable by ODE based on classical Runge-Kutta method.
- */
+/* directly integrate variable by ODE based on classical Runge-Kutta method. */
 zVec zODEUpdate_RK4(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_RK4 *ws;
   double dt1, dt2, dt3;
 
-  ws = ode->_ws;
+  ws = (_zODE_RK4 *)ode->_ws;
   dt1 = dt * 0.5;
   dt2 = dt / 6;
   dt3 = dt2 * 2;

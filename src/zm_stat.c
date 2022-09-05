@@ -31,9 +31,9 @@ double zCombi(int n, int i)
 }
 
 /* series of combination. */
-double *zCombiSeries(int n, size_t size, double c[])
+double *zCombiSeries(uint n, size_t size, double c[])
 {
-  int i, j;
+  uint i, j;
 
   if( n < 0 || n >= size ){
     ZRUNERROR( ZM_ERR_STAT_ILLS );

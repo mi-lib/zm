@@ -10,7 +10,7 @@
 /* vector on spline interpolation */
 static zVec _zIPVecSpline(zIPData *dat, double t, zVec v)
 {
-  int i;
+  uint i;
   double r1, r2;
 
   i = zIPSeg( dat, t );
@@ -27,7 +27,7 @@ static zVec _zIPVecSpline(zIPData *dat, double t, zVec v)
 /* velocity on spline interpolation */
 static zVec _zIPVelSpline(zIPData *dat, double t, zVec v)
 {
-  int i;
+  uint i;
   double r1, r2;
 
   i = zIPSeg( dat, t );
@@ -44,7 +44,7 @@ static zVec _zIPVelSpline(zIPData *dat, double t, zVec v)
 /* acceleration on spline interpolation */
 static zVec _zIPAccSpline(zIPData *dat, double t, zVec v)
 {
-  int i;
+  uint i;
   double t1, t2;
 
   i = zIPSeg( dat, t );
@@ -59,14 +59,14 @@ static zVec _zIPAccSpline(zIPData *dat, double t, zVec v)
 }
 
 /* velocity at a section on spline interpolation */
-static zVec _zIPSecVelSpline(zIPData *dat, int i, zVec v)
+static zVec _zIPSecVelSpline(zIPData *dat, uint i, zVec v)
 {
   return i >= zIPSize(dat) ?
     zVecZero( v ) : zVecCopyNC( *zArrayElem(&dat->va,i), v );
 }
 
 /* acceleration at a section on spline interpolation */
-static zVec _zIPSecAccSpline(zIPData *dat, int i, zVec v)
+static zVec _zIPSecAccSpline(zIPData *dat, uint i, zVec v)
 {
   zVecZero( v );
   if( i >= zIPSize(dat) ) return v;
@@ -94,14 +94,14 @@ static zIPCom _zm_ip_com_spline = {
 };
 
 /* set a fixed edge condition */
-static void _zIPFixEdgeSpline(zIP *ip, zVec b, zVec d, int i, int j, zVec v)
+static void _zIPFixEdgeSpline(zIP *ip, zVec b, zVec d, uint i, uint j, zVec v)
 {
   zVecSetElemNC( b, i, 1 );
   zVecSetElemNC( d, i, zVecElemNC(v,j) );
 }
 
 /* set a free edge condition */
-static void _zIPFreeEdgeSpline(zIP *ip, zVec a, zVec b, zVec d, int i, int iv, int j)
+static void _zIPFreeEdgeSpline(zIP *ip, zVec a, zVec b, zVec d, uint i, uint iv, uint j)
 {
   double r;
 
@@ -114,7 +114,7 @@ static void _zIPFreeEdgeSpline(zIP *ip, zVec a, zVec b, zVec d, int i, int iv, i
 /* create a spline interpolator */
 bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v2)
 {
-  int i, j, n;
+  uint i, j, n;
   zVec a, b, c, d, v;
   double r1, r2;
   bool result = false;

@@ -13,7 +13,7 @@ static zVec _zOptDMGrad(zOptDM *opt, zVec var, zVec g, void *util){
 }
 static zVec _zOptDMGradNG(zOptDM *opt, zVec var, zVec g, void *util)
 {
-  int i;
+  uint i;
   double adv, prv, org;
 
   for( i=0; i<zVecSizeNC(var); i++ ){
@@ -35,7 +35,7 @@ static zMat _zOptDMHess(zOptDM *opt, zVec var, zMat h, void *util){
 }
 static zMat _zOptDMHessNG(zOptDM *opt, zVec var, zMat h, void *util)
 {
-  int i;
+  uint i;
   double org;
   zVec adg, prg;
 
@@ -229,14 +229,14 @@ typedef struct{
   void *util;
 } _zOptDMStepData;
 
+#define _zm_opt_data(u) ( (_zOptDMStepData *)u )
 static double _zOptDMStepBrentEval(double x, void *util)
 {
-  _zOptDMStepData *opt_data;
-
-  opt_data = util;
-  zVecCatNC( *opt_data->var, -x, opt_data->opt->_d, opt_data->opt->_x );
-  return opt_data->opt->eval( opt_data->opt->_x, opt_data->util );
+  zVecCatNC( *_zm_opt_data(util)->var, -x, _zm_opt_data(util)->opt->_d, _zm_opt_data(util)->opt->_x );
+  return _zm_opt_data(util)->opt->eval( _zm_opt_data(util)->opt->_x, _zm_opt_data(util)->util );
 }
+#undef _zm_opt_data
+
 static zVec _zOptDMStepBrent(zOptDM *opt, zVec var, void *util, double e0, double *e1)
 {
   double a;
@@ -279,7 +279,7 @@ static zMat _zOptDMUpdateDFP(zOptDM *opt, int count) /* Davidon-Fletcher-Powell 
 }
 static zMat _zOptDMUpdateBFGS(zOptDM *opt, int count) /* Broyden-Fletcher-Goldfalb-Shanno */
 {
-  int i, j;
+  uint i, j;
   double k, l, pi, pj, ri, rj;
 
   zMulMatVecNC( opt->_h, opt->_q, opt->_r );
@@ -308,7 +308,7 @@ static zVec _zOptDMVecSD(zOptDM *opt, zVec var, zVec d, void *util)
 /* Levenberg-Marquardt method */
 static zVec _zOptDMVecLM(zOptDM *opt, zVec var, zVec d, void *util)
 {
-  int i;
+  uint i;
   double m;
 
   opt->_hess( opt, var, opt->_h, util );

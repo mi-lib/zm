@@ -12,12 +12,17 @@
  */
 bool zLPIneq2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs)
 {
-  int i;
+  uint i;
 
   *as = zMatAlloc( zMatRowSizeNC(a), zMatColSizeNC(a)+zMatRowSizeNC(a) );
   *cs = zVecAlloc( zVecSizeNC(c)+zMatRowSizeNC(a) );
   *xs = zVecAlloc( zVecSizeNC(x)+zMatRowSizeNC(a) );
-  if( !*as || !*cs || !*xs ) return false;
+  if( !*as || !*cs || !*xs ){
+    zMatFree( *as );
+    zVecFree( *cs );
+    zVecFree( *xs );
+    return false;
+  }
   zMatPut( *as, 0, 0, a );
   for( i=0; i<zMatRowSizeNC(a); i++ )
     zMatSetElemNC( *as, i, zMatColSizeNC(a)+i, 1.0 );
@@ -30,12 +35,17 @@ bool zLPIneq2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs)
  */
 bool zLPUnb2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs)
 {
-  int i, j;
+  uint i, j;
 
   *as = zMatAlloc( zMatRowSizeNC(a), zMatColSizeNC(a)*2+zMatRowSizeNC(a) );
   *cs = zVecAlloc( zVecSizeNC(c)*2+zMatRowSizeNC(a) );
   *xs = zVecAlloc( zVecSizeNC(x)*2+zMatRowSizeNC(a) );
-  if( !*as || !*cs || !*xs ) return false;
+  if( !*as || !*cs || !*xs ){
+    zMatFree( *as );
+    zVecFree( *cs );
+    zVecFree( *xs );
+    return false;
+  }
   for( i=0; i<zMatRowSizeNC(a); i++ ){
     for( j=0; j<zMatColSizeNC(a); j++ ){
       zMatSetElemNC( *as, i, j, zMatElem(a,i,j) );

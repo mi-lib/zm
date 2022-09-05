@@ -6,10 +6,6 @@
 
 #include <zm/zm_oscil.h>
 
-static void _zOscInitKura(void *prp, double p0, double w0);
-static double _zOscUpdateKura(void *prp, double u, double dt);
-static double _zOscOutputKura(void *prp);
-
 typedef struct{
   double wn; /* natural frequency */
   double ke; /* entrainment gain */
@@ -18,34 +14,25 @@ typedef struct{
   double w;  /* state */
 } zOscKura;
 
-/* (static)
- * _zOscInitKura
- * - initialize Kuramoto's oscillator.
- */
-void _zOscInitKura(void *prp, double p0, double w0)
+/* initialize Kuramoto's oscillator. */
+static void _zOscInitKura(void *prp, double p0, double w0)
 {
   ((zOscKura *)prp)->p = p0;
   ((zOscKura *)prp)->w = w0;
 }
 
-/* (static)
- * _zOscUpdateKura
- * - update the internal state of Kuramoto's oscillator.
- */
-double _zOscUpdateKura(void *prp, double u, double dt)
+/* update the internal state of Kuramoto's oscillator. */
+static double _zOscUpdateKura(void *prp, double u, double dt)
 {
   zOscKura *kura;
 
-  kura = prp;
+  kura = (zOscKura *)prp;
   kura->w = kura->wn + kura->ke * sin( u - kura->p - kura->po );
   return kura->p += kura->w * dt;
 }
 
-/* (static)
- * _zOscOutputKura
- * - output a value of Kuramoto's oscillator.
- */
-double _zOscOutputKura(void *prp)
+/* output a value of Kuramoto's oscillator. */
+static double _zOscOutputKura(void *prp)
 {
   return ((zOscKura *)prp)->p;
 }
@@ -56,9 +43,7 @@ static zOscCom _z_osc_com_kura = {
   _zOscOutputKura,
 };
 
-/* zOscCreateKura
- * - create Kuramoto's oscillator.
- */
+/* create Kuramoto's oscillator. */
 zOsc *zOscCreateKura(zOsc *osc, double wn, double ke, double po)
 {
   zOscKura *kura;

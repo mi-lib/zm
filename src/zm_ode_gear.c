@@ -20,10 +20,12 @@ typedef struct{
 /* algebraic equation for Gear method. */
 static zVec _zODE_Gear_Func(zVec x, zVec y, void *util)
 {
-  zODE *ode = util;
-  _zODE_Gear *ws = ode->_ws;
-  int i;
+  zODE *ode;
+  _zODE_Gear *ws;
+  uint i;
 
+  ode = (zODE *)util;
+  ws = (_zODE_Gear *)ode->_ws;
   zVecCopyNC( x, y );
   for( i=0; i<zVecSizeNC(ws->a); i++ )
     ode->cat( y, zVecElem(ws->a,i), *zRingElem(&ws->hist,i), y, util );
@@ -76,8 +78,9 @@ zODE* zODEInit_Gear(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,z
 /* destroy ODE solver. */
 void zODEDestroy_Gear(zODE *ode)
 {
-  _zODE_Gear *ws = ode->_ws;
+  _zODE_Gear *ws;
 
+  ws = (_zODE_Gear *)ode->_ws;
   zNLEDestroy( &ws->nle );
   zVecFreeAO( 2, ws->v, ws->a );
   zVecRingFree( &ws->hist );
@@ -94,8 +97,9 @@ void zODEInitHist_Gear(zODE *ode, zVec x)
 /* directly integrate variable by ODE based on Gear method. */
 zVec zODEUpdate_Gear(zODE *ode, double t, zVec x, double dt, void *util)
 {
-  _zODE_Gear *ws = ode->_ws;
+  _zODE_Gear *ws;
 
+  ws = (_zODE_Gear *)ode->_ws;
   ws->t = t;
   ws->dt = dt;
   ws->util = util;

@@ -33,8 +33,8 @@ __BEGIN_DECLS
  * zHouseholder() returns no value.
  * zHouseholderVec() returns a pointer \a u.
  */
-__EXPORT void zHouseholder(zMat m, zMat p, int from, int to, zVec u, zVec v, zVec w);
-__EXPORT zVec zHouseholderVec(zMat m, int col, int from, int to, zVec u);
+__EXPORT void zHouseholder(zMat m, zMat p, uint from, uint to, zVec u, zVec v, zVec w);
+__EXPORT zVec zHouseholderVec(zMat m, uint col, uint from, uint to, zVec u);
 
 /*! \brief Hessenberg matrix using Householder transformation.
  *

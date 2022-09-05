@@ -220,7 +220,7 @@ zCMat zCMatDiv(zCMat m1, zComplex *z, zCMat m)
 /* multiply a complex matrix and a complex column vector without checking size consistency. */
 zCVec zCMulMatVecNC(zCMat m, zCVec v1, zCVec v)
 {
-  int i, j;
+  uint i, j;
   zComplex *e, z;
 
   e = zCMatBufNC(m);
@@ -248,7 +248,7 @@ zCVec zCMulMatVec(zCMat m, zCVec v1, zCVec v)
 /* print a complex matrix out to a file. */
 void zCMatFPrint(FILE *fp, zCMat m)
 {
-  int i, j;
+  uint i, j;
 
   if( !m )
     fprintf( fp, "(null matrix)\n" );

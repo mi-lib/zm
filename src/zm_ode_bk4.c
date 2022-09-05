@@ -18,18 +18,15 @@ typedef struct{
   zNLE nle;
 } _zODE_BK4;
 
-static zVec _zODE_BK4_Func(zVec x, zVec y, void *util);
-
-/* (static)
- * _zODE_BK4_Func
- * - algebraic equation for Butcher-Kuntzmann method.
- */
-zVec _zODE_BK4_Func(zVec x, zVec y, void *util)
+/* algebraic equation for Butcher-Kuntzmann method. */
+static zVec _zODE_BK4_Func(zVec x, zVec y, void *util)
 {
-  zODE *ode = util;
-  _zODE_BK4 *ws = ode->_ws;
+  zODE *ode;
+  _zODE_BK4 *ws;
   zVecStruct y1, y2;
 
+  ode = (zODE *)util;
+  ws = (_zODE_BK4 *)ode->_ws;
   /* divide y vector and assign them to half-size vectors */
   zVecSetSizeNC( &y1, zVecSizeNC(ws->x) );
   zVecBufNC(&y1) = zVecBufNC(y);
@@ -49,9 +46,7 @@ zVec _zODE_BK4_Func(zVec x, zVec y, void *util)
   return y;
 }
 
-/* zODEInit_BK4
- * - initialize ODE solver based on Butcher-Kuntzmann method.
- */
+/* initialize ODE solver based on Butcher-Kuntzmann method. */
 zODE* zODEInit_BK4(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_BK4 *ws;
@@ -71,32 +66,30 @@ zODE* zODEInit_BK4(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*,zV
   zVecBufNC(&ws->k2) = zVecBufNC(ws->k) + dim;
   ws->iter = iter;
   ode->f = f;
-  ode->_ws = ws;
+  ode->_ws = (_zODE_BK4 *)ws;
   zNLEAssignNR( &ws->nle );
   return ode;
 }
 
-/* zODEDestroy_BK4
- * - destroy ODE solver.
- */
+/* destroy ODE solver. */
 void zODEDestroy_BK4(zODE *ode)
 {
-  _zODE_BK4 *ws = ode->_ws;
+  _zODE_BK4 *ws;
 
+  ws = (_zODE_BK4 *)ode->_ws;
   zNLEDestroy( &ws->nle );
   zVecFreeAO( 4, ws->v, ws->x, ws->xt, ws->k );
   zFree( ws );
   ode->f = NULL;
 }
 
-/* zODEUpdate_Gauss
- * - directly integrate variable by ODE based on Gauss method.
- */
+/* directly integrate variable by ODE based on Gauss method. */
 zVec zODEUpdate_Gauss(zODE *ode, double t, zVec x, double dt, void *util)
 {
-  _zODE_BK4 *ws = ode->_ws;
+  _zODE_BK4 *ws;
   const double bk4_c = sqrt(3)/6;
 
+  ws = (_zODE_BK4 *)ode->_ws;
   /* Butcher's array */
   ws->t1 = t + (0.5+bk4_c)*dt;
   ws->t2 = t + (0.5-bk4_c)*dt;
@@ -114,13 +107,12 @@ zVec zODEUpdate_Gauss(zODE *ode, double t, zVec x, double dt, void *util)
   return x;
 }
 
-/* zODEUpdate_Radau
- * - directly integrate variable by ODE based on Radau method.
- */
+/* directly integrate variable by ODE based on Radau method. */
 zVec zODEUpdate_Radau(zODE *ode, double t, zVec x, double dt, void *util)
 {
-  _zODE_BK4 *ws = ode->_ws;
+  _zODE_BK4 *ws;
 
+  ws = (_zODE_BK4 *)ode->_ws;
   /* Butcher's array */
   ws->t1 = t + dt/3.0;
   ws->t2 = t + dt;

@@ -9,7 +9,7 @@
 /* directly make a matrix column-balanced. */
 void zBalancingColDST(zMat m, zVec s)
 {
-  int i, j;
+  uint i, j;
   double tmp;
 
   for( i=0; i<zMatColSizeNC(m); i++ ){
@@ -29,7 +29,7 @@ void zBalancingColDST(zMat m, zVec s)
 /* directly make a pair of matrix and vector balanced. */
 void zBalancingDST(zMat m, zVec v, zVec s)
 {
-  int i;
+  uint i;
   double *mp, max;
 
   if( s ) /* if necessary for column-balancing */
@@ -115,24 +115,22 @@ zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
 /* linear equation solver based on Gauss's elimination method. */
 zVec zLESolveGauss(zMat a, zVec b, zVec ans)
 {
-  int n;
   zMat acp;
   zVec bcp, s;
   zIndex idx;
 
-  n = zVecSizeNC(b);
-  if( !zMatIsSqr(a) ){
+  if( !zMatIsSqr( a ) ){
     ZRUNERROR( ZM_ERR_NONSQR_MAT );
     return NULL;
   }
-  if( zMatColSize(a) != n || zVecSize(ans) != n ){
+  if( !zMatColVecSizeIsEqual( a, b ) || !zVecSizeIsEqual( ans, b ) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return NULL;
   }
   acp = zMatClone( a );
   bcp = zVecClone( b );
-  s = zVecAlloc( n );
-  idx = zIndexCreate( n );
+  s = zVecAlloc( zVecSizeNC(b) );
+  idx = zIndexCreate( zVecSizeNC(b) );
   if( acp && bcp && idx && s )
     ans = zLESolveGaussDST( acp, bcp, ans, idx, s );
   else
@@ -147,7 +145,7 @@ zVec zLESolveGauss(zMat a, zVec b, zVec ans)
 /* a solver for Ly=b. */
 zVec zLESolveL(zMat l, zVec b, zVec ans, zIndex idx)
 {
-  int i, j, p;
+  uint i, j, p;
   double x;
 
   for( i=0; i<zArraySize(idx); i++ ){
@@ -200,21 +198,20 @@ zVec zLESolveLU(zMat l, zMat u, zVec b, zVec ans, zIndex idx)
 /* linear equation solver: Residual iteration on LU decomposition. */
 zVec zLESolveRI(zMat a, zVec b, zVec ans)
 {
-  int i, n;
+  uint i;
   zMat l, u;
   zVec res, err;
   double err_norm, err_norm_old = HUGE_VAL;
   zIndex idx;
 
-  n = zVecSizeNC( b );
-  l = zMatAllocSqr( n );
-  u = zMatAllocSqr( n );
-  res = zVecAlloc( n );
-  err = zVecAlloc( n );
-  idx = zIndexCreate( n );
+  l = zMatAllocSqr( zVecSizeNC(b) );
+  u = zMatAllocSqr( zVecSizeNC(b) );
+  res = zVecAlloc( zVecSizeNC(b) );
+  err = zVecAlloc( zVecSizeNC(b) );
+  idx = zIndexCreate( zVecSizeNC(b) );
   if( !l || !u || !res || !err || !idx ) goto TERMINATE;
 
-  if( zMatDecompLU( a, l, u, idx ) < zMatRowSizeNC(a) ){
+  if( zMatDecompLU( a, l, u, idx ) < (int)zMatRowSizeNC(a) ){
     ZRUNERROR( ZM_ERR_LE_SINGULAR );
     ans = NULL;
     goto TERMINATE;
@@ -242,7 +239,7 @@ zVec zLESolveRI(zMat a, zVec b, zVec ans)
 /* linear equation solver: Gauss-Seidel's method. */
 zVec zLESolveGS(zMat a, zVec b, zVec ans)
 {
-  int i, j, k, p, count;
+  uint i, j, k, p, count;
   double x;
   zIndex idx;
 

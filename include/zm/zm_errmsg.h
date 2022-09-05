@@ -72,6 +72,7 @@
 #define ZM_ERR_SEQ_DT_UNFOUND "delta time not specified"
 
 #define ZM_ERR_PEX_DIMUNFOUND "dimension not specified"
+#define ZM_ERR_PEX_INVDIM    "invalid dimension of a polynomial"
 #define ZM_ERR_PEX_DIMMIS    "dimension mismatch"
 #define ZM_ERR_PEX_EQ_SIZMIS "shortage of vector size %d for answers of a %s-order polynomial equation."
 

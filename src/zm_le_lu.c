@@ -9,7 +9,7 @@
 /* LU decomposition of a matrix (destructive). */
 int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx)
 {
-  int r, c, i, j, p, q;
+  uint r, c, i, j, p, q;
   double ahead;
 
   zMatZero( l );
@@ -39,7 +39,7 @@ int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx)
 /* LU decomposition of a matrix. */
 int zMatDecompLU(zMat m, zMat l, zMat u, zIndex idx)
 {
-  int n, rank;
+  int rank;
   zMat mc;
 
   if( !zMatIsSqr(l) ){
@@ -50,7 +50,7 @@ int zMatDecompLU(zMat m, zMat l, zMat u, zIndex idx)
     ZRUNERROR( ZM_ERR_SIZMIS_MAT );
     return -1;
   }
-  if( zMatRowSize(m) != ( n = zArraySize(idx) ) ){
+  if( zMatRowSize(m) != zArraySize(idx) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MAT );
     return -1;
   }
@@ -67,7 +67,8 @@ int zMatDecompLUReg(zMat m, zMat l, zMat u, zIndex idx)
 {
   int rank;
 
-  if( ( rank = zMatDecompLU( m, l, u, idx ) ) < zMatRowSizeNC(m) ){
+  if( ( rank = zMatDecompLU( m, l, u, idx ) ) < 0 ) return -1;
+  if( rank < (int)zMatRowSizeNC(m) ){
     zMatColReg( l, rank ); /* lower triangle regression */
     zMatRowReg( u, rank ); /* upper triangle regression */
   }
@@ -84,7 +85,7 @@ int zMatDecompLUAlloc(zMat m, zMat *l, zMat *u, zIndex *idx)
     zMatFree( *l );
     zMatFree( *u );
     zIndexFree( *idx );
-    return 0;
+    return -1;
   }
   return zMatDecompLUReg( m, *l, *u, *idx );
 }
@@ -92,7 +93,7 @@ int zMatDecompLUAlloc(zMat m, zMat *l, zMat *u, zIndex *idx)
 /* Cholesky decomposition of a matrix (destructive). */
 int zMatDecompCholeskyDST(zMat m, zMat l, zIndex idx)
 {
-  int i, j, k, n, p, rank;
+  uint i, j, k, n, p, rank;
   double a;
 
   n = zArraySize( idx );
@@ -156,8 +157,8 @@ int zMatDecompCholeskyReg(zMat m, zMat l, zIndex idx)
 {
   int rank;
 
-  rank = zMatDecompCholesky( m, l, idx );
-  if( rank > 0 && rank < zMatRowSizeNC(m) )
+  if( ( rank = zMatDecompCholesky( m, l, idx ) ) < 0 ) return -1;
+  if( rank < (int)zMatRowSizeNC(m) )
     zMatColReg( l, rank ); /* lower triangle regression */
   return rank;
 }
@@ -170,7 +171,7 @@ int zMatDecompCholeskyAlloc(zMat m, zMat *l, zIndex *idx)
   if( !*l || !*idx ){
     zMatFree( *l );
     zIndexFree( *idx );
-    return 0;
+    return -1;
   }
   return zMatDecompCholeskyReg( m, *l, *idx );
 }

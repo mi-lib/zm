@@ -9,7 +9,7 @@
 /* LQ decomposition based on Gram=Schmidt's method. (destructive) */
 int zMatDecompLQDST(zMat m, zMat l, zMat q, zIndex idx)
 {
-  int i, j, rank;
+  uint i, j, rank;
   double *mp, r;
 
   zMatZero( l );
@@ -40,7 +40,7 @@ int zMatDecompLQ(zMat m, zMat l, zMat q, zIndex idx)
 
   if( !( mcp = zMatClone( m ) ) ){
     ZALLOCERROR();
-    return 0;
+    return -1;
   }
   rank = zMatDecompLQDST( mcp, l, q, idx );
   zMatFree( mcp );
@@ -52,7 +52,8 @@ int zMatDecompLQReg(zMat m, zMat l, zMat q, zIndex idx)
 {
   int rank;
 
-  if( ( rank = zMatDecompLQ( m, l, q, idx ) ) < zMatRowSizeNC(m) ){
+  if( ( rank = zMatDecompLQ( m, l, q, idx ) ) < 0 ) return -1;
+  if( rank < (int)zMatRowSizeNC(m) ){
     zMatColReg( l, rank );
     zMatRowReg( q, rank );
   }
@@ -69,7 +70,7 @@ int zMatDecompLQAlloc(zMat m, zMat *l, zMat *q, zIndex *idx)
     zMatFree( *l );
     zMatFree( *q );
     zIndexFree( *idx );
-    return 0;
+    return -1;
   }
   return zMatDecompLQReg( m, *l, *q, *idx );
 }
@@ -78,7 +79,7 @@ int zMatDecompLQAlloc(zMat m, zMat *l, zMat *q, zIndex *idx)
 int zMatDecompQR(zMat m, zMat q, zMat r, zIndex idx)
 {
   zMat mcp, qcp, rcp;
-  int rank = 0;
+  int rank = -1;
 
   mcp = zMatAlloc( zMatColSizeNC(m), zMatRowSizeNC(m) );
   qcp = zMatAlloc( zMatColSizeNC(q), zMatRowSizeNC(q) );

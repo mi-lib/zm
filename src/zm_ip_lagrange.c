@@ -9,7 +9,7 @@
 /* vector on Lagrange interpolation */
 static zVec _zIPVecLagrange(zIPData *dat, double t, zVec v)
 {
-  int i, j;
+  uint i, j;
   double p;
 
   zVecZero( v );
@@ -25,7 +25,7 @@ static zVec _zIPVecLagrange(zIPData *dat, double t, zVec v)
 /* velocity on Lagrange interpolation */
 static zVec _zIPVelLagrange(zIPData *dat, double t, zVec v)
 {
-  int i, j, k;
+  uint i, j, k;
   double p;
 
   zVecZero( v );
@@ -43,7 +43,7 @@ static zVec _zIPVelLagrange(zIPData *dat, double t, zVec v)
 /* acceleration on Lagrange interpolation */
 static zVec _zIPAccLagrange(zIPData *dat, double t, zVec v)
 {
-  int i, j, k, l;
+  uint i, j, k, l;
   double p;
 
   zVecZero( v );
@@ -61,13 +61,13 @@ static zVec _zIPAccLagrange(zIPData *dat, double t, zVec v)
 }
 
 /* velocity at section on Lagrange interpolation */
-static zVec _zIPSecVelLagrange(zIPData *dat, int i, zVec v)
+static zVec _zIPSecVelLagrange(zIPData *dat, uint i, zVec v)
 {
   return _zIPVelLagrange( dat, zIPTime(dat,i), v );
 }
 
 /* acceleration at section on Lagrange interpolation */
-static zVec _zIPSecAccLagrange(zIPData *dat, int i, zVec v)
+static zVec _zIPSecAccLagrange(zIPData *dat, uint i, zVec v)
 {
   return _zIPAccLagrange( dat, zIPTime(dat,i), v );
 }
@@ -84,7 +84,7 @@ static zIPCom _zm_ip_com_lagrange = {
 /* create a Lagrange interpolator */
 bool zIPCreateLagrange(zIP *ip, zSeq *seq)
 {
-  int i, j;
+  uint i, j;
   double a;
 
   if( !zIPDataAlloc( &ip->dat, seq ) ) return false;

@@ -11,7 +11,7 @@
 
 __BEGIN_DECLS
 
-/* LU decomposition.
+/*! \brief LU decomposition.
  *
  * zMatDecompLU() decomposes the matrix \a m into a lower
  * triangular matrix \a l and an upper triangular matrix \a u

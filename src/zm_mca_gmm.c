@@ -193,7 +193,7 @@ static bool _zGMMCreateEMExpect(zGMM *gmm, zVecList *points, zMat pdf, zMat load
 static bool _zGMMLogLikelihood(zGMM *gmm, zVec load_det)
 {
   double l = 0;
-  int i;
+  uint i;
 
   for( i=0; i<zVecSizeNC(load_det); i++ )
     l += log( zVecElemNC(load_det,i) );

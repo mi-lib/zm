@@ -24,7 +24,7 @@ zArrayClass( zVecArray, zVec );
  * \retval true if succeeding to allocate.
  * \retval false if failing to allocate.
  */
-__EXPORT bool zVecArrayAlloc(zVecArray *array, int dim, int num);
+__EXPORT bool zVecArrayAlloc(zVecArray *array, uint dim, uint num);
 
 /*! \brief free vector array.
  *

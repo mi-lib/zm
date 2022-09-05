@@ -116,7 +116,7 @@ static void _zLP_PDIPEqLU(_zLP_PDIP *dat, int rank, zVec v1, zVec v2, zVec v3, z
   zMulMatVecNC( dat->a, dz, dat->tmp );
   if( v1 ) zVecAddNCDRC( dat->tmp, v1 );
   zVecRevNCDRC( dat->tmp );
-  if( zMatRowSizeNC(dat->a) == rank )
+  if( rank == (int)zMatRowSizeNC(dat->a) )
     zLESolveLU( dat->l, dat->u, dat->tmp, dy, dat->idx );
   else
     _zLESolveLUDeg( dat->l, dat->u, rank, dat->tmp, dy, dat->idx );
@@ -176,7 +176,7 @@ static double _zLP_PDIP_PCErr(_zLP_PDIP *dat)
 /* updating step of PD-IP-PC. */
 static double _zLP_PDIP_PCStep(zVec x, zVec dx)
 {
-  int i;
+  uint i;
   bool max_ok = false, min_ok = false;
   double max, min, val, d;
 

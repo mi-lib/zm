@@ -128,9 +128,9 @@ __EXPORT zVec zVecZero(zVec v);
 __EXPORT zVec zVecTouchup(zVec v);
 __EXPORT zVec zVecCopyNC(zVec src, zVec dest);
 __EXPORT zVec zVecCopy(zVec src, zVec dest);
-__EXPORT zVec zVecCopyArray(double array[], int s, zVec v);
+__EXPORT zVec zVecCopyArray(double array[], uint s, zVec v);
 __EXPORT zVec zVecClone(zVec src);
-__EXPORT zVec zVecCloneArray(double array[], int s);
+__EXPORT zVec zVecCloneArray(double array[], uint s);
 
 /*! \brief get and put a part of a vector.
  *
@@ -193,8 +193,8 @@ __EXPORT zVec zVecShift(zVec v, double shift);
  * \sa
  * zRawVecSwap
  */
-__EXPORT zVec zVecSwapNC(zVec v, int i1, int i2);
-__EXPORT zVec zVecSwap(zVec v, int i1, int i2);
+__EXPORT zVec zVecSwapNC(zVec v, uint i1, uint i2);
+__EXPORT zVec zVecSwap(zVec v, uint i1, uint i2);
 
 /*! \brief rearrange index so as to sort vector.
  *

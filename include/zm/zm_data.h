@@ -14,13 +14,13 @@
 __BEGIN_DECLS
 
 /*! \brief pick up peaks a data sequence. */
-__EXPORT zIndex zDataPeak(double src[], size_t n, int w);
+__EXPORT zIndex zDataPeak(double src[], size_t n, uint w);
 
 /*! \brief smooth a data sequence based on Savitzky-Golay's method */
-__EXPORT bool zDataSmoothSG(double src[], size_t n, size_t w, int dim, double dest[]);
+__EXPORT bool zDataSmoothSG(double src[], size_t n, size_t w, uint dim, double dest[]);
 
 /*! \brief pick up peaks of a smoothed data sequence based on Savitzky-Golay's method. */
-__EXPORT zIndex zDataPeakSG(double src[], size_t n, int w, int dim);
+__EXPORT zIndex zDataPeakSG(double src[], size_t n, size_t w, uint dim);
 
 /*! \brief sort an integer vector in the descent order of the corresponding samples. */
 __EXPORT zIndex zDataSortIndex(double data[], size_t n, zIndex index);

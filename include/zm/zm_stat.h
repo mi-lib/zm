@@ -48,7 +48,7 @@ __EXPORT double zCombi(int n, int i);
  * it fails to compute the series and the null pointer is returned.
  * Otherwise, a pointer to \a c is returned.
  */
-__EXPORT double *zCombiSeries(int n, size_t size, double c[]);
+__EXPORT double *zCombiSeries(uint n, size_t size, double c[]);
 
 /* basic distribution functions */
 

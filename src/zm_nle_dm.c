@@ -12,7 +12,7 @@ static zMat _zNLEJacobi(zNLE *nle, zVec var, zMat j, void *util){
 }
 static zMat _zNLEJacobiNG(zNLE *nle, zVec var, zMat j, void *util)
 {
-  int i;
+  uint i;
   double org;
 
   for( i=0; i<zVecSizeNC(var); i++ ){
@@ -29,32 +29,27 @@ static zMat _zNLEJacobiNG(zNLE *nle, zVec var, zMat j, void *util)
   return j;
 }
 
+#define _zm_nle(u) ( (zNLE *)u )
+
 static double _zNLEEval(zVec var, void *util)
 {
-  zNLE *nle;
-
-  nle = util;
-  nle->f( var, nle->_f, nle->util );
-  zVecAmpNC( nle->_f, nle->we, nle->_fw );
-  return 0.5 * zVecInnerProd( nle->_f, nle->_fw );
+  _zm_nle(util)->f( var, _zm_nle(util)->_f, _zm_nle(util)->util );
+  zVecAmpNC( _zm_nle(util)->_f, _zm_nle(util)->we, _zm_nle(util)->_fw );
+  return 0.5 * zVecInnerProd( _zm_nle(util)->_f, _zm_nle(util)->_fw );
 }
 
 static zVec _zNLEGrad(zVec var, zVec grad, void *util)
 {
-  zNLE *nle;
-
-  nle = util;
-  nle->_jac( nle, var, nle->_j, nle->util );
-  return zMulMatTVecNC( nle->_j, nle->_fw, grad );
+  _zm_nle(util)->_jac( _zm_nle(util), var, _zm_nle(util)->_j, _zm_nle(util)->util );
+  return zMulMatTVecNC( _zm_nle(util)->_j, _zm_nle(util)->_fw, grad );
 }
 
 static zMat _zNLEHess(zVec var, zMat h, void *util)
 {
-  zNLE *nle;
-
-  nle = util;
-  return zMatTQuadNC( nle->_j, nle->we, h );
+  return zMatTQuadNC( _zm_nle(util)->_j, _zm_nle(util)->we, h );
 }
+
+#undef _zm_nle
 
 /* update variable vector toward descent direction. */
 static zVec _zNLEStep(zNLE *nle, zVec var, void *util)

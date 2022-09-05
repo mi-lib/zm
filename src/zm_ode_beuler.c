@@ -18,25 +18,18 @@ typedef struct{
 
 /* backward Euler method */
 
-static zVec _zODE_BEuler_Func(zVec x, zVec y, void *util);
-
-/* (static)
- * _zODE_BEuler_Func
- * - algebraic equation for backward Euler method.
- */
-zVec _zODE_BEuler_Func(zVec x, zVec y, void *util)
+/* algebraic equation for backward Euler method. */
+static zVec _zODE_BEuler_Func(zVec x, zVec y, void *util)
 {
-  zODE *ode = util;
-  _zODE_BEuler *ws = ode->_ws;
+  _zODE_BEuler *ws;
 
-  ode->sub( x, ws->x, y, ws->util );
-  ode->f( ws->t, x, ws->util, ws->v );
-  return ode->cat( y, -ws->dt, ws->v, y, ws->util );
+  ws = (_zODE_BEuler *)((zODE *)util)->_ws;
+  ((zODE *)util)->sub( x, ws->x, y, ws->util );
+  ((zODE *)util)->f( ws->t, x, ws->util, ws->v );
+  return ((zODE *)util)->cat( y, -ws->dt, ws->v, y, ws->util );
 }
 
-/* zODEInit_BEuler
- * - initialize ODE solver based on backward Euler method.
- */
+/* initialize ODE solver based on backward Euler method. */
 zODE* zODEInit_BEuler(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_BEuler *ws;
@@ -55,26 +48,24 @@ zODE* zODEInit_BEuler(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*
   return ode;
 }
 
-/* zODEDestroy_BEuler
- * - destroy ODE solver.
- */
+/* destroy ODE solver. */
 void zODEDestroy_BEuler(zODE *ode)
 {
-  _zODE_BEuler *ws = ode->_ws;
+  _zODE_BEuler *ws;
 
+  ws = (_zODE_BEuler *)ode->_ws;
   zNLEDestroy( &ws->nle );
   zVecFreeAO( 2, ws->v, ws->x );
   zFree( ws );
   ode->f = NULL;
 }
 
-/* zODEUpdate_BEuler
- * - directly integrate variable by ODE based on backward Euler method.
- */
+/* directly integrate variable by ODE based on backward Euler method. */
 zVec zODEUpdate_BEuler(zODE *ode, double t, zVec x, double dt, void *util)
 {
-  _zODE_BEuler *ws = ode->_ws;
+  _zODE_BEuler *ws;
 
+  ws = (_zODE_BEuler *)ode->_ws;
   ws->t = t + dt;
   ws->dt = dt;
   ws->util = util;
@@ -85,13 +76,12 @@ zVec zODEUpdate_BEuler(zODE *ode, double t, zVec x, double dt, void *util)
 
 /* trapezoidal formula method */
 
-/* zODEUpdate_TR
- * - directly integrate variable by ODE based on backward Euler method.
- */
+/* directly integrate variable by ODE based on backward Euler method. */
 zVec zODEUpdate_TR(zODE *ode, double t, zVec x, double dt, void *util)
 {
-  _zODE_BEuler *ws = ode->_ws;
+  _zODE_BEuler *ws;
 
+  ws = (_zODE_BEuler *)ode->_ws;
   ws->t = t + dt;
   ws->dt = 0.5*dt;
   ws->util = util;

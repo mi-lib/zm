@@ -47,7 +47,7 @@ static void _zODEDestroy_ERK(zODE *ode)
   int i;
   _zODE_ERK *ws;
 
-  ws = ode->_ws;
+  ws = (_zODE_ERK *)ode->_ws;
   zVecFreeAO( 2, ws->_xc, ws->_xf );
   for( i=0; i<ws->stepsize; i++ )
     zVecFree( ws->k[i] );
@@ -62,7 +62,7 @@ static zVec _zODEUpdate_ERK(zODE *ode, double t, zVec x, double dt, double a[], 
   int i, j, l;
   _zODE_ERK *ws;
 
-  ws = ode->_ws;
+  ws = (_zODE_ERK *)ode->_ws;
   ode->f( t, x, util, ws->k[0] );
   for( l=0, i=1; i<ws->stepsize; i++ ){
     zVecCopyNC( x, ws->_xc );

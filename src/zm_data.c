@@ -8,19 +8,19 @@
 #include <zm/zm_ip.h>
 
 /* check if the specified point is a peak. */
-static bool _zDataIsPeak(double src[], size_t n, int i)
+static bool _zDataIsPeak(double src[], size_t n, uint i)
 {
   if( i <= 0 || i >= n - 1 ) return false;
   return src[i] > src[i-1] && src[i] > src[i+1];
 }
 
 /* pick up peaks a data sequence. */
-zIndex zDataPeak(double src[], size_t n, int w)
+zIndex zDataPeak(double src[], size_t n, uint w)
 {
   zIndex peakidx = NULL;
   zIntList list;
   zIntListCell *cp;
-  int i;
+  uint i;
 
   zListInit( &list );
   for( i=1; i<n; i++ ){
@@ -42,13 +42,13 @@ zIndex zDataPeak(double src[], size_t n, int w)
 }
 
 /* internal function for smoothing a data sequence based on Savitzky-Golay's method */
-static bool _zDataSmoothSG(double src[], size_t n, size_t w, int dim, double dest[], double (*pexip_func)(zPexIP*,double))
+static bool _zDataSmoothSG(double src[], size_t n, size_t w, uint dim, double dest[], double (*pexip_func)(zPexIP*,double))
 {
   zPexIP pc;
   zVec ts; /* timestamp */
   zVecStruct window;
-  int wh, nw;
-  int i;
+  uint wh, nw;
+  uint i;
   bool result = true;
 
   ts = zVecAlloc( w );
@@ -83,24 +83,24 @@ static bool _zDataSmoothSG(double src[], size_t n, size_t w, int dim, double des
 }
 
 /* smooth a data sequence based on Savitzky-Golay's method */
-bool zDataSmoothSG(double src[], size_t n, size_t w, int dim, double dest[])
+bool zDataSmoothSG(double src[], size_t n, size_t w, uint dim, double dest[])
 {
   return _zDataSmoothSG( src, n, w, dim, dest, zPexIPVal );
 }
 
 /* smooth a data sequence based on Savitzky-Golay's method */
-bool zDataSmoothVelSG(double src[], size_t n, size_t w, int dim, double dest[])
+bool zDataSmoothVelSG(double src[], size_t n, size_t w, uint dim, double dest[])
 {
   return _zDataSmoothSG( src, n, w, dim, dest, zPexIPVel );
 }
 
 /* pick up peaks of a smoothed data sequence based on Savitzky-Golay's method. */
-zIndex zDataPeakSG(double src[], size_t n, int w, int dim)
+zIndex zDataPeakSG(double src[], size_t n, size_t w, uint dim)
 {
   zIndex peakidx = NULL;
   zIntList list;
   double *g;
-  int i;
+  uint i;
 
   if( !( g = zAlloc( double, n ) ) ) return NULL;
   if( !zDataSmoothVelSG( src, n, w, dim, g ) ) goto TERMINATE;

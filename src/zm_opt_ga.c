@@ -57,7 +57,7 @@ static void _zOptGAChromosomeSwap(zOptGAChromosome *c1, zOptGAChromosome *c2)
 /* crossover two chromosomes. */
 zOptGAChromosome *zOptGAChromosomeXover(zOptGAChromosome *c1, zOptGAChromosome *c2, zOptGAChromosome *c)
 {
-  int i;
+  uint i;
   double ratio;
 
   ratio = c1->fitness / ( c1->fitness + c2->fitness );

@@ -65,7 +65,7 @@ static zVec _zODEUpdate_Adams(zODE *ode, double t, zVec x, zVec xorg, zVec xnew,
 {
   _zODE_Adams *ws;
 
-  ws = ode->_ws;
+  ws = (_zODE_Adams *)ode->_ws;
   ode->f( t, xorg, util, *zRingHead(&ws->hist) );
   zVecRingLS( ws->dx, w, &ws->hist );
   return ode->cat( x, dt, ws->dx, xnew, util );
@@ -79,7 +79,7 @@ zODE *zODEInit_Adams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,
 
   if( !( ode = _zODEAlloc_Adams( ode, dim, step, f ) ) )
     return NULL;
-  ws = ode->_ws;
+  ws = (_zODE_Adams *)ode->_ws;
   _zODESetWeight_Adams( ws->wb, ws->step, 1 );   /* AB formula */
   _zODESetWeight_Adams( ws->wm, ws->step, 0 ); /* AM formula */
   return ode;
@@ -90,7 +90,7 @@ void zODEDestroy_Adams(zODE *ode)
 {
   _zODE_Adams *ws;
 
-  ws = ode->_ws;
+  ws = (_zODE_Adams *)ode->_ws;
   ws->step = 0;
   zVecFreeAO( 5, ws->dx, ws->wb, ws->wm, ws->x1, ws->x2 );
   zVecRingFree( &ws->hist );
@@ -106,7 +106,7 @@ zVec zODEUpdate_Adams(zODE *ode, double t, zVec x, double dt, void *util)
   zVec xnew, xold;
   int i, iter = 0;
 
-  ws = ode->_ws;
+  ws = (_zODE_Adams *)ode->_ws;
   t2 = t + dt;
   xold = ws->x1;
   xnew = ws->x2;

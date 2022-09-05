@@ -25,7 +25,7 @@ static void _zLPTableauFPrint(FILE *fp, zLPTableau *tab)
 /* create initial simplex tableau with slack variables. */
 bool zLPTableauCreate(zLPTableau *tab, zMat a, zVec b)
 {
-  int i;
+  uint i;
 
   tab->a = zMatAlloc( zMatRowSizeNC(a), zMatColSizeNC(a)+zMatRowSizeNC(a) );
   tab->b = zVecAlloc( zMatRowSizeNC(a) );
@@ -68,7 +68,7 @@ void zLPTableauDestroy(zLPTableau *tab)
 /* sweep-out one coefficient of cost function corresponding to old bases. */
 static void _zLPTableauSweepC1(zLPTableau *tab, int p)
 {
-  int i;
+  uint i;
   double cp;
 
   cp = zVecElemNC(tab->c,zIndexElemNC(tab->ib,p));
@@ -82,7 +82,7 @@ static void _zLPTableauSweepC1(zLPTableau *tab, int p)
 /* sweep-out coefficients of cost function corresponding to bases. */
 static void _zLPTableauSweepC(zLPTableau *tab)
 {
-  int i;
+  uint i;
 
   for( i=0; i<zArraySize(tab->ib); i++ )
     _zLPTableauSweepC1( tab, i );
@@ -91,7 +91,8 @@ static void _zLPTableauSweepC(zLPTableau *tab)
 /* find next axis column of tableau to be sweeped-out. */
 static int _zLPTableauFindNA(zLPTableau *tab)
 { /* next axis for normal case */
-  int i, na;
+  uint i;
+  int na;
   double c_min;
 
   c_min = zVecElemNC( tab->c, zIndexElemNC(tab->in,(na=0)) );
@@ -104,7 +105,8 @@ static int _zLPTableauFindNA(zLPTableau *tab)
 /* find next axis column of tableau in degenerate case. */
 static int _zLPTableauFindNA_deg(zLPTableau *tab)
 { /* next axis for degenerated case */
-  int i, na = -1, idx_min = INT_MAX;
+  uint i;
+  int na = -1, idx_min = INT_MAX;
 
   for( i=0; i<zArraySize(tab->in); i++ )
     if( zVecElemNC(tab->c,zIndexElemNC(tab->in,i)) < -zTOL ){
@@ -119,7 +121,8 @@ static int _zLPTableauFindNA_deg(zLPTableau *tab)
 /* find next pivot in axis column to be sweeped-out. */
 static int _zLPTableauFindNP(zLPTableau *tab, int *na)
 { /* next pivot */
-  int i, np;
+  uint i;
+  int np;
   double a, p, p_min;
   bool f_try = true;
 
@@ -145,7 +148,7 @@ static int _zLPTableauFindNP(zLPTableau *tab, int *na)
 /* sweep-out tabeau matrix of constraint equation. */
 static void _zLPTableauSweepA(zLPTableau *tab, int np, int na)
 {
-  int i, j, r;
+  uint i, j, r;
   double ap;
 
   /* normalize pivot row */
@@ -156,7 +159,7 @@ static void _zLPTableauSweepA(zLPTableau *tab, int np, int na)
   zVecElemNC(tab->b,zIndexElemNC(tab->ir,np)) /= ap;
   /* sweep-out rest row */
   for( i=0; i<zArraySize(tab->ir); i++ ){
-    if( i == np ) continue;
+    if( i == (uint)np ) continue;
     r = zIndexElemNC(tab->ir,i);
     ap = zMatElemNC(tab->a,r,zIndexElemNC(tab->in,na));
     for( j=0; j<zArraySize(tab->in); j++ )
@@ -190,7 +193,8 @@ static void _zLPTableauSwapPivot(zLPTableau *tab, int np, int na)
  */
 bool zLPTableauSimplex(zLPTableau *tab)
 {
-  int na, np, i = 0;
+  int na, np;
+  uint i = 0;
 
   _zLPTableauSweepC( tab );
   while( ( na = _zLPTableauFindNA( tab ) ) >= 0 ){
@@ -208,7 +212,8 @@ bool zLPTableauSimplex(zLPTableau *tab)
 /* find initial feasible base for the second stage from tableau. */
 bool zLPTableauFindBase(zLPTableau *tab)
 {
-  int i, j, n;
+  uint i, j;
+  int n;
 
   tab->d = 0; /* precautionary touch-up */
   n = zVecSizeNC(tab->c) - zVecSizeNC(tab->b);
@@ -244,7 +249,7 @@ static void _zLTableauSetC(zLPTableau *tab, zVec c)
 /* arrange answer vector. */
 static void _zLPTableauAns(zLPTableau *tab, zVec ans)
 {
-  int i;
+  uint i;
 
   zVecZero( ans );
   for( i=0; i<zArraySize(tab->ib); i++ )

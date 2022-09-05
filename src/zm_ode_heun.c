@@ -11,9 +11,7 @@ typedef struct{
   zVec x, k[3];
 } _zODE_Heun;
 
-/* zODEInit_Heun
- * - initialize ODE solver based on Heun method.
- */
+/* initialize ODE solver based on Heun method. */
 zODE* zODEInit_Heun(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_Heun *ws;
@@ -31,27 +29,23 @@ zODE* zODEInit_Heun(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,
   return ode;
 }
 
-/* zODEDestroy_Heun
- * - destroy ODE solver.
- */
+/* destroy ODE solver. */
 void zODEDestroy_Heun(zODE *ode)
 {
   _zODE_Heun *ws;
 
-  ws = ode->_ws;
+  ws = (_zODE_Heun *)ode->_ws;
   zVecFreeAO( 4, ws->x, ws->k[0], ws->k[1], ws->k[2] );
   zFree( ode->_ws );
   ode->f = NULL;
 }
 
-/* zODEUpdate_Heun
- * - directly integrate variable by ODE based on classical Runge-Kutta method.
- */
+/* directly integrate variable by ODE based on classical Runge-Kutta method. */
 zVec zODEUpdate_Heun(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_Heun *ws;
 
-  ws = ode->_ws;
+  ws = (_zODE_Heun *)ode->_ws;
   ode->f( t, x, util, ws->k[0] );
   ode->cat( x, dt/3, ws->k[0], ws->x, util );
   ode->f( t+dt/3, ws->x, util, ws->k[1] );

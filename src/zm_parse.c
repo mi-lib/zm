@@ -7,76 +7,12 @@
 #include <zm/zm_parse.h>
 #include <zm/zm_stat.h>
 
-static zmParseNum *_zmParseNumAllocName(char *str);
-static zmParseNum *_zmParseNumAllocVal(char *str, double val);
-static zmParseNum *_zmParseNumAlloc(char *str);
-static void _zmParseNumFree(zmParseNum *num);
-static double _zmParseNumEval(zmParseNum *num);
-
-static zmParseVar *_zmParseVarListReg(zmParseVarList *list, char *str);
-static void _zmParseVarListDestroy(zmParseVarList *list);
-static bool _zmParseVarAssoc(zmParseVarList *list, char *str, zmParseCell *cell);
-static bool _zmParseVarBuiltin(zmParseVarList *list);
-static double _zmParseVarEval(zmParseVar *var);
-#ifdef DEBUG
-static void _zmParseVarListPrint(zmParseVarList *list);
-#endif
-
-static zmParseFunc *_zmParseFuncListReg(zmParseFuncList *list, char *str, zmParseFuncID id, int argc);
-static void _zmParseFuncListDestroy(zmParseFuncList *list);
-static bool _zmParseFuncBuiltin(zmParseFuncList *list);
-static int _zmParseFuncGetArg(zmParseCell *arg, int argc, double *argv);
-static double _zmParseFuncEval(zmParseFunc *func, zmParseCell *arg);
-#ifdef DEBUG
-static void _zmParseFuncListPrint(zmParseFuncList *list);
-#endif
-
-static zmParseOp *_zmParseOpFind(char *str);
-static double _zmParseOpEval(zmParseOp *op, double arg1, double arg2);
-
-static zmParseCell *_zmParseCellAlloc(zmParseCellType type, char *str, zmParseVarList *varlist, zmParseFuncList *funclist);
 static void _zmParseCellFree(zmParseCell *cell);
 static double _zmParseCellEval(zmParseCell *cell);
-static char *_zmParseCellStr(zmParseCell *cell);
-#ifdef DEBUG
-static void _zmParseCellPrint(zmParseCell *cell, int indent);
-#endif
-
-static char _zmParseParChar(zmParseStatus status);
-static void _zmParseTokFree(zmParseTok *tok);
-static int _zmParseTokLevel(zmParseTok *tok);
-static zmParseStatus _zmParseTokStatus(zmParseTok *tok);
-static int _zmParseTokOpSpec(zmParseTok *tok);
-static int _zmParseTokPriority(zmParseTok *tok);
-static char *_zmParseTokStr(zmParseTok *tok);
-#ifdef DEBUG
-static void _zmParseTokPrint(zmParseTok *tok);
-#endif
-
-static void _zmParseStackInit(zmParseTok *stack);
-static void _zmParseStackDestroy(zmParseTok *stack);
-#ifdef DEBUG
-static void _zmParseStackPrint(zmParseTok *stack);
-#endif
-
-static zmParseTok *_zmParseTokAlloc(zmParser *parser, zmParseCellType type, char *str);
-static void _zmParseStackPush(zmParser *parser, zmParseTok *tok, int level, zmParseStatus status);
-static zmParseTok *_zmParseStackPop(zmParser *parser, zmParseTok *toknext);
-
-static zmParseTok *_zmParseTokNum(zmParser *parser, char *str, char *tkn, size_t size);
-static zmParseTok *_zmParseTokVar(zmParser *parser, char *str, char *tkn, size_t size);
-static zmParseTok *_zmParseTokOp(zmParser *parser, char *str, char *tkn, size_t size);
-static zmParseTok *_zmParseTokFunc(zmParser *parser, char *str, char *tkn, size_t size);
-static zmParseTok *_zmParseTokPar(zmParser *parser, char *str, char *tkn, size_t size);
-
-static bool _zmParseStackPrefix(zmParser *parser, zmParseTok *toknext);
-static bool _zmParseStackInfix(zmParser *parser, zmParseTok *toknext);
-static bool _zmParseStackPreinfix(zmParser *parser, zmParseTok *toknext);
-static bool _zmParseStackPostfix(zmParser *parser, zmParseTok *toknext);
-static bool _zmParseStack(zmParser *parser, zmParseTok *toknext);
-
-static bool _zmParseIn(zmParser *parser, zmParseStatus status);
-static zmParseTok *_zmParsePar(zmParser *parser, zmParseTok *tok);
+static zmParseOp *_zmParseOpFind(const char *str);
+static double _zmParseOpEval(zmParseOp *op, double arg1, double arg2);
+static zmParseFunc *_zmParseFuncListReg(zmParseFuncList *list, const char *str, zmParseFuncID id, int argc);
+static double _zmParseFuncEval(zmParseFunc *func, zmParseCell *arg);
 
 /* set of delimiters and operators */
 
@@ -88,7 +24,7 @@ static char __zm_parse_op[] = "+-*/%^!,;:=";
 
 /* number */
 
-zmParseNum *_zmParseNumAllocName(char *str)
+static zmParseNum *_zmParseNumAllocName(const char *str)
 {
   zmParseNum *num;
 
@@ -104,7 +40,7 @@ zmParseNum *_zmParseNumAllocName(char *str)
   return num;
 }
 
-zmParseNum *_zmParseNumAllocVal(char *str, double val)
+static zmParseNum *_zmParseNumAllocVal(const char *str, double val)
 {
   zmParseNum *num;
 
@@ -113,22 +49,22 @@ zmParseNum *_zmParseNumAllocVal(char *str, double val)
   return num;
 }
 
-zmParseNum *_zmParseNumAlloc(char *str)
+static zmParseNum *_zmParseNumAlloc(const char *str)
 {
   return _zmParseNumAllocVal( str, atof( str ) );
 }
 
-void _zmParseNumFree(zmParseNum *num)
+static void _zmParseNumFree(zmParseNum *num)
 {
   zNameFree( num );
   zFree( num );
 }
 
-double _zmParseNumEval(zmParseNum *num){ return num->val; }
+static double _zmParseNumEval(zmParseNum *num){ return num->val; }
 
 /* list of variables */
 
-zmParseVar *_zmParseVarListReg(zmParseVarList *list, char *str)
+static zmParseVar *_zmParseVarListReg(zmParseVarList *list, const char *str)
 {
   zmParseVarCell *cp;
 
@@ -140,7 +76,7 @@ zmParseVar *_zmParseVarListReg(zmParseVarList *list, char *str)
     ZALLOCERROR();
     return NULL;
   }
-  if( !zNameSet( &cp->data, str ) ){
+  if( !zNameSet( &cp->data, (char *)str ) ){
     ZALLOCERROR();
     zFree( cp );
     return NULL;
@@ -150,7 +86,7 @@ zmParseVar *_zmParseVarListReg(zmParseVarList *list, char *str)
   return &cp->data;
 }
 
-void _zmParseVarListDestroy(zmParseVarList *list)
+static void _zmParseVarListDestroy(zmParseVarList *list)
 {
   zmParseVarCell *cp;
 
@@ -161,7 +97,7 @@ void _zmParseVarListDestroy(zmParseVarList *list)
   }
 }
 
-bool _zmParseVarAssoc(zmParseVarList *list, char *str, zmParseCell *cell)
+static bool _zmParseVarAssoc(zmParseVarList *list, char *str, zmParseCell *cell)
 {
   zmParseVar *var;
 
@@ -173,37 +109,37 @@ bool _zmParseVarAssoc(zmParseVarList *list, char *str, zmParseCell *cell)
   return true;
 }
 
-bool _zmParseVarBuiltin(zmParseVarList *list)
+static bool _zmParseVarBuiltin(zmParseVarList *list)
 {
   zmParseCell *c_pi, *c_e;
 
   if( !( c_pi = zAlloc( zmParseCell, 1 ) ) ||
-      !( c_pi->dat.num = _zmParseNumAllocVal( "pi", zPI ) ) ){
+      !( c_pi->dat.num = _zmParseNumAllocVal( (char *)"pi", zPI ) ) ){
     ZALLOCERROR();
     return false;
   }
   if( !( c_e = zAlloc( zmParseCell, 1 ) ) ||
-      !( c_e->dat.num = _zmParseNumAllocVal( "e", exp(1.0) ) ) ){
+      !( c_e->dat.num = _zmParseNumAllocVal( (char *)"e", exp(1.0) ) ) ){
     ZALLOCERROR();
     return false;
   }
   c_pi->type = c_e->type = ZM_PARSE_CELL_NUM;
   c_pi->arg1 = c_pi->arg2 = NULL;
   c_e->arg1 = c_e->arg2 = NULL;
-  if( !_zmParseVarAssoc( list, "pi", c_pi ) ||
-      !_zmParseVarAssoc( list, "e",  c_e  ) ){
+  if( !_zmParseVarAssoc( list, (char *)"pi", c_pi ) ||
+      !_zmParseVarAssoc( list, (char *)"e",  c_e  ) ){
     return false;
   }
   return true;
 }
 
-double _zmParseVarEval(zmParseVar *var)
+static double _zmParseVarEval(zmParseVar *var)
 {
   return var->cell ? _zmParseCellEval( var->cell ) : 0;
 }
 
 #ifdef DEBUG
-void _zmParseVarListPrint(zmParseVarList *list) /* for debug */
+static void _zmParseVarListPrint(zmParseVarList *list) /* for debug */
 {
   zmParseVarCell *cp;
 
@@ -213,172 +149,9 @@ void _zmParseVarListPrint(zmParseVarList *list) /* for debug */
 }
 #endif
 
-/* list of functions */
-
-zmParseFunc *_zmParseFuncListReg(zmParseFuncList *list, char *str, zmParseFuncID id, int argc)
-{
-  zmParseFuncCell *cp;
-
-  zListForEach( list, cp ){
-    if( strcmp( zName(&cp->data), str ) == 0 )
-      return &cp->data;
-  }
-  if( !( cp = zAlloc( zmParseFuncCell, 1 ) ) ){
-    ZALLOCERROR();
-    return NULL;
-  }
-  if( !zNameSet( &cp->data, str ) ){
-    ZALLOCERROR();
-    zFree( cp );
-    return NULL;
-  }
-  cp->data.id = id;
-  cp->data.argc = argc;
-  cp->data.cell = NULL;
-  zListInsertHead( list, cp );
-  return &cp->data;
-}
-
-void _zmParseFuncListDestroy(zmParseFuncList *list)
-{
-  zmParseFuncCell *cp;
-
-  while( !zListIsEmpty( list ) ){
-    zListDeleteHead( list, &cp );
-    zNameFree( &cp->data );
-    zFree( cp );
-  }
-}
-
-bool _zmParseFuncBuiltin(zmParseFuncList *list)
-{
-  if( !_zmParseFuncListReg( list, "sin", ZM_PARSE_FUNC_SIN, 1 ) ||
-      !_zmParseFuncListReg( list, "cos", ZM_PARSE_FUNC_COS, 1 ) ||
-      !_zmParseFuncListReg( list, "tan", ZM_PARSE_FUNC_TAN, 1 ) ||
-      !_zmParseFuncListReg( list, "cot", ZM_PARSE_FUNC_COT, 1 ) ||
-      !_zmParseFuncListReg( list, "asin", ZM_PARSE_FUNC_ASIN, 1 ) ||
-      !_zmParseFuncListReg( list, "acos", ZM_PARSE_FUNC_ACOS, 1 ) ||
-      !_zmParseFuncListReg( list, "atan", ZM_PARSE_FUNC_ATAN, 1 ) ||
-      !_zmParseFuncListReg( list, "acot", ZM_PARSE_FUNC_ACOT, 1 ) ||
-      !_zmParseFuncListReg( list, "sinh", ZM_PARSE_FUNC_SINH, 1 ) ||
-      !_zmParseFuncListReg( list, "cosh", ZM_PARSE_FUNC_COSH, 1 ) ||
-      !_zmParseFuncListReg( list, "tanh", ZM_PARSE_FUNC_TANH, 1 ) ||
-      !_zmParseFuncListReg( list, "coth", ZM_PARSE_FUNC_COTH, 1 ) ||
-      !_zmParseFuncListReg( list, "exp", ZM_PARSE_FUNC_EXP, 1 ) ||
-      !_zmParseFuncListReg( list, "log", ZM_PARSE_FUNC_LOG, 1 ) ||
-      !_zmParseFuncListReg( list, "ln", ZM_PARSE_FUNC_LN, 1 ) ||
-      !_zmParseFuncListReg( list, "abs", ZM_PARSE_FUNC_ABS, 1 ) ||
-      !_zmParseFuncListReg( list, "sqrt", ZM_PARSE_FUNC_SQRT, 1 ) ||
-      !_zmParseFuncListReg( list, "deg", ZM_PARSE_FUNC_DEG, 1 ) ||
-      !_zmParseFuncListReg( list, "rad", ZM_PARSE_FUNC_RAD, 1 ) ||
-      !_zmParseFuncListReg( list, "testfunc", ZM_PARSE_FUNC_USER, 3 ) ){
-    return false;
-  }
-  return true;
-}
-
-int _zmParseFuncGetArg(zmParseCell *arg, int argc, double *argv)
-{
-  int c = 0;
-
-  if( !arg ) return 0;
-  if( arg->type == ZM_PARSE_CELL_CHUNK &&
-      arg->dat.op->type == ZM_PARSE_OP_COMMA ){
-    c = _zmParseFuncGetArg( arg->arg1, argc, argv );
-    if( c >= argc ) return c;
-    argv[c] = _zmParseCellEval( arg->arg2 );
-    return c+1;
-  }
-  *argv = _zmParseCellEval( arg );
-  return 1;
-}
-
-double _zmParseFuncEval(zmParseFunc *func, zmParseCell *arg)
-{
-  double *argv, ret = 0;
-
-  if( !( argv = zAlloc( double, func->argc ) ) ){
-    ZALLOCERROR();
-    return 0;
-  }
-  _zmParseFuncGetArg( arg, func->argc, argv );
-
-  switch( func->id ){
-  case ZM_PARSE_FUNC_SIN:  ret = sin( argv[0] ); break;
-  case ZM_PARSE_FUNC_COS:  ret = cos( argv[0] ); break;
-  case ZM_PARSE_FUNC_TAN:  ret = tan( argv[0] ); break;
-  case ZM_PARSE_FUNC_COT:  ret = 1.0 / tan( argv[0] ); break;
-  case ZM_PARSE_FUNC_ASIN: ret = asin( argv[0] ); break;
-  case ZM_PARSE_FUNC_ACOS: ret = acos( argv[0] ); break;
-  case ZM_PARSE_FUNC_ATAN: ret = atan( argv[0] ); break;
-  case ZM_PARSE_FUNC_ACOT: ret = atan( 1.0 / argv[0] ); break;
-  case ZM_PARSE_FUNC_SINH: ret = sinh( argv[0] ); break;
-  case ZM_PARSE_FUNC_COSH: ret = cosh( argv[0] ); break;
-  case ZM_PARSE_FUNC_TANH: ret = tanh( argv[0] ); break;
-  case ZM_PARSE_FUNC_COTH: ret = 1.0 / tanh( argv[0] ); break;
-  case ZM_PARSE_FUNC_EXP:  ret = exp( argv[0] ); break;
-  case ZM_PARSE_FUNC_LOG:  ret = log10( argv[0] ); break;
-  case ZM_PARSE_FUNC_LN:   ret = log( argv[0] ); break;
-  case ZM_PARSE_FUNC_ABS:  ret = fabs( argv[0] ); break;
-  case ZM_PARSE_FUNC_SQRT: ret = sqrt( argv[0] ); break;
-  case ZM_PARSE_FUNC_DEG:  ret = zRad2Deg( argv[0] ); break;
-  case ZM_PARSE_FUNC_RAD:  ret = zDeg2Rad( argv[0] ); break;
-  case ZM_PARSE_FUNC_USER: ret = 0; break; /* dummy */
-  default: ;
-  }
-  zFree( argv );
-  return ret;
-}
-
-#ifdef DEBUG
-void _zmParseFuncListPrint(zmParseFuncList *list) /* for debug */
-{
-  zmParseFuncCell *cp;
-
-  zListForEach( list, cp ){
-    printf( "[#%d] %s <%d>\n", cp->data.id, zName(&cp->data), cp->data.argc );
-    if( cp->data.cell )
-      _zmParseCellPrint( cp->data.cell, 0 );
-  }
-}
-#endif
-
-/* operator */
-
-zmParseOp *_zmParseOpFind(char *str)
-{
-  zmParseOp *op;
-
-  for( op=(zmParseOp *)zm_parse_op; op->str; op++ ){
-    if( strcmp( op->str, str ) == 0 )
-      return op;
-  }
-  return NULL;
-}
-
-double _zmParseOpEval(zmParseOp *op, double arg1, double arg2)
-{
-  switch( op->type ){
-  case ZM_PARSE_OP_ADD: return arg1 + arg2;
-  case ZM_PARSE_OP_SUB: return arg1 - arg2;
-  case ZM_PARSE_OP_MUL: return arg1 * arg2;
-  case ZM_PARSE_OP_DIV:
-  case ZM_PARSE_OP_RAT:
-    return zIsTiny( arg2 ) ? ( arg2 >= 0 ? HUGE_VAL : -HUGE_VAL ) : arg1 / arg2;
-  case ZM_PARSE_OP_MOD: return (int)arg1 % (int)arg2;
-  case ZM_PARSE_OP_POW: return pow( arg1, arg2 );
-  case ZM_PARSE_OP_FCT: return zFacto( arg1 );
-  case ZM_PARSE_OP_COMMA: return arg1; /* dummy */
-  case ZM_PARSE_OP_SEP:   return arg1; /* dummy */
-  case ZM_PARSE_OP_LET:   return arg2; /* dummy */
-  default: ;
-  }
-  return 0;
-}
-
 /* cell */
 
-zmParseCell *_zmParseCellAlloc(zmParseCellType type, char *str, zmParseVarList *varlist, zmParseFuncList *funclist)
+static zmParseCell *_zmParseCellAlloc(zmParseCellType type, const char *str, zmParseVarList *varlist, zmParseFuncList *funclist)
 {
   zmParseCell *cell;
 
@@ -440,7 +213,7 @@ double _zmParseCellEval(zmParseCell *cell)
   return 0;
 }
 
-char *_zmParseCellStr(zmParseCell *cell)
+static char *_zmParseCellStr(zmParseCell *cell)
 {
   if( !cell ) return zNullStr();
   switch( cell->type ){
@@ -456,7 +229,7 @@ char *_zmParseCellStr(zmParseCell *cell)
 }
 
 #ifdef DEBUG
-void _zmParseCellPrint(zmParseCell *cell, int indent) /* for debug */
+static void _zmParseCellPrint(zmParseCell *cell, int indent) /* for debug */
 {
   zIndent( indent );
   printf( "type: " );
@@ -490,9 +263,172 @@ void _zmParseCellPrint(zmParseCell *cell, int indent) /* for debug */
 }
 #endif
 
+/* list of functions */
+
+zmParseFunc *_zmParseFuncListReg(zmParseFuncList *list, const char *str, zmParseFuncID id, int argc)
+{
+  zmParseFuncCell *cp;
+
+  zListForEach( list, cp ){
+    if( strcmp( zName(&cp->data), str ) == 0 )
+      return &cp->data;
+  }
+  if( !( cp = zAlloc( zmParseFuncCell, 1 ) ) ){
+    ZALLOCERROR();
+    return NULL;
+  }
+  if( !zNameSet( &cp->data, str ) ){
+    ZALLOCERROR();
+    zFree( cp );
+    return NULL;
+  }
+  cp->data.id = id;
+  cp->data.argc = argc;
+  cp->data.cell = NULL;
+  zListInsertHead( list, cp );
+  return &cp->data;
+}
+
+static void _zmParseFuncListDestroy(zmParseFuncList *list)
+{
+  zmParseFuncCell *cp;
+
+  while( !zListIsEmpty( list ) ){
+    zListDeleteHead( list, &cp );
+    zNameFree( &cp->data );
+    zFree( cp );
+  }
+}
+
+static bool _zmParseFuncBuiltin(zmParseFuncList *list)
+{
+  if( !_zmParseFuncListReg( list, "sin", ZM_PARSE_FUNC_SIN, 1 ) ||
+      !_zmParseFuncListReg( list, "cos", ZM_PARSE_FUNC_COS, 1 ) ||
+      !_zmParseFuncListReg( list, "tan", ZM_PARSE_FUNC_TAN, 1 ) ||
+      !_zmParseFuncListReg( list, "cot", ZM_PARSE_FUNC_COT, 1 ) ||
+      !_zmParseFuncListReg( list, "asin", ZM_PARSE_FUNC_ASIN, 1 ) ||
+      !_zmParseFuncListReg( list, "acos", ZM_PARSE_FUNC_ACOS, 1 ) ||
+      !_zmParseFuncListReg( list, "atan", ZM_PARSE_FUNC_ATAN, 1 ) ||
+      !_zmParseFuncListReg( list, "acot", ZM_PARSE_FUNC_ACOT, 1 ) ||
+      !_zmParseFuncListReg( list, "sinh", ZM_PARSE_FUNC_SINH, 1 ) ||
+      !_zmParseFuncListReg( list, "cosh", ZM_PARSE_FUNC_COSH, 1 ) ||
+      !_zmParseFuncListReg( list, "tanh", ZM_PARSE_FUNC_TANH, 1 ) ||
+      !_zmParseFuncListReg( list, "coth", ZM_PARSE_FUNC_COTH, 1 ) ||
+      !_zmParseFuncListReg( list, "exp", ZM_PARSE_FUNC_EXP, 1 ) ||
+      !_zmParseFuncListReg( list, "log", ZM_PARSE_FUNC_LOG, 1 ) ||
+      !_zmParseFuncListReg( list, "ln", ZM_PARSE_FUNC_LN, 1 ) ||
+      !_zmParseFuncListReg( list, "abs", ZM_PARSE_FUNC_ABS, 1 ) ||
+      !_zmParseFuncListReg( list, "sqrt", ZM_PARSE_FUNC_SQRT, 1 ) ||
+      !_zmParseFuncListReg( list, "deg", ZM_PARSE_FUNC_DEG, 1 ) ||
+      !_zmParseFuncListReg( list, "rad", ZM_PARSE_FUNC_RAD, 1 ) ||
+      !_zmParseFuncListReg( list, "testfunc", ZM_PARSE_FUNC_USER, 3 ) ){
+    return false;
+  }
+  return true;
+}
+
+static int _zmParseFuncGetArg(zmParseCell *arg, int argc, double *argv)
+{
+  int c = 0;
+
+  if( !arg ) return 0;
+  if( arg->type == ZM_PARSE_CELL_CHUNK &&
+      arg->dat.op->type == ZM_PARSE_OP_COMMA ){
+    c = _zmParseFuncGetArg( arg->arg1, argc, argv );
+    if( c >= argc ) return c;
+    argv[c] = _zmParseCellEval( arg->arg2 );
+    return c+1;
+  }
+  *argv = _zmParseCellEval( arg );
+  return 1;
+}
+
+double _zmParseFuncEval(zmParseFunc *func, zmParseCell *arg)
+{
+  double *argv, ret = 0;
+
+  if( !( argv = zAlloc( double, func->argc ) ) ){
+    ZALLOCERROR();
+    return 0;
+  }
+  _zmParseFuncGetArg( arg, func->argc, argv );
+
+  switch( func->id ){
+  case ZM_PARSE_FUNC_SIN:  ret = sin( argv[0] ); break;
+  case ZM_PARSE_FUNC_COS:  ret = cos( argv[0] ); break;
+  case ZM_PARSE_FUNC_TAN:  ret = tan( argv[0] ); break;
+  case ZM_PARSE_FUNC_COT:  ret = 1.0 / tan( argv[0] ); break;
+  case ZM_PARSE_FUNC_ASIN: ret = asin( argv[0] ); break;
+  case ZM_PARSE_FUNC_ACOS: ret = acos( argv[0] ); break;
+  case ZM_PARSE_FUNC_ATAN: ret = atan( argv[0] ); break;
+  case ZM_PARSE_FUNC_ACOT: ret = atan( 1.0 / argv[0] ); break;
+  case ZM_PARSE_FUNC_SINH: ret = sinh( argv[0] ); break;
+  case ZM_PARSE_FUNC_COSH: ret = cosh( argv[0] ); break;
+  case ZM_PARSE_FUNC_TANH: ret = tanh( argv[0] ); break;
+  case ZM_PARSE_FUNC_COTH: ret = 1.0 / tanh( argv[0] ); break;
+  case ZM_PARSE_FUNC_EXP:  ret = exp( argv[0] ); break;
+  case ZM_PARSE_FUNC_LOG:  ret = log10( argv[0] ); break;
+  case ZM_PARSE_FUNC_LN:   ret = log( argv[0] ); break;
+  case ZM_PARSE_FUNC_ABS:  ret = fabs( argv[0] ); break;
+  case ZM_PARSE_FUNC_SQRT: ret = sqrt( argv[0] ); break;
+  case ZM_PARSE_FUNC_DEG:  ret = zRad2Deg( argv[0] ); break;
+  case ZM_PARSE_FUNC_RAD:  ret = zDeg2Rad( argv[0] ); break;
+  case ZM_PARSE_FUNC_USER: ret = 0; break; /* dummy */
+  default: ;
+  }
+  zFree( argv );
+  return ret;
+}
+
+#ifdef DEBUG
+static void _zmParseFuncListPrint(zmParseFuncList *list) /* for debug */
+{
+  zmParseFuncCell *cp;
+
+  zListForEach( list, cp ){
+    printf( "[#%d] %s <%d>\n", cp->data.id, zName(&cp->data), cp->data.argc );
+    if( cp->data.cell )
+      _zmParseCellPrint( cp->data.cell, 0 );
+  }
+}
+#endif
+
+/* operator */
+
+zmParseOp *_zmParseOpFind(const char *str)
+{
+  zmParseOp *op;
+
+  for( op=(zmParseOp *)zm_parse_op; op->str; op++ ){
+    if( strcmp( op->str, str ) == 0 )
+      return op;
+  }
+  return NULL;
+}
+
+double _zmParseOpEval(zmParseOp *op, double arg1, double arg2)
+{
+  switch( op->type ){
+  case ZM_PARSE_OP_ADD: return arg1 + arg2;
+  case ZM_PARSE_OP_SUB: return arg1 - arg2;
+  case ZM_PARSE_OP_MUL: return arg1 * arg2;
+  case ZM_PARSE_OP_DIV:
+  case ZM_PARSE_OP_RAT:
+    return zIsTiny( arg2 ) ? ( arg2 >= 0 ? HUGE_VAL : -HUGE_VAL ) : arg1 / arg2;
+  case ZM_PARSE_OP_MOD: return (int)arg1 % (int)arg2;
+  case ZM_PARSE_OP_POW: return pow( arg1, arg2 );
+  case ZM_PARSE_OP_FCT: return zFacto( arg1 );
+  case ZM_PARSE_OP_COMMA: return arg1; /* dummy */
+  case ZM_PARSE_OP_SEP:   return arg1; /* dummy */
+  case ZM_PARSE_OP_LET:   return arg2; /* dummy */
+  default: ;
+  }
+  return 0;
+}
+
 /* token stack */
 
-char _zmParseParChar(zmParseStatus status)
+static char _zmParseParChar(zmParseStatus status)
 {
   switch( status ){
   case ZM_PARSE_IN_PAR:
@@ -507,7 +443,7 @@ char _zmParseParChar(zmParseStatus status)
   }
 }
 
-void _zmParseTokFree(zmParseTok *tok)
+static void _zmParseTokFree(zmParseTok *tok)
 {
   if( !tok ) return;
   if( tok->cell )
@@ -515,17 +451,17 @@ void _zmParseTokFree(zmParseTok *tok)
   zFree( tok );
 }
 
-int _zmParseTokLevel(zmParseTok *tok)
+static int _zmParseTokLevel(zmParseTok *tok)
 {
   return tok ? tok->level : 0;
 }
 
-zmParseStatus _zmParseTokStatus(zmParseTok *tok)
+static zmParseStatus _zmParseTokStatus(zmParseTok *tok)
 {
   return tok ? tok->status : ZM_PARSE_FLAT;
 }
 
-int _zmParseTokOpSpec(zmParseTok *tok)
+static int _zmParseTokOpSpec(zmParseTok *tok)
 {
   if( !tok )
     return ZM_PARSE_OP_INVALID;
@@ -535,7 +471,7 @@ int _zmParseTokOpSpec(zmParseTok *tok)
     ZM_PARSE_OP_INVALID : _zmParseTokOpSpec(tok->prev);
 }
 
-int _zmParseTokPriority(zmParseTok *tok)
+static int _zmParseTokPriority(zmParseTok *tok)
 {
   if( !tok )
     return ZM_PARSE_MAX_PRIORITY;
@@ -545,13 +481,13 @@ int _zmParseTokPriority(zmParseTok *tok)
     ZM_PARSE_MAX_PRIORITY : _zmParseTokPriority(tok->prev);
 }
 
-char *_zmParseTokStr(zmParseTok *tok)
+static char *_zmParseTokStr(zmParseTok *tok)
 {
   return tok ? _zmParseCellStr( tok->cell ) : zNullStr();
 }
 
 #ifdef DEBUG
-void _zmParseTokPrint(zmParseTok *tok) /* for debug */
+static void _zmParseTokPrint(zmParseTok *tok) /* for debug */
 {
   printf( "status = " );
   switch( tok->status ){
@@ -580,7 +516,7 @@ void _zmParseTokPrint(zmParseTok *tok) /* for debug */
 }
 #endif
 
-void _zmParseStackInit(zmParseTok *stack)
+static void _zmParseStackInit(zmParseTok *stack)
 {
   stack->status = ZM_PARSE_FLAT;
   stack->level = 0;
@@ -588,7 +524,7 @@ void _zmParseStackInit(zmParseTok *stack)
   stack->prev = NULL;
 }
 
-void _zmParseStackDestroy(zmParseTok *stack)
+static void _zmParseStackDestroy(zmParseTok *stack)
 {
   zmParseTok *tok;
 
@@ -600,7 +536,7 @@ void _zmParseStackDestroy(zmParseTok *stack)
 }
 
 #ifdef DEBUG
-void _zmParseStackPrint(zmParseTok *stack) /* for debug */
+static void _zmParseStackPrint(zmParseTok *stack) /* for debug */
 {
   zmParseTok *tok;
 
@@ -629,7 +565,7 @@ void zmParserDestroy(zmParser *parser)
   _zmParseFuncListDestroy( &parser->funclist );
 }
 
-zmParseTok *_zmParseTokAlloc(zmParser *parser, zmParseCellType type, char *str)
+static zmParseTok *_zmParseTokAlloc(zmParser *parser, zmParseCellType type, const char *str)
 {
   zmParseCell *cell;
   zmParseTok *tok;
@@ -650,7 +586,7 @@ zmParseTok *_zmParseTokAlloc(zmParser *parser, zmParseCellType type, char *str)
   return tok;
 }
 
-void _zmParseStackPush(zmParser *parser, zmParseTok *tok, int level, zmParseStatus status)
+static void _zmParseStackPush(zmParser *parser, zmParseTok *tok, int level, zmParseStatus status)
 {
   if( !tok ) return;
   tok->level = level;
@@ -659,7 +595,7 @@ void _zmParseStackPush(zmParser *parser, zmParseTok *tok, int level, zmParseStat
   parser->stack.prev = tok;
 }
 
-zmParseTok *_zmParseStackPop(zmParser *parser, zmParseTok *toknext)
+static zmParseTok *_zmParseStackPop(zmParser *parser, zmParseTok *toknext)
 {
   zmParseTok *tok;
 
@@ -671,13 +607,13 @@ zmParseTok *_zmParseStackPop(zmParser *parser, zmParseTok *toknext)
   return tok;
 }
 
-zmParseTok *_zmParseTokNum(zmParser *parser, char *str, char *tkn, size_t size)
+static zmParseTok *_zmParseTokNum(zmParser *parser, char *str, char *tkn, size_t size)
 {
   return *zSNumToken( str, tkn, size ) ?
     _zmParseTokAlloc( parser, ZM_PARSE_CELL_NUM, tkn ) : NULL;
 }
 
-zmParseTok *_zmParseTokVar(zmParser *parser, char *str, char *tkn, size_t size)
+static zmParseTok *_zmParseTokVar(zmParser *parser, char *str, char *tkn, size_t size)
 {
   char *cp, *sp;
 
@@ -690,7 +626,7 @@ zmParseTok *_zmParseTokVar(zmParser *parser, char *str, char *tkn, size_t size)
   return *tkn ? _zmParseTokAlloc( parser, ZM_PARSE_CELL_VAR, tkn ) : NULL;
 }
 
-zmParseTok *_zmParseTokOp(zmParser *parser, char *str, char *tkn, size_t size)
+static zmParseTok *_zmParseTokOp(zmParser *parser, char *str, char *tkn, size_t size)
 {
   zmParseOp *op;
   char *cp, *sp;
@@ -703,7 +639,7 @@ zmParseTok *_zmParseTokOp(zmParser *parser, char *str, char *tkn, size_t size)
     _zmParseTokAlloc( parser, ZM_PARSE_CELL_OP, tkn ) : NULL;
 }
 
-zmParseTok *_zmParseTokFunc(zmParser *parser, char *str, char *tkn, size_t size)
+static zmParseTok *_zmParseTokFunc(zmParser *parser, char *str, char *tkn, size_t size)
 {
   char *cp, *sp;
 
@@ -719,7 +655,7 @@ zmParseTok *_zmParseTokFunc(zmParser *parser, char *str, char *tkn, size_t size)
   return *tkn ? _zmParseTokAlloc( parser, ZM_PARSE_CELL_FUNC, tkn ) : NULL;
 }
 
-zmParseTok *_zmParseTokPar(zmParser *parser, char *str, char *tkn, size_t size)
+static zmParseTok *_zmParseTokPar(zmParser *parser, char *str, char *tkn, size_t size)
 {
   switch( *str ){
   case '(':
@@ -757,7 +693,7 @@ zmParseTok *_zmParseTokPar(zmParser *parser, char *str, char *tkn, size_t size)
   return NULL;
 }
 
-bool _zmParseStackPrefix(zmParser *parser, zmParseTok *toknext)
+static bool _zmParseStackPrefix(zmParser *parser, zmParseTok *toknext)
 {
   zmParseTok *op, *arg;
 
@@ -777,7 +713,7 @@ bool _zmParseStackPrefix(zmParser *parser, zmParseTok *toknext)
   return true;
 }
 
-bool _zmParseStackInfix(zmParser *parser, zmParseTok *toknext)
+static bool _zmParseStackInfix(zmParser *parser, zmParseTok *toknext)
 {
   zmParseTok *op, *arg1, *arg2;
 
@@ -802,7 +738,7 @@ bool _zmParseStackInfix(zmParser *parser, zmParseTok *toknext)
   return true;
 }
 
-bool _zmParseStackPreinfix(zmParser *parser, zmParseTok *toknext)
+static bool _zmParseStackPreinfix(zmParser *parser, zmParseTok *toknext)
 {
   zmParseTok *op, *arg1, *arg2;
 
@@ -829,7 +765,7 @@ bool _zmParseStackPreinfix(zmParser *parser, zmParseTok *toknext)
   return true;
 }
 
-bool _zmParseStackPostfix(zmParser *parser, zmParseTok *toknext)
+static bool _zmParseStackPostfix(zmParser *parser, zmParseTok *toknext)
 {
   zmParseTok *op, *arg;
 
@@ -849,7 +785,7 @@ bool _zmParseStackPostfix(zmParser *parser, zmParseTok *toknext)
   return true;
 }
 
-bool _zmParseStack(zmParser *parser, zmParseTok *toknext)
+static bool _zmParseStack(zmParser *parser, zmParseTok *toknext)
 {
   bool ret = true;
 
@@ -867,7 +803,7 @@ bool _zmParseStack(zmParser *parser, zmParseTok *toknext)
   return ret;
 }
 
-bool _zmParseIn(zmParser *parser, zmParseStatus status)
+static bool _zmParseIn(zmParser *parser, zmParseStatus status)
 {
   zmParseTok *tok, *tokpar;
 
@@ -903,7 +839,7 @@ bool _zmParseIn(zmParser *parser, zmParseStatus status)
   return true;
 }
 
-zmParseTok *_zmParsePar(zmParser *parser, zmParseTok *tok)
+static zmParseTok *_zmParsePar(zmParser *parser, zmParseTok *tok)
 {
   static zmParseTok tok_par;
 

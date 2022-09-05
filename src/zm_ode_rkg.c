@@ -12,9 +12,7 @@ typedef struct{
   zVec u, v; /* working space */
 } _zODE_RKG;
 
-/* zODEInit_RKG
- * - initialize ODE solver based on Runge-Kutta-Gill method.
- */
+/* initialize ODE solver based on Runge-Kutta-Gill method. */
 zODE* zODEInit_RKG(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_RKG *ws;
@@ -30,22 +28,18 @@ zODE* zODEInit_RKG(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,z
   return ode;
 }
 
-/* zODEDestroy_RKG
- * - destroy ODE solver.
- */
+/* destroy ODE solver. */
 void zODEDestroy_RKG(zODE *ode)
 {
   _zODE_RKG *ws;
 
-  ws = ode->_ws;
+  ws = (_zODE_RKG *)ode->_ws;
   zVecFreeAO( 2, ws->u, ws->v );
   zFree( ode->_ws );
   ode->f = NULL;
 }
 
-/* zODEUpdate_RKG
- * - directly integrate variable by ODE based on Runge-Kutta-Gill method.
- */
+/* directly integrate variable by ODE based on Runge-Kutta-Gill method. */
 zVec zODEUpdate_RKG(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_RKG *ws;
@@ -54,7 +48,7 @@ zVec zODEUpdate_RKG(zODE *ode, double t, zVec x, double dt, void *util)
   const double c2 = 1 + 0.5*r2;
   double dt1, dt2, dt3;
 
-  ws = ode->_ws;
+  ws = (_zODE_RKG *)ode->_ws;
   dt1 = 0.5 * dt;
   dt2 = c1 * dt;
   dt3 = c2 * dt;

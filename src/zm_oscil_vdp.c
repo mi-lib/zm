@@ -6,51 +6,37 @@
 
 #include <zm/zm_oscil.h>
 
-static void _zOscInitVDP(void *prp, double x0, double v0);
-static double _zOscUpdateVDP(void *prp, double u, double dt);
-static double _zOscOutputVDP(void *prp);
-
 typedef struct{
   double omega;  /* natural angular frequency */
   double eps;    /* damping coefficient */
   double amp;    /* output amplitude */
-
   double _x, _v; /* internal state */
 } zOscVDP;
 
-/* (static)
- * _zOscInitVDP
- * - initialize van der Pol's oscillator.
- */
-void _zOscInitVDP(void *prp, double x0, double v0)
+/* initialize van der Pol's oscillator. */
+static void _zOscInitVDP(void *prp, double x0, double v0)
 {
   ((zOscVDP *)prp)->_x = x0 / ((zOscVDP *)prp)->amp;
   ((zOscVDP *)prp)->_v = v0 / ((zOscVDP *)prp)->amp;
 }
 
-/* (static)
- * _zOscUpdateVDP
- * - update the internal state of van der Pol's oscillator.
- */
-double _zOscUpdateVDP(void *prp, double u, double dt)
+/* output a value of van der Pol's oscillator. */
+static double _zOscOutputVDP(void *prp)
+{
+  return ((zOscVDP *)prp)->amp * ((zOscVDP *)prp)->_x;
+}
+
+/* update the internal state of van der Pol's oscillator. */
+static double _zOscUpdateVDP(void *prp, double u, double dt)
 {
   zOscVDP *vdp;
   double a;
 
-  vdp = prp;
+  vdp = (zOscVDP *)prp;
   a = -vdp->omega * ( vdp->eps*( zSqr(vdp->_x) - 1 ) * vdp->_v + vdp->omega*vdp->_x ) - u;
   vdp->_v += a       * dt;
   vdp->_x += vdp->_v * dt;
   return _zOscOutputVDP( prp );
-}
-
-/* (static)
- * _zOscOutputVDP
- * - output a value of van der Pol's oscillator.
- */
-double _zOscOutputVDP(void *prp)
-{
-  return ((zOscVDP *)prp)->amp * ((zOscVDP *)prp)->_x;
 }
 
 static zOscCom _z_osc_com_vdp = {
@@ -59,9 +45,7 @@ static zOscCom _z_osc_com_vdp = {
   _zOscOutputVDP,
 };
 
-/* zOscCreateVDP
- * - create van der Pol's oscillator.
- */
+/* create van der Pol's oscillator. */
 zOsc *zOscCreateVDP(zOsc *osc, double t, double damp, double amp)
 {
   zOscVDP *vdp;

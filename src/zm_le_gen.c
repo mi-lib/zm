@@ -176,7 +176,7 @@ zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans)
 /* compute left-lower part of the linear equation. */
 static void _zLESolveMP1(zLE *le, zVec we, int rank)
 {
-  if( rank < zMatColSizeNC(le->l) ){
+  if( rank < (int)zMatColSizeNC(le->l) ){
     zMatColReg( le->l, rank );
     zMatRowReg( le->r, rank );
     zLESolveErrorMinDST( le->l, le->b, we, le->c, le );
@@ -245,7 +245,7 @@ zVec zLESolveMPSVD(zMat a, zVec b, zVec ans)
   sv = zVecAlloc( zMatRowSizeNC(a) );
   tmp = zVecAlloc( zMatRowSizeNC(a) );
   if( !u || !v || !sv || !tmp ) goto TERMINATE;
-  if( ( rank = zSVD( a, sv, u, v ) ) < zMatRowSizeNC(a) ){
+  if( ( rank = zSVD( a, sv, u, v ) ) < (int)zMatRowSizeNC(a) ){
     zMatColReg( u, rank );
     zMatRowReg( v, rank );
     zVecSetSize( sv, rank );
@@ -267,11 +267,12 @@ zVec zLESolveMPSVD(zMat a, zVec b, zVec ans)
  * (MP-inverse, pseudoinverse) based on LQ decomposition with the null space. */
 zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn)
 {
-  int i, rank;
+  int rank;
+  uint i;
   zLE le;
 
   if( !_zLEAllocLR( &le, a ) ) goto TERMINATE2;
-  if( ( rank = zMatDecompLQ( a, le.l, le.r, le.idx2 ) ) == 0 )
+  if( ( rank = zMatDecompLQ( a, le.l, le.r, le.idx2 ) ) <= 0 )
     goto TERMINATE2; /* extremely irregular case */
   if( !_zLEAllocMP( &le, b, rank ) ) goto TERMINATE1;
 
@@ -329,7 +330,7 @@ static bool _zLESolveSRSizeIsEqual(zMat a, zVec b, zVec wn, zVec we, zVec ans)
  * (SR-inverse) matrix (destructive). */
 zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zLE *le)
 {
-  int i;
+  uint i;
 
   if( we ) zVecAmpNCDRC( b, we );
   zMulMatTVecNC( a, b, le->v1 );
@@ -381,7 +382,7 @@ zVec zLESolveSRAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
  * inverse matrix (destructive). */
 zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLE *le)
 {
-  int i;
+  uint i;
 
   if( we ) zVecAmpNCDRC( b, we );
   zMulMatTVecNC( a, b, le->v1 );
