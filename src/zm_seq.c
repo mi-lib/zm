@@ -82,7 +82,7 @@ bool zSeqScanFile(zSeq *seq, char filename[])
 {
   FILE *fp;
 
-  if( !( fp = zOpenFile( filename, (char *)ZSEQ_SUFFIX, (char *)"r" ) ) )
+  if( !( fp = zOpenFile( filename, ZSEQ_SUFFIX, "r" ) ) )
     return false;
   zSeqFScan( fp, seq );
   fclose( fp );
