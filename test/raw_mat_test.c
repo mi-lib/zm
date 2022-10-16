@@ -7,9 +7,9 @@ void assert_get_put(void)
 {
   const int rowsize = MAT_ROW_SIZE;
   const int colsize = MAT_COL_SIZE;
-  double mat_test1[rowsize*colsize];
-  double mat_test2[rowsize*colsize];
-  double mat_test3[rowsize*colsize];
+  double mat_test1[MAT_ROW_SIZE * MAT_COL_SIZE];
+  double mat_test2[MAT_ROW_SIZE * MAT_COL_SIZE];
+  double mat_test3[MAT_ROW_SIZE * MAT_COL_SIZE];
   register int i, j;
   bool result;
 
@@ -64,9 +64,9 @@ void assert_arith(void)
 {
   const int rowsize = MAT_ROW_SIZE;
   const int colsize = MAT_COL_SIZE;
-  double mat_test1[rowsize*colsize];
-  double mat_test2[rowsize*colsize];
-  double mat_test3[rowsize*colsize];
+  double mat_test1[MAT_ROW_SIZE * MAT_COL_SIZE];
+  double mat_test2[MAT_ROW_SIZE * MAT_COL_SIZE];
+  double mat_test3[MAT_ROW_SIZE * MAT_COL_SIZE];
   double k;
   register int i, j;
   bool result;
@@ -147,8 +147,8 @@ void assert_transpose(void)
 {
   const int rowsize = MAT_ROW_SIZE;
   const int colsize = MAT_COL_SIZE;
-  double mat_test1[colsize*rowsize];
-  double mat_test2[rowsize*colsize];
+  double mat_test1[MAT_COL_SIZE * MAT_ROW_SIZE];
+  double mat_test2[MAT_ROW_SIZE * MAT_COL_SIZE];
   double tr;
   register int i, j;
   bool result;
