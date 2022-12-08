@@ -130,3 +130,22 @@ zIndex zDataSortIndex(double data[], size_t n, zIndex index)
   zQuickSort( zArrayBuf(index), zArraySize(index), sizeof(int), _zDataSortIndexCmp, data );
   return index;
 }
+
+/* an internal comparison function for zDataSortAbsIndex. */
+static int _zDataSortAbsIndexCmp(void *i1, void *i2, void *priv)
+{
+  double d1, d2;
+
+  d1 = fabs( ((double *)priv)[*(int*)i1] );
+  d2 = fabs( ((double *)priv)[*(int*)i2] );
+  if( d1 < d2 ) return 1;
+  if( d1 > d2 ) return -1;
+  return 0;
+}
+
+/* sort an integer vector in the descent order of absolute values of the corresponding samples. */
+zIndex zDataSortAbsIndex(double data[], size_t n, zIndex index)
+{
+  zQuickSort( zArrayBuf(index), zArraySize(index), sizeof(int), _zDataSortAbsIndexCmp, data );
+  return index;
+}

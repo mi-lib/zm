@@ -3,10 +3,62 @@
 #define DIM 7
 #define TOL 1.0e-7
 
+double pex_val1(zPex p, double arg)
+{
+  int i, n;
+  double val = 0, b;
+
+  if( arg == 0 ) return zPexCoeff( p, 0 );
+  n = zPexDim(p);
+  if( fabs(arg) < 1.0 )
+    for( i=n, b=pow(arg,n); i>=0; i--, b/=arg )
+      val += zPexCoeff(p,i) * b;
+  else
+    for( i=0, b=1.0; i<=n; i++, b*=arg )
+      val += zPexCoeff(p,i) * b;
+  return val;
+}
+
+double pex_val2(zPex p, double arg)
+{
+  int i, n;
+  double val;
+
+  if( arg == 0 ) return zPexCoeff( p, 0 );
+  n = zPexDim(p);
+  for( val=zPexCoeff(p,n), i=n-1; i>=0; i-- )
+    val = val * arg + zPexCoeff(p,i);
+  return val;
+}
+
+double pex_val3(zPex p, double arg)
+{
+  int i, n;
+  double val, b, *term;
+  zIndex index;
+
+  if( arg == 0 ) return zPexCoeff( p, 0 );
+  n = zPexDim(p);
+  if( !( term = zAlloc( double, n+1 ) ) ) return NAN;
+  if( !( index = zIndexAlloc( n+1 ) ) ){
+    zIndexFree( index );
+    return NAN;
+  }
+  zIndexOrder( index, 0 );
+  for( i=0, b=1.0; i<=n; i++, b*=arg )
+    term[i] = zPexCoeff(p,i) * b;
+  zDataSortAbsIndex( term, n+1, index );
+  for( val=0, i=n; i>=0; i-- )
+    val += term[zIndexElemNC(index,i)];
+  zIndexFree( index );
+  free( term );
+  return val;
+}
+
 void assert_pex_val(void)
 {
   zPex p;
-  double x, val;
+  double x;
   register int i, n;
   bool result = true;
 
@@ -14,8 +66,7 @@ void assert_pex_val(void)
   n = 100;
   for( i=0; i<=n; i++ ){
     x = 5.0*i/n - 2.0;
-    val = ((zPexCoeff(p,3)*x+zPexCoeff(p,2))*x+zPexCoeff(p,1))*x+zPexCoeff(p,0);
-    if( !zIsEqual( zPexVal(p,x), val, zTOL ) ) result = false;
+    if( !zIsEqual( zPexVal(p,x), pex_val3(p,x), zTOL ) ) result = false;
   }
   zPexFree( p );
   zAssert( zPexVal, result );

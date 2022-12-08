@@ -1,5 +1,9 @@
 PREFIX=$(HOME)/usr
 PROJNAME=zm
+<<<<<<< HEAD
 VERSION=1.4.11
+=======
+VERSION=1.4.12
+>>>>>>> asm
 
 DEPENDENCY="zeda=1.6.29"

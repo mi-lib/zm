@@ -25,6 +25,9 @@ __EXPORT zIndex zDataPeakSG(double src[], size_t n, size_t w, uint dim);
 /*! \brief sort an integer vector in the descent order of the corresponding samples. */
 __EXPORT zIndex zDataSortIndex(double data[], size_t n, zIndex index);
 
+/*! \brief sort an integer vector in the descent order of absolute values of the corresponding samples. */
+__EXPORT zIndex zDataSortAbsIndex(double data[], size_t n, zIndex index);
+
 __END_DECLS
 
 #include <zm/zm_data_fft.h>

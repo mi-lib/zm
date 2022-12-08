@@ -126,8 +126,8 @@ static void _zBalancingMatDST(zMat m1, zMat m2, zVec s)
 /* inner operation of zMulInvMatMat and zMulMatInvMat. */
 static zMat _zMulInvMat(zMat m1, zMat m2, zMat m, zIndex idx, zVec s)
 {
-  uint i, j, k;
-  uint n, p, q;
+  int i, j, k;
+  int n, p, q;
   double head;
   double x;
 

@@ -30,7 +30,6 @@ void assert_mpnull(void)
   mat_deg( a, R );
   mp = zMatAlloc( M, N );
   mn = zMatAlloc( M, M );
-
   zMPInvNull( a, mp, mn );
 
   v = zVecAlloc( M );

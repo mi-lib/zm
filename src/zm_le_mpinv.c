@@ -65,9 +65,9 @@ int zMPInvNull(zMat m, zMat mp, zMat mn)
 
   if( ( rank = _zMPInvAllocWork1( m, &l, &q, &idx ) ) < 0 ) return -1;
   if( _zMPInvAllocWork2( rank, zMatRowSizeNC(l), &tmp1, &tmp2, &tmp3 ) < 0 ) return -1;
-  if( zMatIsSqr(l) )
+  if( zMatIsSqr(l) ){
     zMatInv( l, tmp3 );
-  else{
+  } else{
     zMatT( l, tmp1 );
     zMulMatTMat( l, l, tmp2 );
     zMulInvMatMat( tmp2, tmp1, tmp3 );
