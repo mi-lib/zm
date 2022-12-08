@@ -251,7 +251,7 @@ zPex zPexCExp(zCVec factor)
 /* modulo of a primary expression. */
 zPex zPexModulo(zPex p1, double a, zPex p2)
 {
-  uint i, j;
+  int i, j;
 
   if( !zPexCopy( p1, p2 ) ){
     ZRUNERROR( ZM_ERR_PEX_DIMMIS );
@@ -292,18 +292,12 @@ zPex zPexIntg(zPex p)
 /* evaluate a polynomial expression given an argument. */
 double zPexVal(zPex p, double arg)
 {
-  int n;
-  uint i;
-  double val = 0, term;
+  int i;
+  double val;
 
   if( arg == 0 ) return zPexCoeff( p, 0 );
-  n = zPexDim(p);
-  if( fabs(arg) < 1.0 )
-    for( i=n, term=pow(arg,n); i>=0; i--, term/=arg )
-      val += zPexCoeff(p,i) * term;
-  else
-    for( i=0, term=1.0; i<=(uint)n; i++, term*=arg )
-      val += zPexCoeff(p,i) * term;
+  for( val=zPexCoeff(p,zPexDim(p)), i=zPexDim(p)-1; i>=0; i-- )
+    val = val * arg + zPexCoeff(p,i);
   return val;
 }
 
