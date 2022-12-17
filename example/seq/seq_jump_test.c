@@ -4,13 +4,14 @@ int main(void)
 {
   zSeq seq;
   zSeqListCell *cp;
-  register int i;
+  register int i=0;
 
   zSeqScanFile( &seq, "test" );
-  for( i=0; i<zListNum(&seq)+1; i++ ){
-    if( !( cp = zSeqJump( &seq, i ) ) ) continue;
+  zListForEach( &seq, cp ){
+    if( !cp ) continue;
     printf( "jump to->%2d : %f ", i, cp->data.dt );
     zVecPrint( cp->data.v );
+    i++;
   }
   zSeqFree( &seq );
   return 0;

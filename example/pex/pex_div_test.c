@@ -23,7 +23,7 @@ int main(void)
   zEndl();
   printf( "f(x)Q(x) + R(x) = " );
   zPexExprX( g );
-  printf( "%s\n", zBoolStr( zPexIsEqual( p, g ) ) );
+  printf( "%s\n", zBoolStr( zPexIsEqual( p, g, zTOL ) ) );
 
   zPexFree( p );
   zPexFree( f );

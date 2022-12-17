@@ -34,14 +34,14 @@ int main(void)
   zMPInv( m1, mp );
   zMulMatMat( mp, m2, ma );
   zMulMPInvMatMat( m1, m2, mb );
-  printf( "M1^# M2 vs M1^# M2 test: %s.\n", zMatIsEqual(ma,mb) ? "ok" : "error" );
+  printf( "M1^# M2 vs M1^# M2 test: %s.\n", zMatIsEqual(ma,mb,zTOL) ? "ok" : "error" );
 
   zLESolveMP( m1, v1, NULL, NULL, v2 );
   zMulMatVec( mp, v1, v3 );
-  printf( "M1^# v  vs M1^# v  test: %s.\n", zVecIsEqual(v2,v3) ? "ok" : "error" );
+  printf( "M1^# v  vs M1^# v  test: %s.\n", zVecIsEqual(v2,v3,zTOL) ? "ok" : "error" );
 
   zMatGetCol( ma, 0, v3 );
-  printf( "c(M1^# M2,1) vs M1^# v test: %s.\n", zVecIsEqual(v2,v3) ? "ok" : "error" );
+  printf( "c(M1^# M2,1) vs M1^# v test: %s.\n", zVecIsEqual(v2,v3,zTOL) ? "ok" : "error" );
 
   zMatFreeAO( 5, m1, m2, ma, mb, mp );
   zVecFreeAO( 3, v1, v2, v3 );

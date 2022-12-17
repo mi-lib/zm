@@ -20,7 +20,8 @@ void reg_tf_def(ZTK *ztk)
   char *key[] = {
     "complex",
   };
-  ZTKDefReg( ztk, "val", key );
+  /* @TODO Fix */
+  /* ZTKDefReg(ztk, "val", key); */
 }
 
 int main(int argc, char *argv[])
@@ -32,9 +33,9 @@ int main(int argc, char *argv[])
   ZTKInit( &ztk );
   reg_tf_def( &ztk );
 
-  eprintf("\nparsing...\n");
+  eprintf("\nparsing...%s\n","");
   ZTKParse( &ztk, argv[1] );
-  eprintf("done.\n\n");
+  eprintf("done.\n\n&s","");
   eval_test( &ztk );
 
   ZTKDestroy( &ztk );
