@@ -1,3 +1,4 @@
+2023. 1. 6. Added zRRTFindPath, renamed zRRTConnect to zRRTFindPathDual, debugged zRRTEsc and renamed it to zRRTEscape (thanks to Kazuma Tabuchi). [zm_rrt]
 2022.12.23. Fixed config.org (thanks to Ryoichi Kuratani). [config]
 2022.12. 7. Added _zDataSortAbsIndexCmp and zDataSortAbsIndex. [zm_data]
 2022.12. 7. Reimplemented zPexVal based on Horner method. [zm_pex]

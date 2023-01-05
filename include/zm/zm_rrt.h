@@ -2,7 +2,7 @@
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  */
 /*! \file zm_rrt.h
- * \brief RRT
+ * \brief Rapidly-explored Random Tree algorithm and its family.
  * \author Zhidao
  */
 
@@ -20,34 +20,53 @@ __BEGIN_DECLS
 /*! \brief RRT node class to construct open tree
  */
 typedef struct _zRRTNode{
-  struct _zRRTNode *parent; /*!< a pointer to the parent */
-  zVec v;                   /*! data vector */
+  zVec v;                   /*!< a point vector */
+  struct _zRRTNode *parent; /*!< pointer to the parent node */
 } zRRTNode;
 
 /*! \brief RRT node list */
 zListClass( zRRTList, zRRTListCell, zRRTNode );
 
-/*! \brief RRT solver */
+/*! \brief data structure for RRT family */
 typedef struct{
   zRRTList slist; /*!< RRT from start node */
-  zRRTList glist; /*!< RRT from goal node */
+  zRRTList glist; /*!< RRT from goal node (for RRT-connect) */
   zVec min;       /*!< minimum bound of vectors */
   zVec max;       /*!< maximum bound of vectors */
   double eps;     /*!< delta length for extend-tree operation */
 
-  double (* dist)(zVec,zVec,void*); /* distance function to define the metric */
-  zVec (* ext)(zVec,zVec,double,zVec,void*); /* extension function */
-  bool (* chk)(zVec,void*); /* feasibility checking function */
+  /*! \cond */
+  double (* _distance)(zVec,zVec,void*); /* distance function to define metric */
+  zVec (* _extend)(zVec,zVec,double,zVec,void*); /* extension function */
+  bool (* _check_collision)(zVec,void*); /* collision-check function */
+  bool (* _check_goal)(zVec,void*); /* goal-check function */
+  /*! \endcond */
 } zRRT;
 
-__EXPORT void zRRTInit(zRRT *rrt, zVec min, zVec max, double eps, double (* dist)(zVec,zVec,void*), zVec (* ext)(zVec,zVec,double,zVec,void*), bool (* chk)(zVec,void*));
+/*! \brief set the distance function. */
+#define zRRTSetDistanceFunc(rrt,f)       ( (rrt)->_distance = (f) )
+/*! \brief set the extension function. */
+#define zRRTSetExtendFunc(rrt,f)         ( (rrt)->_extend = (f) )
+/*! \brief set the collision-check function. */
+#define zRRTSetCheckCollisionFunc(rrt,f) ( (rrt)->_check_collision = (f) )
+/*! \brief set the goal-check function (for the original RRT). */
+#define zRRTSetCheckGoalFunc(rrt,f)      ( (rrt)->_check_goal = (f) )
+
+/*! \brief initialize RRTs. */
+__EXPORT void zRRTInit(zRRT *rrt, zVec min, zVec max, double eps, double (* distance)(zVec,zVec,void*), zVec (* extend)(zVec,zVec,double,zVec,void*), bool (* chk_collision)(zVec,void*), bool (* chk_goal)(zVec,void*));
+/*! \brief destroy RRTs. */
 __EXPORT void zRRTDestroy(zRRT *rrt);
 
-__EXPORT bool zRRTConnect(zRRT *rrt, zVec start, zVec goal, int iter, void *util, zVecList *path);
-__EXPORT void zRRTPathShortcut(zRRT *rrt, void *util, zVecList *path);
+/*! \brief find a path based on the RRT algorithm. */
+__EXPORT bool zRRTFindPath(zRRT *rrt, zVec start, int iter, void *util, zVecList *path);
+/*! \brief find a path based on the RRT-connect algorithm. */
+__EXPORT bool zRRTFindPathDual(zRRT *rrt, zVec start, zVec goal, int iter, void *util, zVecList *path);
 
-/*! \brief RRT-Escapement solver (proposed by Y. Shimizu in 2012) */
-__EXPORT bool zRRTEsc(zRRT *rrt, zVec start, int iter, void *util, zVec goal);
+/*! \brief a postprocess for RRT family to shortcut a path. */
+__EXPORT void zRRTShortcutPath(zRRT *rrt, void *util, zVecList *path);
+
+/*! \brief RRT-escapement algorithm to find a collision-free point proposed by Y. Shimizu in 2012. */
+__EXPORT bool zRRTEscape(zRRT *rrt, zVec start, int iter, void *util, zVec goal);
 
 /*! \} */
 
