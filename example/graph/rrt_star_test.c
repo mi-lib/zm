@@ -15,6 +15,12 @@ bool testchk(zVec v, void *util)
   return false;
 }
 
+bool testgoal(zVec v, void *util)
+{
+  return zVecElem(v,0) > -10 && zVecElem(v,0) < -9 &&
+         zVecElem(v,1) >   9 && zVecElem(v,1) < 10 ? true : false;
+}
+
 void output_wall(FILE *fp)
 {
   /* wall 1 */
@@ -42,7 +48,7 @@ int main(int argc, char *argv[])
   zRRT rrt;
   zRRTListCell *rc;
   zVecList path;
-  zVec min, max, start, goal;
+  zVec min, max, start;
   double cost;
   FILE *fp;
 
@@ -50,9 +56,8 @@ int main(int argc, char *argv[])
   min = zVecCreateList( 2,-10.0,-10.0 );
   max = zVecCreateList( 2, 10.0, 10.0 );
   start = zVecCreateList( 2, 9.0, -9.0 );
-  goal = zVecCreateList( 2,-9.0, 9.0 );
-  zRRTInit( &rrt, min, max, 0.5, NULL, NULL, testchk, NULL );
-  zRRTFindPathDual( &rrt, start, goal, 0, NULL, &path, &cost );
+  zRRTInit( &rrt, min, max, 0.5, NULL, NULL, testchk, testgoal );
+  zRRTFindPathOpt( &rrt, start, 0, NULL, &path, &cost );
   printf( "cost: %g\n", cost );
 
   fp = fopen( "a", "w" );
@@ -64,22 +69,7 @@ int main(int argc, char *argv[])
   }
   fclose( fp );
 
-  fp = fopen( "b", "w" );
-  zListForEach( &rrt.glist, rc ){
-    if( !rc->data.parent ) continue;
-    zVecDataFPrint( fp, rc->data.parent->v );
-    zVecDataFPrint( fp, rc->data.v );
-    fprintf( fp, "\n" );
-  }
-  fclose( fp );
-
   fp = fopen( "c", "w" );
-  zVecListFPrint( fp, &path );
-  fclose( fp );
-
-  zRRTShortcutPath( &rrt, NULL, &path, &cost );
-  printf( "cost: %g\n", cost );
-  fp = fopen( "d", "w" );
   zVecListFPrint( fp, &path );
   fclose( fp );
 
@@ -89,6 +79,6 @@ int main(int argc, char *argv[])
 
   zRRTDestroy( &rrt );
   zVecListDestroy( &path );
-  zVecFreeAO( 4, min, max, start, goal );
+  zVecFreeAO( 3, min, max, start );
   return 0;
 }

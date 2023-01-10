@@ -210,7 +210,7 @@ __EXPORT zVec zVecSwap(zVec v, uint i1, uint i2);
  */
 __EXPORT void zVecSort(zVec v, zIndex idx);
 
-/*! \brief maximum, minimum, mean and variance of vector elements.
+/*! \brief maximum, minimum, summation, mean and variance of vector elements.
  *
  * zVecMax() and zVecMin() gets the maximum and minimum component
  * of all components of the vector \a v, respectively.
@@ -225,13 +225,21 @@ __EXPORT void zVecSort(zVec v, zIndex idx);
  * zVecMax(), zVecMin(), zVecAbsMax(), zVecAbsMin(), zVecSum(),
  * zVecMean() and zVecVar() return the results.
  */
-#define zVecMax(v,i)    zDataMax( zVecBuf(v), zVecSizeNC(v), i )
-#define zVecMin(v,i)    zDataMin( zVecBuf(v), zVecSizeNC(v), i )
-#define zVecAbsMax(v,i) zDataAbsMax( zVecBuf(v), zVecSizeNC(v), i )
-#define zVecAbsMin(v,i) zDataAbsMin( zVecBuf(v), zVecSizeNC(v), i )
-#define zVecSum(v)      zDataSum( zVecBuf(v), zVecSizeNC(v) )
-#define zVecMean(v)     zDataMean( zVecBuf(v), zVecSizeNC(v) )
-#define zVecVar(v)      zDataVar( zVecBuf(v), zVecSizeNC(v) )
+#define _zVecMax(v,im)    zDataMax( zVecBuf(v), zVecSizeNC(v), im )
+#define _zVecMin(v,im)    zDataMin( zVecBuf(v), zVecSizeNC(v), im )
+#define _zVecAbsMax(v,im) zDataAbsMax( zVecBuf(v), zVecSizeNC(v), im )
+#define _zVecAbsMin(v,im) zDataAbsMin( zVecBuf(v), zVecSizeNC(v), im )
+#define _zVecSum(v)       zDataSum( zVecBuf(v), zVecSizeNC(v) )
+#define _zVecMean(v)      zDataMean( zVecBuf(v), zVecSizeNC(v) )
+#define _zVecVar(v)       zDataVar( zVecBuf(v), zVecSizeNC(v) )
+
+__EXPORT double zVecMax(zVec v, int *im);
+__EXPORT double zVecMin(zVec v, int *im);
+__EXPORT double zVecAbsMax(zVec v, int *im);
+__EXPORT double zVecAbsMin(zVec v, int *im);
+__EXPORT double zVecSum(zVec v);
+__EXPORT double zVecMean(zVec v);
+__EXPORT double zVecVar(zVec v);
 
 /*! \brief check if a value is included in a vector.
  *

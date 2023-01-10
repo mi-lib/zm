@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
   zRRTListCell *rc;
   zVecList path;
   zVec min, max, start;
+  double cost;
   FILE *fp;
 
   zRandInit();
@@ -56,7 +57,8 @@ int main(int argc, char *argv[])
   max = zVecCreateList( 2, 10.0, 10.0 );
   start = zVecCreateList( 2, 9.0, -9.0 );
   zRRTInit( &rrt, min, max, 0.5, NULL, NULL, testchk, testgoal );
-  zRRTFindPath( &rrt, start, 0, NULL, &path );
+  zRRTFindPath( &rrt, start, 0, NULL, &path, &cost );
+  printf( "cost: %g\n", cost );
 
   fp = fopen( "a", "w" );
   zListForEach( &rrt.slist, rc ){
@@ -71,7 +73,8 @@ int main(int argc, char *argv[])
   zVecListFPrint( fp, &path );
   fclose( fp );
 
-  zRRTShortcutPath( &rrt, NULL, &path );
+  zRRTShortcutPath( &rrt, NULL, &path, &cost );
+  printf( "cost: %g\n", cost );
   fp = fopen( "d", "w" );
   zVecListFPrint( fp, &path );
   fclose( fp );

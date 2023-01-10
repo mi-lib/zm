@@ -21,6 +21,8 @@ __BEGIN_DECLS
  */
 typedef struct _zRRTNode{
   zVec v;                   /*!< a point vector */
+  double cost_edge;         /*!< edge cost to the parent */
+  double cost_total;        /*!< total cost */
   struct _zRRTNode *parent; /*!< pointer to the parent node */
 } zRRTNode;
 
@@ -57,13 +59,33 @@ __EXPORT void zRRTInit(zRRT *rrt, zVec min, zVec max, double eps, double (* dist
 /*! \brief destroy RRTs. */
 __EXPORT void zRRTDestroy(zRRT *rrt);
 
-/*! \brief find a path based on the RRT algorithm. */
-__EXPORT bool zRRTFindPath(zRRT *rrt, zVec start, int iter, void *util, zVecList *path);
-/*! \brief find a path based on the RRT-connect algorithm. */
-__EXPORT bool zRRTFindPathDual(zRRT *rrt, zVec start, zVec goal, int iter, void *util, zVecList *path);
+/*! \brief find a path based on the RRT algorithm.
+ *
+ * The original paper about the algorithm is:
+ * Rapidly-exploring random trees: A new tool for path planning. S. M. LaValle. TR 98-11,
+ * Computer Science Dept., Iowa State University, October 1998.
+ */
+__EXPORT bool zRRTFindPath(zRRT *rrt, zVec start, int iter, void *util, zVecList *path, double *cost);
+
+/*! \brief find the optimum path based on the RRT* algorithm.
+ *
+ * The original paper about the algorithm is:
+ * Sampling-based Algorithms for Optimal Motion Planning. Sertac Karaman and Emilio Frazzoli.
+ * arXiv:1105.1186
+ */
+__EXPORT bool zRRTFindPathOpt(zRRT *rrt, zVec start, int iter, void *util, zVecList *path, double *cost);
+
+/*! \brief find a path based on the RRT-connect algorithm.
+ *
+ * The original paper about the algorithm is:
+ * RRT-connect: An efficient approach to single-query path planning. J. J. Kuffner and
+ * S. M. LaValle. In Proceedings IEEE International Conference on Robotics and Automation,
+ * pp. 995-1001, 2000.
+ */
+__EXPORT bool zRRTFindPathDual(zRRT *rrt, zVec start, zVec goal, int iter, void *util, zVecList *path, double *cost);
 
 /*! \brief a postprocess for RRT family to shortcut a path. */
-__EXPORT void zRRTShortcutPath(zRRT *rrt, void *util, zVecList *path);
+__EXPORT bool zRRTShortcutPath(zRRT *rrt, void *util, zVecList *path, double *cost);
 
 /*! \brief RRT-escapement algorithm to find a collision-free point proposed by Y. Shimizu in 2012. */
 __EXPORT bool zRRTEscape(zRRT *rrt, zVec start, int iter, void *util, zVec goal);

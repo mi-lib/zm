@@ -249,6 +249,21 @@ void zVecSort(zVec v, zIndex idx)
   zQuickSort( zVecBufNC(idx), zArraySize(idx), sizeof(int), _zVecSortCmp, zVecBufNC(v) );
 }
 
+/* maximum of vector elements. */
+double zVecMax(zVec v, int *im){ return _zVecMax( v, im ); }
+/* minimum of vector elements. */
+double zVecMin(zVec v, int *im){ return _zVecMin( v, im ); }
+/* absolute maximum of vector elements. */
+double zVecAbsMax(zVec v, int *im){ return _zVecAbsMax( v, im ); }
+/* absolute minimum of vector elements. */
+double zVecAbsMin(zVec v, int *im){ return _zVecAbsMin( v, im ); }
+/* summation of vector elements. */
+double zVecSum(zVec v){ return _zVecSum( v ); }
+/* mean of vector elements. */
+double zVecMean(zVec v){ return _zVecMean( v ); }
+/* variance of vector elements. */
+double zVecVar(zVec v){ return _zVecVar( v ); }
+
 /* check if two vectors are equal. */
 bool zVecIsEqual(zVec v1, zVec v2, double tol)
 {

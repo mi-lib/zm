@@ -1,3 +1,8 @@
+2023. 1.10. Added zRRTFindPathOpt. [zm_rrt]
+2023. 1.10. Added _zRRTFindPath, and reimplemented zRRTFindPath. [zm_rrt]
+2023. 1. 9. Modified zRRTShortcutPath to return a boolean value. [zm_rrt]
+2023. 1. 9. Reimplemented zVecMax, zVecMin, zVecAbsMax, zVecAbsMin, zVecSum, zVecMean, and zVecVar. [zm_vec]
+2023. 1. 9. Debugged zRRTFindPath and zRRTFindPathDual. [zm_rrt]
 2023. 1. 6. Added zRRTFindPath, renamed zRRTConnect to zRRTFindPathDual, debugged zRRTEsc and renamed it to zRRTEscape (thanks to Kazuma Tabuchi). [zm_rrt]
 2022.12.23. Fixed config.org (thanks to Ryoichi Kuratani). [config]
 2022.12. 7. Added _zDataSortAbsIndexCmp and zDataSortAbsIndex. [zm_data]
