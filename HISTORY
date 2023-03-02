@@ -1,3 +1,4 @@
+2023. 3. 3. Modified __huge_val and __nan_val with the new definition of __EXPORT. [zm_ieee]
 2023. 1.10. Added zRRTFindPathOpt. [zm_rrt]
 2023. 1.10. Added _zRRTFindPath, and reimplemented zRRTFindPath. [zm_rrt]
 2023. 1. 9. Modified zRRTShortcutPath to return a boolean value. [zm_rrt]
