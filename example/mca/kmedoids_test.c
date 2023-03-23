@@ -1,5 +1,4 @@
 #include <zm/zm_mca.h>
-#include <zm/zm_rand.h>
 
 void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax, double ymax)
 {
@@ -15,18 +14,29 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
     xc = zRandF( xmin, xmax );
     yc = zRandF( ymin, ymax );
     for( j=0; j<np; j++ ){
-      r = zRandND( NULL, 0, 0.5*rmax );
-      t = zRandF( 0, zPIx2 );
+      r = zRandF(0,rmax);
+      t = zRandF(0,zPIx2);
       zVecSetElem( vc, 0, xc + r * cos(t) );
       zVecSetElem( vc, 1, yc + r * sin(t) );
       zVecListInsertHead( vl, vc );
     }
   }
+#if 1
+  /* outliers */
+  zVecSetElemList( vc, 2, xmin, ymin );
+  zVecListInsertHead( vl, vc );
+  zVecSetElemList( vc, 2, xmax, ymax );
+  zVecListInsertHead( vl, vc );
+  zVecSetElemList( vc, 2, xmax, ymin );
+  zVecListInsertHead( vl, vc );
+  zVecSetElemList( vc, 2, xmin, ymax);
+  zVecListInsertHead( vl, vc );
+#endif
   zVecFree( vc );
 }
 
 #define NP 1000
-#define NC 10
+#define NC 6
 
 int main(int argc, char *argv[])
 {
@@ -41,11 +51,10 @@ int main(int argc, char *argv[])
   np = argc > 1 ? atoi( argv[1] ) : NP;
   nc = argc > 2 ? atoi( argv[2] ) : NC;
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
-  zMClusterInit( &mc, 2, NULL, 2, NULL );
-  printf( "X-means completed in %d times of iteration.\n",
-    zMClusterXMeansBIC( &mc, &points, NULL, NULL ) );
+  zMClusterInit( &mc, 2, 2 );
+  printf( "K-medoids completed in %d times of iteration.\n", zMClusterKMedoids( &mc, &points, nc ) );
 
-  zListForEach( &mc.cl, vcc ){
+  zListForEach( zMClusterClusterList(&mc), vcc ){
     sprintf( filename, "%d", i++ );
     fp = fopen( filename, "w" );
     zClusterDataFPrint( fp, &vcc->data );

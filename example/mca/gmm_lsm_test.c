@@ -1,7 +1,7 @@
 #include <zm/zm_mca.h>
 #include <zm/zm_rand.h>
 
-zVec errorLSM(zVec p, zVec mean, void *dummy, zVec err)
+zVec errorLSM(zClusterMethod *cm, zVec p, zVec mean, void *dummy, zVec err)
 {
   double xm, e;
 
@@ -13,7 +13,7 @@ zVec errorLSM(zVec p, zVec mean, void *dummy, zVec err)
   return err;
 }
 
-zVec meanLSM(zVecList *pl, void *dummy, zVec mean)
+zVec meanLSM(zClusterMethod *cm, zVecList *pl, void *dummy, zVec mean)
 {
   zVecListCell *vc;
   zMat c;
@@ -41,7 +41,7 @@ zVec meanLSM(zVecList *pl, void *dummy, zVec mean)
   return mean;
 }
 
-zVec meanlLSM(zVecList *pl, double load[], double n, void *dummy, zVec mean)
+zVec meanlLSM(zClusterMethod *cm, zVecList *pl, double load[], double n, void *dummy, zVec mean)
 {
   zVecListCell *vc;
   zMat c;
@@ -152,8 +152,8 @@ int main(int argc, char *argv[])
   gen_vec( &points, np, nc, 0, 0, 0, 10, 10, 10 );
   vec_output( &points );
 
-  zGMMInit( &gmm, nc, 3, meanLSM, meanlLSM, 1, errorLSM );
-  zGMMCreateEM( &gmm, &points, nc, NULL, NULL );
+  zGMMInit( &gmm, nc, 3, meanLSM, NULL, meanlLSM, NULL, 1, errorLSM, NULL, NULL, NULL );
+  zGMMCreateEM( &gmm, &points, nc );
   gmm_output( &gmm );
   zGMMDestroy( &gmm );
   zVecListDestroy( &points );

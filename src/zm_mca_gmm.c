@@ -37,15 +37,15 @@ void zGMMUnitFree(zGMMUnit *gu)
 }
 
 /* estimate a unit Gaussian function from a cluster of points. */
-static void _zGMMUnitEstim(zGMMUnit *gu, zVecList *points, zClusterMethod *met, void *mean_util, void *err_util)
+static void _zGMMUnitEstim(zGMMUnit *gu, zVecList *points, zClusterMethod *method)
 {
   zVecListCell *pc;
 
-  met->_mean_fp( points, mean_util, gu->mean );
+  method->core_fp( method, points, method->core_util, gu->mean );
   zMatZero( gu->cov );
   zListForEach( points, pc ){
-    met->_error_fp( pc->data, gu->mean, err_util, met->_err );
-    zMatAddDyadNC( gu->cov, met->_err, met->_err );
+    method->error_fp( method, pc->data, gu->mean, method->error_util, method->error );
+    zMatAddDyadNC( gu->cov, method->error, method->error );
   }
   zMatDivNCDRC( gu->cov, zListSize(points) );
   if( zIsTiny( gu->_cov_det = zMatDet( gu->cov ) ) )
@@ -55,26 +55,26 @@ static void _zGMMUnitEstim(zGMMUnit *gu, zVecList *points, zClusterMethod *met, 
 }
 
 /* Gaussian probability density function. */
-static double _zGMMUnitPDF(zGMMUnit *gu, zVec p, zClusterMethod *met, void *err_util)
+static double _zGMMUnitPDF(zGMMUnit *gu, zVec p, zClusterMethod *method)
 {
-  met->_error_fp( p, gu->mean, err_util, met->_err );
-  zMulMatVec( gu->_cov_inv, met->_err, gu->_ci_e );
+  method->error_fp( method, p, gu->mean, method->error_util, method->error );
+  zMulMatVec( gu->_cov_inv, method->error, gu->_ci_e );
   return zIsTiny(gu->_cov_det) ? 1.0 :
-    exp( -0.5*zVecInnerProd( met->_err, gu->_ci_e ) )
-      / sqrt( pow(zPIx2,met->_errorsize) * gu->_cov_det );
+    exp( -0.5*zVecInnerProd( method->error, gu->_ci_e ) )
+      / sqrt( pow(zPIx2,zVecSizeNC(method->error)) * gu->_cov_det );
 }
 
 /* a loaded covariance matrix of a Gaussian mixture model. */
-static zMat _zGMMUnitLoadedCov(zGMMUnit *gu, zVecList *points, double load[], double nk, zClusterMethod *met, void *err_util)
+static zMat _zGMMUnitLoadedCov(zGMMUnit *gu, zVecList *points, double load[], double nk, zClusterMethod *method)
 {
   zVecListCell *pc;
   int i = 0;
 
   zMatZero( gu->cov );
   zListForEach( points, pc ){
-    met->_error_fp( pc->data, gu->mean, err_util, met->_err );
-    zVecMulNC( met->_err, load[i], met->_err_l );
-    zMatAddDyadNC( gu->cov, met->_err_l, met->_err );
+    method->error_fp( method, pc->data, gu->mean, method->error_util, method->error );
+    zVecMulNC( method->error, load[i], method->lerror );
+    zMatAddDyadNC( gu->cov, method->lerror, method->error );
     i++;
   }
   zMatDivDRC( gu->cov, nk );
@@ -88,7 +88,7 @@ static zMat _zGMMUnitLoadedCov(zGMMUnit *gu, zVecList *points, double load[], do
  * ********************************************************** */
 
 /* initialize a Gaussian mixture model. */
-zGMM *zGMMInit(zGMM *gmm, int k, int meansize, zVec (* mean_fp)(zVecList*,void*,zVec), zVec (* mean_l_fp)(zVecList*,double[],double,void*,zVec), int errorsize, zVec (* error_fp)(zVec,zVec,void*,zVec))
+zGMM *zGMMInit(zGMM *gmm, int k, int meansize, zVec (* mean_fp)(zClusterMethod*,zVecList*,void*,zVec), void *mean_util, zVec (* l_mean_fp)(zClusterMethod*,zVecList*,double[],double,void*,zVec), void *l_mean_util, int errorsize, zVec (* error_fp)(zClusterMethod*,zVec,zVec,void*,zVec), void *error_util, double (* dist_fp)(zClusterMethod*,zVec,zVec,void*), void *dist_util)
 {
   int i;
   zGMMListCell *gc;
@@ -107,14 +107,17 @@ zGMM *zGMMInit(zGMM *gmm, int k, int meansize, zVec (* mean_fp)(zVecList*,void*,
     zListInsertTail( &gmm->gl, gc );
   }
   gmm->log_likelihood = -HUGE_VAL;
-  if( zClusterMethodCreate( &gmm->met, meansize, mean_fp, errorsize, error_fp ) == NULL )
+  if( zClusterMethodCreate( &gmm->method, meansize, errorsize ) == NULL )
     goto ERR;
-  if( zClusterMethodLoadedCreate( &gmm->met, mean_l_fp ) == NULL )
+  if( !zClusterMethodSetCoreFunc( &gmm->method, meansize, mean_fp, mean_util ) ||
+      !zClusterMethodSetErrorFunc( &gmm->method, errorsize, error_fp, error_util ) ||
+      !zClusterMethodSetDistFunc( &gmm->method, dist_fp, dist_util ) ||
+      !zClusterMethodSetLoadedMeanFunc( &gmm->method, l_mean_fp, l_mean_util ) )
     goto ERR;
   return gmm;
 
  ERR:
-  zClusterMethodInit( &gmm->met );
+  zClusterMethodInit( &gmm->method );
   zGMMDestroy( gmm );
   return NULL;
 }
@@ -129,7 +132,7 @@ void zGMMDestroy(zGMM *gmm)
     zGMMUnitFree( &gc->data );
     free( gc );
   }
-  zClusterMethodDestroy( &gmm->met );
+  zClusterMethodDestroy( &gmm->method );
 }
 
 #ifdef DEBUG
@@ -147,7 +150,7 @@ static void _zGMMFPrint(FILE *fp, zGMM *gmm)
 #endif /* DEBUG */
 
 /* expectation phase of EM algorithm to estimate a Gaussian mixture model. */
-static bool _zGMMCreateEMExpect(zGMM *gmm, zVecList *points, zMat pdf, zMat load, zVec load_det, zVec nk, void *err_util)
+static bool _zGMMCreateEMExpect(zGMM *gmm, zVecList *points, zMat pdf, zMat load, zVec load_det, zVec nk)
 {
   int i, j;
   zGMMListCell *gc;
@@ -163,7 +166,7 @@ static bool _zGMMCreateEMExpect(zGMM *gmm, zVecList *points, zMat pdf, zMat load
         zMatElemNC(pdf,j,i) = 0;
         zVecElemNC(load_det,i) = HUGE_VAL;
       } else{
-        p = _zGMMUnitPDF( &gc->data, pc->data, &gmm->met, err_util );
+        p = _zGMMUnitPDF( &gc->data, pc->data, &gmm->method );
         zMatElemNC(pdf,j,i) = p;
         zVecElemNC(load_det,i) += gc->data.weight * p;
       }
@@ -203,7 +206,7 @@ static bool _zGMMLogLikelihood(zGMM *gmm, zVec load_det)
 }
 
 /* maximization phase of EM algorithm to estimate a Gaussian mixture model. */
-static void _zGMMCreateEMMaximize(zGMM *gmm, zVecList *points, zMat load, zVec nk, void *mean_util, void *err_util)
+static void _zGMMCreateEMMaximize(zGMM *gmm, zVecList *points, zMat load, zVec nk)
 {
   zGMMListCell *gc;
   int j;
@@ -211,8 +214,8 @@ static void _zGMMCreateEMMaximize(zGMM *gmm, zVecList *points, zMat load, zVec n
   j = 0;
   zListForEach( &gmm->gl, gc ){
     if( gc->data.active ){
-      gmm->met._mean_l_fp( points, zMatRowBuf(load,j), zVecElemNC(nk,j), mean_util, gc->data.mean );
-      _zGMMUnitLoadedCov( &gc->data, points, zMatRowBuf(load,j), zVecElemNC(nk,j), &gmm->met, err_util );
+      gmm->method.lm_fp( &gmm->method, points, zMatRowBuf(load,j), zVecElemNC(nk,j),gmm->method.core_util, gc->data.mean );
+      _zGMMUnitLoadedCov( &gc->data, points, zMatRowBuf(load,j), zVecElemNC(nk,j), &gmm->method );
       gc->data.weight = zVecElemNC(nk,j) / zListSize(points);
     }
     j++;
@@ -220,7 +223,7 @@ static void _zGMMCreateEMMaximize(zGMM *gmm, zVecList *points, zMat load, zVec n
 }
 
 /* create a Gaussian mixture model based on EM algorithm. */
-zGMM *zGMMCreateEM(zGMM *gmm, zVecList *points, int k, void *mean_util, void *err_util)
+zGMM *zGMMCreateEM(zGMM *gmm, zVecList *points, int k)
 {
   zMCluster mc;
   zClusterListCell *cc;
@@ -229,8 +232,10 @@ zGMM *zGMMCreateEM(zGMM *gmm, zVecList *points, int k, void *mean_util, void *er
   zVec load_det, nk;
   int i, iter = 0;
 
-  if( zMClusterInit( &mc, gmm->met._meansize, gmm->met._mean_fp, gmm->met._errorsize, gmm->met._error_fp ) == NULL )
+  if( !zMClusterInit( &mc, gmm->method.core_size, zVecSize(gmm->method.error) ) ||
+      !zClusterMethodCopy( &gmm->method, &mc.method ) )
     return NULL;
+
   load = zMatAlloc( k, zListSize(points) );
   pdf  = zMatAlloc( k, zListSize(points) );
   load_det = zVecAlloc( zListSize(points) );
@@ -240,16 +245,16 @@ zGMM *zGMMCreateEM(zGMM *gmm, zVecList *points, int k, void *mean_util, void *er
     gmm = NULL;
     goto TERMINATE;
   }
-  /* initialize Gaussians by K-means */
-  zMClusterKMeans( &mc, points, k, mean_util, err_util );
+  /* initialize Gaussians by K-means++ */
+  zMClusterKMeans( &mc, points, k );
   gc = zListTail( &gmm->gl );
-  zListForEach( &mc.cl, cc ){
-    if( zListIsEmpty(&cc->data.vl) ){
+  zListForEach( zMClusterClusterList(&mc), cc ){
+    if( zListIsEmpty(zClusterSampleList(&cc->data)) ){
       gc->data.active = false;
     } else{
       gc->data.active = true;
-      _zGMMUnitEstim( &gc->data, &cc->data.vl, &gmm->met, mean_util, err_util );
-      gc->data.weight = 1.0 / zListSize(&mc.cl);
+      _zGMMUnitEstim( &gc->data, zClusterSampleList(&cc->data), &gmm->method );
+      gc->data.weight = 1.0 / zListSize(zMClusterClusterList(&mc));
     }
     gc = zListCellNext(gc);
   }
@@ -257,10 +262,10 @@ zGMM *zGMMCreateEM(zGMM *gmm, zVecList *points, int k, void *mean_util, void *er
   /* iteration */
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){
-    _zGMMCreateEMExpect( gmm, points, pdf, load, load_det, nk, err_util );
+    _zGMMCreateEMExpect( gmm, points, pdf, load, load_det, nk );
     if( _zGMMLogLikelihood( gmm, load_det ) )
       goto TERMINATE;
-    _zGMMCreateEMMaximize( gmm, points, load, nk, mean_util, err_util );
+    _zGMMCreateEMMaximize( gmm, points, load, nk );
   }
   ZITERWARN( iter );
  TERMINATE:

@@ -40,18 +40,18 @@ __EXPORT void zGMMUnitFree(zGMMUnit *gu);
 zListClass( zGMMList, zGMMListCell, zGMMUnit );
 typedef struct{
   zGMMList gl; /*!< list of Gaussian functions */
-  zClusterMethod met; /*!< methods for clustering */
+  zClusterMethod method; /*!< methods for clustering */
   double log_likelihood; /*!< log-likelihood */
 } zGMM;
 
 /*! \brief initialize a Gaussian mixture model */
-__EXPORT zGMM *zGMMInit(zGMM *gmm, int k, int meansize, zVec (* mean_fp)(zVecList*,void*,zVec), zVec (* mean_l_fp)(zVecList*,double[],double,void*,zVec), int errorsize, zVec (* error_fp)(zVec,zVec,void*,zVec));
+__EXPORT zGMM *zGMMInit(zGMM *gmm, int k, int meansize, zVec (* mean_fp)(zClusterMethod*,zVecList*,void*,zVec), void *mean_util, zVec (* l_mean_fp)(zClusterMethod*,zVecList*,double[],double,void*,zVec), void *l_mean_util, int errorsize, zVec (* error_fp)(zClusterMethod*,zVec,zVec,void*,zVec), void *error_util, double (* dist_fp)(zClusterMethod*,zVec,zVec,void*), void *dist_util);
 
 /*! \brief destroy a Gaussian mixture model */
 __EXPORT void zGMMDestroy(zGMM *gmm);
 
 /*! \brief create a Gaussian mixture model based on EM algorithm */
-__EXPORT zGMM *zGMMCreateEM(zGMM *gmm, zVecList *points, int k, void *mean_util, void *err_util);
+__EXPORT zGMM *zGMMCreateEM(zGMM *gmm, zVecList *points, int k);
 
 __END_DECLS
 

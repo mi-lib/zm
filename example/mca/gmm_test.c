@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
   vec_output( &points );
 
-  zGMMInit( &gmm, nc, 2, NULL, NULL, 2, NULL );
-  zGMMCreateEM( &gmm, &points, nc, NULL, NULL );
+  zGMMInit( &gmm, nc, 2, NULL, NULL, NULL, NULL, 2, NULL, NULL, NULL, NULL );
+  zGMMCreateEM( &gmm, &points, nc );
   gmm_output( &gmm );
   zGMMDestroy( &gmm );
   zVecListDestroy( &points );

@@ -69,6 +69,7 @@ __EXPORT void zVecListFPrint(FILE *fp, zVecList *list);
  * ********************************************************** */
 
 typedef zVecList zVecAddrList;
+typedef zVecListCell zVecAddrListCell;
 
 /*! \brief insert a pointer to a vector to a list at the head.
  */

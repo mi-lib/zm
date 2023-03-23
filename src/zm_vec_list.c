@@ -17,7 +17,6 @@ static zVecListCell *_zVecListCellCreate(zVec v, bool flag)
   }
   if( flag ){
     if( !( cell->data = zVecClone( v ) ) ){
-      ZALLOCERROR();
       zFree( cell );
       return NULL;
     }
@@ -122,7 +121,7 @@ zVecListCell *zVecAddrListInsertTail(zVecAddrList *list, zVec v)
 /* destroy a vector list. */
 void zVecAddrListDestroy(zVecList *list)
 {
-  zVecListCell *cell;
+  zVecAddrListCell *cell;
 
   while( !zListIsEmpty( list ) ){
     zListDeleteHead( list, &cell );
