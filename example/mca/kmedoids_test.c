@@ -41,25 +41,16 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
 int main(int argc, char *argv[])
 {
   zMCluster mc;
-  zClusterListCell *vcc;
   zVecList points;
-  FILE *fp;
-  char filename[BUFSIZ];
-  int np, nc, i = 0;
+  int np, nc;
 
   zRandInit();
-  np = argc > 1 ? atoi( argv[1] ) : NP;
-  nc = argc > 2 ? atoi( argv[2] ) : NC;
+  nc = argc > 1 ? atoi( argv[1] ) : NC;
+  np = argc > 2 ? atoi( argv[2] ) : NP;
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
   zMClusterInit( &mc, 2, 2 );
   printf( "K-medoids completed in %d times of iteration.\n", zMClusterKMedoids( &mc, &points, nc ) );
-
-  zListForEach( zMClusterClusterList(&mc), vcc ){
-    sprintf( filename, "%d", i++ );
-    fp = fopen( filename, "w" );
-    zClusterDataFPrint( fp, &vcc->data );
-    fclose( fp );
-  }
+  zMClusterDataPrintFile( &mc, "" );
   zMClusterDestroy( &mc );
   zVecListDestroy( &points );
   return 0;

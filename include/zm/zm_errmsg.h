@@ -39,6 +39,8 @@
 #define ZM_WARN_GRAPH_DUPSPC "duplicate specification of a node"
 #define ZM_WARN_GRAPH_DUPCON "duplicate node connection, overwritten"
 
+#define ZM_MCA_NOSILHOUETTE  "silhouette score not computed, need to call zMClusterSilhouetteScore()"
+
 /* error messages */
 
 #define ZM_ERR_ZERODIV       "cannot devide by tiny value"
@@ -98,7 +100,7 @@
 #define ZM_ERR_MCA_NOERRORFUNC  "method not assigned to compute error between samples"
 #define ZM_ERR_MCA_NODISTFUNC   "method not assigned to compute distance between samples"
 
-#define ZM_ERR_OSCIL_INVTERM "invalid natural term of oscillator"
+#define ZM_ERR_OSCIL_INVTERM "invalid natural term of the oscillator"
 
 #define ZM_ERR_FATAL         "fatal error! - please report to the author"
 

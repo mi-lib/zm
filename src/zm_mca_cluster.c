@@ -18,6 +18,8 @@ zCluster *zClusterCreate(zCluster *c, int coresize)
     zClusterDestroy( c );
     return NULL;
   }
+  c->var = HUGE_VAL;
+  c->_sc = NULL;
   return c;
 }
 
@@ -26,6 +28,7 @@ void zClusterDestroy(zCluster *c)
 {
   zVecAddrListDestroy( zClusterSampleList(c) );
   zVecFree( c->core );
+  zFree( c->_sc );
 }
 
 /* print a vector cluster to a file. */
@@ -80,6 +83,10 @@ static double _zClusterDistSum(zClusterMethod *cm, zVecAddrList *pl, zVec v)
   zListForEach( pl, pp )
     sum += zClusterMethodDistF( cm, pp->data, v );
   return sum;
+}
+static double _zClusterDistAve(zClusterMethod *cm, zVecAddrList *pl, zVec v)
+{
+  return _zClusterDistSum( cm, pl, v ) / zListSize(pl);
 }
 static zVec _zClusterCoreMedoid(zClusterMethod *cm, zVecAddrList *pl, void *dummy, zVec core)
 {
@@ -296,12 +303,28 @@ void zMClusterCoreFPrint(FILE *fp[], zMCluster *mc)
     zVecDataFPrint( fp[i++], cc->data.core );
 }
 
-/* ********************************************************** */
-/* clustering based on K-means family
- * ********************************************************** */
+/* print vectors in a set of clusters to files with a common basename. */
+bool zMClusterDataPrintFile(zMCluster *mc, const char *basename)
+{
+  zClusterListCell *cp;
+  char filename[BUFSIZ];
+  FILE *fp;
+  int i = 0;
+
+  zListForEach( zMClusterClusterList(mc), cp ){
+    sprintf( filename, "%s%d", basename, i++ );
+    if( !( fp = fopen( filename, "w" ) ) ){
+      ZOPENERROR( filename );
+      return false;
+    }
+    zClusterDataFPrint( fp, &cp->data );
+    fclose( fp );
+  }
+  return true;
+}
 
 /* ********************************************************** */
-/* K-means
+/* clustering based on K-means family
  * ********************************************************** */
 
 #if DEBUG
@@ -522,4 +545,75 @@ int zMClusterKMedoids(zMCluster *mc, zVecAddrList *points, int k)
 {
   zMClusterSetCoreFunc( mc, zVecSizeNC(zListTail(points)->data), _zClusterCoreMedoid, NULL );
   return zMClusterKMeans( mc, points, k );
+}
+
+/* ********************************************************** */
+/* silhouette score analysis
+ * ********************************************************** */
+
+/* compute the silhouette score of a set of clusters. */
+double zMClusterSilhouetteScore(zMCluster *mc)
+{
+  zClusterListCell *cp, *ccp;
+  zVecAddrListCell *pp;
+  double a, b, b_tmp, score = 0;
+  int i, n = 0;
+
+  zListForEach( zMClusterClusterList(mc), cp ){
+    zFree( cp->data._sc );
+    if( !( cp->data._sc = zAlloc( double, zListSize(zClusterSampleList(&cp->data)) ) ) ){
+      ZALLOCERROR();
+      return NAN;
+    }
+    i = 0;
+    zListForEach( zClusterSampleList(&cp->data), pp ){
+      a = _zClusterDistAve( &mc->method, zClusterSampleList(&cp->data), pp->data ); /* intra-cluster distance */
+      b = HUGE_VAL;
+      zListForEach( zMClusterClusterList(mc), ccp ){
+        if( ccp == cp ) continue;
+        if( ( b_tmp = _zClusterDistAve( &mc->method, zClusterSampleList(&ccp->data), pp->data ) ) < b )
+          b = b_tmp; /* inter-cluster distance */
+      }
+      score += cp->data._sc[i++] = ( b - a ) / zMax( a, b );
+    }
+    zDataSort( cp->data._sc, zListSize(zClusterSampleList(&cp->data)) );
+    n += zListSize(zClusterSampleList(&cp->data));
+  }
+  return score / n;
+}
+
+/* print silhouette coefficients of a vector cluster to a file. */
+static bool _zClusterSilhouetteCoeffFPrint(FILE *fp, zCluster *c, int offset)
+{
+  int i;
+
+  if( !c->_sc ){
+    ZRUNWARN( ZM_MCA_NOSILHOUETTE );
+    return false;
+  }
+  for( i=0; i<zListSize(zClusterSampleList(c)); i++ ){
+    fprintf( fp, "0, %d\n", offset + i );
+    fprintf( fp, "%f, %d\n\n", c->_sc[i], offset + i );
+  }
+  return true;
+}
+
+/* print silhouette coefficients of a set of vector clusters to files. */
+bool zMClusterSilhouetteCoeffPrintFile(zMCluster *mc, const char *basename)
+{
+  zClusterListCell *cp;
+  int i = 0, offset = 0;
+  char filename[BUFSIZ];
+  FILE *fp;
+
+  zListForEach( zMClusterClusterList(mc), cp ){
+    sprintf( filename, "%s%d", basename, i++ );
+    if( !( fp = fopen( filename, "w" ) ) ){
+      ZOPENERROR( filename );
+      return false;
+    }
+    if( !_zClusterSilhouetteCoeffFPrint( fp, &cp->data, offset ) ) return false;
+    offset += zListSize(zClusterSampleList(&cp->data));
+  }
+  return true;
 }

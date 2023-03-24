@@ -116,6 +116,21 @@ zIndex zDataPeakSG(double src[], size_t n, size_t w, uint dim)
   return peakidx;
 }
 
+/* an internal comparison function for zDataSort. */
+static int _zDataSortCmp(void *v1, void *v2, void *dummy)
+{
+  if( *(double*)v1 > *(double*)v2 ) return 1;
+  if( *(double*)v1 < *(double*)v2 ) return -1;
+  return 0;
+}
+
+/* sort an array of double-precision floating-point vector in the descent order. */
+double *zDataSort(double data[], size_t n)
+{
+  zQuickSort( data, n, sizeof(double), _zDataSortCmp, NULL );
+  return data;
+}
+
 /* an internal comparison function for zDataSortIndex. */
 static int _zDataSortIndexCmp(void *i1, void *i2, void *priv)
 {

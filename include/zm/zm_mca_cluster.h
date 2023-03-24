@@ -20,6 +20,9 @@ typedef struct{
   zVecAddrList vlist; /*!< \brief list of vectors */
   zVec core;          /*!< \brief core vector of the cluster */
   double var;         /*!< \brief variance */
+  /*! \cond */
+  double *_sc;        /* silhouette coefficients */
+  /*! \endcond */
 } zCluster;
 
 #define zClusterSampleList(c) ( &(c)->vlist )
@@ -136,6 +139,9 @@ __EXPORT void zMClusterFPrint(FILE *fp, zMCluster *mc);
 __EXPORT void zMClusterDataFPrint(FILE *fp[], zMCluster *mc);
 __EXPORT void zMClusterCoreFPrint(FILE *fp[], zMCluster *mc);
 
+/*! \brief print vectors in a set of clusters to files with a common basename. */
+__EXPORT bool zMClusterDataPrintFile(zMCluster *mc, const char *basename);
+
 /* ********************************************************** */
 /*! \brief clustering based on K-means
  *//* ******************************************************* */
@@ -167,6 +173,12 @@ __EXPORT int zMClusterKMeans(zMCluster *mc, zVecAddrList *points, int k);
  * zMClusterKMeansKKZ, zMClusterKMeans
  */
 __EXPORT int zMClusterKMedoids(zMCluster *mc, zVecAddrList *points, int k);
+
+/*! \brief compute the silhouette score of a set of clusters. */
+__EXPORT double zMClusterSilhouetteScore(zMCluster *mc);
+
+/*! \brief print silhouette coefficients of a set of vector clusters to files. */
+__EXPORT bool zMClusterSilhouetteCoeffPrintFile(zMCluster *mc, const char *basename);
 
 __END_DECLS
 
