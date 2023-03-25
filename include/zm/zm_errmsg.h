@@ -82,8 +82,8 @@
 #define ZM_ERR_IP_SIZMIS     "size mismatch of sample point vector"
 #define ZM_ERR_IP_INVTYPE    "unknown edge type"
 
-#define ZM_ERR_NURBS_INVDIM  "invalid curve dimension"
-#define ZM_ERR_NURBS_INVODR  "invalid order of differentiation"
+#define ZM_ERR_NURBS_INVORDER     "invalid order for NURBS"
+#define ZM_ERR_NURBS_INVDIFFORDER "invalid order of differentiation"
 
 #define ZM_ERR_INVALID_NUMSAMP "too many samples %d required out of %d"
 

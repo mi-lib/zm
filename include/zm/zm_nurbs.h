@@ -18,10 +18,10 @@ __BEGIN_DECLS
  * zNURBSCPCell is a cell of NURBS that contains a control point
  * and associated weight.
  *//* ******************************************************* */
-typedef struct{
+ZDEF_STRUCT( zNURBSCPCell ){
   zVec cp;  /*!< control point */
   double w; /*!< weight */
-} zNURBSCPCell;
+};
 
 /* ********************************************************** */
 /*! \struct zNURBSCPArray
@@ -40,18 +40,18 @@ zArrayClass( zNURBSCPArray, zNURBSCPCell );
  * zNURBS is a NURBS curve made from a sequence of control
  * points in n-dimensional space.
  *//* ******************************************************* */
-typedef struct{
-  uint dim;   /*!< \brief dimension of a curve */
+ZDEF_STRUCT( zNURBS ){
+  uint order; /*!< \brief order of a curve */
   /*! \cond */
   zVec knot; /* knot vector */
   zNURBSCPArray cparray; /* an array of control points */
   /*! \endcond */
-} zNURBS;
+};
 
 #define zNURBSKnotNum(n)       zVecSizeNC((n)->knot)
 #define zNURBSKnot(n,i)        zVecElemNC((n)->knot,i)
 #define zNURBSSetKnot(n,i,v)   ( zNURBSKnot(n,i) = (v) )
-#define zNURBSKnotS(n)         zNURBSKnot(n,(n)->dim)
+#define zNURBSKnotS(n)         zNURBSKnot(n,(n)->order)
 #define zNURBSKnotE(n)         zNURBSKnot(n,zNURBSCPNum(n))
 #define zNURBSKnotSlice(n,k,s) ( ( zNURBSKnotE(n) - zNURBSKnotS(n) ) * k / s + zNURBSKnotS(n) )
 
@@ -65,18 +65,18 @@ typedef struct{
  *
  * zNURBSCreate() creates a NURBS curve \a nurbs from a given
  * sequence of control points. \a seq provides the control points.
- * \a dim is the dimension of the curve, which has to be less than
+ * \a order is the order of the curve, which has to be less than
  * the size of \a seq.
  * It is initialized as a uniform Bezier spline curve with fixed
  * boundary points. The weights on each control point and the knot
  * vector can be modified later.
  * \return
  * zNURBSCreate() returns the true value if it succeeds to create
- * the NURBS curve. If \a dim is larger than the size of \a seq
+ * the NURBS curve. If \a order is larger than the size of \a seq
  * plus one or it fails to allocate internal workspace, the false
  * value is returned.
  */
-__EXPORT bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, uint dim);
+__EXPORT bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, uint order);
 
 /*! \brief destroy a NURBS curve.
  *

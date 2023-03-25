@@ -1,3 +1,4 @@
+2023. 3.25. Renamed dim member of zNURBS to order. [zm_nurbs]
 2023. 3.25. Added zMClusterDataPrintFile. [zm_mca_cluster]
 2023. 3.25. Added zMClusterSilhouetteScore and zMClusterSilhouetteCoeffPrintFile. [zm_mca_cluster, zm_errmsg]
 2023. 3.24. Added zDataSort. [zm_data]

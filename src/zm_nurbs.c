@@ -11,7 +11,7 @@ static void _zNURBSKnotInit(zNURBS *nurbs)
 {
   uint j;
 
-  for( j=0; j<=nurbs->dim; j++ )
+  for( j=0; j<=nurbs->order; j++ )
     zNURBSSetKnot( nurbs, j, 0 );
   for( ; j<=zNURBSCPNum(nurbs); j++ )
     zNURBSSetKnot( nurbs, j, zNURBSKnot(nurbs,j-1) + 1 );
@@ -20,18 +20,18 @@ static void _zNURBSKnotInit(zNURBS *nurbs)
 }
 
 /* create a NURBS curve. */
-bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, uint dim)
+bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, uint order)
 {
   uint i;
   zSeqListCell *cp;
   bool ret = true;
 
-  if( zListSize(seq) <= dim ){
-    ZRUNERROR( ZM_ERR_NURBS_INVDIM );
+  if( zListSize(seq) <= order ){
+    ZRUNERROR( ZM_ERR_NURBS_INVORDER );
     return false;
   }
-  nurbs->dim = dim;
-  nurbs->knot = zVecAlloc( zListSize(seq)+dim+1 );
+  nurbs->order = order;
+  nurbs->knot = zVecAlloc( zListSize(seq)+order+1 );
 
   zArrayAlloc( &nurbs->cparray, zNURBSCPCell, zListSize(seq) );
   if( !nurbs->knot || zNURBSCPNum(nurbs) == 0 ){
@@ -57,7 +57,7 @@ void zNURBSDestroy(zNURBS *nurbs)
 {
   uint i;
 
-  nurbs->dim = 0;
+  nurbs->order = 0;
   zVecFree( nurbs->knot );
   nurbs->knot = NULL;
   for( i=0; i<zNURBSCPNum(nurbs); i++ )
@@ -77,7 +77,7 @@ static int _zNURBSSeg(zNURBS *nurbs, double t)
 {
   uint i, j, k;
 
-  for( i=nurbs->dim, j=zNURBSCPNum(nurbs); ; ){
+  for( i=nurbs->order, j=zNURBSCPNum(nurbs); ; ){
     while( zNURBSKnot(nurbs,i+1) == zNURBSKnot(nurbs,i) ) i++;
     while( zNURBSKnot(nurbs,j-1) == zNURBSKnot(nurbs,j) ) j--;
     if( j <= i + 1 ) break;
@@ -120,8 +120,8 @@ zVec zNURBSVec(zNURBS *nurbs, double t, zVec v)
 
   s = _zNURBSSeg( nurbs, t );
   zVecZero( v );
-  for( den=0, i=s-nurbs->dim; i<=s; i++ ){
-    b = zNURBSWeight(nurbs,i) * _zNURBSBasis(nurbs,t,i,nurbs->dim,s);
+  for( den=0, i=s-nurbs->order; i<=s; i++ ){
+    b = zNURBSWeight(nurbs,i) * _zNURBSBasis(nurbs,t,i,nurbs->order,s);
     den += b;
     zVecCatNCDRC( v, b, zNURBSCP(nurbs,i) );
   }
@@ -136,8 +136,8 @@ static double _zNURBSBasisDiff(zNURBS *nurbs, double t, uint i, uint r, uint seg
 
   if( diff == 0 )
     return _zNURBSBasis( nurbs, t, i, r, seg );
-  if( diff > nurbs->dim + 1 || diff < 0 ){
-    ZRUNERROR( ZM_ERR_NURBS_INVODR );
+  if( diff > nurbs->order + 1 || diff < 0 ){
+    ZRUNERROR( ZM_ERR_NURBS_INVDIFFORDER );
     return NAN;
   }
   if( i >= seg - r && ( dt = zNURBSKnot(nurbs,i+r) - zNURBSKnot(nurbs,i) ) != 0 )
@@ -153,8 +153,8 @@ static double _zNURBSDenDiff(zNURBS *nurbs, double t, uint s, uint diff)
   uint i;
   double den;
 
-  for( den=0, i=s-nurbs->dim; i<=s; i++ )
-    den += zNURBSWeight(nurbs,i) * _zNURBSBasisDiff(nurbs,t,i,nurbs->dim,s,diff);
+  for( den=0, i=s-nurbs->order; i<=s; i++ )
+    den += zNURBSWeight(nurbs,i) * _zNURBSBasisDiff(nurbs,t,i,nurbs->order,s,diff);
   return den;
 }
 
@@ -167,8 +167,8 @@ zVec zNURBSVecDiff(zNURBS *nurbs, double t, uint diff, zVec v)
 
   if( diff == 0 )
     return zNURBSVec( nurbs, t, v );
-  if( diff > nurbs->dim + 1 || diff < 0 ){
-    ZRUNERROR( ZM_ERR_NURBS_INVODR );
+  if( diff > nurbs->order + 1 || diff < 0 ){
+    ZRUNERROR( ZM_ERR_NURBS_INVDIFFORDER );
     return NULL;
   }
   if( ( tmp = zVecAlloc( zVecSize(zNURBSCP(nurbs,0)) ) ) == NULL ){
@@ -177,9 +177,9 @@ zVec zNURBSVecDiff(zNURBS *nurbs, double t, uint diff, zVec v)
   }
   zVecZero( v );
   s = _zNURBSSeg( nurbs, t );
-  for( den=0, i=s-nurbs->dim; i<=s; i++ ){
-    b = zNURBSWeight(nurbs,i) * _zNURBSBasisDiff(nurbs,t,i,nurbs->dim,s,diff);
-    den += zNURBSWeight(nurbs,i) * _zNURBSBasis(nurbs,t,i,nurbs->dim,s);
+  for( den=0, i=s-nurbs->order; i<=s; i++ ){
+    b = zNURBSWeight(nurbs,i) * _zNURBSBasisDiff(nurbs,t,i,nurbs->order,s,diff);
+    den += zNURBSWeight(nurbs,i) * _zNURBSBasis(nurbs,t,i,nurbs->order,s);
     zVecCatNCDRC( v, b, zNURBSCP(nurbs,i) );
   }
   for( i=1; i<diff+1; i++ ){
