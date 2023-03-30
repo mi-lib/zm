@@ -9,7 +9,7 @@
 /* determinant of matrix (destructive). */
 double zMatDetDST(zMat m, zIndex idx)
 {
-  uint i, j, k, p, q;
+  int i, j, k, p, q;
   double det = 1.0;
 
   zIndexOrder( idx, 0 );
@@ -54,7 +54,7 @@ double zMatDet(zMat m)
 /* adjoint matrix. */
 zMat zMatAdj(zMat m, zMat adj)
 {
-  uint i, j, k, l, u, v;
+  int i, j, k, l, u, v;
   zMat smat;
   zIndex idx;
 
@@ -97,7 +97,7 @@ zMat zMatAdj(zMat m, zMat adj)
 /* directly make a matrix row-balanced and column-balanced. */
 static void _zBalancingMatDST(zMat m1, zMat m2, zVec s)
 {
-  uint i, j;
+  int i, j;
   double *mp1, *mp2, tmp;
 
   /* column balancing */
@@ -271,8 +271,7 @@ zMat zMatInv(zMat m, zMat im)
 /* inverse matrix by Hotelling's method. */
 zMat zMatInvHotelling(zMat m, zMat im, double tol, int iter)
 {
-  int i;
-  uint j;
+  int i, j;
   zMat im2, tmp, mc, mn;
 
   if( !zMatIsSqr( m ) ){

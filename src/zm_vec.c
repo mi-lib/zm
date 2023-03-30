@@ -14,7 +14,7 @@
 /* set vector components from variable argument list. */
 zVec zVecSetElemVList(zVec v, va_list args)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zVecSizeNC(v); i++ )
     zVecSetElemNC( v, i, (double)va_arg( args, double ) );
@@ -115,7 +115,7 @@ zVec zVecCopy(zVec src, zVec dest)
 }
 
 /* copy a vector from an array of double-precision floating-point values. */
-zVec zVecCopyArray(double array[], uint s, zVec v)
+zVec zVecCopyArray(double array[], int s, zVec v)
 {
   if( zVecSizeNC(v) != s ) return NULL;
   zRawVecCopy( array, zVecBufNC(v), s );
@@ -133,7 +133,7 @@ zVec zVecClone(zVec src)
 }
 
 /* create a vector from an array of double-precision floating-point values. */
-zVec zVecCloneArray(double array[], uint s)
+zVec zVecCloneArray(double array[], int s)
 {
   zVec v;
 
@@ -212,14 +212,14 @@ zVec zVecShift(zVec v, double shift)
 }
 
 /* swap vector components without checking size. */
-zVec zVecSwapNC(zVec v, uint i1, uint i2)
+zVec zVecSwapNC(zVec v, int i1, int i2)
 {
   zRawVecSwap( zVecBufNC(v), i1, i2 );
   return v;
 }
 
 /* swap vector components. */
-zVec zVecSwap(zVec v, uint i1, uint i2)
+zVec zVecSwap(zVec v, int i1, int i2)
 {
   if( i1 > zVecSizeNC(v) || i2 > zVecSizeNC(v) ){
     ZRUNWARN( ZM_ERR_INV_INDEX );
@@ -267,7 +267,7 @@ double zVecVar(zVec v){ return _zVecVar( v ); }
 /* check if two vectors are equal. */
 bool zVecIsEqual(zVec v1, zVec v2, double tol)
 {
-  uint i;
+  int i;
 
   if( !zVecSizeIsEqual( v1, v2 ) ) return false;
   for( i=0; i<zVecSizeNC(v1); i++ )
@@ -569,7 +569,7 @@ zVec zVecFScan(FILE *fp)
 /* print a vector out to a file. */
 void zVecFPrint(FILE *fp, zVec v)
 {
-  uint i;
+  int i;
 
   if( !v )
     fprintf( fp, "(null vector)\n" );
@@ -584,7 +584,7 @@ void zVecFPrint(FILE *fp, zVec v)
 /* print a vector out to a file. */
 void zVecDataFPrint(FILE *fp, zVec v)
 {
-  uint i;
+  int i;
 
   if( !v ) return;
   for( i=0; i<zVecSizeNC(v); i++ )

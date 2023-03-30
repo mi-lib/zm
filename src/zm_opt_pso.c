@@ -48,7 +48,7 @@ zOptPSOParticle *_zOptPSOParticleCreate(zOptPSOParticle *p, zVec min, zVec max, 
 /* update a particle */
 bool _zOptPSOParticleUpdate(zOptPSOParticle *p, zVec min, zVec max, zVec vmin, zVec vmax, zVec best, double c1, double c2, double (* f)(zVec,void*), void *util)
 {
-  uint i;
+  int i;
   double eval;
 
   zVecSubNC( p->mybest, p->x, p->dmybest );

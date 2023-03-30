@@ -34,7 +34,7 @@ void zPexIPFree(zPexIP *pc)
 bool zPexIPBoundary(zPexIP *pc, double x1, double v1, double a1, double x2, double v2, double a2, zVec v)
 {
   double k1, k2, k3; /* internal working variables */
-  uint i, n1, n2, n3, n;
+  int i, n1, n2, n3, n;
 
   if( ( n = zPexIPDim(pc) ) != zVecSize(v) + 5 ) return false;
   n1 = n - 1;
@@ -70,7 +70,7 @@ bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double 
 /* fit a polynomial curve to a sequence of points based on the least square method. */
 bool zPexIPLSM(zPexIP *pc, zVec t, zVec x)
 {
-  uint i, j, k, n, m;
+  int i, j, k, n, m;
   zMat a;
   zVec b, v;
   bool result = true;
@@ -114,7 +114,7 @@ bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, zVec t, zVec x)
 /* create a polynomial curve from the boundary condition and a sequence of points to fit. */
 bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, zVec t, zVec x)
 {
-  uint i, j, k, n, m;
+  int i, j, k, n, m;
   zMat a;
   zVec b, v;
   bool result = true;

@@ -9,7 +9,7 @@
 /* calculation of a quadratic value. */
 double zQuadraticValue(zMat q, zVec c, zVec x)
 {
-  uint i, j, n;
+  int i, j, n;
   double val;
 
   n = zVecSize( x );
@@ -37,7 +37,7 @@ double zQuadraticValue(zMat q, zVec c, zVec x)
 /* NOTE: this function is to be deleted due to mathematical illegality. */
 bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
 {
-  uint i, j, m, n;
+  int i, j, m, n;
   zMat d;
   zVec f, y;
 
@@ -87,7 +87,7 @@ bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
 /* transform a quadratic programming problem to a linear complementary problem. */
 static bool _zQP2LCP(zMat q, zVec c, zMat a, zVec b, zMat *lm, zVec *lq, zVec *z)
 {
-  uint i, j;
+  int i, j;
 
   *lm = zMatAllocSqr( zMatRowSizeNC(q) + zMatRowSize(a) );
   *lq = zVecAlloc( zVecSizeNC(c) + zVecSize(b) );
@@ -156,9 +156,9 @@ static double _zQPSolveASMConditionDefault(zMat a, zVec ans, int i, void *util)
   return zRawVecInnerProd(zMatRowBuf(a,i),zVecBuf(ans),zVecSizeNC(ans));
 }
 
-static uint _zQPSolveASMInitIndex(zIndex idx, zMat a, zVec b, zVec ans, void *util, double cond(zMat,zVec,int,void*))
+static int _zQPSolveASMInitIndex(zIndex idx, zMat a, zVec b, zVec ans, void *util, double cond(zMat,zVec,int,void*))
 {
-  uint m, i;
+  int m, i;
 
   /* initialize the active set of constraints */
   for( m=0, i=0; i<zVecSizeNC(b); i++ ){
@@ -180,9 +180,9 @@ static bool _zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, zIndex idx, v
   _zQPASMIndexList ilist;
   _zQPASMIndex *idata;
   bool endflag, ret = true;
-  uint tempi;
-  uint n, nm, m;
-  uint i, j, k;
+  int tempi;
+  int n, nm, m;
+  int i, j, k;
 
   n = zVecSizeNC(ans);
   zListInit( &ilist );

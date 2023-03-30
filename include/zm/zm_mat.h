@@ -199,9 +199,9 @@ __EXPORT zMat zMatRand(zMat m, zMat min, zMat max);
  */
 __EXPORT zMat zMatCopyNC(zMat src, zMat dest);
 __EXPORT zMat zMatCopy(zMat src, zMat dest);
-__EXPORT zMat zMatCopyArray(double array[], uint r, uint c, zMat m);
+__EXPORT zMat zMatCopyArray(double array[], int r, int c, zMat m);
 __EXPORT zMat zMatClone(zMat src);
-__EXPORT zMat zMatCloneArray(double array[], uint r, uint c);
+__EXPORT zMat zMatCloneArray(double array[], int r, int c);
 
 /*! \brief partially copy a matrix.
  *
@@ -267,18 +267,18 @@ __EXPORT zMat zMatTPut(zMat dest, int pr, int pc, zMat src);
  * If it is not urgent and you are not hasty, you'd better not
  * use NC functions for safety.
  */
-__EXPORT zVec zMatGetRowNC(zMat m, uint row, zVec v);
-__EXPORT zVec zMatGetColNC(zMat m, uint col, zVec v);
-__EXPORT zVec zMatGetRow(zMat m, uint row, zVec v);
-__EXPORT zVec zMatGetCol(zMat m, uint col, zVec v);
-__EXPORT zMat zMatPutRowNC(zMat m, uint row, zVec v);
-__EXPORT zMat zMatPutColNC(zMat m, uint col, zVec v);
-__EXPORT zMat zMatPutRow(zMat m, uint row, zVec v);
-__EXPORT zMat zMatPutCol(zMat m, uint col, zVec v);
-__EXPORT zMat zMatSwapRowNC(zMat m, uint r1, uint r2);
-__EXPORT zMat zMatSwapColNC(zMat m, uint c1, uint c2);
-__EXPORT zMat zMatSwapRow(zMat m, uint r1, uint r2);
-__EXPORT zMat zMatSwapCol(zMat m, uint c1, uint c2);
+__EXPORT zVec zMatGetRowNC(zMat m, int row, zVec v);
+__EXPORT zVec zMatGetColNC(zMat m, int col, zVec v);
+__EXPORT zVec zMatGetRow(zMat m, int row, zVec v);
+__EXPORT zVec zMatGetCol(zMat m, int col, zVec v);
+__EXPORT zMat zMatPutRowNC(zMat m, int row, zVec v);
+__EXPORT zMat zMatPutColNC(zMat m, int col, zVec v);
+__EXPORT zMat zMatPutRow(zMat m, int row, zVec v);
+__EXPORT zMat zMatPutCol(zMat m, int col, zVec v);
+__EXPORT zMat zMatSwapRowNC(zMat m, int r1, int r2);
+__EXPORT zMat zMatSwapColNC(zMat m, int c1, int c2);
+__EXPORT zMat zMatSwapRow(zMat m, int r1, int r2);
+__EXPORT zMat zMatSwapCol(zMat m, int c1, int c2);
 
 /*! \brief shift diagonal values of a matrix.
  *
@@ -328,8 +328,8 @@ __EXPORT bool zMatIsTol(zMat m, double tol);
  * \return
  * zMatRowReg() and zMatColReg() return a pointer \a m.
  */
-__EXPORT zMat zMatRowReg(zMat m, uint rank);
-__EXPORT zMat zMatColReg(zMat m, uint rank);
+__EXPORT zMat zMatRowReg(zMat m, int rank);
+__EXPORT zMat zMatColReg(zMat m, int rank);
 
 /*! \brief basic arithmetics for matrix.
  *

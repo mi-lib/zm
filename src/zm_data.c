@@ -14,7 +14,7 @@ static bool _zDataIsPeak(double src[], size_t n, uint i)
   return src[i] > src[i-1] && src[i] > src[i+1];
 }
 
-/* pick up peaks a data sequence. */
+/* pick up peaks of a data sequence. */
 zIndex zDataPeak(double src[], size_t n, uint w)
 {
   zIndex peakidx = NULL;

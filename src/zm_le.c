@@ -9,7 +9,7 @@
 /* directly make a matrix column-balanced. */
 void zBalancingColDST(zMat m, zVec s)
 {
-  uint i, j;
+  int i, j;
   double tmp;
 
   for( i=0; i<zMatColSizeNC(m); i++ ){
@@ -29,7 +29,7 @@ void zBalancingColDST(zMat m, zVec s)
 /* directly make a pair of matrix and vector balanced. */
 void zBalancingDST(zMat m, zVec v, zVec s)
 {
-  uint i;
+  int i;
   double *mp, max;
 
   if( s ) /* if necessary for column-balancing */
@@ -145,7 +145,7 @@ zVec zLESolveGauss(zMat a, zVec b, zVec ans)
 /* a solver for Ly=b. */
 zVec zLESolveL(zMat l, zVec b, zVec ans, zIndex idx)
 {
-  uint i, j, p;
+  int i, j, p;
   double x;
 
   for( i=0; i<zArraySize(idx); i++ ){
@@ -198,7 +198,7 @@ zVec zLESolveLU(zMat l, zMat u, zVec b, zVec ans, zIndex idx)
 /* linear equation solver: Residual iteration on LU decomposition. */
 zVec zLESolveRI(zMat a, zVec b, zVec ans)
 {
-  uint i;
+  int i;
   zMat l, u;
   zVec res, err;
   double err_norm, err_norm_old = HUGE_VAL;
@@ -239,7 +239,7 @@ zVec zLESolveRI(zMat a, zVec b, zVec ans)
 /* linear equation solver: Gauss-Seidel's method. */
 zVec zLESolveGS(zMat a, zVec b, zVec ans)
 {
-  uint i, j, k, p, count;
+  int i, j, k, p, count;
   double x;
   zIndex idx;
 

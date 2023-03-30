@@ -21,7 +21,7 @@ __BEGIN_DECLS
 typedef zVec zPex;
 
 /* n-dim polynomial has n+1 coeficients including the constant term. */
-#define zPexDim(p)               (int)( zVecSizeNC(p) - 1 )
+#define zPexDim(p)               ( zVecSizeNC(p) - 1 )
 #define zPexCoeff(p,i)           zVecElemNC(p,i)
 
 #define zPexCoeffHigh(p,i)       zPexCoeff(p,zPexDim(p)-(i))
@@ -218,7 +218,7 @@ __EXPORT void zPexFPrint(FILE *fp, zPex p);
  * zPexSExpr() returns a pointer \a str.
  * zPexFExpr() and zPexExpr() return the number of output charactors.
  */
-__EXPORT char *zPexSExpr(char *str, size_t size, zPex p, char c);
+__EXPORT char *zPexSExpr(char *str, int size, zPex p, char c);
 __EXPORT int zPexFExpr(FILE *fp, zPex p, char c);
 #define zPexExpr(p,c)   zPexFExpr( stdout, (p), (c) )
 #define zPexFExprX(f,p) zPexFExpr( (f), (p), 'x' )

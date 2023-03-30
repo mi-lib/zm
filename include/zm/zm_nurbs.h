@@ -41,7 +41,7 @@ zArrayClass( zNURBSCPArray, zNURBSCPCell );
  * points in n-dimensional space.
  *//* ******************************************************* */
 ZDEF_STRUCT( zNURBS ){
-  uint order; /*!< \brief order of a curve */
+  int order; /*!< \brief order of a curve */
   /*! \cond */
   zVec knot; /* knot vector */
   zNURBSCPArray cparray; /* an array of control points */
@@ -76,7 +76,7 @@ ZDEF_STRUCT( zNURBS ){
  * plus one or it fails to allocate internal workspace, the false
  * value is returned.
  */
-__EXPORT bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, uint order);
+__EXPORT bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order);
 
 /*! \brief destroy a NURBS curve.
  *
@@ -112,7 +112,7 @@ __EXPORT zVec zNURBSVec(zNURBS *nurbs, double t, zVec v);
  * the derivative. If \a diff is invalid or it fails to allocate the
  * internal workspace, the false value is returned.
  */
-__EXPORT zVec zNURBSVecDiff(zNURBS *nurbs, double t, uint diff, zVec v);
+__EXPORT zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v);
 
 /*! \brief nearest neighbor on a NURBS curve.
  *

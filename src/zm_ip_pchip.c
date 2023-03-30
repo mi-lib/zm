@@ -28,7 +28,7 @@ double zFergusonVal(double t, double term, double x0, double v0, double x1, doub
 /* vector on PCHIP interpolation */
 static zVec _zIPVecPCHIP(zIPData *dat, double t, zVec v)
 {
-  uint i;
+  int i;
   double dt, dt1, dt2;
 
   zVecZero( v );
@@ -46,7 +46,7 @@ static zVec _zIPVecPCHIP(zIPData *dat, double t, zVec v)
 /* velocity on PCHIP interpolation */
 static zVec _zIPVelPCHIP(zIPData *dat, double t, zVec v)
 {
-  uint i;
+  int i;
   double dt, dt1, dt2;
 
   zVecZero( v );
@@ -64,7 +64,7 @@ static zVec _zIPVelPCHIP(zIPData *dat, double t, zVec v)
 /* acceleration on PCHIP interpolation */
 static zVec _zIPAccPCHIP(zIPData *dat, double t, zVec v)
 {
-  uint i;
+  int i;
   double dt, dt1, dt2;
 
   zVecZero( v );
@@ -80,13 +80,13 @@ static zVec _zIPAccPCHIP(zIPData *dat, double t, zVec v)
 }
 
 /* velocity at section on PCHIP interpolation */
-static zVec _zIPSecVelPCHIP(zIPData *dat, uint i, zVec v)
+static zVec _zIPSecVelPCHIP(zIPData *dat, int i, zVec v)
 {
   return zVecCopy( *zArrayElem(&dat->va,i), v );
 }
 
 /* acceleration at section on PCHIP interpolation */
-static zVec _zIPSecAccPCHIP(zIPData *dat, uint i, zVec v)
+static zVec _zIPSecAccPCHIP(zIPData *dat, int i, zVec v)
 {
   zVecMul( zIPSecVec(dat,i), -6, v );
   return zVecCatDRC( v, -zIPDelta(dat,i+1)*4, *zArrayElem(&dat->va,i) );
@@ -104,7 +104,7 @@ static zIPCom _zm_ip_com_pchip = {
 /* initialize gradient vectors by three-point cubic interpolation */
 static void _zIPInitPCHIP(zIP *ip)
 {
-  uint i, n;
+  int i, n;
   double dt1, dt2, dt3;
 
   dt1 = zIPDelta(&ip->dat,1);
@@ -136,7 +136,7 @@ static void _zIPInitPCHIP(zIP *ip)
 /* modify gradient vectors */
 static void _zIPModifyPCHIP(zIP *ip)
 {
-  uint i, j, m;
+  int i, j, m;
   double d, a, b, l;
 
   m = zVecSizeNC( zIPSecVec(&ip->dat,0) );

@@ -75,7 +75,7 @@ static void _zLCPIP_PCErr(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z)
 /* gradient matrix and its inverse for LCP-IP-PC. */
 static bool _zLCPIP_PCGrad(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zVecSizeNC(w); i++ ){
     zRawVecMul( zMatRowBuf(m,i), zVecElemNC(z,i), zMatRowBuf(wm->g,i), zMatColSizeNC(m) );
@@ -99,7 +99,7 @@ static bool _zLCPIP_PCPred(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
 /* corrector (centering) direction vector for LCP-IP-PC. */
 static bool _zLCPIP_PCCorr(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
 {
-  uint i;
+  int i;
 
   zVecAmpNC( w, z, wm->b );
   for( i=0; i<zVecSizeNC(wm->b); i++ )
@@ -113,7 +113,7 @@ static bool _zLCPIP_PCCorr(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
 static bool _zLCPIP_PCStep(_zLCPIP_PC *wm, zVec w, zVec z, double *step)
 {
   double k1, k2, a;
-  uint i;
+  int i;
 
   zVecAmpNC( w, z, wm->b );
   for( i=0; i<zVecSizeNC(wm->b); i++ )

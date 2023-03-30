@@ -9,9 +9,9 @@
 /* Householder transformation to Hessian matrices */
 
 /* Householder transformation (destructive). */
-void zHouseholder(zMat m, zMat p, uint from, uint to, zVec u, zVec v, zVec w)
+void zHouseholder(zMat m, zMat p, int from, int to, zVec u, zVec v, zVec w)
 {
-  uint i, j;
+  int i, j;
   double s, a;
 
   /* v = 2Mu, w = 2M^Tu */
@@ -53,9 +53,9 @@ void zHouseholder(zMat m, zMat p, uint from, uint to, zVec u, zVec v, zVec w)
 }
 
 /* projection vector of Householder transformation. */
-zVec zHouseholderVec(zMat m, uint col, uint from, uint to, zVec u)
+zVec zHouseholderVec(zMat m, int col, int from, int to, zVec u)
 {
-  uint i;
+  int i;
   double s;
 
   for( s=0, i=from; i<to; i++ )
@@ -69,7 +69,7 @@ zVec zHouseholderVec(zMat m, uint col, uint from, uint to, zVec u)
 /* Hessenberg matrix using Householder transformation. */
 zMat zHess(zMat m, zMat h, zMat p)
 {
-  uint n, n2, i;
+  int n, n2, i;
   zVec u, v, w;
 
   if( !zMatIsSqr( m ) ){
@@ -280,8 +280,7 @@ static int _zEigVecComplex(zMat m, zComplex *eig, zCVec eigv1, zCVec eigv2, int 
   zMat ms, b;
   zVec eigv;
   double shift = zTOL * 1.0e1, s;
-  int ret = 0;
-  uint i, n;
+  int i, n, ret = 0;
 
   n = 2 * zMatRowSizeNC(m);
   ms = zMatAllocSqr( n );
@@ -327,7 +326,7 @@ static int _zEigVecComplex(zMat m, zComplex *eig, zCVec eigv1, zCVec eigv2, int 
 #define Z_EIGSYS_ITER_NUM 10
 int zEigSystem(zMat m, zComplex eig[], zCVec eigv[], int iter)
 {
-  uint i;
+  int i;
 
   if( !zMatIsSqr( m ) ){
     ZRUNERROR( ZM_ERR_NONSQR_MAT );
@@ -359,7 +358,7 @@ int zEigSystem(zMat m, zComplex eig[], zCVec eigv[], int iter)
 /* compute the range in which all eigenvalues exist based on Gerschgorin's theorem. */
 static void _zEigSymBisecRange(zMat m, double *emin, double *emax)
 {
-  uint i;
+  int i;
   double ml, mr, e;
 
   *emin = *emax = 0;
@@ -373,7 +372,7 @@ static void _zEigSymBisecRange(zMat m, double *emin, double *emax)
 /* Sturm's function series. */
 static int _zEigSysBisecSturm(zMat a, double e)
 {
-  uint i, n = 0;
+  int i, n = 0;
   double r, p1, p2;
 
   p1 = e - zMatBuf(a)[0];
@@ -422,7 +421,7 @@ static void _zEigSymBisecRec(zMat a, double emin, int nmin, double emax, int nma
 /* compute a unitary matrix consisting of eigenvectors for real-number eigenvalues. */
 static bool _zEigSymBisecR(zMat m, zVec eig, zMat r, int iter)
 {
-  uint i;
+  int i;
   zMat ms, b;
   zVec eigv;
   double shift = zTOL * 1.0e1;
@@ -505,9 +504,9 @@ static double _zEigSymJacobiShift(zMat m, double *shift)
 }
 
 /* transform a matrix by Jacobi's rotation based on Wilkinson's formula. */
-static void _zEigSymJacobiRot(zMat m, zMat r, uint i, uint j)
+static void _zEigSymJacobiRot(zMat m, zMat r, int i, int j)
 {
-  uint k;
+  int k;
   double as, ad, ti, c, s;
   double tmp1, tmp2;
 
@@ -544,7 +543,7 @@ static void _zEigSymJacobiRot(zMat m, zMat r, uint i, uint j)
  */
 zVec zEigSymJacobi(zMat m, zVec eig, zMat r)
 {
-  uint i, j, n = 0;
+  int i, j, n = 0;
   double shift;
   bool is_complete;
   zMat d;
@@ -595,8 +594,7 @@ zVec zEigSymJacobi(zMat m, zVec eig, zMat r)
 /* sort singular values and corresponding bases. */
 static int _zSVDSort(zVec sv, zMat u)
 {
-  uint i;
-  int im;
+  int i, im;
 
   for( i=0; i<zVecSizeNC(sv); i++ ){
     if( zIsTiny( zDataMax( zVecBuf(sv)+i, zVecSizeNC(sv)-i, &im ) ) )
@@ -611,10 +609,9 @@ static int _zSVDSort(zVec sv, zMat u)
 /* singular value decomposition. */
 int zSVD(zMat m, zVec sv, zMat u, zMat v)
 {
-  uint i, j;
+  int i, j, rank;
   zMat c, w = NULL;
   double s;
-  int rank;
 
   if( !( c = zMatAllocSqr( zMatRowSizeNC(m) ) ) ){
     ZALLOCERROR();
@@ -635,7 +632,7 @@ int zSVD(zMat m, zVec sv, zMat u, zMat v)
   zMatSetRowSize( v, rank );
 
   zMulMatTMatNC( w, m, v );
-  for( i=0; i<(uint)rank; i++ ){
+  for( i=0; i<rank; i++ ){
     s = 1.0 / zVecElemNC(sv,i);
     for( j=0; j<zMatColSizeNC(m); j++ )
       zMatElemNC(v,i,j) *= s;

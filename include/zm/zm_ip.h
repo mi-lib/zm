@@ -51,14 +51,14 @@ __EXPORT void zIPDataFree(zIPData *dat);
  * \return
  * zIPSeg() returns an integer value \a i when t_i <= t < t_i+1.
  */
-__EXPORT uint zIPSeg(zIPData *dat, double t);
+__EXPORT int zIPSeg(zIPData *dat, double t);
 
 typedef struct{
   zVec (*vec)(zIPData*,double,zVec);
   zVec (*vel)(zIPData*,double,zVec);
   zVec (*acc)(zIPData*,double,zVec);
-  zVec (*sec_vel)(zIPData*,uint,zVec);
-  zVec (*sec_acc)(zIPData*,uint,zVec);
+  zVec (*sec_vel)(zIPData*,int,zVec);
+  zVec (*sec_acc)(zIPData*,int,zVec);
 } zIPCom;
 
 typedef struct{

@@ -9,7 +9,7 @@
 /* LU decomposition of a matrix (destructive). */
 int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx)
 {
-  uint r, c, i, j, p, q;
+  int r, c, i, j, p, q;
   double ahead;
 
   zMatZero( l );
@@ -93,7 +93,7 @@ int zMatDecompLUAlloc(zMat m, zMat *l, zMat *u, zIndex *idx)
 /* Cholesky decomposition of a matrix (destructive). */
 int zMatDecompCholeskyDST(zMat m, zMat l, zIndex idx)
 {
-  uint i, j, k, n, p, rank;
+  int i, j, k, n, p, rank;
   double a;
 
   n = zArraySize( idx );

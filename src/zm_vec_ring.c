@@ -49,7 +49,7 @@ zVec zVecRingFill(zVecRing *ring, zVec v)
 /* concatenate vectors of a ring. */
 zVec zVecRingCat(zVec v, zVec c, zVecRing *ring)
 {
-  uint i;
+  int i;
 
   if( !zVecSizeIsEqual(*zRingHead(ring),v) ){
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );

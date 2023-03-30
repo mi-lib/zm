@@ -22,7 +22,7 @@ static zVec _zODE_Gear_Func(zVec x, zVec y, void *util)
 {
   zODE *ode;
   _zODE_Gear *ws;
-  uint i;
+  int i;
 
   ode = (zODE *)util;
   ws = (_zODE_Gear *)ode->_ws;

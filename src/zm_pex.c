@@ -31,8 +31,7 @@ zPex zPexRgl(zPex *p)
 /* add a polynomial expression directly to another. */
 zPex zPexAddDRC(zPex p1, zPex p2)
 {
-  int dim;
-  uint i;
+  int i, dim;
 
   if( ( dim = zPexDim(p2) ) < 0 ){
     ZRUNERROR( ZM_ERR_PEX_INVDIM );
@@ -42,7 +41,7 @@ zPex zPexAddDRC(zPex p1, zPex p2)
     ZRUNERROR( ZM_ERR_PEX_DIMMIS );
     return NULL;
   }
-  for( i=0; i<=(uint)dim; i++ )
+  for( i=0; i<=dim; i++ )
     zPexCoeff(p1,i) += zPexCoeff(p2,i);
   return p1;
 }
@@ -50,8 +49,7 @@ zPex zPexAddDRC(zPex p1, zPex p2)
 /* subtract a polynomial expression directly from another. */
 zPex zPexSubDRC(zPex p1, zPex p2)
 {
-  int dim;
-  uint i;
+  int i, dim;
 
   if( ( dim = zPexDim(p2) ) < 0 ){
     ZRUNERROR( ZM_ERR_PEX_INVDIM );
@@ -61,7 +59,7 @@ zPex zPexSubDRC(zPex p1, zPex p2)
     ZRUNERROR( ZM_ERR_PEX_DIMMIS );
     return NULL;
   }
-  for( i=0; i<=(uint)dim; i++ )
+  for( i=0; i<=dim; i++ )
     zPexCoeff(p1,i) -= zPexCoeff(p2,i);
   return p1;
 }
@@ -93,15 +91,14 @@ zPex zPexSub(zPex p1, zPex p2)
 /* multiply a polynomial expression by another. */
 zPex zPexMul(zPex p1, zPex p2)
 {
-  int dim1, dim2;
-  uint i, j;
+  int i, j, dim1, dim2;
   zPex p;
 
   dim1 = zPexDim( p1 );
   dim2 = zPexDim( p2 );
   if( !( p = zPexAlloc( dim1 + dim2 ) ) ) return NULL;
-  for( i=0; i<=(uint)dim2; i++ )
-    for( j=0; j<=(uint)dim1; j++ )
+  for( i=0; i<=dim2; i++ )
+    for( j=0; j<=dim1; j++ )
       zPexCoeff(p,i+j) += zPexCoeff(p2,i)*zPexCoeff(p1,j);
   zPexRgl( &p );
   return p;
@@ -110,8 +107,7 @@ zPex zPexMul(zPex p1, zPex p2)
 /* divide a polynomial expression directly by another. */
 static void _zPexDivDRC(zPex p, zPex f, zPex q, zPex *r)
 {
-  int n, m;
-  uint i;
+  int i, n, m;
   double a;
 
   n = zPexDim( p );
@@ -122,9 +118,9 @@ static void _zPexDivDRC(zPex p, zPex f, zPex q, zPex *r)
     return;
   }
   a = zPexCoeff( p, n ) / zPexCoeff( f, m );
-  zPexSetCoeff( q, (uint)(n-m), a );
+  zPexSetCoeff( q, n-m, a );
   zPexSetDim( q, n-m-1 );
-  for( i=1; i<=(uint)m; i++ )
+  for( i=1; i<=m; i++ )
     zPexSetCoeff( p, n-i, zPexCoeff(p,n-i) - a*zPexCoeff(f,m-i) );
   zPexSetDim( p, n-1 );
   _zPexDivDRC( p, f, q, r );
@@ -158,7 +154,7 @@ bool zPexDiv(zPex p, zPex f, zPex *q, zPex *r)
 static zPex _zPexExp(zVec factor)
 {
   zPex p1, p2, p = NULL;
-  uint size, hsize;
+  int size, hsize;
 
   size = zVecSizeNC( factor );
   if( size == 1 ){
@@ -200,7 +196,7 @@ zPex zPexExp(zVec factor)
 static zPex _zPexExpIm(zCVec ifactor)
 {
   zPex p1, p2, p = NULL;
-  uint size, hsize, hhsize;
+  int size, hsize, hhsize;
 
   hsize = ( size = zVecSizeNC( ifactor ) ) / 2;
   if( hsize == 1 ){
@@ -258,7 +254,7 @@ zPex zPexModulo(zPex p1, double a, zPex p2)
     return NULL;
   }
   for( i=zPexDim(p2)-1; i>=0; i-- )
-    for( j=i; j<(uint)zPexDim(p2); j++ )
+    for( j=i; j<zPexDim(p2); j++ )
       zPexCoeff(p2,j) -= a * zPexCoeff(p2,j+1);
   return p2;
 }
@@ -266,12 +262,11 @@ zPex zPexModulo(zPex p1, double a, zPex p2)
 /* differentiate a polynomial expression. */
 zPex zPexDif(zPex p)
 {
-  int dim;
-  uint i;
+  int i, dim;
   zPex q;
 
   if( !( q = zPexAlloc( ( dim = zPexDim(p) - 1 ) ) ) ) return NULL;
-  for( i=0; i<=(uint)dim; i++ )
+  for( i=0; i<=dim; i++ )
     zPexSetCoeff( q, i, zPexCoeff(p,i+1)*(i+1) );
   return q;
 }
@@ -279,12 +274,11 @@ zPex zPexDif(zPex p)
 /* integrate a polynomial expression. */
 zPex zPexIntg(zPex p)
 {
-  int dim;
-  uint i;
+  int i, dim;
   zPex q;
 
   if( !( q = zPexAlloc( ( dim=zPexDim(p) ) + 1 ) ) ) return NULL;
-  for( i=0; i<=(uint)dim; i++ )
+  for( i=0; i<=dim; i++ )
     zPexSetCoeff( q, i+1, zPexCoeff(p,i)/(i+1) );
   return q;
 }
@@ -304,7 +298,7 @@ double zPexVal(zPex p, double arg)
 /* evaluate a polynomial expression given a complex number argument. */
 zComplex *zPexCVal(zPex p, zComplex *arg, zComplex *c)
 {
-  uint i;
+  int i;
   zComplex tmp;
 
   i = zPexDim(p);
@@ -319,13 +313,13 @@ zComplex *zPexCVal(zPex p, zComplex *arg, zComplex *c)
 /* evaluate the differential value of a polynomial expression. */
 double zPexDifVal(zPex p, int dim, double arg)
 {
-  uint i;
+  int i;
   double c, result;
 
   i = zPexDim( p );
   c = zPermut( i, dim );
   result = c * zPexCoeff( p, i );
-  for( ; i>(uint)dim; i-- ){
+  for( ; i>dim; i-- ){
     c *= (double)( i - dim ) / i;
     result = c * zPexCoeff( p, i-1 ) + result * arg;
   }
@@ -335,12 +329,11 @@ double zPexDifVal(zPex p, int dim, double arg)
 /* scan a polynomial expression from a ZTK processor. */
 zPex zPexFromZTK(ZTK *ztk)
 {
-  int dim;
-  uint i;
+  int i, dim;
   zPex p;
 
   if( !( p = zPexAlloc( ( dim = ZTKInt(ztk) ) ) ) ) return NULL;
-  for( i=0; i<=(uint)dim; i++ )
+  for( i=0; i<=dim; i++ )
     zPexSetCoeff( p, i, ZTKDouble(ztk) );
   return p;
 }
@@ -348,15 +341,14 @@ zPex zPexFromZTK(ZTK *ztk)
 /* scan a polynomial expression from a file. */
 zPex zPexFScan(FILE *fp)
 {
-  int dim;
-  uint i;
+  int i, dim;
   zPex p;
 
   if( !zFInt( fp, &dim ) ){
     ZRUNERROR( ZM_ERR_PEX_DIMUNFOUND );
   }
   if( !( p = zPexAlloc( dim ) ) ) return NULL;
-  for( i=0; i<=(uint)dim; i++ )
+  for( i=0; i<=dim; i++ )
     if( !zFDouble( fp, &zPexCoeff(p,i) ) ){
       ZRUNWARN( ZM_WARN_PEX_SIZMIS, i, dim+1 );
       break;
@@ -367,11 +359,11 @@ zPex zPexFScan(FILE *fp)
 /* print a polynomial expression to a file. */
 void zPexFPrint(FILE *fp, zPex p)
 {
-  uint i;
+  int i;
 
   if( !p ) return;
   fprintf( fp, "%d (", zPexDim(p) );
-  for( i=0; i<=(uint)zPexDim(p); i++ )
+  for( i=0; i<=zPexDim(p); i++ )
     fprintf( fp, " %.10g", zPexCoeff(p,i) );
   fprintf( fp, " )\n" );
 }
@@ -384,10 +376,9 @@ void zPexFPrint(FILE *fp, zPex p)
 } while(0)
 
 /* express a polynomial expression to a string. */
-char *zPexSExpr(char *str, size_t size, zPex p, char c)
+char *zPexSExpr(char *str, int size, zPex p, char c)
 {
-  int dim;
-  uint i, len;
+  int i, dim, len;
   char buf[BUFSIZ];
   double coeff;
 
@@ -396,7 +387,7 @@ char *zPexSExpr(char *str, size_t size, zPex p, char c)
   else{
     str[0] = '\0';
     for( i=dim; i>=0; i-- ){
-      if( i < (uint)dim && zPexCoeff(p,i) > 0 )
+      if( i < dim && zPexCoeff(p,i) > 0 )
         __strcat_dec( str, " + ", len, size );
       else if( zPexCoeff(p,i) < 0 )
         __strcat_dec( str, " - ", len, size );

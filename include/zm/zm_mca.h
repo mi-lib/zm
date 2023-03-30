@@ -108,7 +108,7 @@ __EXPORT int zPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loadi
  * namely, the size of \a vl. If it internally fails to allocate memory,
  * a smaller number than \a n is returned.
  */
-__EXPORT int zVecListGenRandND(zVecList *vl, uint n, zVec mean, zMat cov);
+__EXPORT int zVecListGenRandND(zVecList *vl, int n, zVec mean, zMat cov);
 
 __END_DECLS
 

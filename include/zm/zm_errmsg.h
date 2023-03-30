@@ -24,7 +24,7 @@
 
 #define ZM_WARN_NLE_NOROOT   "probably, equation has no root"
 
-#define ZM_WARN_SEQ_EMPTY    "sequence list is empty"
+#define ZM_WARN_SEQ_EMPTY    "empty vector sequence assigned"
 #define ZM_WARN_SEQ_STEP     "too large step index"
 
 #define ZM_WARN_PEX_SIZMIS   "polynomial expression has only %d components, while specified size is %d"

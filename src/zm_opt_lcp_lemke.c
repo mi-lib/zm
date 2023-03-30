@@ -39,7 +39,7 @@ static void _zLemkeDestroy(_zLemke *tab)
 /* create Lemke tableau and lexicon. */
 static _zLemke *_zLemkeCreate(_zLemke *tab, zMat m, zVec q)
 {
-  uint i, j, n;
+  int i, j, n;
 
   n = zMatRowSizeNC(m);
   tab->m = zMatAlloc( n, 2*n+1 );
@@ -66,7 +66,7 @@ static _zLemke *_zLemkeCreate(_zLemke *tab, zMat m, zVec q)
 /* sweep-out the active column of Lemke tableau. */
 static void _zLemkeSweep(_zLemke *tab, int p)
 {
-  uint i, j;
+  int i, j;
   double ap;
 
   /* normalize pivot row */
@@ -78,7 +78,7 @@ static void _zLemkeSweep(_zLemke *tab, int p)
   zVecElemNC(tab->q,p) /= ap;
   /* sweep-out rest row */
   for( i=0; i<zVecSizeNC(tab->q); i++ ){
-    if( i == (uint)p ) continue;
+    if( i == p ) continue;
     ap = zMatElemNC( tab->m, i, tab->act );
     for( j=0; j<zArraySize(tab->in); j++ )
       zMatElemNC( tab->m, i, zIndexElemNC(tab->in,j) )
@@ -93,8 +93,7 @@ static void _zLemkeSweep(_zLemke *tab, int p)
 /* swap Lemke lexicon and active variable index. */
 static bool _zLemkeSwap(_zLemke *tab, int p)
 {
-  uint i;
-  int ib;
+  int i, ib;
 
   ib = zIndexElemNC(tab->ib,p);
   zIndexSetElemNC( tab->ib, p, tab->act );
@@ -105,14 +104,13 @@ static bool _zLemkeSwap(_zLemke *tab, int p)
       zIndexSetElemNC( tab->in, i, ib );
       break;
     }
-  return ib == (int)zMatColSizeNC(tab->m) - 1 ? true : false;
+  return ib == zMatColSizeNC(tab->m) - 1 ? true : false;
 }
 
 /* find next pivot in Lemke tableau. */
 static int _zLemkePivot(_zLemke *tab)
 {
-  uint i;
-  int np;
+  int i, np;
   double a, p, p_min;
 
   for( p_min=HUGE_VAL, np=-1, i=0; i<zVecSizeNC(tab->q); i++ ){
@@ -145,20 +143,19 @@ static bool _zLemkeIter(_zLemke *tab)
 /* complementary vectors. */
 static void _zLemkeAnswer(_zLemke *tab, zVec w, zVec z)
 {
-  uint i;
-  int idx;
+  int i, idx;
 
   if( w ){
     zVecZero( w );
     for( i=0; i<zArraySize(tab->ib); i++ ){
       idx = zIndexElemNC(tab->ib,i) - zVecSizeNC(w);
-      if( idx >= 0 && idx < (int)zVecSizeNC(w) )
+      if( idx >= 0 && idx < zVecSizeNC(w) )
         zVecSetElemNC( w, idx, zVecElemNC(tab->q,i) );
     }
   }
   zVecZero( z );
   for( i=0; i<zArraySize(tab->ib); i++ )
-    if( zIndexElemNC(tab->ib,i) < (int)zVecSizeNC(z) )
+    if( zIndexElemNC(tab->ib,i) < zVecSizeNC(z) )
       zVecSetElemNC( z, zIndexElemNC(tab->ib,i), zVecElemNC(tab->q,i) );
 }
 

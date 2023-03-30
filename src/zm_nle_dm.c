@@ -12,7 +12,7 @@ static zMat _zNLEJacobi(zNLE *nle, zVec var, zMat j, void *util){
 }
 static zMat _zNLEJacobiNG(zNLE *nle, zVec var, zMat j, void *util)
 {
-  uint i;
+  int i;
   double org;
 
   for( i=0; i<zVecSizeNC(var); i++ ){
