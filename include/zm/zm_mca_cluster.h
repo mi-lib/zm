@@ -35,6 +35,9 @@ __EXPORT zCluster *zClusterCreate(zCluster *c, int coresize);
 /*! \brief destroy a vector cluster */
 __EXPORT void zClusterDestroy(zCluster *c);
 
+/*! \brief the maximum silhouette coefficient in a cluster. */
+__EXPORT double zClusterMaxSilhouetteCoeff(zCluster *c);
+
 /*! \brief print a vector cluster to a file */
 __EXPORT void zClusterFPrint(FILE *fp, zCluster *c);
 __EXPORT void zClusterDataFPrint(FILE *fp, zCluster *c);
@@ -131,8 +134,21 @@ __EXPORT zMCluster *zMClusterAlloc(zMCluster *mc, int n);
 /*! \brief copy methods of a multiple cluster to another. */
 #define zMClusterMethodCopy(src,dest) zClusterMethodCopy( &(src)->method, &(dest)->method )
 
+/*! \brief move a multiple cluster to another. */
+__EXPORT bool zMClusterMove(zMCluster *src, zMCluster *dest);
+
 /*! \brief destroy a set of vector clusters. */
 __EXPORT void zMClusterDestroy(zMCluster *mc);
+
+/*! \brief evenness of clusters.
+ *
+ * zMClusterEvenness() returns the measure of evenness, namely, the ratio of
+ * the maximum number of clustered samples over the minimum, of a multiple
+ * cluster \a mc. \a mc is more even if it has as close value to 1.
+ * \return
+ * zMClusterEvenness() returns the measure of evenness.
+ */
+__EXPORT double zMClusterEvenness(zMCluster *mc);
 
 /*! \brief print vectors in a set of vector clusters */
 __EXPORT void zMClusterFPrint(FILE *fp, zMCluster *mc);

@@ -31,6 +31,12 @@ void zClusterDestroy(zCluster *c)
   zFree( c->_sc );
 }
 
+/* the maximum silhouette coefficient in a cluster. */
+double zClusterMaxSilhouetteCoeff(zCluster *c)
+{
+  return c && c->_sc ? c->_sc[zListSize(zClusterSampleList(c))-1] : -HUGE_VAL;
+}
+
 /* print a vector cluster to a file. */
 void zClusterFPrint(FILE *fp, zCluster *c)
 {
@@ -258,6 +264,15 @@ zMCluster *zMClusterAlloc(zMCluster *mc, int n)
   return NULL;
 }
 
+/* move a multiple cluster to another. */
+bool zMClusterMove(zMCluster *src, zMCluster *dest)
+{
+  if( !zClusterMethodCopy( &src->method, &dest->method ) ) return false;
+  zListMove( zMClusterClusterList(src), zMClusterClusterList(dest) );
+  zClusterMethodDestroy( &src->method );
+  return true;
+}
+
 /* destroy multiple vector clusters. */
 void zMClusterDestroy(zMCluster *mc)
 {
@@ -269,6 +284,21 @@ void zMClusterDestroy(zMCluster *mc)
     free( cc );
   }
   zClusterMethodDestroy( &mc->method );
+}
+
+/* evenness of clusters. */
+double zMClusterEvenness(zMCluster *mc)
+{
+  zClusterListCell *cp;
+  int size_min = INT_MAX, size_max = 0;
+
+  zListForEach( zMClusterClusterList(mc), cp ){
+    if( zListSize(zClusterSampleList(&cp->data)) < size_min )
+      size_min = zListSize(zClusterSampleList(&cp->data));
+    if( zListSize(zClusterSampleList(&cp->data)) > size_max )
+      size_max = zListSize(zClusterSampleList(&cp->data));
+  }
+  return (double)size_max / size_min;
 }
 
 /* print multiple vector clusters to a file. */
@@ -574,7 +604,7 @@ double zMClusterSilhouetteScore(zMCluster *mc)
         if( ( b_tmp = _zClusterDistAve( &mc->method, zClusterSampleList(&ccp->data), pp->data ) ) < b )
           b = b_tmp; /* inter-cluster distance */
       }
-      score += cp->data._sc[i++] = ( b - a ) / zMax( a, b );
+      score += cp->data._sc[i++] = ( b - a ) / zMax( a, b ); /* silhouette coefficient of the sample */
     }
     zDataSort( cp->data._sc, zListSize(zClusterSampleList(&cp->data)) );
     n += zListSize(zClusterSampleList(&cp->data));

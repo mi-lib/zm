@@ -581,6 +581,26 @@ void zVecFPrint(FILE *fp, zVec v)
   }
 }
 
+/* scan a vector from a file. */
+zVec zVecDataFScan(FILE *fp)
+{
+  char buf[BUFSIZ], valstr[BUFSIZ];
+  int size, dim, i;
+  char *sp;
+  zVec v;
+
+  if( !fgets( buf, BUFSIZ, fp ) ) return NULL;
+  for( dim=0, size=strlen(buf), sp=buf; ; dim++ ){
+    if( !*( sp = zSTokenSkim( sp, valstr, size ) ) ) break;
+    size -= strlen( valstr );
+  }
+  if( dim == 0 ) return NULL;
+  if( !( v = zVecAlloc( dim ) ) ) return NULL;
+  for( i=0; i<dim; i++ )
+    zSDouble( buf, &zVecElemNC(v,i) );
+  return v;
+}
+
 /* print a vector out to a file. */
 void zVecDataFPrint(FILE *fp, zVec v)
 {

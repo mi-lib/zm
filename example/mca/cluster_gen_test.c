@@ -13,7 +13,7 @@ bool gen_vec(int dim, int np, int nc, double rate_outlier, double min, double ma
     ret = false;
     goto TERMINATE;
   }
-  rmax = fabs( max - min ) * sqrt(dim) / nc;
+  rmax = fabs( max - min ) * sqrt(dim) / (2*nc);
   for( i=0; i<nc; i++ ){
     /* center of a cluster */
     for( k=0; k<dim; k++ )
@@ -22,7 +22,7 @@ bool gen_vec(int dim, int np, int nc, double rate_outlier, double min, double ma
     for( j=0; j<np; j++ ){
       r = zRandF(0,rmax);
       for( k=0; k<dim; k++ )
-        zVecSetElem( v, k, zRandF(min,max) );
+        zVecSetElem( v, k, zRandF(min-max,max-min) );
       zVecNormalizeDRC( v );
       zVecMulDRC( v, r );
       zVecAddDRC( v, vc );

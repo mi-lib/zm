@@ -20,6 +20,8 @@
 #define ZM_WARN_VEC_SIZMIS   "vector has only %d components, while specified size is %d"
 #define ZM_WARN_MAT_SIZMIS   "matrix has only %d components, while specified size is %d"
 
+#define ZM_WARN_VECLIST_EMPTY "empty vector list assigned"
+
 #define ZM_WARN_LE_ZEROPIVOT "cannot sweep out by zero pivot"
 
 #define ZM_WARN_NLE_NOROOT   "probably, equation has no root"

@@ -92,6 +92,19 @@ zVec zVecListNN(zVecList *list, zVec v, double *dmin)
   return nn;
 }
 
+/* scan vectors from a file and creates a list of them. */
+zVecList *zVecListFScan(FILE *fp, zVecList *list)
+{
+  zVec v;
+
+  zListInit( list );
+  while( ( v = zVecDataFScan( fp ) ) )
+    zVecListInsertHead( list, v );
+  if( zListIsEmpty( list ) )
+    ZRUNWARN( ZM_WARN_VECLIST_EMPTY );
+  return list;
+}
+
 /* print vectors in a list to a file. */
 void zVecListFPrint(FILE *fp, zVecList *list)
 {

@@ -1,3 +1,8 @@
+2023. 3.31. Added zm_kmeans. [app]
+2023. 3.31. Added zClusterMaxSilhouetteCoeff, zMClusterMove, and zMClusterEvenness. [zm_mca_cluster]
+2023. 3.31. Added zVecListFScan and zVecListScan. [zm_errmsg, zm_vec_list]
+2023. 3.31. Added zVecDataFScan and zVecDataScan. [zm_vec]
+2023. 3.31. Modified zDataMax, zDataMin, zDataAbsMax, and zDataAbsMin. [zm_stat]
 2023. 3.29. Reflected new specification of zArrayClass and zArray2Class. [zm_vec, zm_vec_array, zm_vec_tree, zm_vec_ring, zm_mat, zm_cvec, zm_cmat, zm_le, zm_le_pivot, zm_le_lu, zm_le_lq, zm_le_minv, zm_le_mpinv, zm_le_gen, zm_eig, zm_mca, zm_mca_gmm, zm_pex, zm_ip, zm_ip_lin, zm_ip_lagrange, zm_ip_chebyshev, zm_ip_spline, zm_ip_akima, zm_ip_pchip, zm_ip_pex, zm_nurbs, zm_data_ransac, zm_opt_lp_stdcnv, zm_opt_lp_simplex, zm_opt_lp_pdip, zm_opt_lcp_lemke, zm_opt_lcp_ip, zm_opt_qp, zm_opt_direct, zm_opt_ga, zm_opt_pso, zm_opt_dm, zm_nle_dm, zm_ode_gear]
 2023. 3.25. Renamed dim member of zNURBS to order. [zm_nurbs]
 2023. 3.25. Added zMClusterDataPrintFile. [zm_mca_cluster]

@@ -55,11 +55,23 @@ __EXPORT void zVecListDestroy(zVecList *list);
  */
 __EXPORT zVec zVecListNN(zVecList *list, zVec v, double *dmin);
 
-/*! \brief print a vector list out to a file.
+/*! \brief scan/print a list of vectors from/to a file.
  *
- * zVecListFPrint() prints out information about the list of vectors
- * \a list to the current position of a stream \a fp.
+ * zVecListFScan() scans vectors from a file stream \a fp, and creates
+ * a list of them \a list.
+ * zVecListScan() scans vectors from the standard input.
+ *
+ * zVecListFPrint() prints out information about a list of vectors \a list
+ * to the current position of a stream \a fp.
+ * zVecListPrint() prints a list \a list out to the standard output.
+ * \return
+ * zVecListFScan() and zVecListScan() return a pointer \a list if they
+ * succeed. Otherwise, the null pointer is returned.
+ *
+ * zVecListFPrint() and zVecListPrint() return no value.
  */
+__EXPORT zVecList *zVecListFScan(FILE *fp, zVecList *list);
+#define zVecListScan(l) zVecListFScan( stdin, l )
 __EXPORT void zVecListFPrint(FILE *fp, zVecList *list);
 #define zVecListPrint(l) zVecListFPrint( stdout, l )
 

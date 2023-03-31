@@ -473,19 +473,16 @@ __EXPORT zVec zVecFromZTK(ZTK *ztk);
  *  \a n ( \a x1 \a x2 \a x3 ... \a xn )
  * where \a n is the size of vector.
  *
- * zVecFScan() scans a sequence of double-precision
- * floating-point values from the current position of a
- * file \a fp, and creates a new vector.
- * zVecScan() scans a sequence of double-precision
- * floating-point values from the standard input.
+ * zVecFScan() scans a sequence of double-precision floating-point values
+ * from the current position of a file \a fp, and creates a new vector.
+ * zVecScan() scans a sequence of double-precision floating-point values
+ * from the standard input.
  *
- * zVecFPrint() prints the components of a vector \a v
- * out to the current position of a file \a fp.
- * zVecPrint() prints the components of \a v out to the
- * standard output.
+ * zVecFPrint() prints the components of a vector \a v out to the current
+ * position of a file \a fp.
+ * zVecPrint() prints the components of \a v out to the standard output.
  * \return
- * zVecFScan() and zVecScan() return a pointer to the newly
- * created vector.
+ * zVecFScan() and zVecScan() return a pointer to the newly created vector.
  *
  * zVecFPrint() and zVecPrint() return no values.
  */
@@ -494,17 +491,29 @@ __EXPORT zVec zVecFScan(FILE *fp);
 __EXPORT void zVecFPrint(FILE *fp, zVec v);
 #define zVecPrint(v) zVecFPrint( stdout, v )
 
-/*! \brief print only components of a vector.
+/*! \brief scan and print only components of a vector.
  *
- * zVecDataFPrint() prints only components of a vector
- * \a v out to the current position of a file \a fp
- * in the following format:
+ * zVecDataFScan() scans a sequence of double-precision floating-point
+ * values from the current position of a file \a fp, and creates a new
+ * vector. The accepted format is only a sequence of values without any
+ * parentheses and braces as
+ *  \a x1 \a x2 \a x3 ... \a xn
+ * zVecDataScan() scans the standard input in the same format and creates
+ * a vector.
+ *
+ * zVecDataFPrint() prints only components of a vector \a v out to the
+ * current position of a file \a fp in the following format:
  *  \a x1 \a x2 \a x3 ... \a xn
  * zVecDataPrint() prints components of \a v out to
  * the standard output.
  * \return
+ * zVecDataFScan() and zVecDataScan() return the pointer to the newly
+ * created vector.
+ *
  * zVecDataFPrint() and zVecDataPrint() return no values.
  */
+__EXPORT zVec zVecDataFScan(FILE *fp);
+#define zVecDataScan(v) zVecDataFScan( stdin, v )
 __EXPORT void zVecDataFPrint(FILE *fp, zVec v);
 #define zVecDataPrint(v) zVecDataFPrint( stdout, v )
 
