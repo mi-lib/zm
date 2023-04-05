@@ -389,7 +389,11 @@ static double _zMClusterVar(zMCluster *mc, zCluster *c)
 
   c->var = 0;
   zListForEach( zClusterSampleList(c), pc ){
+#if 0
     zMClusterErrorF( mc, pc->data, c->core );
+#else
+    zMClusterErrorF( mc, pc->data, mc->method.error );
+#endif
     c->var += zVecSqrNorm( mc->method.error );
   }
   return ( c->var /= zListSize(zClusterSampleList(c)) );
@@ -645,4 +649,168 @@ bool zMClusterSilhouettePrintFile(zMCluster *mc, const char *basename)
     offset += zListSize(zClusterSampleList(&cp->data));
   }
   return true;
+}
+
+/* ********************************************************** */
+/*! \brief clustering based on X-means
+ *//* ******************************************************* */
+
+#define Z_XMEANS_MINSIZE 10
+
+/* merge subclusters with original. */
+static void _zMClusterMerge(zMCluster *mc, zClusterListCell *vc, zMCluster *submc)
+{
+  zClusterListCell *prev, *next;
+
+  prev = zListCellPrev(vc);
+  next = zListCellNext(vc);
+  zClusterDestroy( &vc->data );
+  free( vc );
+  zListCellBind( prev, zListTail(zMClusterClusterList(submc)) );
+  zListCellBind( zListHead(zMClusterClusterList(submc)), next );
+  zListSize(zMClusterClusterList(mc)) += zListSize(zMClusterClusterList(submc)) - 1;
+  zListInit( zMClusterClusterList(submc) );
+  zMClusterDestroy( submc );
+}
+
+/* initialize clusters for X-means. */
+static void _zMClusterXMeansInit(zMCluster *mc, zVecAddrList *points)
+{
+  zClusterListCell *vc;
+  zVecListCell *pc;
+
+  vc = zListHead(zMClusterClusterList(mc));
+  zListForEach( points, pc )
+    if( !zVecAddrListInsertHead( zClusterSampleList(&vc->data), pc->data ) ) break;
+  zMClusterCoreF( mc, zClusterSampleList(&vc->data), vc->data.core );
+  _zMClusterVar( mc, &vc->data );
+}
+
+/* find maximum error in a cluster from the mean value. */
+static double _zClusterMaxError(zCluster *c, zClusterMethod *method)
+{
+  zVecListCell *vc;
+  double dmax = 0, d;
+
+  zListForEach( zClusterSampleList(c), vc ){
+    zClusterMethodErrorF( method, vc->data, c->core );
+    if( ( d = zVecNorm( method->error ) ) > dmax ) dmax = d;
+  }
+  return dmax;
+}
+
+/* test if the subclusters better classify the original cluster. */
+static bool _zMClusterXMeansTest(zMCluster *mc, zCluster *org, zMCluster *submc)
+{
+  zCluster *c1, *c2;
+  double fr1, fr2;
+  double r, r1, r2;
+
+  c1 = &zListHead(zMClusterClusterList(submc))->data;
+  c2 = &zListTail(zMClusterClusterList(submc))->data;
+  if( zListSize(zClusterSampleList(c1)) < 0.1 * zListSize(zClusterSampleList(c2)) ||
+      zListSize(zClusterSampleList(c2)) < 0.1 * zListSize(zClusterSampleList(c1)) )
+    return false; /* avoid too crisp cluster */
+
+  /* original cluster */
+  r = _zClusterMaxError( org, &mc->method );
+  fr1 = log(zListSize(zClusterSampleList(org))) - zVecSizeNC(mc->method.error)*log(r);
+  /* bidivided clusters */
+  r1 = _zClusterMaxError( c1, &mc->method );
+  r2 = _zClusterMaxError( c2, &mc->method );
+  fr2 = log( zListSize(zClusterSampleList(org)) )
+      - log( pow(r1,zVecSizeNC(mc->method.error)) + pow(r2,zVecSizeNC(mc->method.error)) );
+  return fr1 < fr2 ? true : false;
+}
+
+/* cluster vectors by X-means in a recursive way based on filling rate. */
+static int _zMClusterXMeans(zMCluster *mc, zClusterListCell *cc)
+{
+  zMCluster submc;
+  int iter, iter1, iter2;
+
+  /* avoid a too small / sparse cluster */
+  if( zListSize(zClusterSampleList(&cc->data)) < Z_XMEANS_MINSIZE ) return 0;
+  if( !zMClusterInit( &submc, mc->method.core_size ) ||
+      !zMClusterMethodCopy( mc, &submc ) ) return 0;
+
+  iter = zMClusterKMeans( &submc, zClusterSampleList(&cc->data), 2 );
+  if( !_zMClusterXMeansTest( mc, &cc->data, &submc ) ){
+    zMClusterDestroy( &submc );
+    return 0;
+  }
+  iter1 = _zMClusterXMeans( &submc, zListHead(zMClusterClusterList(&submc)) );
+  iter2 = _zMClusterXMeans( &submc, zListTail(zMClusterClusterList(&submc)) );
+  _zMClusterMerge( mc, cc, &submc );
+  return iter + iter1 + iter2;
+}
+
+/* cluster vectors by X-means based on filling rate. */
+int zMClusterXMeans(zMCluster *mc, zVecAddrList *points)
+{
+  if( !zMClusterAlloc( mc, 1 ) ) return -1;
+  _zMClusterXMeansInit( mc, points );
+  return _zMClusterXMeans( mc, zListHead(zMClusterClusterList(mc)) );
+}
+
+/* probability density function based on Gaussian distribution. */
+static double _zClusterXMeansPDF(zCluster *c, zMCluster *mc, zVec x)
+{
+  zMClusterErrorF( mc, x, c->core );
+  return exp( -0.5*zVecSqrNorm(mc->method.error)/c->var ) / sqrt(c->var);
+}
+
+/* test if the subclusters better classify the original based on BIC. */
+static bool _zMClusterXMeansBICTest(zMCluster *mc, zCluster *c, zMCluster *submc)
+{
+  zCluster *c1, *c2;
+  zVecListCell *vc;
+  int q, n;
+  double ls = 0, bic1, bic2;
+
+  q = mc->method.core_size + 1;
+  n = zListSize(zClusterSampleList(c));
+  c1 = &zListHead(zMClusterClusterList(submc))->data;
+  c2 = &zListTail(zMClusterClusterList(submc))->data;
+  zListForEach( zClusterSampleList(c1), vc ){
+    ls += log( _zClusterXMeansPDF( c1, submc, vc->data )
+             + _zClusterXMeansPDF( c2, submc, vc->data ) );
+  }
+  zListForEach( zClusterSampleList(c2), vc ){
+    ls += log( _zClusterXMeansPDF( c1, submc, vc->data )
+             + _zClusterXMeansPDF( c2, submc, vc->data ) );
+  }
+  bic1 = n * ( log(c->var) + 1 );
+  bic2 = 2*( n*log(2) - ls ) + q*log(n);
+  return bic1 < bic2 ? true : false;
+}
+
+/* cluster vectors by X-means based on BIC. */
+static int _zMClusterXMeansBIC(zMCluster *mc, zClusterListCell *cc)
+{
+  zMCluster submc;
+  int iter, iter1, iter2;
+
+  /* ignore a too small cluster */
+  if( zListSize(zClusterSampleList(&cc->data)) < Z_XMEANS_MINSIZE ) return 0;
+  if( !zMClusterInit( &submc, mc->method.core_size ) ||
+      !zMClusterMethodCopy( mc, &submc ) ) return 0;
+
+  iter = zMClusterKMeans( &submc, zClusterSampleList(&cc->data), 2 );
+  if( _zMClusterXMeansBICTest( mc, &cc->data, &submc ) ){
+    zMClusterDestroy( &submc );
+    return 0;
+  }
+  iter1 = _zMClusterXMeansBIC( &submc, zListHead(zMClusterClusterList(&submc)) );
+  iter2 = _zMClusterXMeansBIC( &submc, zListTail(zMClusterClusterList(&submc)) );
+  _zMClusterMerge( mc, cc, &submc );
+  return iter + iter1 + iter2;
+}
+
+/* cluster vectors based on BIC. */
+int zMClusterXMeansBIC(zMCluster *mc, zVecAddrList *points)
+{
+  if( !zMClusterAlloc( mc, 1 ) ) return -1;
+  _zMClusterXMeansInit( mc, points );
+  return _zMClusterXMeansBIC( mc, zListHead(zMClusterClusterList(mc)) );
 }

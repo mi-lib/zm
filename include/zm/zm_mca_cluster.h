@@ -197,6 +197,16 @@ __EXPORT double zMClusterMeanSilhouette(zMCluster *mc);
 /*! \brief print silhouettes of a set of vector clusters to files. */
 __EXPORT bool zMClusterSilhouettePrintFile(zMCluster *mc, const char *basename);
 
+/* ********************************************************** */
+/*! \brief clustering based on X-means
+ *//* ******************************************************* */
+
+/*! \brief clustering of vectors by X-means */
+__EXPORT int zMClusterXMeans(zMCluster *mc, zVecAddrList *points);
+
+/*! \brief clustering of vectors by X-means based on BIC */
+__EXPORT int zMClusterXMeansBIC(zMCluster *mc, zVecAddrList *points);
+
 __END_DECLS
 
 #endif /* __ZM_MCA_CLUSTER_H__ */
