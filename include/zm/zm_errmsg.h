@@ -95,8 +95,7 @@
 #define ZM_ERR_OPT_UNSOLVE   "optimal solution doesn't exist"
 #define ZM_ERR_OPT_INF       "infinite solution exists"
 
-#define ZM_ERR_MCA_CORE_INVSIZ  "invalid size of the core for clustering: %d"
-#define ZM_ERR_MCA_ERROR_INVSIZ "invalid size of the error for clustering: %d"
+#define ZM_ERR_MCA_INVSIZ       "invalid size of vector for clustering: %d"
 #define ZM_ERR_MCA_EMPTY        "empty set assigned"
 #define ZM_ERR_MCA_NOCOREFUNC   "method not assigned to find core of a cluster"
 #define ZM_ERR_MCA_NOERRORFUNC  "method not assigned to compute error between samples"

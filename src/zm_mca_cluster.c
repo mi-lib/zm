@@ -19,7 +19,7 @@ zCluster *zClusterCreate(zCluster *c, int coresize)
     return NULL;
   }
   c->var = HUGE_VAL;
-  c->_sc = NULL;
+  c->_sil = NULL;
   return c;
 }
 
@@ -28,13 +28,13 @@ void zClusterDestroy(zCluster *c)
 {
   zVecAddrListDestroy( zClusterSampleList(c) );
   zVecFree( c->core );
-  zFree( c->_sc );
+  zFree( c->_sil );
 }
 
-/* the maximum silhouette coefficient in a cluster. */
-double zClusterMaxSilhouetteCoeff(zCluster *c)
+/* the maximum silhouette in a cluster. */
+double zClusterMaxSilhouette(zCluster *c)
 {
-  return c && c->_sc ? c->_sc[zListSize(zClusterSampleList(c))-1] : -HUGE_VAL;
+  return c && c->_sil ? c->_sil[zListSize(zClusterSampleList(c))-1] : -HUGE_VAL;
 }
 
 /* print a vector cluster to a file. */
@@ -139,15 +139,15 @@ void zClusterMethodInit(zClusterMethod *method)
   method->dist_util = NULL;
   /* loaded mean of a cluster */
   method->lm_fp = NULL;
-  method->lerror = NULL;
   method->lm_util = NULL;
+  method->_lerr = NULL;
 }
 
 /* set a function to find core of a cluster. */
 zClusterMethod *zClusterMethodSetCoreFunc(zClusterMethod *method, int size, zVec (* fp)(zClusterMethod*,zVecAddrList*,void*,zVec), void *util)
 {
   if( size <= 0 ){
-    ZRUNERROR( ZM_ERR_MCA_CORE_INVSIZ, size );
+    ZRUNERROR( ZM_ERR_MCA_INVSIZ, size );
     return NULL;
   }
   method->core_size = size;
@@ -161,7 +161,7 @@ zClusterMethod *zClusterMethodSetErrorFunc(zClusterMethod *method, int size, zVe
 {
   if( method->error ) zVecFree( method->error );
   if( size <= 0 ){
-    ZRUNERROR( ZM_ERR_MCA_ERROR_INVSIZ, size );
+    ZRUNERROR( ZM_ERR_MCA_INVSIZ, size );
     return NULL;
   }
   method->error_fp = fp ? fp : _zClusterErrorDefault;
@@ -192,18 +192,20 @@ zClusterMethod *zClusterMethodSetLoadedMeanFunc(zClusterMethod *method, zVec (* 
     ZRUNERROR( ZM_ERR_MCA_NODISTFUNC );
     return NULL;
   }
+  if( method->_lerr ) zVecFree( method->_lerr );
   method->lm_fp = fp ? fp : _zClusterMeanLoadedDefault;
   method->lm_util = util;
-  return ( method->lerror = zVecAlloc( zVecSizeNC(method->error) ) ) ? method : NULL;
+  return ( method->_lerr = zVecAlloc( zVecSize(method->error) ) ) ? method : NULL;
 }
 
 /* create methods for clustering. */
-zClusterMethod *zClusterMethodCreate(zClusterMethod *method, int coresize, int errorsize)
+zClusterMethod *zClusterMethodCreate(zClusterMethod *method, int size)
 {
   zClusterMethodInit( method );
-  return zClusterMethodSetCoreFunc( method, coresize, NULL, NULL ) &&
-         zClusterMethodSetErrorFunc( method, errorsize, NULL, NULL ) &&
-         zClusterMethodSetDistFunc( method, NULL, NULL ) ? method : NULL;
+  return zClusterMethodSetCoreFunc( method, size, NULL, NULL ) &&
+         zClusterMethodSetErrorFunc( method, size, NULL, NULL ) &&
+         zClusterMethodSetDistFunc( method, NULL, NULL ) &&
+         zClusterMethodSetLoadedMeanFunc( method, NULL, NULL ) ? method : NULL;
 }
 
 /* copy methods for clustering. */
@@ -219,7 +221,7 @@ zClusterMethod *zClusterMethodCopy(zClusterMethod *src, zClusterMethod *dest)
 void zClusterMethodDestroy(zClusterMethod *method)
 {
   zVecFree( method->error );
-  zVecFree( method->lerror );
+  zVecFree( method->_lerr );
   zClusterMethodInit( method );
 }
 
@@ -228,10 +230,10 @@ void zClusterMethodDestroy(zClusterMethod *method)
  * ********************************************************** */
 
 /* initialize multiple vector clusters. */
-zMCluster *zMClusterInit(zMCluster *mc, int coresize, int errorsize)
+zMCluster *zMClusterInit(zMCluster *mc, int size)
 {
   zListInit( zMClusterClusterList(mc) );
-  return zClusterMethodCreate( &mc->method, coresize, errorsize ) ? mc : NULL;
+  return zClusterMethodCreate( &mc->method, size ) ? mc : NULL;
 }
 
 /* allocate multiple vector clusters. */
@@ -518,12 +520,10 @@ static int _zMClusterKMeansRecluster(zMCluster *mc)
 
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){
-    /* compute means */
+    /* compute core of clusters */
     zListForEach( zMClusterClusterList(mc), cc1 ){
-      if( !zListIsEmpty( zClusterSampleList(&cc1->data) ) ){
-        zMClusterCoreF( mc, zClusterSampleList(&cc1->data), cc1->data.core );
-        _zMClusterVar( mc, &cc1->data );
-      }
+      zMClusterCoreF( mc, zClusterSampleList(&cc1->data), cc1->data.core );
+      _zMClusterVar( mc, &cc1->data );
     }
     ismoved = false;
     zListForEach( zMClusterClusterList(mc), cc1 ){
@@ -532,7 +532,6 @@ static int _zMClusterKMeansRecluster(zMCluster *mc)
         dmin = HUGE_VAL;
         cc = cc1;
         zListForEach( zMClusterClusterList(mc), cc2 ){ /* find the nearest core point */
-          if( zListIsEmpty( zClusterSampleList(&cc2->data) ) ) continue;
           zMClusterErrorF( mc, pc->data, cc2->data.core );
           if( ( d = zVecSqrNorm( mc->method.error ) ) < dmin ){
             dmin = d;
@@ -578,11 +577,11 @@ int zMClusterKMedoids(zMCluster *mc, zVecAddrList *points, int k)
 }
 
 /* ********************************************************** */
-/* silhouette score analysis
+/* silhouette analysis
  * ********************************************************** */
 
-/* compute the silhouette score of a set of clusters. */
-double zMClusterSilhouetteScore(zMCluster *mc)
+/* compute the mean silhouette of a set of clusters. */
+double zMClusterMeanSilhouette(zMCluster *mc)
 {
   zClusterListCell *cp, *ccp;
   zVecAddrListCell *pp;
@@ -590,8 +589,8 @@ double zMClusterSilhouetteScore(zMCluster *mc)
   int i, n = 0;
 
   zListForEach( zMClusterClusterList(mc), cp ){
-    zFree( cp->data._sc );
-    if( !( cp->data._sc = zAlloc( double, zListSize(zClusterSampleList(&cp->data)) ) ) ){
+    zFree( cp->data._sil );
+    if( !( cp->data._sil = zAlloc( double, zListSize(zClusterSampleList(&cp->data)) ) ) ){
       ZALLOCERROR();
       return NAN;
     }
@@ -604,32 +603,32 @@ double zMClusterSilhouetteScore(zMCluster *mc)
         if( ( b_tmp = _zClusterDistAve( &mc->method, zClusterSampleList(&ccp->data), pp->data ) ) < b )
           b = b_tmp; /* inter-cluster distance */
       }
-      score += cp->data._sc[i++] = ( b - a ) / zMax( a, b ); /* silhouette coefficient of the sample */
+      score += cp->data._sil[i++] = ( b - a ) / zMax( a, b ); /* silhouette of the sample */
     }
-    zDataSort( cp->data._sc, zListSize(zClusterSampleList(&cp->data)) );
+    zDataSort( cp->data._sil, zListSize(zClusterSampleList(&cp->data)) );
     n += zListSize(zClusterSampleList(&cp->data));
   }
   return score / n;
 }
 
-/* print silhouette coefficients of a vector cluster to a file. */
-static bool _zClusterSilhouetteCoeffFPrint(FILE *fp, zCluster *c, int offset)
+/* print silhouettes of a vector cluster to a file. */
+static bool _zClusterSilhouetteFPrint(FILE *fp, zCluster *c, int offset)
 {
   int i;
 
-  if( !c->_sc ){
+  if( !c->_sil ){
     ZRUNWARN( ZM_MCA_NOSILHOUETTE );
     return false;
   }
   for( i=0; i<zListSize(zClusterSampleList(c)); i++ ){
     fprintf( fp, "0, %d\n", offset + i );
-    fprintf( fp, "%f, %d\n\n", c->_sc[i], offset + i );
+    fprintf( fp, "%f, %d\n\n", c->_sil[i], offset + i );
   }
   return true;
 }
 
-/* print silhouette coefficients of a set of vector clusters to files. */
-bool zMClusterSilhouetteCoeffPrintFile(zMCluster *mc, const char *basename)
+/* print silhouettes of a set of vector clusters to files. */
+bool zMClusterSilhouettePrintFile(zMCluster *mc, const char *basename)
 {
   zClusterListCell *cp;
   int i = 0, offset = 0;
@@ -642,7 +641,7 @@ bool zMClusterSilhouetteCoeffPrintFile(zMCluster *mc, const char *basename)
       ZOPENERROR( filename );
       return false;
     }
-    if( !_zClusterSilhouetteCoeffFPrint( fp, &cp->data, offset ) ) return false;
+    if( !_zClusterSilhouetteFPrint( fp, &cp->data, offset ) ) return false;
     offset += zListSize(zClusterSampleList(&cp->data));
   }
   return true;

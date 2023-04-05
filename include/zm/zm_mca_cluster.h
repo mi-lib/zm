@@ -21,7 +21,7 @@ typedef struct{
   zVec core;          /*!< \brief core vector of the cluster */
   double var;         /*!< \brief variance */
   /*! \cond */
-  double *_sc;        /* silhouette coefficients */
+  double *_sil;       /* silhouettes */
   /*! \endcond */
 } zCluster;
 
@@ -35,8 +35,8 @@ __EXPORT zCluster *zClusterCreate(zCluster *c, int coresize);
 /*! \brief destroy a vector cluster */
 __EXPORT void zClusterDestroy(zCluster *c);
 
-/*! \brief the maximum silhouette coefficient in a cluster. */
-__EXPORT double zClusterMaxSilhouetteCoeff(zCluster *c);
+/*! \brief the maximum silhouette in a cluster. */
+__EXPORT double zClusterMaxSilhouette(zCluster *c);
 
 /*! \brief print a vector cluster to a file */
 __EXPORT void zClusterFPrint(FILE *fp, zCluster *c);
@@ -58,14 +58,15 @@ ZDEF_STRUCT( zClusterMethod ){
   void *core_util;
   /* for GMM */
   zVec (* lm_fp)(zClusterMethod*,zVecAddrList*,double[],double,void*,zVec); /* loaded mean function */
-  zVec lerror; /* loaded error vector */
   void *lm_util;
+  zVec _lerr; /* workspace for loaded error vector */
   /*! \endcond */
 };
 
 #define zClusterMethodErrorF(cm,v1,v2) (cm)->error_fp( cm, (v1), (v2), (cm)->error_util, (cm)->error )
 #define zClusterMethodDistF(cm,v1,v2)  (cm)->dist_fp( cm, (v1), (v2), (cm)->dist_util )
 #define zClusterMethodCoreF(cm,vl,c)   (cm)->core_fp( cm, (vl), (cm)->core_util, (c) )
+#define zClusterMethodLoadedMeanF(cm,vl,l,nk,m) (cm)->lm_fp( cm, (vl), (l), (nk), (cm)->lm_util, (m) )
 
 /*! \brief initialize methods for clustering. */
 __EXPORT void zClusterMethodInit(zClusterMethod *method);
@@ -79,7 +80,7 @@ __EXPORT zClusterMethod *zClusterMethodSetDistFunc(zClusterMethod *method, doubl
 /*! \brief set a function to compute the loaded mean of samples (for GMM). */
 __EXPORT zClusterMethod *zClusterMethodSetLoadedMeanFunc(zClusterMethod *method, zVec (* mean_l_fp)(zClusterMethod*,zVecAddrList*,double[],double,void*,zVec), void *util);
 
-__EXPORT zClusterMethod *zClusterMethodCreate(zClusterMethod *method, int coresize, int errorsize);
+__EXPORT zClusterMethod *zClusterMethodCreate(zClusterMethod *method, int size);
 
 /*! \brief copy methods for clustering. */
 __EXPORT zClusterMethod *zClusterMethodCopy(zClusterMethod *src, zClusterMethod *dest);
@@ -111,11 +112,11 @@ ZDEF_STRUCT( zMCluster ){
  * zMClusterInit() returns a pointer \a mc if it succeeds to initialize \a mc.
  * Otherwise, the null pointer is returned.
  */
-__EXPORT zMCluster *zMClusterInit(zMCluster *mc, int coresize, int errorsize);
+__EXPORT zMCluster *zMClusterInit(zMCluster *mc, int size);
 
-#define zMClusterSetCoreFunc(mc,sc,fp,util)  zClusterMethodSetCoreFunc( &(mc)->method, (sc), (fp), (util) )
 #define zMClusterSetErrorFunc(mc,se,fp,util) zClusterMethodSetErrorFunc( &(mc)->method, (se), (fp), (util) )
 #define zMClusterSetDistFunc(mc,fp,util)     zClusterMethodSetDistFunc( &(mc)->method, (fp), (util) )
+#define zMClusterSetCoreFunc(mc,sc,fp,util)  zClusterMethodSetCoreFunc( &(mc)->method, (sc), (fp), (util) )
 
 #define zMClusterErrorF(mc,v1,v2) zClusterMethodErrorF( &(mc)->method, v1, v2 )
 #define zMClusterDistF(mc,v1,v2)  zClusterMethodDistF( &(mc)->method, v1, v2 )
@@ -190,11 +191,11 @@ __EXPORT int zMClusterKMeans(zMCluster *mc, zVecAddrList *points, int k);
  */
 __EXPORT int zMClusterKMedoids(zMCluster *mc, zVecAddrList *points, int k);
 
-/*! \brief compute the silhouette score of a set of clusters. */
-__EXPORT double zMClusterSilhouetteScore(zMCluster *mc);
+/*! \brief compute the mean silhouette of a set of clusters. */
+__EXPORT double zMClusterMeanSilhouette(zMCluster *mc);
 
-/*! \brief print silhouette coefficients of a set of vector clusters to files. */
-__EXPORT bool zMClusterSilhouetteCoeffPrintFile(zMCluster *mc, const char *basename);
+/*! \brief print silhouettes of a set of vector clusters to files. */
+__EXPORT bool zMClusterSilhouettePrintFile(zMCluster *mc, const char *basename);
 
 __END_DECLS
 

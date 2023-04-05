@@ -19,7 +19,7 @@ zOption option[] = {
   { "kmax", "kmax",    "<integer value>", "maximum number of clusters to be tested", "10", false },
   { "n",     "try",    "<integer value>", "number of trials of clustering for each k", "3", false },
   { "c", "cluster",    "<file name>", "common name for files of clusters", "", false },
-  { "s", "silhouette", "<file name>", "common name for silhouette coefficients", "s", false },
+  { "s", "silhouette", "<file name>", "common name for silhouettes", "s", false },
   { NULL, NULL, NULL, NULL, NULL, false },
 };
 
@@ -69,9 +69,9 @@ double kmeans_try_k(zMCluster *mc, zVecList *sample, int k, int testnum)
     goto TERMINATE;
   }
   for( i=0; i<testnum; i++ ){
-    zMClusterInit( &test_mc[i], zVecSizeNC(zListTail(sample)->data), zVecSizeNC(zListTail(sample)->data) );
+    zMClusterInit( &test_mc[i], zVecSizeNC(zListTail(sample)->data) );
     zMClusterKMeans( &test_mc[i], sample, k );
-    score[i] = zMClusterSilhouetteScore( &test_mc[i] );
+    score[i] = zMClusterMeanSilhouette( &test_mc[i] );
   }
   score_min = zDataMax( score, testnum, &selected );
   zMClusterMove( &test_mc[selected], mc );
@@ -89,7 +89,7 @@ bool kmeans_check_silhouette(zMCluster *mc, double score)
   zClusterListCell *cp;
 
   zListForEach( zMClusterClusterList(mc), cp )
-    if( zClusterMaxSilhouetteCoeff(&cp->data) < score ) return false;
+    if( zClusterMaxSilhouette(&cp->data) < score ) return false;
   return true;
 }
 
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
   if( option[ZM_KMEANS_VERBOSE].flag )
     printf( "determined number of clusters = %d\n", k );
   zMClusterDataPrintFile( &mc, option[ZM_KMEANS_CLUSTER_FILENAME].arg );
-  zMClusterSilhouetteCoeffPrintFile( &mc, option[ZM_KMEANS_SILHOUETTE_FILENAME].arg );
+  zMClusterSilhouettePrintFile( &mc, option[ZM_KMEANS_SILHOUETTE_FILENAME].arg );
   zMClusterDestroy( &mc );
   zVecListDestroy( &sample );
   return EXIT_SUCCESS;

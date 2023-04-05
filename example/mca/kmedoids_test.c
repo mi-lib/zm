@@ -21,7 +21,6 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
       zVecListInsertHead( vl, vc );
     }
   }
-#if 1
   /* outliers */
   zVecSetElemList( vc, 2, xmin, ymin );
   zVecListInsertHead( vl, vc );
@@ -31,7 +30,6 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
   zVecListInsertHead( vl, vc );
   zVecSetElemList( vc, 2, xmin, ymax);
   zVecListInsertHead( vl, vc );
-#endif
   zVecFree( vc );
 }
 
@@ -48,7 +46,7 @@ int main(int argc, char *argv[])
   nc = argc > 1 ? atoi( argv[1] ) : NC;
   np = argc > 2 ? atoi( argv[2] ) : NP;
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
-  zMClusterInit( &mc, 2, 2 );
+  zMClusterInit( &mc, 2 );
   printf( "K-medoids completed in %d times of iteration.\n", zMClusterKMedoids( &mc, &points, nc ) );
   zMClusterDataPrintFile( &mc, "" );
   zMClusterDestroy( &mc );

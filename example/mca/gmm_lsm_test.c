@@ -1,19 +1,19 @@
 #include <zm/zm_mca.h>
 #include <zm/zm_rand.h>
 
-zVec errorLSM(zClusterMethod *cm, zVec p, zVec mean, void *dummy, zVec err)
+zVec errorLSM(zClusterMethod *cm, zVec p, zVec core, void *dummy, zVec err)
 {
   double xm, e;
 
   xm = zVecElem(p,zVecSizeNC(p)-1);
   zVecSetElem( p, zVecSizeNC(p)-1, 1 );
-  e = zVecInnerProd(mean,p) - xm;
+  e = zVecInnerProd(core,p) - xm;
   zVecSetElem( p, zVecSizeNC(p)-1, xm );
   zVecSetElem( err, 0, e );
   return err;
 }
 
-zVec meanLSM(zClusterMethod *cm, zVecList *pl, void *dummy, zVec mean)
+zVec coreLSM(zClusterMethod *cm, zVecList *pl, void *dummy, zVec core)
 {
   zVecListCell *vc;
   zMat c;
@@ -24,7 +24,7 @@ zVec meanLSM(zClusterMethod *cm, zVecList *pl, void *dummy, zVec mean)
   b = zVecAlloc( zVecSizeNC(zListTail(pl)->data) );
   if( c == NULL || b == NULL ){
     ZALLOCERROR();
-    mean = NULL;
+    core = NULL;
     goto TERMINATE;
   }
   zListForEach( pl, vc ){
@@ -34,11 +34,11 @@ zVec meanLSM(zClusterMethod *cm, zVecList *pl, void *dummy, zVec mean)
     zVecCatNCDRC( b, xm, vc->data );
     zVecSetElem( vc->data, zVecSizeNC(vc->data)-1, xm );
   }
-  zLESolveGauss( c, b, mean );
+  zLESolveGauss( c, b, core );
  TERMINATE:
   zMatFree( c );
   zVecFree( b );
-  return mean;
+  return core;
 }
 
 zVec meanlLSM(zClusterMethod *cm, zVecList *pl, double load[], double n, void *dummy, zVec mean)
@@ -127,11 +127,11 @@ void gmm_output(zGMM *gmm)
   fprintf( fp, "set isosamples 20\n" );
   fprintf( fp, "unset key\n" );
   fprintf( fp, "splot 'src'" );
-  zListForEach( &gmm->gl, gc ){
+  zListForEach( &gmm->glist, gc ){
     fprintf( fp, ", %g*x+%g*y+%g",
-      zVecElem(gc->data.mean,0),
-      zVecElem(gc->data.mean,1),
-      zVecElem(gc->data.mean,2) );
+      zVecElem(gc->data.core,0),
+      zVecElem(gc->data.core,1),
+      zVecElem(gc->data.core,2) );
   }
   fprintf( fp, "\n" );
   fclose( fp );
@@ -152,8 +152,11 @@ int main(int argc, char *argv[])
   gen_vec( &points, np, nc, 0, 0, 0, 10, 10, 10 );
   vec_output( &points );
 
-  zGMMInit( &gmm, nc, 3, meanLSM, NULL, meanlLSM, NULL, 1, errorLSM, NULL, NULL, NULL );
-  zGMMCreateEM( &gmm, &points, nc );
+  zGMMInit( &gmm, nc, 3 );
+  zGMMSetErrorFunc( &gmm, 1, errorLSM, NULL );
+  zGMMSetCoreFunc( &gmm, 3, coreLSM, NULL );
+  zGMMSetLoadedMeanFunc( &gmm, meanlLSM, NULL );
+  zGMMCreateEM( &gmm, &points );
   gmm_output( &gmm );
   zGMMDestroy( &gmm );
   zVecListDestroy( &points );

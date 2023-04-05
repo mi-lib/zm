@@ -1,6 +1,10 @@
 #include <zm/zm_mca.h>
+#include <zm/zm_rand.h>
 
-bool gen_vec(int dim, int np, int nc, double rate_outlier, double min, double max)
+double gen_r_uniform(double rmax){ return zRandF( 0, rmax ); }
+double gen_r_normald(double rmax){ return zRandND( NULL, 0, 0.5*rmax ); }
+
+bool gen_vec(double (* gen_func)(double), int dim, int np, int nc, double rate_outlier, double min, double max)
 {
   zVec vc, v;
   double rmax, r;
@@ -20,7 +24,7 @@ bool gen_vec(int dim, int np, int nc, double rate_outlier, double min, double ma
       zVecSetElem( vc, k, zRandF( min, max ) );
     /* sample */
     for( j=0; j<np; j++ ){
-      r = zRandF(0,rmax);
+      r = gen_func( rmax );
       for( k=0; k<dim; k++ )
         zVecSetElem( v, k, zRandF(min-max,max-min) );
       zVecNormalizeDRC( v );
@@ -52,11 +56,12 @@ bool gen_vec(int dim, int np, int nc, double rate_outlier, double min, double ma
 int main(int argc, char *argv[])
 {
   zRandInit();
-  if( !gen_vec( argc > 1 ? atoi( argv[1] ) : DIM,
-                argc > 2 ? atoi( argv[2] ) : NUM_POINTS,
-                argc > 3 ? atoi( argv[3] ) : NUM_CLUSTER,
-                argc > 4 ? atof( argv[4] ) : RATE_OUTLIER,
-                argc > 5 ? atof( argv[5] ) : MIN,
-                argc > 6 ? atof( argv[6] ) : MAX ) ) return EXIT_FAILURE;
+  if( !gen_vec( argc > 1 && argv[1][0] == 'u' ? gen_r_uniform : gen_r_normald,
+                argc > 2 ? atoi( argv[2] ) : DIM,
+                argc > 3 ? atoi( argv[3] ) : NUM_POINTS,
+                argc > 4 ? atoi( argv[4] ) : NUM_CLUSTER,
+                argc > 5 ? atof( argv[5] ) : RATE_OUTLIER,
+                argc > 6 ? atof( argv[6] ) : MIN,
+                argc > 7 ? atof( argv[7] ) : MAX ) ) return EXIT_FAILURE;
   return EXIT_SUCCESS;
 }

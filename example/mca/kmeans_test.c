@@ -38,12 +38,12 @@ int main(int argc, char *argv[])
   nc = argc > 1 ? atoi( argv[1] ) : NC;
   np = argc > 2 ? atoi( argv[2] ) : NP;
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
-  zMClusterInit( &mc, 2, 2 );
+  zMClusterInit( &mc, 2 );
   printf( "K-means completed in %d times of iteration.\n", zMClusterKMeans( &mc, &points, nc ) );
   zMClusterDataPrintFile( &mc, "" );
-  score = zMClusterSilhouetteScore( &mc );
-  zMClusterSilhouetteCoeffPrintFile( &mc, "sa" );
-  printf( "silhouette score = %.10g\n", score );
+  score = zMClusterMeanSilhouette( &mc );
+  zMClusterSilhouettePrintFile( &mc, "s" );
+  printf( "mean silhouette = %.10g\n", score );
 
   zMClusterDestroy( &mc );
   zVecListDestroy( &points );
