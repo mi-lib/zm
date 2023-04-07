@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
   zMClusterInit( &mc, 2 );
   printf( "X-means completed in %d times of iteration.\n",
-    zMClusterXMeans( &mc, &points ) );
+    zMClusterXMeansDensity( &mc, &points ) );
 
   zListForEach( zMClusterClusterList(&mc), vcc ){
     sprintf( filename, "%d", i++ );

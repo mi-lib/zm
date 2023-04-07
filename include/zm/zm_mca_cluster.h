@@ -201,8 +201,8 @@ __EXPORT bool zMClusterSilhouettePrintFile(zMCluster *mc, const char *basename);
 /*! \brief clustering based on X-means
  *//* ******************************************************* */
 
-/*! \brief clustering of vectors by X-means */
-__EXPORT int zMClusterXMeans(zMCluster *mc, zVecAddrList *points);
+/*! \brief clustering of vectors by X-means based on hyperdensity of clusters. */
+__EXPORT int zMClusterXMeansDensity(zMCluster *mc, zVecAddrList *points);
 
 /*! \brief clustering of vectors by X-means based on BIC */
 __EXPORT int zMClusterXMeansBIC(zMCluster *mc, zVecAddrList *points);
