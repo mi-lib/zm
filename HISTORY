@@ -1,3 +1,4 @@
+2023. 4.16. Modified zRawMulMatTVec and zRawMulMatTMat. [zm_raw_mat]
 2023. 4. 5. Reimplemented X-means. [zm_mca_cluster]
 2023. 4. 5. Revived X-means (still buggy). [zm_mca_cluster]
 2023. 4. 5. Added zGMMAIC and zGMMBIC. [zm_mca_gmm]
