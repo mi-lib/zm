@@ -47,7 +47,7 @@ void output(int i, zVec x)
   static char buf[BUFSIZ], nbuf[5];
   double x1, y1, x2, y2;
 
-  sprintf( buf, "dat%s", itoa_zerofill(i,4,nbuf) );
+  sprintf( buf, "dat%s", zI2AZeroFill(i,4,nbuf) );
   fp = fopen( buf, "w" );
   eprintf( "%f %f\n", zVecElem(x,0), zVecElem(x,1) );
   x1 = L1 * sin( zVecElem(x,0) );
