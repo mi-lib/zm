@@ -28,13 +28,13 @@ typedef struct{
 } zGMMUnit;
 
 /*! \brief initialize a unit Gaussian model. */
-__EXPORT zGMMUnit *zGMMUnitInit(zGMMUnit *gu);
+__ZM_EXPORT zGMMUnit *zGMMUnitInit(zGMMUnit *gu);
 
 /*! \brief allocate internal vectors and matrices of a unit Gaussian model. */
-__EXPORT zGMMUnit *zGMMUnitAlloc(zGMMUnit *gu, int coresize, int errorsize);
+__ZM_EXPORT zGMMUnit *zGMMUnitAlloc(zGMMUnit *gu, int coresize, int errorsize);
 
 /*! \brief free internal vectors and matrices of a unit Gaussian model. */
-__EXPORT void zGMMUnitFree(zGMMUnit *gu);
+__ZM_EXPORT void zGMMUnitFree(zGMMUnit *gu);
 
 /* ********************************************************** */
 /*! \brief Gaussian mixture model class
@@ -47,12 +47,12 @@ typedef struct{
 } zGMM;
 
 /*! \brief initialize a Gaussian mixture model */
-__EXPORT zGMM *zGMMInit(zGMM *gmm, int k, int size);
+__ZM_EXPORT zGMM *zGMMInit(zGMM *gmm, int k, int size);
 
-__EXPORT bool zGMMSetErrorFunc(zGMM *gmm, int size, zVec (* error_fp)(zClusterMethod*,zVec,zVec,void*,zVec), void *util);
-__EXPORT bool zGMMSetDistFunc(zGMM *gmm, double (* dist_fp)(zClusterMethod*,zVec,zVec,void*), void *util);
-__EXPORT bool zGMMSetCoreFunc(zGMM *gmm, int size, zVec (* core_fp)(zClusterMethod*,zVecAddrList*,void*,zVec), void *util);
-__EXPORT bool zGMMSetLoadedMeanFunc(zGMM *gmm, zVec (* lm_fp)(zClusterMethod*,zVecAddrList*,double[],double,void*,zVec), void *util);
+__ZM_EXPORT bool zGMMSetErrorFunc(zGMM *gmm, int size, zVec (* error_fp)(zClusterMethod*,zVec,zVec,void*,zVec), void *util);
+__ZM_EXPORT bool zGMMSetDistFunc(zGMM *gmm, double (* dist_fp)(zClusterMethod*,zVec,zVec,void*), void *util);
+__ZM_EXPORT bool zGMMSetCoreFunc(zGMM *gmm, int size, zVec (* core_fp)(zClusterMethod*,zVecAddrList*,void*,zVec), void *util);
+__ZM_EXPORT bool zGMMSetLoadedMeanFunc(zGMM *gmm, zVec (* lm_fp)(zClusterMethod*,zVecAddrList*,double[],double,void*,zVec), void *util);
 
 #define zGMMErrorF(gmm,v1,v2)          zClusterMethodErrorF( &(gmm)->method, v1, v2 )
 #define zGMMDistF(gmm,v1,v2)           zClusterMethodDistF( &(gmm)->method, v1, v2 )
@@ -60,16 +60,16 @@ __EXPORT bool zGMMSetLoadedMeanFunc(zGMM *gmm, zVec (* lm_fp)(zClusterMethod*,zV
 #define zGMMLoadedMeanF(gmm,vl,l,nk,m) zClusterMethodLoadedMeanF( &(gmm)->method, vl, l, nk, m )
 
 /*! \brief destroy a Gaussian mixture model */
-__EXPORT void zGMMDestroy(zGMM *gmm);
+__ZM_EXPORT void zGMMDestroy(zGMM *gmm);
 
 /*! \brief create a Gaussian mixture model based on EM algorithm */
-__EXPORT zGMM *zGMMCreateEM(zGMM *gmm, zVecList *points);
+__ZM_EXPORT zGMM *zGMMCreateEM(zGMM *gmm, zVecList *points);
 
 /*! \brief Akaike's Information Criterion. */
-__EXPORT double zGMMAIC(zGMM *gmm);
+__ZM_EXPORT double zGMMAIC(zGMM *gmm);
 
 /*! \brief Bayesian Information Criterion. */
-__EXPORT double zGMMBIC(zGMM *gmm, zVecAddrList *sample);
+__ZM_EXPORT double zGMMBIC(zGMM *gmm, zVecAddrList *sample);
 
 __END_DECLS
 

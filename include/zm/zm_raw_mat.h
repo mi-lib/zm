@@ -51,8 +51,8 @@ __BEGIN_DECLS
  * \return
  * zRawMatIdent(), zRawMatDiag()
  */
-__EXPORT void zRawMatIdent(double *m, int row, int col);
-__EXPORT void zRawMatDiag(double *m, int row, int col, double *d);
+__ZM_EXPORT void zRawMatIdent(double *m, int row, int col);
+__ZM_EXPORT void zRawMatDiag(double *m, int row, int col, double *d);
 #define zRawMatRandUniform(m,r,c,min,max) zRawVecRandUniform( m, (r)*(c), min, max )
 #define zRawMatRand(m,min,max,r,c) zRawVecRand( m, min, max, (r)*(c) )
 
@@ -80,10 +80,10 @@ __EXPORT void zRawMatDiag(double *m, int row, int col, double *d);
  * \return
  * These functions return no values.
  */
-__EXPORT void zRawMatGet(double *src, int sr, int sc, int pr, int pc, double *dest, int dr, int dc);
-__EXPORT void zRawMatPut(double *dest, int dr, int dc, int pr, int pc, double *src, int sr, int sc);
-__EXPORT void zRawMatTGet(double *src, int sr, int sc, int pr, int pc, double *dest, int dr, int dc);
-__EXPORT void zRawMatTPut(double *dest, int dr, int dc, int pr, int pc, double *src, int sr, int sc);
+__ZM_EXPORT void zRawMatGet(double *src, int sr, int sc, int pr, int pc, double *dest, int dr, int dc);
+__ZM_EXPORT void zRawMatPut(double *dest, int dr, int dc, int pr, int pc, double *src, int sr, int sc);
+__ZM_EXPORT void zRawMatTGet(double *src, int sr, int sc, int pr, int pc, double *dest, int dr, int dc);
+__ZM_EXPORT void zRawMatTPut(double *dest, int dr, int dc, int pr, int pc, double *src, int sr, int sc);
 
 /*! \brief abstract, set and swap row/column vectors from a raw matrix.
  *
@@ -103,12 +103,12 @@ __EXPORT void zRawMatTPut(double *dest, int dr, int dc, int pr, int pc, double *
  * \return
  * These functions return no values.
  */
-__EXPORT void zRawMatGetRow(double *m, int row, int col, int sr, double *v);
-__EXPORT void zRawMatGetCol(double *m, int row, int col, int sc, double *v);
-__EXPORT void zRawMatPutRow(double *m, int row, int col, int dr, double *v);
-__EXPORT void zRawMatPutCol(double *m, int row, int col, int dc, double *v);
-__EXPORT void zRawMatSwapRow(double *m, int row, int col, int r1, int r2);
-__EXPORT void zRawMatSwapCol(double *m, int row, int col, int c1, int c2);
+__ZM_EXPORT void zRawMatGetRow(double *m, int row, int col, int sr, double *v);
+__ZM_EXPORT void zRawMatGetCol(double *m, int row, int col, int sc, double *v);
+__ZM_EXPORT void zRawMatPutRow(double *m, int row, int col, int dr, double *v);
+__ZM_EXPORT void zRawMatPutCol(double *m, int row, int col, int dc, double *v);
+__ZM_EXPORT void zRawMatSwapRow(double *m, int row, int col, int r1, int r2);
+__ZM_EXPORT void zRawMatSwapCol(double *m, int row, int col, int c1, int c2);
 
 /*! \brief check if a matrix is tiny.
  *
@@ -195,9 +195,9 @@ __EXPORT void zRawMatSwapCol(double *m, int row, int col, int c1, int c2);
  * zRawMatT() and zRawMatTDRC() return no values.
  * zRawMatTr() returns the value calculated.
  */
-__EXPORT void zRawMatT(double *m, double *tm, int row, int col);
-__EXPORT void zRawMatTDRC(double *m, int row, int col);
-__EXPORT double zRawMatTr(double *m, int row, int col);
+__ZM_EXPORT void zRawMatT(double *m, double *tm, int row, int col);
+__ZM_EXPORT void zRawMatTDRC(double *m, int row, int col);
+__ZM_EXPORT double zRawMatTr(double *m, int row, int col);
 
 /*! \brief multiply a raw vector by a raw matrix.
  *
@@ -220,11 +220,11 @@ __EXPORT double zRawMatTr(double *m, int row, int col);
  * \return
  * These functions return no values.
  */
-__EXPORT void zRawMulMatVec(double *m, double *v1, int row, int col, double *v);
-__EXPORT void zRawMulMatTVec(double *m, double *v1, int row, int col, double *v);
-__EXPORT void zRawMulMatMat(double *m1, int r1, int c1, double *m2, int r2, int c2, double *m);
-__EXPORT void zRawMulMatMatT(double *m1, int r1, int c1, double *m2, int r2, int c2, double *m);
-__EXPORT void zRawMulMatTMat(double *m1, int r1, int c1, double *m2, int r2, int c2, double *m);
+__ZM_EXPORT void zRawMulMatVec(double *m, double *v1, int row, int col, double *v);
+__ZM_EXPORT void zRawMulMatTVec(double *m, double *v1, int row, int col, double *v);
+__ZM_EXPORT void zRawMulMatMat(double *m1, int r1, int c1, double *m2, int r2, int c2, double *m);
+__ZM_EXPORT void zRawMulMatMatT(double *m1, int r1, int c1, double *m2, int r2, int c2, double *m);
+__ZM_EXPORT void zRawMulMatTMat(double *m1, int r1, int c1, double *m2, int r2, int c2, double *m);
 
 /*! \brief dyadic product of raw vectors.
  *
@@ -244,10 +244,10 @@ __EXPORT void zRawMulMatTMat(double *m1, int r1, int c1, double *m2, int r2, int
  * \return
  * These functions return no value.
  */
-__EXPORT void zRawVecDyad(double *v1, int size1, double *v2, int size2, double *dyad);
-__EXPORT void zRawMatAddDyad(double *m, double *v1, int size1, double *v2, int size2);
-__EXPORT void zRawMatSubDyad(double *m, double *v1, int size1, double *v2, int size2);
-__EXPORT void zRawMatCatDyad(double *m, double k, double *v1, int size1, double *v2, int size2);
+__ZM_EXPORT void zRawVecDyad(double *v1, int size1, double *v2, int size2, double *dyad);
+__ZM_EXPORT void zRawMatAddDyad(double *m, double *v1, int size1, double *v2, int size2);
+__ZM_EXPORT void zRawMatSubDyad(double *m, double *v1, int size1, double *v2, int size2);
+__ZM_EXPORT void zRawMatCatDyad(double *m, double k, double *v1, int size1, double *v2, int size2);
 
 /*! \brief print a raw matrix.
  *
@@ -259,7 +259,7 @@ __EXPORT void zRawMatCatDyad(double *m, double k, double *v1, int size1, double 
  * \return
  * These functions return no value.
  */
-__EXPORT void zRawMatFPrint(FILE *fp, double *m, int row, int col);
+__ZM_EXPORT void zRawMatFPrint(FILE *fp, double *m, int row, int col);
 #define zRawMatPrint(m,r,c) zRawMatFPrint( stdout, m, r, c )
 
 __END_DECLS

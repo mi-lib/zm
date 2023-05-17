@@ -8,3 +8,4 @@ tools/*
 app/*
 !app/*.c
 !app/makefile
+include/*/*_export.h

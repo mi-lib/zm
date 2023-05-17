@@ -41,8 +41,8 @@ typedef struct{
 #define zIPSecVal(dat,i,j) zVecElemNC( zIPSecVec(dat,i), j )
 
 /* allocate and free the internal workspace of an interpolator. */
-__EXPORT bool zIPDataAlloc(zIPData *dat, zSeq *seq);
-__EXPORT void zIPDataFree(zIPData *dat);
+__ZM_EXPORT bool zIPDataAlloc(zIPData *dat, zSeq *seq);
+__ZM_EXPORT void zIPDataFree(zIPData *dat);
 
 /* get segment of a sequence to be interpolated.
  *
@@ -51,7 +51,7 @@ __EXPORT void zIPDataFree(zIPData *dat);
  * \return
  * zIPSeg() returns an integer value \a i when t_i <= t < t_i+1.
  */
-__EXPORT int zIPSeg(zIPData *dat, double t);
+__ZM_EXPORT int zIPSeg(zIPData *dat, double t);
 
 typedef struct{
   zVec (*vec)(zIPData*,double,zVec);

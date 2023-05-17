@@ -32,7 +32,7 @@ typedef struct _zODE2{
   zVec _x, _v, _a; /* working memory */
 } zODE2;
 
-__EXPORT void zODE2AssignFunc(zODE2 *ode, zVec (* catf1)(zVec,double,zVec,zVec,void*), zVec (* catf2)(zVec,double,zVec,zVec,void*), zVec (* subf1)(zVec,zVec,zVec,void*), zVec (* subf2)(zVec,zVec,zVec,void*));
+__ZM_EXPORT void zODE2AssignFunc(zODE2 *ode, zVec (* catf1)(zVec,double,zVec,zVec,void*), zVec (* catf2)(zVec,double,zVec,zVec,void*), zVec (* subf1)(zVec,zVec,zVec,void*), zVec (* subf2)(zVec,zVec,zVec,void*));
 
 /*! \brief assign differential equation solver.
  *
@@ -83,24 +83,24 @@ __EXPORT void zODE2AssignFunc(zODE2 *ode, zVec (* catf1)(zVec,double,zVec,zVec,v
 #define zODE2Update(ode,t,x,v,dt,util) (ode)->update( ode, t, x, v, dt, util )
 
 /* regular update */
-__EXPORT zVec _zODE2Cat(zVec y, double dt, zVec dy, zVec yn, void *ode);
-__EXPORT zVec _zODE2Sub(zVec y1, zVec y2, zVec dy, void *ode);
+__ZM_EXPORT zVec _zODE2Cat(zVec y, double dt, zVec dy, zVec yn, void *ode);
+__ZM_EXPORT zVec _zODE2Sub(zVec y1, zVec y2, zVec dy, void *ode);
 
-__EXPORT zODE2 *zODE2InitRegular(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec));
-__EXPORT void zODE2DestroyRegular(zODE2 *ode);
-__EXPORT void zODE2UpdateRegular(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
+__ZM_EXPORT zODE2 *zODE2InitRegular(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec));
+__ZM_EXPORT void zODE2DestroyRegular(zODE2 *ode);
+__ZM_EXPORT void zODE2UpdateRegular(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
 #define zODE2AssignRegular( d, type ) zODEAssign( &(d)->_ode, type, _zODE2Cat, _zODE2Sub )
 
 /* simplest symplectic update */
-__EXPORT zODE2 *zODE2InitSympl(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec));
-__EXPORT void zODE2DestroySympl(zODE2 *ode);
-__EXPORT void zODE2UpdateSympl(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
+__ZM_EXPORT zODE2 *zODE2InitSympl(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec));
+__ZM_EXPORT void zODE2DestroySympl(zODE2 *ode);
+__ZM_EXPORT void zODE2UpdateSympl(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
 
 /* leapfrog update */
-__EXPORT zODE2 *zODE2InitLeapfrog(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec));
-__EXPORT void zODE2InitHistLeapfrog(zODE2 *ode, zVec x, zVec v, double dt);
-__EXPORT void zODE2DestroyLeapfrog(zODE2 *ode);
-__EXPORT void zODE2UpdateLeapfrog(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
+__ZM_EXPORT zODE2 *zODE2InitLeapfrog(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec));
+__ZM_EXPORT void zODE2InitHistLeapfrog(zODE2 *ode, zVec x, zVec v, double dt);
+__ZM_EXPORT void zODE2DestroyLeapfrog(zODE2 *ode);
+__ZM_EXPORT void zODE2UpdateLeapfrog(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
 
 __END_DECLS
 

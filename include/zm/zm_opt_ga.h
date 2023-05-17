@@ -22,7 +22,7 @@ typedef struct{
 
 /*! \brief initialize a chromosome.
  */
-__EXPORT zOptGAChromosome *zOptGAChromosomeInit(zOptGAChromosome *c);
+__ZM_EXPORT zOptGAChromosome *zOptGAChromosomeInit(zOptGAChromosome *c);
 
 /*! \brief allocate a chromosome.
  *
@@ -34,13 +34,13 @@ __EXPORT zOptGAChromosome *zOptGAChromosomeInit(zOptGAChromosome *c);
  * \sa
  * zOptGAChromosomeFree
  */
-__EXPORT zOptGAChromosome *zOptGAChromosomeAlloc(zOptGAChromosome *c, size_t size);
+__ZM_EXPORT zOptGAChromosome *zOptGAChromosomeAlloc(zOptGAChromosome *c, size_t size);
 
 /*! \brief free a chromosome.
  *
  * zOptGAChromosomeFree() frees gene of a chromosome \a c.
  */
-__EXPORT void zOptGAChromosomeFree(zOptGAChromosome *c);
+__ZM_EXPORT void zOptGAChromosomeFree(zOptGAChromosome *c);
 
 /*! \brief copy a chromosome.
  *
@@ -49,7 +49,7 @@ __EXPORT void zOptGAChromosomeFree(zOptGAChromosome *c);
  * \return
  * zOptGAChromosomeCopy() returns a pointer to \a dest.
  */
-__EXPORT zOptGAChromosome *zOptGAChromosomeCopy(zOptGAChromosome *src, zOptGAChromosome *dest);
+__ZM_EXPORT zOptGAChromosome *zOptGAChromosomeCopy(zOptGAChromosome *src, zOptGAChromosome *dest);
 
 /*! \brief randomly generate a chromosome.
  *
@@ -59,7 +59,7 @@ __EXPORT zOptGAChromosome *zOptGAChromosomeCopy(zOptGAChromosome *src, zOptGAChr
  * \return
  * zOptGAChromosomeRand() returns a pointer \a c.
  */
-__EXPORT zOptGAChromosome *zOptGAChromosomeRand(zOptGAChromosome *c, zVec min, zVec max);
+__ZM_EXPORT zOptGAChromosome *zOptGAChromosomeRand(zOptGAChromosome *c, zVec min, zVec max);
 
 /*! \brief crossover two chromosomes.
  *
@@ -69,7 +69,7 @@ __EXPORT zOptGAChromosome *zOptGAChromosomeRand(zOptGAChromosome *c, zVec min, z
  * \note
  * \a rate and \a ratio should be from 0 to 1.
  */
-__EXPORT zOptGAChromosome *zOptGAChromosomeXover(zOptGAChromosome *c1, zOptGAChromosome *c2, zOptGAChromosome *c);
+__ZM_EXPORT zOptGAChromosome *zOptGAChromosomeXover(zOptGAChromosome *c1, zOptGAChromosome *c2, zOptGAChromosome *c);
 
 /* ********************************************************** */
 /* CLASS: zOptGA
@@ -86,7 +86,7 @@ typedef struct{
   double eval;
 } zOptGA;
 
-__EXPORT void zOptGAInit(zOptGA *ga);
+__ZM_EXPORT void zOptGAInit(zOptGA *ga);
 
 /*! \brief create a genetic population.
  *
@@ -101,16 +101,16 @@ __EXPORT void zOptGAInit(zOptGA *ga);
  * zOptGACreate() returns the true value if succeed, or the false
  * value otherwise.
  */
-__EXPORT bool zOptGACreate(zOptGA *ga, double (* f)(zVec,void*), void *util, zVec min, zVec max, int population, double rate_survival, double rate_mutation);
+__ZM_EXPORT bool zOptGACreate(zOptGA *ga, double (* f)(zVec,void*), void *util, zVec min, zVec max, int population, double rate_survival, double rate_mutation);
 
 /*! \brief create a genetic population with default parameters. */
-__EXPORT bool zOptGACreateDefault(zOptGA *ga, double (* f)(zVec,void*), void *util, zVec min, zVec max);
+__ZM_EXPORT bool zOptGACreateDefault(zOptGA *ga, double (* f)(zVec,void*), void *util, zVec min, zVec max);
 
 /*! \brief destroy a genetic population.
  *
  * zOptGADestroy() destroys a genetic population \a ga.
  */
-__EXPORT void zOptGADestroy(zOptGA *ga);
+__ZM_EXPORT void zOptGADestroy(zOptGA *ga);
 
 /*! \brief randomly generate a genetic population.
  *
@@ -121,7 +121,7 @@ __EXPORT void zOptGADestroy(zOptGA *ga);
  * zOptGAReproduce() returns the fitness of the best individual
  * in the last generation.
  */
-__EXPORT double zOptGARand(zOptGA *ga, void *util);
+__ZM_EXPORT double zOptGARand(zOptGA *ga, void *util);
 
 /*! \brief reproduce a genetic population.
  *
@@ -132,7 +132,7 @@ __EXPORT double zOptGARand(zOptGA *ga, void *util);
  * zOptGAReproduce() returns the fitness of the best individual
  * in the last generation.
  */
-__EXPORT double zOptGAReproduce(zOptGA *ga, void *util);
+__ZM_EXPORT double zOptGAReproduce(zOptGA *ga, void *util);
 
 /*! \brief solve an optimization problem by genetic algorithm.
  *
@@ -147,7 +147,7 @@ __EXPORT double zOptGAReproduce(zOptGA *ga, void *util);
  * zOptGASolve() returns the fitness of the best individual produced
  * by the genetic algorithm.
  */
-__EXPORT double zOptGASolve(zOptGA *ga, zVec ans, void *util, int generation);
+__ZM_EXPORT double zOptGASolve(zOptGA *ga, zVec ans, void *util, int generation);
 
 #define ZOPT_GA_DEFAULT_GENERATION 1000
 #define ZOPT_GA_DEFAULT_POPULATION  100
@@ -155,14 +155,14 @@ __EXPORT double zOptGASolve(zOptGA *ga, zVec ans, void *util, int generation);
 #define ZOPT_GA_RATE_MUTATION         0.05
 
 /*! \brief solve an optimization problem by genetic algorithm. */
-__EXPORT int zOptSolveGA(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, int population, double rate_survival, double rate_mutation, zVec ans, double *eval);
+__ZM_EXPORT int zOptSolveGA(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, int population, double rate_survival, double rate_mutation, zVec ans, double *eval);
 
 /*! \brief solve an optimization problem by genetic algorithm. */
-__EXPORT int zOptSolveGADefault(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval);
+__ZM_EXPORT int zOptSolveGADefault(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval);
 
 /*! \brief print a genetic population out to a file.
  */
-__EXPORT void zOptGAFPrint(FILE *fp, zOptGA *ga);
+__ZM_EXPORT void zOptGAFPrint(FILE *fp, zOptGA *ga);
 
 __END_DECLS
 

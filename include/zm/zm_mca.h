@@ -26,7 +26,7 @@ __BEGIN_DECLS
  * \a max and vectors in \a list have the same size. Otherwise,
  * it returns the false value.
  */
-__EXPORT bool zVecListMinMax(zVecList *list, zVec min, zVec max);
+__ZM_EXPORT bool zVecListMinMax(zVecList *list, zVec min, zVec max);
 
 /*! \brief sum up all vectors in a list.
  *
@@ -34,7 +34,7 @@ __EXPORT bool zVecListMinMax(zVecList *list, zVec min, zVec max);
  * \return
  * zVecListSum() returns a pointer \a sum.
  */
-__EXPORT zVec zVecListSum(zVecList *list, zVec sum);
+__ZM_EXPORT zVec zVecListSum(zVecList *list, zVec sum);
 
 /*! \brief mean of all vectors in a list.
  *
@@ -42,7 +42,7 @@ __EXPORT zVec zVecListSum(zVecList *list, zVec sum);
  * \return
  * zVecListMean() returns a pointer \a mean.
  */
-__EXPORT zVec zVecListMean(zVecList *list, zVec mean);
+__ZM_EXPORT zVec zVecListMean(zVecList *list, zVec mean);
 
 /*! \brief variance of all vectors in a list.
  *
@@ -51,7 +51,7 @@ __EXPORT zVec zVecListMean(zVecList *list, zVec mean);
  * \return
  * zVecListVar() returns the computed variance.
  */
-__EXPORT double zVecListVar(zVecList *list, zVec mean);
+__ZM_EXPORT double zVecListVar(zVecList *list, zVec mean);
 
 /*! \brief mean and variance of all vectors in a list.
  *
@@ -61,7 +61,7 @@ __EXPORT double zVecListVar(zVecList *list, zVec mean);
  * \return
  * zVecListMeanVar() returns the computed variance.
  */
-__EXPORT double zVecListMeanVar(zVecList *list, zVec mean);
+__ZM_EXPORT double zVecListMeanVar(zVecList *list, zVec mean);
 
 /*! \brief variance-covariance matrix of all vectors in a list.
  *
@@ -71,7 +71,7 @@ __EXPORT double zVecListMeanVar(zVecList *list, zVec mean);
  * \return
  * zVecListCov() returns a pointer \a cov.
  */
-__EXPORT zMat zVecListCov(zVecList *list, zVec mean, zMat cov);
+__ZM_EXPORT zMat zVecListCov(zVecList *list, zVec mean, zMat cov);
 
 /*! \brief mean and variance-covariance matrix of all vectors in a list.
  *
@@ -81,7 +81,7 @@ __EXPORT zMat zVecListCov(zVecList *list, zVec mean, zMat cov);
  * \return
  * zVecListMeanCov() returns a pointer \a cov.
  */
-__EXPORT zMat zVecListMeanCov(zVecList *list, zVec mean, zMat cov);
+__ZM_EXPORT zMat zVecListMeanCov(zVecList *list, zVec mean, zMat cov);
 
 /*! \brief principal component analysis.
  *
@@ -94,7 +94,7 @@ __EXPORT zMat zVecListMeanCov(zVecList *list, zVec mean, zMat cov);
  * \return
  * zPCA() returns the number of significant (i.e., unignored) components.
  */
-__EXPORT int zPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loading);
+__ZM_EXPORT int zPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loading);
 
 /*! \brief generate vectors from normal distribution.
  *
@@ -108,7 +108,7 @@ __EXPORT int zPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loadi
  * namely, the size of \a vl. If it internally fails to allocate memory,
  * a smaller number than \a n is returned.
  */
-__EXPORT int zVecListGenRandND(zVecList *vl, int n, zVec mean, zMat cov);
+__ZM_EXPORT int zVecListGenRandND(zVecList *vl, int n, zVec mean, zMat cov);
 
 __END_DECLS
 

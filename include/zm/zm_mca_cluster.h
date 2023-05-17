@@ -30,17 +30,17 @@ typedef struct{
 #define zClusterVar(c)        (c)->var
 
 /*! \brief create a vector cluster */
-__EXPORT zCluster *zClusterCreate(zCluster *c, int coresize);
+__ZM_EXPORT zCluster *zClusterCreate(zCluster *c, int coresize);
 
 /*! \brief destroy a vector cluster */
-__EXPORT void zClusterDestroy(zCluster *c);
+__ZM_EXPORT void zClusterDestroy(zCluster *c);
 
 /*! \brief the maximum silhouette in a cluster. */
-__EXPORT double zClusterMaxSilhouette(zCluster *c);
+__ZM_EXPORT double zClusterMaxSilhouette(zCluster *c);
 
 /*! \brief print a vector cluster to a file */
-__EXPORT void zClusterFPrint(FILE *fp, zCluster *c);
-__EXPORT void zClusterDataFPrint(FILE *fp, zCluster *c);
+__ZM_EXPORT void zClusterFPrint(FILE *fp, zCluster *c);
+__ZM_EXPORT void zClusterDataFPrint(FILE *fp, zCluster *c);
 
 /* ********************************************************** */
 /*! \brief methods for core and error computation
@@ -69,24 +69,24 @@ ZDEF_STRUCT( zClusterMethod ){
 #define zClusterMethodLoadedMeanF(cm,vl,l,nk,m) (cm)->lm_fp( cm, (vl), (l), (nk), (cm)->lm_util, (m) )
 
 /*! \brief initialize methods for clustering. */
-__EXPORT void zClusterMethodInit(zClusterMethod *method);
+__ZM_EXPORT void zClusterMethodInit(zClusterMethod *method);
 
 /*! \brief set a function to find core of a cluster. */
-__EXPORT zClusterMethod *zClusterMethodSetCoreFunc(zClusterMethod *method, int size, zVec (* fp)(zClusterMethod*,zVecAddrList*,void*,zVec), void *util);
+__ZM_EXPORT zClusterMethod *zClusterMethodSetCoreFunc(zClusterMethod *method, int size, zVec (* fp)(zClusterMethod*,zVecAddrList*,void*,zVec), void *util);
 /*! \brief set a function to compute error of a sample in a cluster. */
-__EXPORT zClusterMethod *zClusterMethodSetErrorFunc(zClusterMethod *method, int size, zVec (* fp)(zClusterMethod*,zVec,zVec,void*,zVec), void *util);
+__ZM_EXPORT zClusterMethod *zClusterMethodSetErrorFunc(zClusterMethod *method, int size, zVec (* fp)(zClusterMethod*,zVec,zVec,void*,zVec), void *util);
 /*! \brief set a function to compute the distance between two samples in a cluster. */
-__EXPORT zClusterMethod *zClusterMethodSetDistFunc(zClusterMethod *method, double (* fp)(zClusterMethod*,zVec,zVec,void*), void *util);
+__ZM_EXPORT zClusterMethod *zClusterMethodSetDistFunc(zClusterMethod *method, double (* fp)(zClusterMethod*,zVec,zVec,void*), void *util);
 /*! \brief set a function to compute the loaded mean of samples (for GMM). */
-__EXPORT zClusterMethod *zClusterMethodSetLoadedMeanFunc(zClusterMethod *method, zVec (* mean_l_fp)(zClusterMethod*,zVecAddrList*,double[],double,void*,zVec), void *util);
+__ZM_EXPORT zClusterMethod *zClusterMethodSetLoadedMeanFunc(zClusterMethod *method, zVec (* mean_l_fp)(zClusterMethod*,zVecAddrList*,double[],double,void*,zVec), void *util);
 
-__EXPORT zClusterMethod *zClusterMethodCreate(zClusterMethod *method, int size);
+__ZM_EXPORT zClusterMethod *zClusterMethodCreate(zClusterMethod *method, int size);
 
 /*! \brief copy methods for clustering. */
-__EXPORT zClusterMethod *zClusterMethodCopy(zClusterMethod *src, zClusterMethod *dest);
+__ZM_EXPORT zClusterMethod *zClusterMethodCopy(zClusterMethod *src, zClusterMethod *dest);
 
 /*! \brief destroy methods for clustering. */
-__EXPORT void zClusterMethodDestroy(zClusterMethod *method);
+__ZM_EXPORT void zClusterMethodDestroy(zClusterMethod *method);
 
 /* ********************************************************** */
 /*! \brief multiple vecter clusters class.
@@ -112,7 +112,7 @@ ZDEF_STRUCT( zMCluster ){
  * zMClusterInit() returns a pointer \a mc if it succeeds to initialize \a mc.
  * Otherwise, the null pointer is returned.
  */
-__EXPORT zMCluster *zMClusterInit(zMCluster *mc, int size);
+__ZM_EXPORT zMCluster *zMClusterInit(zMCluster *mc, int size);
 
 #define zMClusterSetErrorFunc(mc,se,fp,util) zClusterMethodSetErrorFunc( &(mc)->method, (se), (fp), (util) )
 #define zMClusterSetDistFunc(mc,fp,util)     zClusterMethodSetDistFunc( &(mc)->method, (fp), (util) )
@@ -130,16 +130,16 @@ __EXPORT zMCluster *zMClusterInit(zMCluster *mc, int size);
  * zMClusterAlloc() returns the pointer \a mc if it succeeds to allocate
  * memory. Otherwise, the null pointer is returned.
  */
-__EXPORT zMCluster *zMClusterAlloc(zMCluster *mc, int n);
+__ZM_EXPORT zMCluster *zMClusterAlloc(zMCluster *mc, int n);
 
 /*! \brief copy methods of a multiple cluster to another. */
 #define zMClusterMethodCopy(src,dest) zClusterMethodCopy( &(src)->method, &(dest)->method )
 
 /*! \brief move a multiple cluster to another. */
-__EXPORT bool zMClusterMove(zMCluster *src, zMCluster *dest);
+__ZM_EXPORT bool zMClusterMove(zMCluster *src, zMCluster *dest);
 
 /*! \brief destroy a set of vector clusters. */
-__EXPORT void zMClusterDestroy(zMCluster *mc);
+__ZM_EXPORT void zMClusterDestroy(zMCluster *mc);
 
 /*! \brief evenness of clusters.
  *
@@ -149,15 +149,15 @@ __EXPORT void zMClusterDestroy(zMCluster *mc);
  * \return
  * zMClusterEvenness() returns the measure of evenness.
  */
-__EXPORT double zMClusterEvenness(zMCluster *mc);
+__ZM_EXPORT double zMClusterEvenness(zMCluster *mc);
 
 /*! \brief print vectors in a set of vector clusters */
-__EXPORT void zMClusterFPrint(FILE *fp, zMCluster *mc);
-__EXPORT void zMClusterDataFPrint(FILE *fp[], zMCluster *mc);
-__EXPORT void zMClusterCoreFPrint(FILE *fp[], zMCluster *mc);
+__ZM_EXPORT void zMClusterFPrint(FILE *fp, zMCluster *mc);
+__ZM_EXPORT void zMClusterDataFPrint(FILE *fp[], zMCluster *mc);
+__ZM_EXPORT void zMClusterCoreFPrint(FILE *fp[], zMCluster *mc);
 
 /*! \brief print vectors in a set of clusters to files with a common basename. */
-__EXPORT bool zMClusterDataPrintFile(zMCluster *mc, const char *basename);
+__ZM_EXPORT bool zMClusterDataPrintFile(zMCluster *mc, const char *basename);
 
 /* ********************************************************** */
 /*! \brief clustering based on K-means
@@ -175,8 +175,8 @@ __EXPORT bool zMClusterDataPrintFile(zMCluster *mc, const char *basename);
  * zMClusterKMeansKKZ() and zMClusterKMeans() return the number of iterations that
  * is taken in the K-means method.
  */
-__EXPORT int zMClusterKMeansKKZ(zMCluster *mc, zVecAddrList *points, int k);
-__EXPORT int zMClusterKMeans(zMCluster *mc, zVecAddrList *points, int k);
+__ZM_EXPORT int zMClusterKMeansKKZ(zMCluster *mc, zVecAddrList *points, int k);
+__ZM_EXPORT int zMClusterKMeans(zMCluster *mc, zVecAddrList *points, int k);
 
 /*! \brief clustering of vectors by K-medoids.
  *
@@ -189,23 +189,23 @@ __EXPORT int zMClusterKMeans(zMCluster *mc, zVecAddrList *points, int k);
  * \sa
  * zMClusterKMeansKKZ, zMClusterKMeans
  */
-__EXPORT int zMClusterKMedoids(zMCluster *mc, zVecAddrList *points, int k);
+__ZM_EXPORT int zMClusterKMedoids(zMCluster *mc, zVecAddrList *points, int k);
 
 /*! \brief compute the mean silhouette of a set of clusters. */
-__EXPORT double zMClusterMeanSilhouette(zMCluster *mc);
+__ZM_EXPORT double zMClusterMeanSilhouette(zMCluster *mc);
 
 /*! \brief print silhouettes of a set of vector clusters to files. */
-__EXPORT bool zMClusterSilhouettePrintFile(zMCluster *mc, const char *basename);
+__ZM_EXPORT bool zMClusterSilhouettePrintFile(zMCluster *mc, const char *basename);
 
 /* ********************************************************** */
 /*! \brief clustering based on X-means
  *//* ******************************************************* */
 
 /*! \brief clustering of vectors by X-means based on hyperdensity of clusters. */
-__EXPORT int zMClusterXMeansDensity(zMCluster *mc, zVecAddrList *points);
+__ZM_EXPORT int zMClusterXMeansDensity(zMCluster *mc, zVecAddrList *points);
 
 /*! \brief clustering of vectors by X-means based on BIC */
-__EXPORT int zMClusterXMeansBIC(zMCluster *mc, zVecAddrList *points);
+__ZM_EXPORT int zMClusterXMeansBIC(zMCluster *mc, zVecAddrList *points);
 
 __END_DECLS
 

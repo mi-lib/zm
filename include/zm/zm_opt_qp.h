@@ -19,7 +19,7 @@ __BEGIN_DECLS
  * \return
  * zQuadraticValue() returns the calculated quadratic form value.
  */
-__EXPORT double zQuadraticValue(zMat q, zVec c, zVec x);
+__ZM_EXPORT double zQuadraticValue(zMat q, zVec c, zVec x);
 
 /*! \brief convex quadratic programming solver.
  *
@@ -52,9 +52,9 @@ __EXPORT double zQuadraticValue(zMat q, zVec c, zVec x);
  * \sa
  * zLCPSolveLemke
  */
-__EXPORT bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost);
-__EXPORT bool zQPSolveLemke(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost);
-__EXPORT bool zQPSolveIP(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost);
+__ZM_EXPORT bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost);
+__ZM_EXPORT bool zQPSolveLemke(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost);
+__ZM_EXPORT bool zQPSolveIP(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost);
 
 /*! \brief quadratic programming solver by active-set method
  *
@@ -62,7 +62,7 @@ __EXPORT bool zQPSolveIP(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
  * constraint to find the vector x which minimizes 0.5 xT q x + cT x
  * subject to a x >= b and x >= 0 based on active-set method.
  */
-__EXPORT bool zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost, zVec init(zMat,zVec,zVec,void*), void *util);
+__ZM_EXPORT bool zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost, zVec init(zMat,zVec,zVec,void*), void *util);
 
 /*! \brief quadratic programming solver by conjugate gradient method.
  *
@@ -82,7 +82,7 @@ __EXPORT bool zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost
  * \sa
  * zCGSolve() returns the obtained minimum value.
  */
-__EXPORT double zCGSolve(zMat q, zVec c, zVec ans, int iter);
+__ZM_EXPORT double zCGSolve(zMat q, zVec c, zVec ans, int iter);
 
 __END_DECLS
 

@@ -34,15 +34,15 @@ __BEGIN_DECLS
  * If one column / row or more are dependent on other columns / rows, those
  * functions fail to decompose the given matrix into an orthogonal space.
  */
-__EXPORT int zMatDecompLQDST(zMat m, zMat l, zMat q, zIndex idx);
-__EXPORT int zMatDecompLQ(zMat m, zMat l, zMat q, zIndex idx);
-__EXPORT int zMatDecompLQReg(zMat m, zMat l, zMat q, zIndex idx);
+__ZM_EXPORT int zMatDecompLQDST(zMat m, zMat l, zMat q, zIndex idx);
+__ZM_EXPORT int zMatDecompLQ(zMat m, zMat l, zMat q, zIndex idx);
+__ZM_EXPORT int zMatDecompLQReg(zMat m, zMat l, zMat q, zIndex idx);
 
 /*! \brief LQ decomposition with an automatic matrix allocation and resize.
  */
-__EXPORT int zMatDecompLQAlloc(zMat m, zMat *l, zMat *q, zIndex *idx);
+__ZM_EXPORT int zMatDecompLQAlloc(zMat m, zMat *l, zMat *q, zIndex *idx);
 
-__EXPORT int zMatDecompQR(zMat m, zMat q, zMat r, zIndex idx);
+__ZM_EXPORT int zMatDecompQR(zMat m, zMat q, zMat r, zIndex idx);
 
 __END_DECLS
 

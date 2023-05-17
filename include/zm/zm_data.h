@@ -14,22 +14,22 @@
 __BEGIN_DECLS
 
 /*! \brief pick up peaks a data sequence. */
-__EXPORT zIndex zDataPeak(double src[], size_t n, uint w);
+__ZM_EXPORT zIndex zDataPeak(double src[], size_t n, uint w);
 
 /*! \brief smooth a data sequence based on Savitzky-Golay's method */
-__EXPORT bool zDataSmoothSG(double src[], size_t n, size_t w, uint dim, double dest[]);
+__ZM_EXPORT bool zDataSmoothSG(double src[], size_t n, size_t w, uint dim, double dest[]);
 
 /*! \brief pick up peaks of a smoothed data sequence based on Savitzky-Golay's method. */
-__EXPORT zIndex zDataPeakSG(double src[], size_t n, size_t w, uint dim);
+__ZM_EXPORT zIndex zDataPeakSG(double src[], size_t n, size_t w, uint dim);
 
 /*! \brief sort an array of double-precision floating-point vector in the descent order. */
-__EXPORT double *zDataSort(double data[], size_t n);
+__ZM_EXPORT double *zDataSort(double data[], size_t n);
 
 /*! \brief sort an integer vector in the descent order of the corresponding samples. */
-__EXPORT zIndex zDataSortIndex(double data[], size_t n, zIndex index);
+__ZM_EXPORT zIndex zDataSortIndex(double data[], size_t n, zIndex index);
 
 /*! \brief sort an integer vector in the descent order of absolute values of the corresponding samples. */
-__EXPORT zIndex zDataSortAbsIndex(double data[], size_t n, zIndex index);
+__ZM_EXPORT zIndex zDataSortAbsIndex(double data[], size_t n, zIndex index);
 
 __END_DECLS
 

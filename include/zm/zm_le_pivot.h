@@ -39,10 +39,10 @@ __BEGIN_DECLS
  * pivot. After calling these functions, the value at the same position
  * changes to 1.
  */
-__EXPORT int zPivoting(zMat m, zIndex index, int r, int c);
-__EXPORT int zPivotingDiag(zMat m, zIndex index, int i);
-__EXPORT double zSweepOutVec(zMat m, zVec v, int r, int c);
-__EXPORT double zSweepOutMat(zMat m1, zMat m2, int r, int c);
+__ZM_EXPORT int zPivoting(zMat m, zIndex index, int r, int c);
+__ZM_EXPORT int zPivotingDiag(zMat m, zIndex index, int i);
+__ZM_EXPORT double zSweepOutVec(zMat m, zVec v, int r, int c);
+__ZM_EXPORT double zSweepOutMat(zMat m1, zMat m2, int r, int c);
 
 __END_DECLS
 

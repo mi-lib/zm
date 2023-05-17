@@ -35,7 +35,7 @@ typedef struct{
  * \a s0 is the initial integral value, and \a x0 is the
  * initial function value to be integrated.
  */
-__EXPORT void zIntgInit(zIntg *intg, double s0, double x0);
+__ZM_EXPORT void zIntgInit(zIntg *intg, double s0, double x0);
 
 /*! \brief rectangular integration.
  *
@@ -43,7 +43,7 @@ __EXPORT void zIntgInit(zIntg *intg, double s0, double x0);
  * rectangular formula. \a x is the latest function value
  * and \a dt is the discrete time step.
  */
-__EXPORT double zIntgRect(zIntg *intg, double x, double dt);
+__ZM_EXPORT double zIntgRect(zIntg *intg, double x, double dt);
 
 /*! \brief trapezoidal integration.
  *
@@ -51,7 +51,7 @@ __EXPORT double zIntgRect(zIntg *intg, double x, double dt);
  * trapezoidal formula. \a x is the latest function value
  * and \a dt is the discrete time step.
  */
-__EXPORT double zIntgTR(zIntg *intg, double x, double dt);
+__ZM_EXPORT double zIntgTR(zIntg *intg, double x, double dt);
 
 /*! \brief quadratic approximation integration.
  *
@@ -59,7 +59,7 @@ __EXPORT double zIntgTR(zIntg *intg, double x, double dt);
  * quadratic approximation of the function. \a x is the latest
  * function value and \a dt is the discrete time step.
  */
-__EXPORT double zIntgQuad(zIntg *intg, double x, double dt);
+__ZM_EXPORT double zIntgQuad(zIntg *intg, double x, double dt);
 
 /*! \} */
 

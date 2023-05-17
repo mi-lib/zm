@@ -30,55 +30,55 @@ __BEGIN_DECLS
 /* gamma distribution family */
 
 /*! \brief a random number yielded from gamma distribution. */
-__EXPORT double zRandGamma(zRandMT *mt, double a);
+__ZM_EXPORT double zRandGamma(zRandMT *mt, double a);
 /*! \brief a random number yielded from Chi squared distribution. */
-__EXPORT double zRandChiSqr(zRandMT *mt, double nu);
+__ZM_EXPORT double zRandChiSqr(zRandMT *mt, double nu);
 /*! \brief a random number yielded from beta distribution. */
-__EXPORT double zRandBeta(zRandMT *mt, double a, double b);
+__ZM_EXPORT double zRandBeta(zRandMT *mt, double a, double b);
 /*! \brief a random number yielded from F distribution. */
-__EXPORT double zRandFD(zRandMT *mt, double a, double b);
+__ZM_EXPORT double zRandFD(zRandMT *mt, double a, double b);
 
 /* normal distribution family */
 
 /*! \brief a random number yielded from normal distribution based on Box-Muller's method. */
-__EXPORT double zRandND0(zRandMT *mt);
+__ZM_EXPORT double zRandND0(zRandMT *mt);
 /*! \brief a random number yielded from normal distribution based on Box-Muller's method.
  *
  * zRandND() returns a randomly generated value in accordance with
  * the normal distribution with the mean \a mu and the variance \a sigma
  * based on Box-Muller's method.
  */
-__EXPORT double zRandND(zRandMT *mt, double mu, double sigma);
+__ZM_EXPORT double zRandND(zRandMT *mt, double mu, double sigma);
 /*! \brief a random number yielded from t distribution. */
-__EXPORT double zRandT(zRandMT *mt, double n);
+__ZM_EXPORT double zRandT(zRandMT *mt, double n);
 
 /* continuous distribution */
 
 /*! \brief a random number yielded from exponential distribution
  * with unit meanvalue. */
-__EXPORT double zRandExp(zRandMT *mt);
+__ZM_EXPORT double zRandExp(zRandMT *mt);
 /*! \brief a random number yielded from logistic distribution. */
-__EXPORT double zRandLog(zRandMT *mt);
+__ZM_EXPORT double zRandLog(zRandMT *mt);
 /*! \brief a random number yielded from power distribution. */
-__EXPORT double zRandPower(zRandMT *mt, double n);
+__ZM_EXPORT double zRandPower(zRandMT *mt, double n);
 /*! \brief a random number yielded from triangle distribution. */
-__EXPORT double zRandTri(zRandMT *mt);
+__ZM_EXPORT double zRandTri(zRandMT *mt);
 /*! \brief a random number yielded from Cauchy's distribution. */
-__EXPORT double zRandCauchy(zRandMT *mt);
+__ZM_EXPORT double zRandCauchy(zRandMT *mt);
 /*! \brief a random number yielded from Weibull distribution. */
-__EXPORT double zRandWeibull(zRandMT *mt, double alpha);
+__ZM_EXPORT double zRandWeibull(zRandMT *mt, double alpha);
 
 /* discrete distribution */
 
 /*! \brief a random number yielded from binomial distribution. */
-__EXPORT int zRandBinom(zRandMT *mt, int n, double p);
+__ZM_EXPORT int zRandBinom(zRandMT *mt, int n, double p);
 /*! \brief a random number yielded from two-variable binomial
  * distribution with relation. */
-__EXPORT void zRandBinom2(zRandMT *mt, double r, double *x, double *y);
+__ZM_EXPORT void zRandBinom2(zRandMT *mt, double r, double *x, double *y);
 /*! \brief a random number yielded from Poisson's distribution. */
-__EXPORT int zRandPoisson(zRandMT *mt, double lambda);
+__ZM_EXPORT int zRandPoisson(zRandMT *mt, double lambda);
 /*! \brief a random number yielded from geometric distribution. */
-__EXPORT int zRandGeo(zRandMT *mt, double p);
+__ZM_EXPORT int zRandGeo(zRandMT *mt, double p);
 
 /*! \} */
 

@@ -48,14 +48,14 @@ typedef struct _zOptDM{
   double _cf; /* curvature factor */
 } zOptDM;
 
-__EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double scale, double (*eval)(zVec,void*), zVec (*grad)(zVec,zVec,void*), zMat (*hess)(zVec,zMat,void*));
-__EXPORT zOptDM *zOptDMAssignSD(zOptDM *opt, const char *stepmethod);
-__EXPORT zOptDM *zOptDMAssignLM(zOptDM *opt, const char *stepmethod);
-__EXPORT zOptDM *zOptDMAssignVM(zOptDM *opt, const char *stepmethod, const char *updatemethod);
-__EXPORT zOptDM *zOptDMAssignCG(zOptDM *opt);
+__ZM_EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double scale, double (*eval)(zVec,void*), zVec (*grad)(zVec,zVec,void*), zMat (*hess)(zVec,zMat,void*));
+__ZM_EXPORT zOptDM *zOptDMAssignSD(zOptDM *opt, const char *stepmethod);
+__ZM_EXPORT zOptDM *zOptDMAssignLM(zOptDM *opt, const char *stepmethod);
+__ZM_EXPORT zOptDM *zOptDMAssignVM(zOptDM *opt, const char *stepmethod, const char *updatemethod);
+__ZM_EXPORT zOptDM *zOptDMAssignCG(zOptDM *opt);
 
-__EXPORT void zOptDMDestroy(zOptDM *opt);
-__EXPORT int zOptDMSolve(zOptDM *opt, zVec var, void *util, double tol, int iter, double *eval);
+__ZM_EXPORT void zOptDMDestroy(zOptDM *opt);
+__ZM_EXPORT int zOptDMSolve(zOptDM *opt, zVec var, void *util, double tol, int iter, double *eval);
 
 /*! \} */
 

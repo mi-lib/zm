@@ -34,7 +34,7 @@ typedef struct{
  * \return
  * zClothoidCreateSegment() returns a pointer \a cl.
  */
-__EXPORT zClothoid *zClothoidCreateSegment(zClothoid *cl, double x0, double y0, double f0, double x1, double y1, double f1);
+__ZM_EXPORT zClothoid *zClothoidCreateSegment(zClothoid *cl, double x0, double y0, double f0, double x1, double y1, double f1);
 
 /*! \brief x-y values of a clothoid curve.
  *
@@ -44,7 +44,7 @@ __EXPORT zClothoid *zClothoidCreateSegment(zClothoid *cl, double x0, double y0, 
  * zClothoidXY() returns the true value if it succeeds to compute the values.
  * Otherwise, the false value is returned.
  */
-__EXPORT bool zClothoidXY(zClothoid *cl, double s, double *x, double *y);
+__ZM_EXPORT bool zClothoidXY(zClothoid *cl, double s, double *x, double *y);
 
 __END_DECLS
 

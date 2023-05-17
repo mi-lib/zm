@@ -37,7 +37,7 @@ __BEGIN_DECLS
  * \retval the false value if failing to internaly allocate a
  * working memory. Otherwise, the true value.
  */
-__EXPORT bool zFFT(double data[], size_t n, zComplex res[]);
+__ZM_EXPORT bool zFFT(double data[], size_t n, zComplex res[]);
 
 /*! \brief inverse fast Fourier transformation.
  *
@@ -53,7 +53,7 @@ __EXPORT bool zFFT(double data[], size_t n, zComplex res[]);
  * \retval the false value if failing to internaly allocate
  * a working memory. Otherwise, the true value.
  */
-__EXPORT bool zFFTInv(zComplex data[], size_t n, double res[]);
+__ZM_EXPORT bool zFFTInv(zComplex data[], size_t n, double res[]);
 
 __END_DECLS
 

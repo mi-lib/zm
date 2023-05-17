@@ -26,7 +26,7 @@ zListClass( zVecList, zVecListCell, zVec );
  * zVecListInsertHead() returns a pointer to the newly inserted list cell, if
  * it succeeds. Otherwise, the null pointer is returned.
  */
-__EXPORT zVecListCell *zVecListInsertHead(zVecList *list, zVec v);
+__ZM_EXPORT zVecListCell *zVecListInsertHead(zVecList *list, zVec v);
 
 /*! \brief insert a vector to a list at the tail.
  *
@@ -36,13 +36,13 @@ __EXPORT zVecListCell *zVecListInsertHead(zVecList *list, zVec v);
  * zVecListInsertTail() returns a pointer to the newly inserted list cell, if
  * it succeeds. Otherwise, the null pointer is returned.
  */
-__EXPORT zVecListCell *zVecListInsertTail(zVecList *list, zVec v);
+__ZM_EXPORT zVecListCell *zVecListInsertTail(zVecList *list, zVec v);
 
 /*! \brief destroy a vector list.
  *
  * zVecListDestroy() destroys a vector list \a list.
  */
-__EXPORT void zVecListDestroy(zVecList *list);
+__ZM_EXPORT void zVecListDestroy(zVecList *list);
 
 /*! \brief nearest neighbor cell in a list to a vector.
  *
@@ -53,7 +53,7 @@ __EXPORT void zVecListDestroy(zVecList *list);
  * \return
  * zVecListNN() returns a pointer to the nearest neighbor vector.
  */
-__EXPORT zVec zVecListNN(zVecList *list, zVec v, double *dmin);
+__ZM_EXPORT zVec zVecListNN(zVecList *list, zVec v, double *dmin);
 
 /*! \brief scan/print a list of vectors from/to a file.
  *
@@ -70,9 +70,9 @@ __EXPORT zVec zVecListNN(zVecList *list, zVec v, double *dmin);
  *
  * zVecListFPrint() and zVecListPrint() return no value.
  */
-__EXPORT zVecList *zVecListFScan(FILE *fp, zVecList *list);
+__ZM_EXPORT zVecList *zVecListFScan(FILE *fp, zVecList *list);
 #define zVecListScan(l) zVecListFScan( stdin, l )
-__EXPORT void zVecListFPrint(FILE *fp, zVecList *list);
+__ZM_EXPORT void zVecListFPrint(FILE *fp, zVecList *list);
 #define zVecListPrint(l) zVecListFPrint( stdout, l )
 
 /* ********************************************************** */
@@ -85,15 +85,15 @@ typedef zVecListCell zVecAddrListCell;
 
 /*! \brief insert a pointer to a vector to a list at the head.
  */
-__EXPORT zVecListCell *zVecAddrListInsertHead(zVecAddrList *list, zVec v);
+__ZM_EXPORT zVecListCell *zVecAddrListInsertHead(zVecAddrList *list, zVec v);
 
 /*! \brief insert a pointer to a vector to a list at the tail.
  */
-__EXPORT zVecListCell *zVecAddrListInsertTail(zVecAddrList *list, zVec v);
+__ZM_EXPORT zVecListCell *zVecAddrListInsertTail(zVecAddrList *list, zVec v);
 
 /*! \brief destroy a vector list.
  */
-__EXPORT void zVecAddrListDestroy(zVecList *list);
+__ZM_EXPORT void zVecAddrListDestroy(zVecList *list);
 
 __END_DECLS
 

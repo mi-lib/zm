@@ -48,7 +48,7 @@ typedef struct _zGraphNode{
  *
  * zGraphNodeInit() initializes a graph node \a node.
  */
-__EXPORT void zGraphNodeInit(zGraphNode *node);
+__ZM_EXPORT void zGraphNodeInit(zGraphNode *node);
 
 /*! \brief connect a graph node to another.
  *
@@ -61,7 +61,7 @@ __EXPORT void zGraphNodeInit(zGraphNode *node);
  * \retval false if it fails to allocate internal workspace.
  * \retval true otherwise.
  */
-__EXPORT bool zGraphNodeConnect(zGraphNode *from, zGraphNode *to, double cost);
+__ZM_EXPORT bool zGraphNodeConnect(zGraphNode *from, zGraphNode *to, double cost);
 
 /*! \brief connect two graph nodes bidirectionally.
  *
@@ -72,7 +72,7 @@ __EXPORT bool zGraphNodeConnect(zGraphNode *from, zGraphNode *to, double cost);
  * \retval false if it fails to allocate internal workspace.
  * \retval true otherwise.
  */
-__EXPORT bool zGraphNodeBiconnect(zGraphNode *n1, zGraphNode *n2, double cost);
+__ZM_EXPORT bool zGraphNodeBiconnect(zGraphNode *n1, zGraphNode *n2, double cost);
 
 /* ********************************************************** */
 /*! \brief graph node list class.
@@ -96,14 +96,14 @@ typedef struct{
  *
  * zGraphInit() initializes a graph \a graph.
  */
-__EXPORT void zGraphInit(zGraph *graph);
+__ZM_EXPORT void zGraphInit(zGraph *graph);
 
 /*! \brief destroy a graph.
  *
  * zGraphDestroy() destroys a graph \a graph by freeing all
  * internal working memory.
  */
-__EXPORT void zGraphDestroy(zGraph *graph);
+__ZM_EXPORT void zGraphDestroy(zGraph *graph);
 
 /*! \brief add a node to a graph.
  *
@@ -114,7 +114,7 @@ __EXPORT void zGraphDestroy(zGraph *graph);
  * \retval false if it fails to allocate internal workspace.
  * \retval true otherwise.
  */
-__EXPORT bool zGraphAddNode(zGraph *graph, void *data);
+__ZM_EXPORT bool zGraphAddNode(zGraph *graph, void *data);
 
 /*! \brief find a node from a graph.
  *
@@ -124,7 +124,7 @@ __EXPORT bool zGraphAddNode(zGraph *graph, void *data);
  * \retval the null poiter if it fails to find the node corresponding
  * to \a id.
  */
-__EXPORT zGraphNode *zGraphFindNode(zGraph *graph, void *data);
+__ZM_EXPORT zGraphNode *zGraphFindNode(zGraph *graph, void *data);
 
 /*! \brief connect a graph node to another.
  *
@@ -137,7 +137,7 @@ __EXPORT zGraphNode *zGraphFindNode(zGraph *graph, void *data);
  * \retval false if it fails to allocate internal workspace.
  * \retval true otherwise.
  */
-__EXPORT bool zGraphConnect(zGraph *graph, void *from, void *to, double cost);
+__ZM_EXPORT bool zGraphConnect(zGraph *graph, void *from, void *to, double cost);
 
 /*! \brief connect two graph nodes bidirectionally.
  *
@@ -149,14 +149,14 @@ __EXPORT bool zGraphConnect(zGraph *graph, void *from, void *to, double cost);
  * \retval false if it fails to allocate internal workspace.
  * \retval true otherwise.
  */
-__EXPORT bool zGraphBiconnect(zGraph *graph, void *n1, void *n2, double cost);
+__ZM_EXPORT bool zGraphBiconnect(zGraph *graph, void *n1, void *n2, double cost);
 
 /*! \brief print information of a graph.
  *
  * zGraphFPrint() prints information of \a graph to a stream
  * pointed by \a fp.
  */
-__EXPORT void zGraphFPrint(FILE *fp, zGraph *graph);
+__ZM_EXPORT void zGraphFPrint(FILE *fp, zGraph *graph);
 
 /* ********************************************************** */
 /*! \brief graph node list class.
@@ -170,7 +170,7 @@ zListClass(zGraphNodeList, zGraphNodeListCell, zGraphNode*);
  * \retval true if succeeding to allocate a new list cell
  * \retval false if failing to allocate a new list cell
  */
-__EXPORT bool zGraphNodeListAdd(zGraphNodeList *list, zGraphNode *node);
+__ZM_EXPORT bool zGraphNodeListAdd(zGraphNodeList *list, zGraphNode *node);
 
 /*! \} */
 

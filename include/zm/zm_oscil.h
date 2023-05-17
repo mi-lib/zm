@@ -72,7 +72,7 @@ typedef struct{
  * by \a osc. \a t is the natural oscillation term,
  * \a damp is the damping factor, and \a amp is the output amplitude.
  */
-__EXPORT zOsc *zOscCreateVDP(zOsc *osc, double t, double damp, double amp);
+__ZM_EXPORT zOsc *zOscCreateVDP(zOsc *osc, double t, double damp, double amp);
 
 /* ********************************************************** */
 /*! \brief Kuramoto's phase oscillator.
@@ -84,7 +84,7 @@ __EXPORT zOsc *zOscCreateVDP(zOsc *osc, double t, double damp, double amp);
  * pointed by \a osc. \a wn is the natural oscillation frequency,
  * \a ke is the entrainment gain, and \a po is the phase offset.
  */
-__EXPORT zOsc *zOscCreateKura(zOsc *osc, double wn, double ke, double po);
+__ZM_EXPORT zOsc *zOscCreateKura(zOsc *osc, double wn, double ke, double po);
 
 /*! \} */
 

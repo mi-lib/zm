@@ -19,7 +19,7 @@ __BEGIN_DECLS
  * between the boundaries. \a t is the current time, which should be between
  * 0 and \a term
  */
-__EXPORT double zFergusonVal(double t, double term, double x0, double v0, double x1, double v1);
+__ZM_EXPORT double zFergusonVal(double t, double term, double x0, double v0, double x1, double v1);
 
 /*! \brief create a Piecewise Cubic Hermite Interporating Polynomial interpolator.
  *
@@ -32,7 +32,7 @@ __EXPORT double zFergusonVal(double t, double term, double x0, double v0, double
  * \a ip is a pointer to an instance interpolator.
  * \a seq is a sequence of points to be interpolated.
  */
-__EXPORT bool zIPCreatePCHIP(zIP *ip, zSeq *seq);
+__ZM_EXPORT bool zIPCreatePCHIP(zIP *ip, zSeq *seq);
 
 __END_DECLS
 

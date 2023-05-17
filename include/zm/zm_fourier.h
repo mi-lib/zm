@@ -28,19 +28,19 @@ typedef struct{
 #define zFourierSetCosCoeff(f,i,c) ( (i) >= 0 && (i) < (f)->n ? zFourierSetCosCoeffNC( f, i, c ) : 0 )
 
 /*! \brief allocate internal memory for Fourier series. */
-__EXPORT zFourier *zFourierAlloc(zFourier *f, int n);
+__ZM_EXPORT zFourier *zFourierAlloc(zFourier *f, int n);
 
 /*! \brief free internal memory for Fourier series. */
-__EXPORT void zFourierFree(zFourier *f);
+__ZM_EXPORT void zFourierFree(zFourier *f);
 
 /*! \brief value of a Fourier series. */
-__EXPORT double zFourierVal(zFourier *f, double t);
+__ZM_EXPORT double zFourierVal(zFourier *f, double t);
 
 /*! \brief velocity of a Fourier series. */
-__EXPORT double zFourierVel(zFourier *f, double t);
+__ZM_EXPORT double zFourierVel(zFourier *f, double t);
 
 /*! \brief acceleration of a Fourier series. */
-__EXPORT double zFourierAcc(zFourier *f, double t);
+__ZM_EXPORT double zFourierAcc(zFourier *f, double t);
 
 __END_DECLS
 

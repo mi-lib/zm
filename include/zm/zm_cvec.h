@@ -85,19 +85,19 @@ typedef zCVecStruct* zCVec;
  * are different. If it is not urgent and you are not hasty,
  * you should use zCVecCopy() for safety.
  */
-__EXPORT zCVec zCVecAlloc(int size);
-__EXPORT void zCVecFree(zCVec v);
-__EXPORT zCVec zCVecZero(zCVec v);
-__EXPORT zCVec zCVecTouchup(zCVec v);
-__EXPORT zCVec zCVecCopyNC(zCVec src, zCVec dest);
-__EXPORT zCVec zCVecCopy(zCVec src, zCVec dest);
-__EXPORT zCVec zCVecClone(zCVec src);
+__ZM_EXPORT zCVec zCVecAlloc(int size);
+__ZM_EXPORT void zCVecFree(zCVec v);
+__ZM_EXPORT zCVec zCVecZero(zCVec v);
+__ZM_EXPORT zCVec zCVecTouchup(zCVec v);
+__ZM_EXPORT zCVec zCVecCopyNC(zCVec src, zCVec dest);
+__ZM_EXPORT zCVec zCVecCopy(zCVec src, zCVec dest);
+__ZM_EXPORT zCVec zCVecClone(zCVec src);
 
 /*! \brief convert a vector to a complex vector. */
-__EXPORT zCVec zVec2CVec(zVec v, zCVec cv);
+__ZM_EXPORT zCVec zVec2CVec(zVec v, zCVec cv);
 
 /*! \brief generate a uniformly random complex vector. */
-__EXPORT zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rmax, double imax);
+__ZM_EXPORT zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rmax, double imax);
 
 /*! \brief compare two complex vectors.
  *
@@ -108,7 +108,7 @@ __EXPORT zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rmax, 
  * zCVecIsEqual() returns the true value if \a v1 equals
  * to \a v2, or the false value otherwise.
  */
-__EXPORT bool zCVecIsEqual(zCVec v1, zCVec v2, double tol);
+__ZM_EXPORT bool zCVecIsEqual(zCVec v1, zCVec v2, double tol);
 
 /*! \brief check if a complex vector is tiny.
  *
@@ -121,14 +121,14 @@ __EXPORT bool zCVecIsEqual(zCVec v1, zCVec v2, double tol);
  * \return
  * zCVecIsTol() and zCVecIsTiny() return a boolean value.
  */
-__EXPORT bool zCVecIsTol(zCVec v, double tol);
+__ZM_EXPORT bool zCVecIsTol(zCVec v, double tol);
 #define zCVecIsTiny(v) zCVecIsTol( v, zTOL )
 
 /*! \brief split a complex vector to a real vector and an imaginary vector. */
-__EXPORT bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec, double tol);
+__ZM_EXPORT bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec, double tol);
 
 /*! \brief reorder a complex vector as co-conjugate numbers are paired as adjacencies. */
-__EXPORT zCVec zCVecConjPair(zCVec v, double tol);
+__ZM_EXPORT zCVec zCVecConjPair(zCVec v, double tol);
 
 /*! \brief basic arithmetics for the complex vector.
  *
@@ -167,19 +167,19 @@ __EXPORT zCVec zCVecConjPair(zCVec v, double tol);
  * If it is not urgent and you are not hasty, you should not
  * use them.
  */
-__EXPORT zCVec zCVecAddNC(zCVec v1, zCVec v2, zCVec v);
-__EXPORT zCVec zCVecSubNC(zCVec v1, zCVec v2, zCVec v);
-__EXPORT zCVec zCVecRevNC(zCVec v1, zCVec v);
-__EXPORT zCVec zCVecMulNC(zCVec v1, zComplex *z, zCVec v);
-__EXPORT zCVec zCVecDivNC(zCVec v1, zComplex *z, zCVec v);
-__EXPORT zCVec zCVecCatNC(zCVec v1, zComplex *z, zCVec v2, zCVec v);
+__ZM_EXPORT zCVec zCVecAddNC(zCVec v1, zCVec v2, zCVec v);
+__ZM_EXPORT zCVec zCVecSubNC(zCVec v1, zCVec v2, zCVec v);
+__ZM_EXPORT zCVec zCVecRevNC(zCVec v1, zCVec v);
+__ZM_EXPORT zCVec zCVecMulNC(zCVec v1, zComplex *z, zCVec v);
+__ZM_EXPORT zCVec zCVecDivNC(zCVec v1, zComplex *z, zCVec v);
+__ZM_EXPORT zCVec zCVecCatNC(zCVec v1, zComplex *z, zCVec v2, zCVec v);
 
-__EXPORT zCVec zCVecAdd(zCVec v1, zCVec v2, zCVec v);
-__EXPORT zCVec zCVecSub(zCVec v1, zCVec v2, zCVec v);
-__EXPORT zCVec zCVecRev(zCVec v1, zCVec v);
-__EXPORT zCVec zCVecMul(zCVec v1, zComplex *z, zCVec v);
-__EXPORT zCVec zCVecDiv(zCVec v1, zComplex *z, zCVec v);
-__EXPORT zCVec zCVecCat(zCVec v1, zComplex *z, zCVec v2, zCVec v);
+__ZM_EXPORT zCVec zCVecAdd(zCVec v1, zCVec v2, zCVec v);
+__ZM_EXPORT zCVec zCVecSub(zCVec v1, zCVec v2, zCVec v);
+__ZM_EXPORT zCVec zCVecRev(zCVec v1, zCVec v);
+__ZM_EXPORT zCVec zCVecMul(zCVec v1, zComplex *z, zCVec v);
+__ZM_EXPORT zCVec zCVecDiv(zCVec v1, zComplex *z, zCVec v);
+__ZM_EXPORT zCVec zCVecCat(zCVec v1, zComplex *z, zCVec v2, zCVec v);
 
 #define zCVecAddNCDRC(v1,v2)   zCVecAddNC( v1, v2, v1 )
 #define zCVecSubNCDRC(v1,v2)   zCVecSubNC( v1, v2, v1 )
@@ -205,8 +205,8 @@ __EXPORT zCVec zCVecCat(zCVec v1, zComplex *z, zCVec v2, zCVec v);
  * between \a v1 and \a v2. If it is not urgent and you are
  * not hasty, you should use zCVecInnerProd().
  */
-__EXPORT zComplex *zCVecInnerProdNC(zCVec v1, zCVec v2, zComplex *z);
-__EXPORT zComplex *zCVecInnerProd(zCVec v1, zCVec v2, zComplex *z);
+__ZM_EXPORT zComplex *zCVecInnerProdNC(zCVec v1, zCVec v2, zComplex *z);
+__ZM_EXPORT zComplex *zCVecInnerProd(zCVec v1, zCVec v2, zComplex *z);
 
 /*! \brief normalize vector.
  *
@@ -225,9 +225,9 @@ __EXPORT zComplex *zCVecInnerProd(zCVec v1, zCVec v2, zComplex *z);
  * zCVecNormalize() and zCVecNormalizeDRC() return a pointer
  * to the result.
  */
-__EXPORT double zCVecSqrNorm(zCVec v);
+__ZM_EXPORT double zCVecSqrNorm(zCVec v);
 #define zCVecNorm(v)         sqrt( zCVecSqrNorm(v) )
-__EXPORT zCVec zCVecNormalize(zCVec src, zCVec dest);
+__ZM_EXPORT zCVec zCVecNormalize(zCVec src, zCVec dest);
 #define zCVecNormalizeDRC(v) zCVecNormalize(v,v)
 
 /*! \brief check if a complex number is included in a complex vector. */
@@ -247,7 +247,7 @@ __EXPORT zCVec zCVecNormalize(zCVec src, zCVec dest);
  * \return
  * zCVecFPrint() and zCVecPrint() return no values.
  */
-__EXPORT void zCVecFPrint(FILE *fp, zCVec v);
+__ZM_EXPORT void zCVecFPrint(FILE *fp, zCVec v);
 #define zCVecPrint(v) zCVecFPrint( stdout, v )
 
 __END_DECLS

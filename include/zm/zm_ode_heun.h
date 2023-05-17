@@ -15,9 +15,9 @@ __BEGIN_DECLS
 /* Here, the third-dimension Runge-Kutta method is named Heun method.
  * To be strict, it is one of the modified Euler methods by Heun.
  */
-__EXPORT zODE *zODEInit_Heun(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
-__EXPORT void zODEDestroy_Heun(zODE *ode);
-__EXPORT zVec zODEUpdate_Heun(zODE *ode, double t, zVec x, double dt, void *util);
+__ZM_EXPORT zODE *zODEInit_Heun(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
+__ZM_EXPORT void zODEDestroy_Heun(zODE *ode);
+__ZM_EXPORT zVec zODEUpdate_Heun(zODE *ode, double t, zVec x, double dt, void *util);
 
 __END_DECLS
 

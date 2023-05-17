@@ -36,7 +36,7 @@ enum{ ZSPLINE_INVALID, ZSPLINE_FIX_EDGE, ZSPLINE_FREE_EDGE };
  * zIPCreateSpline() returns a pointer \a ip when it succeeds to
  * create the interpolator, or the null pointer otherwise.
  */
-__EXPORT bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v2);
+__ZM_EXPORT bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v2);
 
 __END_DECLS
 

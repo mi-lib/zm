@@ -55,9 +55,9 @@ typedef struct{
 #define zRRTSetCheckGoalFunc(rrt,f)      ( (rrt)->_check_goal = (f) )
 
 /*! \brief initialize RRTs. */
-__EXPORT void zRRTInit(zRRT *rrt, zVec min, zVec max, double eps, double (* distance)(zVec,zVec,void*), zVec (* extend)(zVec,zVec,double,zVec,void*), bool (* chk_collision)(zVec,void*), bool (* chk_goal)(zVec,void*));
+__ZM_EXPORT void zRRTInit(zRRT *rrt, zVec min, zVec max, double eps, double (* distance)(zVec,zVec,void*), zVec (* extend)(zVec,zVec,double,zVec,void*), bool (* chk_collision)(zVec,void*), bool (* chk_goal)(zVec,void*));
 /*! \brief destroy RRTs. */
-__EXPORT void zRRTDestroy(zRRT *rrt);
+__ZM_EXPORT void zRRTDestroy(zRRT *rrt);
 
 /*! \brief find a path based on the RRT algorithm.
  *
@@ -65,7 +65,7 @@ __EXPORT void zRRTDestroy(zRRT *rrt);
  * Rapidly-exploring random trees: A new tool for path planning. S. M. LaValle. TR 98-11,
  * Computer Science Dept., Iowa State University, October 1998.
  */
-__EXPORT bool zRRTFindPath(zRRT *rrt, zVec start, int iter, void *util, zVecList *path, double *cost);
+__ZM_EXPORT bool zRRTFindPath(zRRT *rrt, zVec start, int iter, void *util, zVecList *path, double *cost);
 
 /*! \brief find the optimum path based on the RRT* algorithm.
  *
@@ -73,7 +73,7 @@ __EXPORT bool zRRTFindPath(zRRT *rrt, zVec start, int iter, void *util, zVecList
  * Sampling-based Algorithms for Optimal Motion Planning. Sertac Karaman and Emilio Frazzoli.
  * arXiv:1105.1186
  */
-__EXPORT bool zRRTFindPathOpt(zRRT *rrt, zVec start, int iter, void *util, zVecList *path, double *cost);
+__ZM_EXPORT bool zRRTFindPathOpt(zRRT *rrt, zVec start, int iter, void *util, zVecList *path, double *cost);
 
 /*! \brief find a path based on the RRT-connect algorithm.
  *
@@ -82,13 +82,13 @@ __EXPORT bool zRRTFindPathOpt(zRRT *rrt, zVec start, int iter, void *util, zVecL
  * S. M. LaValle. In Proceedings IEEE International Conference on Robotics and Automation,
  * pp. 995-1001, 2000.
  */
-__EXPORT bool zRRTFindPathDual(zRRT *rrt, zVec start, zVec goal, int iter, void *util, zVecList *path, double *cost);
+__ZM_EXPORT bool zRRTFindPathDual(zRRT *rrt, zVec start, zVec goal, int iter, void *util, zVecList *path, double *cost);
 
 /*! \brief a postprocess for RRT family to shortcut a path. */
-__EXPORT bool zRRTShortcutPath(zRRT *rrt, void *util, zVecList *path, double *cost);
+__ZM_EXPORT bool zRRTShortcutPath(zRRT *rrt, void *util, zVecList *path, double *cost);
 
 /*! \brief RRT-escapement algorithm to find a collision-free point proposed by Y. Shimizu in 2012. */
-__EXPORT bool zRRTEscape(zRRT *rrt, zVec start, int iter, void *util, zVec goal);
+__ZM_EXPORT bool zRRTEscape(zRRT *rrt, zVec start, int iter, void *util, zVec goal);
 
 /*! \} */
 

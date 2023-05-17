@@ -24,13 +24,13 @@ zArrayClass( zVecArray, zVec );
  * \retval true if succeeding to allocate.
  * \retval false if failing to allocate.
  */
-__EXPORT bool zVecArrayAlloc(zVecArray *array, int dim, int num);
+__ZM_EXPORT bool zVecArrayAlloc(zVecArray *array, int dim, int num);
 
 /*! \brief free vector array.
  *
  * zVecArrayFree() frees a vector array \a array.
  */
-__EXPORT void zVecArrayFree(zVecArray *array);
+__ZM_EXPORT void zVecArrayFree(zVecArray *array);
 
 /*! \brief an element of a vector in an array */
 #define zVecArrayElem(a,i,j) zVecElemNC( *zArrayElem(a,i), j )
@@ -43,7 +43,7 @@ __EXPORT void zVecArrayFree(zVecArray *array);
  * \retval the null pointer if the vector size of \a array is
  * inconsistent with \a v.
  */
-__EXPORT zVec zVecArrayFill(zVecArray *array, zVec v);
+__ZM_EXPORT zVec zVecArrayFill(zVecArray *array, zVec v);
 
 __END_DECLS
 

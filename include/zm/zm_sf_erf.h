@@ -26,7 +26,7 @@ __BEGIN_DECLS
  * from minus infinity to \a x. The approximation is done by
  * Taylor series expantion up to \a n 'th term.
  */
-__EXPORT double zErfN(double x, int n);
+__ZM_EXPORT double zErfN(double x, int n);
 
 /*! \brief error function.
  *

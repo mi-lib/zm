@@ -27,11 +27,11 @@ typedef struct{
 } zLE;
 
 /*! \brief initialize workspace for generalized linear equation solver. */
-__EXPORT void zLEInit(zLE *le);
+__ZM_EXPORT void zLEInit(zLE *le);
 
 /*! \brief allocate and free workspace for generalized linear equation solvers. */
-__EXPORT bool zLEAlloc(zLE *le, zVec b, int size);
-__EXPORT void zLEFree(zLE *le);
+__ZM_EXPORT bool zLEAlloc(zLE *le, zVec b, int size);
+__ZM_EXPORT void zLEFree(zLE *le);
 
 /*! \brief generalized linear equation solver.
  *
@@ -131,23 +131,23 @@ __EXPORT void zLEFree(zLE *le);
  * \sa
  * zBalancingDST, zLESolveGaussDST
  */
-__EXPORT zVec zLESolveNormMinDST(zMat a, zVec b, zVec w, zVec ans, zLE *le);
-__EXPORT zVec zLESolveNormMin(zMat a, zVec b, zVec w, zVec ans);
-__EXPORT zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLE *le);
-__EXPORT zVec zLESolveErrorMin(zMat a, zVec b, zVec w, zVec ans);
-__EXPORT zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLE *le);
-__EXPORT zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans);
-__EXPORT zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans);
-__EXPORT zVec zLESolveMPLU(zMat a, zVec b, zVec wn, zVec we, zVec ans);
-__EXPORT zVec zLESolveMPSVD(zMat a, zVec b, zVec ans);
-__EXPORT zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn);
-__EXPORT zVec zLESolveMPAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux);
-__EXPORT zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zLE *le);
-__EXPORT zVec zLESolveSR(zMat a, zVec b, zVec wn, zVec we, zVec ans);
-__EXPORT zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zLE *le, zVec bb);
-__EXPORT zVec zLESolveSRAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux);
-__EXPORT zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLE *le);
-__EXPORT zVec zLESolveRSR(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans);
+__ZM_EXPORT zVec zLESolveNormMinDST(zMat a, zVec b, zVec w, zVec ans, zLE *le);
+__ZM_EXPORT zVec zLESolveNormMin(zMat a, zVec b, zVec w, zVec ans);
+__ZM_EXPORT zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLE *le);
+__ZM_EXPORT zVec zLESolveErrorMin(zMat a, zVec b, zVec w, zVec ans);
+__ZM_EXPORT zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLE *le);
+__ZM_EXPORT zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans);
+__ZM_EXPORT zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans);
+__ZM_EXPORT zVec zLESolveMPLU(zMat a, zVec b, zVec wn, zVec we, zVec ans);
+__ZM_EXPORT zVec zLESolveMPSVD(zMat a, zVec b, zVec ans);
+__ZM_EXPORT zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn);
+__ZM_EXPORT zVec zLESolveMPAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux);
+__ZM_EXPORT zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zLE *le);
+__ZM_EXPORT zVec zLESolveSR(zMat a, zVec b, zVec wn, zVec we, zVec ans);
+__ZM_EXPORT zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zLE *le, zVec bb);
+__ZM_EXPORT zVec zLESolveSRAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux);
+__ZM_EXPORT zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLE *le);
+__ZM_EXPORT zVec zLESolveRSR(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans);
 
 __END_DECLS
 

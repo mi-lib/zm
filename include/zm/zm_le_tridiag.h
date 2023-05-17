@@ -11,31 +11,28 @@
 
 __BEGIN_DECLS
 
-/* METHOD:
- * zTridiagSolveDST, zTridiagSolve
- * - tridiag equation solver.
+/*! \brief tridiag equation solver.
  *
- * 'zTridiagSolve()' solves the tridiagonal equation 'm x = d'.
- * where, 'm' = | b0 c0  0  .  .  0 |
- *              | a1 b1 c1  .  .  0 |
- *              |  0 a2 b2 c2  .  0 |
- *              |  0  0 a3  .     . |
- *              |     .        .  . |
- *              |     .           . |
- *              |  0  0  .  . an bn |
- * (Thus, the first component of 'a' and the last component of 'c'
+ * zTridiagSolve() solves the tridiagonal equation 'm x = d', where,
+ * 'm' = | b0 c0  0  .  .  0 |
+ *       | a1 b1 c1  .  .  0 |
+ *       |  0 a2 b2 c2  .  0 |
+ *       |  0  0 a3  .     . |
+ *       |     .        .  . |
+ *       |     .           . |
+ *       |  0  0  .  . an bn |
+ * (Thus, the first component of \a a and the last component of \a c
  *  does not have any meanings.)
- * The answer will be set on 'ans'.
- * #
- * 'zTridiagSolveDST()' destructively modifies 'a',
- * 'b', 'c' and 'd' while calculating.
- * [RETURN VALUE]
- * Each of 'zTridiagSolve()' and 'zTridiagSolveDST()'
- * returns a pointer to 'ans' if succeeding to getting the
- * answer, or the null pointer if failing.
+ * The answer will be set on \a ans.
+ *
+ * zTridiagSolveDST() destructively modifies \a a, \a b, \a c and \a d
+ * while the calculation.
+ * \return
+ * zTridiagSolve() and zTridiagSolveDST() return a pointer to \a ans
+ * in successful cases, or the null pointer otherwise.
  */
-__EXPORT zVec zTridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans);
-__EXPORT zVec zTridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans);
+__ZM_EXPORT zVec zTridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans);
+__ZM_EXPORT zVec zTridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans);
 
 __END_DECLS
 

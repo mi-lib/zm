@@ -23,13 +23,13 @@ typedef struct{
 } zLPTableau;
 
 /*! \brief create initial simplex tableau with slack variables. */
-__EXPORT bool zLPTableauCreate(zLPTableau *tab, zMat a, zVec b);
+__ZM_EXPORT bool zLPTableauCreate(zLPTableau *tab, zMat a, zVec b);
 /*! \brief destroy simplex tableau. */
-__EXPORT void zLPTableauDestroy(zLPTableau *tab);
+__ZM_EXPORT void zLPTableauDestroy(zLPTableau *tab);
 /*! \brief simplex method for initialized tableau. */
-__EXPORT bool zLPTableauSimplex(zLPTableau *tab);
+__ZM_EXPORT bool zLPTableauSimplex(zLPTableau *tab);
 /*! \brief find initial feasible base for the second stage from tableau. */
-__EXPORT bool zLPTableauFindBase(zLPTableau *tab);
+__ZM_EXPORT bool zLPTableauFindBase(zLPTableau *tab);
 
 /*! \brief convert linear programming problem from inequality
  * constraint to standard equation form.
@@ -64,8 +64,8 @@ __EXPORT bool zLPTableauFindBase(zLPTableau *tab);
  * if succeeding. Or, the false value is returned when they
  * fail to allocate working memory.
  */
-__EXPORT bool zLPIneq2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs);
-__EXPORT bool zLPUnb2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs);
+__ZM_EXPORT bool zLPIneq2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs);
+__ZM_EXPORT bool zLPUnb2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs);
 
 /*! \brief linear programming solver with the simplex method.
  *
@@ -88,11 +88,11 @@ __EXPORT bool zLPUnb2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs);
  * memory allocation, non-feasible solution and infinite
  * solution found.
  */
-__EXPORT bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost);
+__ZM_EXPORT bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost);
 
 /*! \brief find a feasible base under Ax=b and x>=0 based on simplex method.
  */
-__EXPORT bool zLPFeasibleBase(zMat a, zVec b, zVec base);
+__ZM_EXPORT bool zLPFeasibleBase(zMat a, zVec b, zVec base);
 
 /*! \brief linear programming solver based on primal-dual
  * interior-point method.
@@ -119,7 +119,7 @@ __EXPORT bool zLPFeasibleBase(zMat a, zVec b, zVec base);
  * returned when it fails to allocate enough working memory
  * or to solve the problem if a set of constraints is unbounded.
  */
-__EXPORT bool zLPSolvePDIP_PC(zMat a, zVec b, zVec c, zVec x, double *cost);
+__ZM_EXPORT bool zLPSolvePDIP_PC(zMat a, zVec b, zVec c, zVec x, double *cost);
 
 __END_DECLS
 

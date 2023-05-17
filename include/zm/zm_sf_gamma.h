@@ -27,7 +27,7 @@ __BEGIN_DECLS
  * \sa
  * zLnGamma
  */
-__EXPORT double zGamma(double x);
+__ZM_EXPORT double zGamma(double x);
 
 /*! \brief natural logarithmic gamma function.
  *
@@ -43,7 +43,7 @@ __EXPORT double zGamma(double x);
  * \sa
  * zGamma
  */
-__EXPORT double zLnGamma(double x);
+__ZM_EXPORT double zLnGamma(double x);
 
 /*! \brief beta function.
  *
@@ -51,7 +51,7 @@ __EXPORT double zLnGamma(double x);
  * zGamma(\a z)*zGamma(\a w)/zGamma(\a z+\a w) for a set of
  * any positive values \a z and \a w.
  */
-__EXPORT double zBeta(double z, double w);
+__ZM_EXPORT double zBeta(double z, double w);
 
 /*! \} */
 

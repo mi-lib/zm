@@ -61,8 +61,8 @@ typedef zVecStruct * zVec;
  * \return
  * zVecSetElemList() and zVecSetElemVList() return a pointer \a v.
  */
-__EXPORT zVec zVecSetElemVList(zVec v, va_list args);
-__EXPORT zVec zVecSetElemList(zVec v, ...);
+__ZM_EXPORT zVec zVecSetElemVList(zVec v, va_list args);
+__ZM_EXPORT zVec zVecSetElemList(zVec v, ...);
 
 /*! \brief create, destroy, cleanup and copy vector.
  *
@@ -120,17 +120,17 @@ __EXPORT zVec zVecSetElemList(zVec v, ...);
  * It should be written as follows.
  *   v = zVecCreateList( 3, 1.0, 2.0, 3.0 );
  */
-__EXPORT zVec zVecAlloc(int s);
-__EXPORT zVec zVecCreateList(int size, ...);
-__EXPORT void zVecFree(zVec v);
-__EXPORT void zVecFreeAO(int, ...);
-__EXPORT zVec zVecZero(zVec v);
-__EXPORT zVec zVecTouchup(zVec v);
-__EXPORT zVec zVecCopyNC(zVec src, zVec dest);
-__EXPORT zVec zVecCopy(zVec src, zVec dest);
-__EXPORT zVec zVecCopyArray(double array[], int s, zVec v);
-__EXPORT zVec zVecClone(zVec src);
-__EXPORT zVec zVecCloneArray(double array[], int s);
+__ZM_EXPORT zVec zVecAlloc(int s);
+__ZM_EXPORT zVec zVecCreateList(int size, ...);
+__ZM_EXPORT void zVecFree(zVec v);
+__ZM_EXPORT void zVecFreeAO(int, ...);
+__ZM_EXPORT zVec zVecZero(zVec v);
+__ZM_EXPORT zVec zVecTouchup(zVec v);
+__ZM_EXPORT zVec zVecCopyNC(zVec src, zVec dest);
+__ZM_EXPORT zVec zVecCopy(zVec src, zVec dest);
+__ZM_EXPORT zVec zVecCopyArray(double array[], int s, zVec v);
+__ZM_EXPORT zVec zVecClone(zVec src);
+__ZM_EXPORT zVec zVecCloneArray(double array[], int s);
 
 /*! \brief get and put a part of a vector.
  *
@@ -154,10 +154,10 @@ __EXPORT zVec zVecCloneArray(double array[], int s);
  * \sa
  * zRawVecGet, zRawVecPut
  */
-__EXPORT zVec zVecGetNC(zVec src, int pos, zVec dest);
-__EXPORT zVec zVecGet(zVec src, int pos, zVec dest);
-__EXPORT zVec zVecPutNC(zVec dest, int pos, zVec src);
-__EXPORT zVec zVecPut(zVec dest, int pos, zVec src);
+__ZM_EXPORT zVec zVecGetNC(zVec src, int pos, zVec dest);
+__ZM_EXPORT zVec zVecGet(zVec src, int pos, zVec dest);
+__ZM_EXPORT zVec zVecPutNC(zVec dest, int pos, zVec src);
+__ZM_EXPORT zVec zVecPut(zVec dest, int pos, zVec src);
 
 /*! \brief create a uniform vector, a linear space vector and a random vector.
  *
@@ -177,11 +177,11 @@ __EXPORT zVec zVecPut(zVec dest, int pos, zVec src);
  * zVecSetAll(), zVecLinSpace(), zVecRand() and zVecShift()
  * return a pointer \a v.
  */
-__EXPORT zVec zVecSetAll(zVec v, double val);
-__EXPORT zVec zVecLinSpace(zVec v, double from, double to);
-__EXPORT zVec zVecRandUniform(zVec v, double min, double max);
-__EXPORT zVec zVecRand(zVec v, zVec min, zVec max);
-__EXPORT zVec zVecShift(zVec v, double shift);
+__ZM_EXPORT zVec zVecSetAll(zVec v, double val);
+__ZM_EXPORT zVec zVecLinSpace(zVec v, double from, double to);
+__ZM_EXPORT zVec zVecRandUniform(zVec v, double min, double max);
+__ZM_EXPORT zVec zVecRand(zVec v, zVec min, zVec max);
+__ZM_EXPORT zVec zVecShift(zVec v, double shift);
 
 /*! \brief - swap vector elements.
  *
@@ -193,8 +193,8 @@ __EXPORT zVec zVecShift(zVec v, double shift);
  * \sa
  * zRawVecSwap
  */
-__EXPORT zVec zVecSwapNC(zVec v, int i1, int i2);
-__EXPORT zVec zVecSwap(zVec v, int i1, int i2);
+__ZM_EXPORT zVec zVecSwapNC(zVec v, int i1, int i2);
+__ZM_EXPORT zVec zVecSwap(zVec v, int i1, int i2);
 
 /*! \brief rearrange index so as to sort vector.
  *
@@ -208,7 +208,7 @@ __EXPORT zVec zVecSwap(zVec v, int i1, int i2);
  * If zVecSort() fails to allocate working memory, or the sizes
  * of \a v and \a idx are inconsistent, it does not anything.
  */
-__EXPORT void zVecSort(zVec v, zIndex idx);
+__ZM_EXPORT void zVecSort(zVec v, zIndex idx);
 
 /*! \brief maximum, minimum, summation, mean and variance of vector elements.
  *
@@ -233,13 +233,13 @@ __EXPORT void zVecSort(zVec v, zIndex idx);
 #define _zVecMean(v)      zDataMean( zVecBuf(v), zVecSizeNC(v) )
 #define _zVecVar(v)       zDataVar( zVecBuf(v), zVecSizeNC(v) )
 
-__EXPORT double zVecMax(zVec v, int *im);
-__EXPORT double zVecMin(zVec v, int *im);
-__EXPORT double zVecAbsMax(zVec v, int *im);
-__EXPORT double zVecAbsMin(zVec v, int *im);
-__EXPORT double zVecSum(zVec v);
-__EXPORT double zVecMean(zVec v);
-__EXPORT double zVecVar(zVec v);
+__ZM_EXPORT double zVecMax(zVec v, int *im);
+__ZM_EXPORT double zVecMin(zVec v, int *im);
+__ZM_EXPORT double zVecAbsMax(zVec v, int *im);
+__ZM_EXPORT double zVecAbsMin(zVec v, int *im);
+__ZM_EXPORT double zVecSum(zVec v);
+__ZM_EXPORT double zVecMean(zVec v);
+__ZM_EXPORT double zVecVar(zVec v);
 
 /*! \brief check if a value is included in a vector.
  *
@@ -256,7 +256,7 @@ __EXPORT double zVecVar(zVec v);
  * zVecIsEqual() returns the true value if \a v1 equals to
  * \a v2, or the false value otherwise.
  */
-__EXPORT bool zVecIsEqual(zVec v1, zVec v2, double tol);
+__ZM_EXPORT bool zVecIsEqual(zVec v1, zVec v2, double tol);
 
 /*! \brief check if a vector is tiny.
  *
@@ -269,10 +269,10 @@ __EXPORT bool zVecIsEqual(zVec v1, zVec v2, double tol);
  * \return
  * zVecIsTol() and zVecIsTiny() return a boolean value.
  */
-__EXPORT bool zVecIsTol(zVec v, double tol);
+__ZM_EXPORT bool zVecIsTol(zVec v, double tol);
 #define zVecIsTiny(v) zVecIsTol( v, zTOL )
 
-__EXPORT bool zVecIsNan(zVec v);
+__ZM_EXPORT bool zVecIsNan(zVec v);
 
 /*! \brief basic arithmetics for vector.
  *
@@ -342,14 +342,14 @@ __EXPORT bool zVecIsNan(zVec v);
  * If it is not urgent and you are not hasty, you should not
  * use them.
  */
-__EXPORT zVec zVecAddNC(zVec v1, zVec v2, zVec v);
-__EXPORT zVec zVecSubNC(zVec v1, zVec v2, zVec v);
-__EXPORT zVec zVecRevNC(zVec v1, zVec v);
-__EXPORT zVec zVecMulNC(zVec v1, double k, zVec v);
-__EXPORT zVec zVecDivNC(zVec v1, double k, zVec v);
-__EXPORT zVec zVecAmpNC(zVec v1, zVec amp, zVec v);
-__EXPORT zVec zVecDemNC(zVec v1, zVec dem, zVec v);
-__EXPORT zVec zVecCatNC(zVec v1, double k, zVec v2, zVec v);
+__ZM_EXPORT zVec zVecAddNC(zVec v1, zVec v2, zVec v);
+__ZM_EXPORT zVec zVecSubNC(zVec v1, zVec v2, zVec v);
+__ZM_EXPORT zVec zVecRevNC(zVec v1, zVec v);
+__ZM_EXPORT zVec zVecMulNC(zVec v1, double k, zVec v);
+__ZM_EXPORT zVec zVecDivNC(zVec v1, double k, zVec v);
+__ZM_EXPORT zVec zVecAmpNC(zVec v1, zVec amp, zVec v);
+__ZM_EXPORT zVec zVecDemNC(zVec v1, zVec dem, zVec v);
+__ZM_EXPORT zVec zVecCatNC(zVec v1, double k, zVec v2, zVec v);
 
 #define zVecAddNCDRC(v1,v2)  zVecAddNC( v1, v2, v1 )
 #define zVecSubNCDRC(v1,v2)  zVecSubNC( v1, v2, v1 )
@@ -360,14 +360,14 @@ __EXPORT zVec zVecCatNC(zVec v1, double k, zVec v2, zVec v);
 #define zVecDemNCDRC(v,d)    zVecDemNC( v, d, v )
 #define zVecCatNCDRC(v,k,v2) zVecCatNC( v, k, v2, v )
 
-__EXPORT zVec zVecAdd(zVec v1, zVec v2, zVec v);
-__EXPORT zVec zVecSub(zVec v1, zVec v2, zVec v);
-__EXPORT zVec zVecRev(zVec v1, zVec v);
-__EXPORT zVec zVecMul(zVec v1, double k, zVec v);
-__EXPORT zVec zVecDiv(zVec v1, double k, zVec v);
-__EXPORT zVec zVecAmp(zVec v1, zVec amp, zVec v);
-__EXPORT zVec zVecDem(zVec v1, zVec dem, zVec v);
-__EXPORT zVec zVecCat(zVec v1, double k, zVec v2, zVec v);
+__ZM_EXPORT zVec zVecAdd(zVec v1, zVec v2, zVec v);
+__ZM_EXPORT zVec zVecSub(zVec v1, zVec v2, zVec v);
+__ZM_EXPORT zVec zVecRev(zVec v1, zVec v);
+__ZM_EXPORT zVec zVecMul(zVec v1, double k, zVec v);
+__ZM_EXPORT zVec zVecDiv(zVec v1, double k, zVec v);
+__ZM_EXPORT zVec zVecAmp(zVec v1, zVec amp, zVec v);
+__ZM_EXPORT zVec zVecDem(zVec v1, zVec dem, zVec v);
+__ZM_EXPORT zVec zVecCat(zVec v1, double k, zVec v2, zVec v);
 
 #define zVecAddDRC(v1,v2)   zVecAdd( v1, v2, v1 )
 #define zVecSubDRC(v1,v2)   zVecSub( v1, v2, v1 )
@@ -378,8 +378,8 @@ __EXPORT zVec zVecCat(zVec v1, double k, zVec v2, zVec v);
 #define zVecDemDRC(v,d)     zVecDem( v, d, v )
 #define zVecCatDRC(v1,k,v2) zVecCat( v1, k, v2, v1 )
 
-__EXPORT zVec zVecCats(zVec v, int n, ...);
-__EXPORT zVec zVecLS(zVec v, int n, ...);
+__ZM_EXPORT zVec zVecCats(zVec v, int n, ...);
+__ZM_EXPORT zVec zVecLS(zVec v, int n, ...);
 
 /*! \brief interior division of two vectors.
  *
@@ -391,7 +391,7 @@ __EXPORT zVec zVecLS(zVec v, int n, ...);
  * \return
  * zVecInterDiv() returns a pointer \a v.
  */
-__EXPORT zVec zVecInterDiv(zVec v1, zVec v2, double ratio, zVec v);
+__ZM_EXPORT zVec zVecInterDiv(zVec v1, zVec v2, double ratio, zVec v);
 
 /*! \brief midpoint of two vectors.
  *
@@ -402,7 +402,7 @@ __EXPORT zVec zVecInterDiv(zVec v1, zVec v2, double ratio, zVec v);
  * \return
  * zVecMid() returns a pointer \a v.
  */
-__EXPORT zVec zVecMid(zVec v1, zVec v2, zVec v);
+__ZM_EXPORT zVec zVecMid(zVec v1, zVec v2, zVec v);
 
 /*! \brief scale a vector with two boundary vectors.
  *
@@ -414,7 +414,7 @@ __EXPORT zVec zVecMid(zVec v1, zVec v2, zVec v);
  * \return
  * zVecScale() returns a pointer \a v.
  */
-__EXPORT zVec zVecScale(zVec x, zVec min, zVec max, zVec v);
+__ZM_EXPORT zVec zVecScale(zVec x, zVec min, zVec max, zVec v);
 
 /*! \brief inner product of vector.
  *
@@ -428,8 +428,8 @@ __EXPORT zVec zVecScale(zVec x, zVec min, zVec max, zVec v);
  * between \a v1 and \a v2. If it is not urgent and you
  * are not hasty, you should use zVecInnerProd().
  */
-__EXPORT double zVecInnerProdNC(zVec v1, zVec v2);
-__EXPORT double zVecInnerProd(zVec v1, zVec v2);
+__ZM_EXPORT double zVecInnerProdNC(zVec v1, zVec v2);
+__ZM_EXPORT double zVecInnerProd(zVec v1, zVec v2);
 
 /*! \brief normalize a vector.
  *
@@ -451,20 +451,20 @@ __EXPORT double zVecInnerProd(zVec v1, zVec v2);
  * zVecNormalize() and zVecNormalizeDRC() return the
  * pointer to the result.
  */
-__EXPORT double zVecSqrNorm(zVec v);
+__ZM_EXPORT double zVecSqrNorm(zVec v);
 #define zVecNorm(v)         sqrt( zVecSqrNorm(v) )
-__EXPORT double zVecWSqrNormNC(zVec v, zVec w);
+__ZM_EXPORT double zVecWSqrNormNC(zVec v, zVec w);
 #define zVecWNormNC(v,w)    sqrt( zVecWSqrNormNC(v,w) )
-__EXPORT double zVecWSqrNorm(zVec v, zVec w);
+__ZM_EXPORT double zVecWSqrNorm(zVec v, zVec w);
 #define zVecWNorm(v,w)      sqrt( zVecWSqrNorm(v,w) )
-__EXPORT double zVecInfNorm(zVec v);
-__EXPORT zVec zVecNormalize(zVec src, zVec dest);
+__ZM_EXPORT double zVecInfNorm(zVec v);
+__ZM_EXPORT zVec zVecNormalize(zVec src, zVec dest);
 #define zVecNormalizeDRC(v) zVecNormalize(v,v)
 #define zVecSqrDist(v1,v2)  zRawVecSqrDist(zVecBuf(v1),zVecBuf(v2),zVecSizeNC(v1))
 #define zVecDist(v1,v2)     sqrt( zVecSqrDist( v1, v2 ) )
 
 /*! \brief read a vector from a ZTK format processor. */
-__EXPORT zVec zVecFromZTK(ZTK *ztk);
+__ZM_EXPORT zVec zVecFromZTK(ZTK *ztk);
 
 /*! \brief scan and print a vector.
  *
@@ -486,9 +486,9 @@ __EXPORT zVec zVecFromZTK(ZTK *ztk);
  *
  * zVecFPrint() and zVecPrint() return no values.
  */
-__EXPORT zVec zVecFScan(FILE *fp);
+__ZM_EXPORT zVec zVecFScan(FILE *fp);
 #define zVecScan()   zVecFScan( stdin )
-__EXPORT void zVecFPrint(FILE *fp, zVec v);
+__ZM_EXPORT void zVecFPrint(FILE *fp, zVec v);
 #define zVecPrint(v) zVecFPrint( stdout, v )
 
 /*! \brief scan and print only components of a vector.
@@ -512,9 +512,9 @@ __EXPORT void zVecFPrint(FILE *fp, zVec v);
  *
  * zVecDataFPrint() and zVecDataPrint() return no values.
  */
-__EXPORT zVec zVecDataFScan(FILE *fp);
+__ZM_EXPORT zVec zVecDataFScan(FILE *fp);
 #define zVecDataScan(v) zVecDataFScan( stdin, v )
-__EXPORT void zVecDataFPrint(FILE *fp, zVec v);
+__ZM_EXPORT void zVecDataFPrint(FILE *fp, zVec v);
 #define zVecDataPrint(v) zVecDataFPrint( stdout, v )
 
 __END_DECLS

@@ -55,7 +55,7 @@ typedef zVec zPex;
  * \return
  * zPexRgl() returns a pointer \a p.
  */
-__EXPORT zPex zPexRgl(zPex *p);
+__ZM_EXPORT zPex zPexRgl(zPex *p);
 
 /*! \brief direct addision and substraction of polynomial expression.
  *
@@ -69,8 +69,8 @@ __EXPORT zPex zPexRgl(zPex *p);
  * \notes
  * The dimension of \a p1 must not be less than that of \a p2.
  */
-__EXPORT zPex zPexAddDRC(zPex p1, zPex p2);
-__EXPORT zPex zPexSubDRC(zPex p1, zPex p2);
+__ZM_EXPORT zPex zPexAddDRC(zPex p1, zPex p2);
+__ZM_EXPORT zPex zPexSubDRC(zPex p1, zPex p2);
 
 /*! \brief arithmatic of polynomial expression.
  *
@@ -97,10 +97,10 @@ __EXPORT zPex zPexSubDRC(zPex p1, zPex p2);
  * memory, the false value is returned. Otherwise, the true
  * value is returned.
  */
-__EXPORT zPex zPexAdd(zPex p1, zPex p2);
-__EXPORT zPex zPexSub(zPex p1, zPex p2);
-__EXPORT zPex zPexMul(zPex p1, zPex p2);
-__EXPORT bool zPexDiv(zPex p, zPex f, zPex *q, zPex *r);
+__ZM_EXPORT zPex zPexAdd(zPex p1, zPex p2);
+__ZM_EXPORT zPex zPexSub(zPex p1, zPex p2);
+__ZM_EXPORT zPex zPexMul(zPex p1, zPex p2);
+__ZM_EXPORT bool zPexDiv(zPex p, zPex f, zPex *q, zPex *r);
 
 /*! \brief expand factors into a polynomial expression.
  *
@@ -118,8 +118,8 @@ __EXPORT bool zPexDiv(zPex p, zPex f, zPex *q, zPex *r);
  * \return
  * zPexExp() and zPexCExp() return a pointer to the result.
  */
-__EXPORT zPex zPexExp(zVec factor);
-__EXPORT zPex zPexCExp(zCVec factor);
+__ZM_EXPORT zPex zPexExp(zVec factor);
+__ZM_EXPORT zPex zPexCExp(zCVec factor);
 
 /*! \brief compute modulo of a primary expression.
  *
@@ -140,7 +140,7 @@ __EXPORT zPex zPexCExp(zCVec factor);
  * same dimension with \a p1. Otherwise, the null pointer
  * is returned.
  */
-__EXPORT zPex zPexModulo(zPex p1, double a, zPex p2);
+__ZM_EXPORT zPex zPexModulo(zPex p1, double a, zPex p2);
 
 /*! \brief differentiate and integrate a polynomial expression.
  *
@@ -154,8 +154,8 @@ __EXPORT zPex zPexModulo(zPex p1, double a, zPex p2);
  * \return
  * These functions return a pointer to the result.
  */
-__EXPORT zPex zPexDif(zPex p);
-__EXPORT zPex zPexIntg(zPex p);
+__ZM_EXPORT zPex zPexDif(zPex p);
+__ZM_EXPORT zPex zPexIntg(zPex p);
 
 /*! \brief evaluate a polynomial expression for one argument.
  *
@@ -176,12 +176,12 @@ __EXPORT zPex zPexIntg(zPex p);
  * calculated.
  * zPexCVal() returns a pointer \a c.
  */
-__EXPORT double zPexVal(zPex p, double arg);
-__EXPORT zComplex *zPexCVal(zPex p, zComplex *arg, zComplex *c);
-__EXPORT double zPexDifVal(zPex p, int dim, double arg);
+__ZM_EXPORT double zPexVal(zPex p, double arg);
+__ZM_EXPORT zComplex *zPexCVal(zPex p, zComplex *arg, zComplex *c);
+__ZM_EXPORT double zPexDifVal(zPex p, int dim, double arg);
 
 /*! \brief scan a polynomial expression from a ZTK processor. */
-__EXPORT zPex zPexFromZTK(ZTK *ztk);
+__ZM_EXPORT zPex zPexFromZTK(ZTK *ztk);
 
 /*! \brief scan and print a polynomial expression.
  *
@@ -198,9 +198,9 @@ __EXPORT zPex zPexFromZTK(ZTK *ztk);
  * zPexFScan() and zPexScan() return a pointer \a p.
  * zPexFPrint() and zPexPrint() return no values.
  */
-__EXPORT zPex zPexFScan(FILE *fp);
+__ZM_EXPORT zPex zPexFScan(FILE *fp);
 #define zPexScan(p)     zPexFScan( stdin, p )
-__EXPORT void zPexFPrint(FILE *fp, zPex p);
+__ZM_EXPORT void zPexFPrint(FILE *fp, zPex p);
 #define zPexPrint(p)    zPexFPrint( stdout, p )
 
 /*! \brief expression of a polynomial expression.
@@ -218,8 +218,8 @@ __EXPORT void zPexFPrint(FILE *fp, zPex p);
  * zPexSExpr() returns a pointer \a str.
  * zPexFExpr() and zPexExpr() return the number of output charactors.
  */
-__EXPORT char *zPexSExpr(char *str, int size, zPex p, char c);
-__EXPORT int zPexFExpr(FILE *fp, zPex p, char c);
+__ZM_EXPORT char *zPexSExpr(char *str, int size, zPex p, char c);
+__ZM_EXPORT int zPexFExpr(FILE *fp, zPex p, char c);
 #define zPexExpr(p,c)   zPexFExpr( stdout, (p), (c) )
 #define zPexFExprX(f,p) zPexFExpr( (f), (p), 'x' )
 #define zPexExprX(p)    zPexExpr( p, 'x' )

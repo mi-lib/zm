@@ -11,32 +11,27 @@
 
 __BEGIN_DECLS
 
-/* METHOD:
- * zLCPSolveLemke, zLCPSolveIP
- * - linear complementarity problem solver.
+/*! \brief linear complementarity problem solver.
  *
- * 'zLCPSolveLemke()' solves a linear complementarity problem
- * (LCP) by Lemke s method (1965 C. E. Lemke) which finds a
- * combination of two vectors 'w' and 'z' which satisfies:
- *   'w - m z = q', 'w >= 0' and 'z >= 0'.
- * where 'm' is a square matrix.
- * #
- * 'zLCPSolveIP()' also solves LCP by Potra s predictor-
- * corrector algorithm for infeasible-interior-point method
- * (1994 F. Potra and R Sheng).
- * [RETURN VALUE]
- * 'zLCPSolveLemke()' and 'zLCPSolveIP()' return the true
- * value if succeeding to get the solution, or the false
- * value if there are vector/matrix size mismatch, bad memory
- * allocation, non-feasible solution and infinite solution
- * are found.
- * [NOTES]
- * Since 'w' is often not required to be answered, it is
- * allowed to give the null pointer for 'w' to skip the
- * operation.
+ * zLCPSolveLemke() solves a linear complementarity problem (LCP) by
+ * Lemke's method (1965 C. E. Lemke) which finds a combination of two
+ * vectors \a w and \a z that satisfies:
+ *   \a w - \a m \a z = \a q, \a w >= 0 and \a z >= 0.
+ * where \a m is a square matrix.
+ *
+ * zLCPSolveIP() also solves LCP by Potra s predictor-corrector algorithm
+ * for infeasible-interior-point method (1994 F. Potra and R Sheng).
+ * \return
+ * zLCPSolveLemke() and zLCPSolveIP() return the true value if succeeding
+ * to get the solution, or the false value if there are vector/matrix
+ * size mismatch, bad memory allocation, non-feasible solution and
+ * infinite solution are found.
+ * \notes
+ * Since \a w is often not required to be answered, it is allowed to give
+ * the null pointer for \a w to skip the operation.
  */
-__EXPORT bool zLCPSolveLemke(zMat m, zVec q, zVec w, zVec z);
-__EXPORT bool zLCPSolveIP(zMat m, zVec q, zVec w, zVec z);
+__ZM_EXPORT bool zLCPSolveLemke(zMat m, zVec q, zVec w, zVec z);
+__ZM_EXPORT bool zLCPSolveIP(zMat m, zVec q, zVec w, zVec z);
 
 __END_DECLS
 

@@ -13,7 +13,7 @@ __BEGIN_DECLS
 
 /* Chebyshev's interpolation, which interpolates n points by
  * a combination of Chebyshev base functions. */
-__EXPORT bool zIPCreateChebyshev(zIP *ip, zSeq *seq);
+__ZM_EXPORT bool zIPCreateChebyshev(zIP *ip, zSeq *seq);
 
 __END_DECLS
 

@@ -14,9 +14,9 @@ __BEGIN_DECLS
 
 /* Euler method is too known to describe:-)
  */
-__EXPORT zODE *zODEInit_Euler(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
-__EXPORT void zODEDestroy_Euler(zODE *ode);
-__EXPORT zVec zODEUpdate_Euler(zODE *ode, double t, zVec x, double dt, void *util);
+__ZM_EXPORT zODE *zODEInit_Euler(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
+__ZM_EXPORT void zODEDestroy_Euler(zODE *ode);
+__ZM_EXPORT zVec zODEUpdate_Euler(zODE *ode, double t, zVec x, double dt, void *util);
 
 __END_DECLS
 

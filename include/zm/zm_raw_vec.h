@@ -25,7 +25,7 @@ __BEGIN_DECLS
  * zRawVecTouchup() returns no value.
  */
 #define zRawVecZero(v,s) memset( v, 0, sizeof(double)*(s) )
-__EXPORT void zRawVecTouchup(double *v, int size);
+__ZM_EXPORT void zRawVecTouchup(double *v, int size);
 
 /*! \brief copy a raw vector.
  *
@@ -68,10 +68,10 @@ __EXPORT void zRawVecTouchup(double *v, int size);
  * zRawVecSetAll(), zRawVecLinSpace() and zRawVecRand() return
  * no values.
  */
-__EXPORT void zRawVecSetAll(double *v, int size, double val);
-__EXPORT void zRawVecLinSpace(double *v, int size, double from, double to);
-__EXPORT void zRawVecRandUniform(double *v, int size, double min, double max);
-__EXPORT void zRawVecRand(double *v, double *min, double *max, int size);
+__ZM_EXPORT void zRawVecSetAll(double *v, int size, double val);
+__ZM_EXPORT void zRawVecLinSpace(double *v, int size, double from, double to);
+__ZM_EXPORT void zRawVecRandUniform(double *v, int size, double min, double max);
+__ZM_EXPORT void zRawVecRand(double *v, double *min, double *max, int size);
 
 /*! \brief shift a raw vector by a scalar value.
  *
@@ -81,7 +81,7 @@ __EXPORT void zRawVecRand(double *v, double *min, double *max, int size);
  * \return
  * zRawVecShift() returns no value.
  */
-__EXPORT void zRawVecShift(double *v, int size, double shift);
+__ZM_EXPORT void zRawVecShift(double *v, int size, double shift);
 
 /*! \brief swap raw vector components.
  *
@@ -91,7 +91,7 @@ __EXPORT void zRawVecShift(double *v, int size, double shift);
  * \return
  * zRawVecSwap() returns a pointer \a v.
  */
-__EXPORT double *zRawVecSwap(double *v, int i1, int i2);
+__ZM_EXPORT double *zRawVecSwap(double *v, int i1, int i2);
 
 /*! \brief check if a raw vector is tiny.
  *
@@ -107,7 +107,7 @@ __EXPORT double *zRawVecSwap(double *v, int i1, int i2);
  * zRawVecIsTol(), zRawVecIsTiny() return results as
  * boolean values.
  */
-__EXPORT bool zRawVecIsTol(double *v, int size, double tol);
+__ZM_EXPORT bool zRawVecIsTol(double *v, int size, double tol);
 #define zRawVecIsTiny(v,siz)  zRawVecIsTol( v, siz, zTOL )
 
 /*! \brief check if a raw vector contains NaN.
@@ -118,7 +118,7 @@ __EXPORT bool zRawVecIsTol(double *v, int size, double tol);
  * otherwise.
  * \a size is the size of the raw vector.
  */
-__EXPORT bool zRawVecIsNan(double *v, int size);
+__ZM_EXPORT bool zRawVecIsNan(double *v, int size);
 
 /*! \brief basic arithmetics of raw vectors.
  *
@@ -158,24 +158,24 @@ __EXPORT bool zRawVecIsNan(double *v, int size);
  * \return
  * These functions return no value.
  */
-__EXPORT void zRawVecAdd(double *v1, double *v2, double *v, int size);
-__EXPORT void zRawVecSub(double *v1, double *v2, double *v, int size);
-__EXPORT void zRawVecRev(double *v1, double *v, int size);
-__EXPORT void zRawVecMul(double *v1, double k, double *v, int size);
-__EXPORT void zRawVecDiv(double *v1, double k, double *v, int size);
-__EXPORT void zRawVecAmp(double *v1, double *amp, double *v, int size);
-__EXPORT void zRawVecDem(double *v1, double *dem, double *v, int size);
-__EXPORT void zRawVecCat(double *v1, double k, double *v2, double *v, int size);
-__EXPORT void zRawVecAddDRC(double *v1, double *v2, int size);
-__EXPORT void zRawVecSubDRC(double *v1, double *v2, int size);
-__EXPORT void zRawVecRevDRC(double *v, int size);
-__EXPORT void zRawVecMulDRC(double *v, double k, int size);
-__EXPORT void zRawVecDivDRC(double *v, double k, int size);
-__EXPORT void zRawVecAmpDRC(double *v, double *amp, int size);
-__EXPORT void zRawVecDemDRC(double *v, double *dem, int size);
-__EXPORT void zRawVecCatDRC(double *v1, double k, double *v2, int size);
-__EXPORT void zRawVecCats(double *v, int size, int n, ...);
-__EXPORT void zRawVecLS(double *v, int size, int n, ...);
+__ZM_EXPORT void zRawVecAdd(double *v1, double *v2, double *v, int size);
+__ZM_EXPORT void zRawVecSub(double *v1, double *v2, double *v, int size);
+__ZM_EXPORT void zRawVecRev(double *v1, double *v, int size);
+__ZM_EXPORT void zRawVecMul(double *v1, double k, double *v, int size);
+__ZM_EXPORT void zRawVecDiv(double *v1, double k, double *v, int size);
+__ZM_EXPORT void zRawVecAmp(double *v1, double *amp, double *v, int size);
+__ZM_EXPORT void zRawVecDem(double *v1, double *dem, double *v, int size);
+__ZM_EXPORT void zRawVecCat(double *v1, double k, double *v2, double *v, int size);
+__ZM_EXPORT void zRawVecAddDRC(double *v1, double *v2, int size);
+__ZM_EXPORT void zRawVecSubDRC(double *v1, double *v2, int size);
+__ZM_EXPORT void zRawVecRevDRC(double *v, int size);
+__ZM_EXPORT void zRawVecMulDRC(double *v, double k, int size);
+__ZM_EXPORT void zRawVecDivDRC(double *v, double k, int size);
+__ZM_EXPORT void zRawVecAmpDRC(double *v, double *amp, int size);
+__ZM_EXPORT void zRawVecDemDRC(double *v, double *dem, int size);
+__ZM_EXPORT void zRawVecCatDRC(double *v1, double k, double *v2, int size);
+__ZM_EXPORT void zRawVecCats(double *v, int size, int n, ...);
+__ZM_EXPORT void zRawVecLS(double *v, int size, int n, ...);
 
 /*! \brief interior division of two raw vectors.
  *
@@ -187,7 +187,7 @@ __EXPORT void zRawVecLS(double *v, int size, int n, ...);
  * \return
  * zRawVecInterDiv() does not return any value.
  */
-__EXPORT void zRawVecInterDiv(double *v1, double *v2, double ratio, double *v, int size);
+__ZM_EXPORT void zRawVecInterDiv(double *v1, double *v2, double ratio, double *v, int size);
 
 /*! \brief midpoint of two raw vectors.
  *
@@ -198,7 +198,7 @@ __EXPORT void zRawVecInterDiv(double *v1, double *v2, double ratio, double *v, i
  * \return
  * zRawVecMid() does not return any value.
  */
-__EXPORT void zRawVecMid(double *v1, double *v2, double *v, int size);
+__ZM_EXPORT void zRawVecMid(double *v1, double *v2, double *v, int size);
 
 /*! \brief scale a raw vector with two boundary vectors.
  *
@@ -211,7 +211,7 @@ __EXPORT void zRawVecMid(double *v1, double *v2, double *v, int size);
  * \return
  * zRawVecScale() does not return any value.
  */
-__EXPORT void zRawVecScale(double *x, double *min, double *max, double *v, int size);
+__ZM_EXPORT void zRawVecScale(double *x, double *min, double *max, double *v, int size);
 
 /*! \brief inner product of raw vector.
  *
@@ -220,7 +220,7 @@ __EXPORT void zRawVecScale(double *x, double *min, double *max, double *v, int s
  * two raw vectors \a v1 and \a v2.
  * \a size is the size of the vectors.
  */
-__EXPORT double zRawVecInnerProd(double *v1, double *v2, int size);
+__ZM_EXPORT double zRawVecInnerProd(double *v1, double *v2, int size);
 
 /*! \brief normalize a raw vector.
  *
@@ -246,13 +246,13 @@ __EXPORT double zRawVecInnerProd(double *v1, double *v2, int size);
  * zRawVecNormalize() and zRawVecNormalizeDRC() return
  * a pointer to the result.
  */
-__EXPORT double zRawVecSqrNorm(double *v, int size);
+__ZM_EXPORT double zRawVecSqrNorm(double *v, int size);
 #define zRawVecNorm(v,siz)         sqrt( zRawVecSqrNorm(v,siz) )
-__EXPORT double zRawVecWSqrNorm(double *v, double *w, int size);
+__ZM_EXPORT double zRawVecWSqrNorm(double *v, double *w, int size);
 #define zRawVecWNorm(v,w,siz)      sqrt( zRawVecWSqrNorm(v,w,siz) )
-__EXPORT double *zRawVecNormalize(double *src, int size, double *dest);
+__ZM_EXPORT double *zRawVecNormalize(double *src, int size, double *dest);
 #define zRawVecNormalizeDRC(v,siz) zRawVecNormalize(v,siz,v)
-__EXPORT double zRawVecSqrDist(double *v1, double *v2, int size);
+__ZM_EXPORT double zRawVecSqrDist(double *v1, double *v2, int size);
 #define zRawVecDist(v1,v2,siz)     sqrt( zRawVecSqrDist( v1, v2, siz ) )
 
 /*! \brief print a raw vector.
@@ -265,7 +265,7 @@ __EXPORT double zRawVecSqrDist(double *v1, double *v2, int size);
  * \return
  * zRawVecFPrint() and zRawVecPrint() return no values.
  */
-__EXPORT void zRawVecFPrint(FILE *fp, double *v, int size);
+__ZM_EXPORT void zRawVecFPrint(FILE *fp, double *v, int size);
 #define zRawVecPrint(v,s) zRawVecFPrint( stdout, v, s )
 
 __END_DECLS

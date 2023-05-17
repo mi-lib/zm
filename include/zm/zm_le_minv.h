@@ -47,12 +47,12 @@ __BEGIN_DECLS
  * \sa
  * zMatInvHotelling
  */
-__EXPORT double zMatDetDST(zMat m, zIndex index);
-__EXPORT double zMatDet(zMat m);
-__EXPORT zMat zMatAdj(zMat m, zMat adj);
-__EXPORT zMat zMulInvMatMat(zMat m1, zMat m2, zMat m);
-__EXPORT zMat zMulMatInvMat(zMat m1, zMat m2, zMat m);
-__EXPORT zMat zMatInv(zMat m, zMat im);
+__ZM_EXPORT double zMatDetDST(zMat m, zIndex index);
+__ZM_EXPORT double zMatDet(zMat m);
+__ZM_EXPORT zMat zMatAdj(zMat m, zMat adj);
+__ZM_EXPORT zMat zMulInvMatMat(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zMat zMulMatInvMat(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zMat zMatInv(zMat m, zMat im);
 
 /*! \brief inverse matrix by Hotelling's method.
  *
@@ -70,7 +70,7 @@ __EXPORT zMat zMatInv(zMat m, zMat im);
  * \sa
  * zMatInv
  */
-__EXPORT zMat zMatInvHotelling(zMat m, zMat im, double tol, int iter);
+__ZM_EXPORT zMat zMatInvHotelling(zMat m, zMat im, double tol, int iter);
 
 __END_DECLS
 
