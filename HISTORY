@@ -1,3 +1,4 @@
+2023. 5.20. Reflected new specification of zeda-makefile-gen, and modified src/makefile. [src]
 2023. 5.17. Reflected modification of Z_NAMED_CLASS. [zm_parse]
 2023. 5.16. Replaced __EXPORT to __ZM_EXPORT. [all]
 2023. 5.12. Reflected renaming of zI2AOrdinal to zPexBH and zPexDKA. [zm_pex_eq]
