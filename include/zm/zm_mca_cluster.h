@@ -46,7 +46,7 @@ __ZM_EXPORT void zClusterDataFPrint(FILE *fp, zCluster *c);
 /*! \brief methods for core and error computation
  *//* ******************************************************* */
 
-ZDEF_STRUCT( zClusterMethod ){
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zClusterMethod ){
   /*! \cond */
   zVec error; /* error vector */
   zVec (* error_fp)(zClusterMethod*,zVec,zVec,void*,zVec); /* error function */
@@ -94,7 +94,7 @@ __ZM_EXPORT void zClusterMethodDestroy(zClusterMethod *method);
 
 zListClass( zClusterList, zClusterListCell, zCluster );
 
-ZDEF_STRUCT( zMCluster ){
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zMCluster ){
   zClusterList clist;    /*!< a list of clusters */
   zClusterMethod method; /*!< methods for core and error computation */
 };

@@ -18,7 +18,7 @@ __BEGIN_DECLS
  * zNURBSCPCell is a cell of NURBS that contains a control point
  * and associated weight.
  *//* ******************************************************* */
-ZDEF_STRUCT( zNURBSCPCell ){
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBSCPCell ){
   zVec cp;  /*!< control point */
   double w; /*!< weight */
 };
@@ -40,7 +40,7 @@ zArrayClass( zNURBSCPArray, zNURBSCPCell );
  * zNURBS is a NURBS curve made from a sequence of control
  * points in n-dimensional space.
  *//* ******************************************************* */
-ZDEF_STRUCT( zNURBS ){
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBS ){
   int order; /*!< \brief order of a curve */
   /*! \cond */
   zVec knot; /* knot vector */
