@@ -27,10 +27,10 @@ __BEGIN_DECLS
  * rank of \a m, which becomes the same with the minimum of
  * the row and column size of \a m when \a m is full rank.
  */
-__EXPORT int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx);
-__EXPORT int zMatDecompLU(zMat m, zMat l, zMat u, zIndex idx);
-__EXPORT int zMatDecompLUReg(zMat m, zMat l, zMat u, zIndex idx);
-__EXPORT int zMatDecompLUAlloc(zMat m, zMat *l, zMat *u, zIndex *idx);
+__ZM_EXPORT int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx);
+__ZM_EXPORT int zMatDecompLU(zMat m, zMat l, zMat u, zIndex idx);
+__ZM_EXPORT int zMatDecompLUReg(zMat m, zMat l, zMat u, zIndex idx);
+__ZM_EXPORT int zMatDecompLUAlloc(zMat m, zMat *l, zMat *u, zIndex *idx);
 
 /* Cholesky decomposition.
  *
@@ -43,10 +43,10 @@ __EXPORT int zMatDecompLUAlloc(zMat m, zMat *l, zMat *u, zIndex *idx);
  * of \a m. In case they fail to allocate internal memory for
  * the computation, -1 is returned.
  */
-__EXPORT int zMatDecompCholeskyDST(zMat m, zMat l, zIndex index);
-__EXPORT int zMatDecompCholesky(zMat m, zMat l, zIndex index);
-__EXPORT int zMatDecompCholeskyReg(zMat m, zMat l, zIndex idx);
-__EXPORT int zMatDecompCholeskyAlloc(zMat m, zMat *l, zIndex *idx);
+__ZM_EXPORT int zMatDecompCholeskyDST(zMat m, zMat l, zIndex index);
+__ZM_EXPORT int zMatDecompCholesky(zMat m, zMat l, zIndex index);
+__ZM_EXPORT int zMatDecompCholeskyReg(zMat m, zMat l, zIndex idx);
+__ZM_EXPORT int zMatDecompCholeskyAlloc(zMat m, zMat *l, zIndex *idx);
 
 __END_DECLS
 

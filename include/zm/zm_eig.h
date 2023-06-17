@@ -33,8 +33,8 @@ __BEGIN_DECLS
  * zHouseholder() returns no value.
  * zHouseholderVec() returns a pointer \a u.
  */
-__EXPORT void zHouseholder(zMat m, zMat p, uint from, uint to, zVec u, zVec v, zVec w);
-__EXPORT zVec zHouseholderVec(zMat m, uint col, uint from, uint to, zVec u);
+__ZM_EXPORT void zHouseholder(zMat m, zMat p, int from, int to, zVec u, zVec v, zVec w);
+__ZM_EXPORT zVec zHouseholderVec(zMat m, int col, int from, int to, zVec u);
 
 /*! \brief Hessenberg matrix using Householder transformation.
  *
@@ -53,7 +53,7 @@ __EXPORT zVec zHouseholderVec(zMat m, uint col, uint from, uint to, zVec u);
  * \return
  * zHess() returns a pointer \a h.
  */
-__EXPORT zMat zHess(zMat m, zMat h, zMat p);
+__ZM_EXPORT zMat zHess(zMat m, zMat h, zMat p);
 
 /* eigenvalue analysis by double QR method and inverse iteration */
 
@@ -89,17 +89,17 @@ bool zEigDQR(zMat a, zComplex eig[], int iter);
  * \return
  * zEigPower() returns the dominant eigenvalue calculated.
  */
-__EXPORT double zEigPower(zMat a, zVec evec, int iter);
-__EXPORT double zEigPowerInv(zMat a, zVec evec, int iter);
+__ZM_EXPORT double zEigPower(zMat a, zVec evec, int iter);
+__ZM_EXPORT double zEigPowerInv(zMat a, zVec evec, int iter);
 
-__EXPORT int zEigSystem(zMat m, zComplex eig[], zCVec eigv[], int iter);
+__ZM_EXPORT int zEigSystem(zMat m, zComplex eig[], zCVec eigv[], int iter);
 
 /* diagonalization by bisection method */
 
 /*! \brief compute eigenvalues and eigenvectors based on bisection method
  * (by J. W. Givens 1954).
  */
-__EXPORT zVec zEigSymBisec(zMat m, zVec eig, zMat r);
+__ZM_EXPORT zVec zEigSymBisec(zMat m, zVec eig, zMat r);
 
 /* diagonalization by Jacobi's method */
 
@@ -121,7 +121,7 @@ __EXPORT zVec zEigSymBisec(zMat m, zVec eig, zMat r);
  * When \a m is not symmetric, zEigSymJacobi() does not work
  * as expected.
  */
-__EXPORT zVec zEigSymJacobi(zMat m, zVec eig, zMat r);
+__ZM_EXPORT zVec zEigSymJacobi(zMat m, zVec eig, zMat r);
 
 /* singular value decomposition */
 
@@ -148,19 +148,19 @@ __EXPORT zVec zEigSymJacobi(zMat m, zVec eig, zMat r);
  * zSVD() returns the rank of \a m, namely, the number of
  * non-zero singular values of \a m.
  */
-__EXPORT int zSVD(zMat m, zVec sv, zMat u, zMat v);
+__ZM_EXPORT int zSVD(zMat m, zVec sv, zMat u, zMat v);
 
 /*! \brief maximum singular value of a matrix.
  */
-__EXPORT double zSVMax(zMat m);
+__ZM_EXPORT double zSVMax(zMat m);
 
 /*! \brief minimum singular value of a matrix.
  */
-__EXPORT double zSVMin(zMat m);
+__ZM_EXPORT double zSVMin(zMat m);
 
 /*! \brief condition number of a matrix.
  */
-__EXPORT double zMatCondNum(zMat m);
+__ZM_EXPORT double zMatCondNum(zMat m);
 
 __END_DECLS
 

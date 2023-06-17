@@ -20,11 +20,13 @@
 #define ZM_WARN_VEC_SIZMIS   "vector has only %d components, while specified size is %d"
 #define ZM_WARN_MAT_SIZMIS   "matrix has only %d components, while specified size is %d"
 
+#define ZM_WARN_VECLIST_EMPTY "empty vector list assigned"
+
 #define ZM_WARN_LE_ZEROPIVOT "cannot sweep out by zero pivot"
 
 #define ZM_WARN_NLE_NOROOT   "probably, equation has no root"
 
-#define ZM_WARN_SEQ_EMPTY    "sequence list is empty"
+#define ZM_WARN_SEQ_EMPTY    "empty vector sequence assigned"
 #define ZM_WARN_SEQ_STEP     "too large step index"
 
 #define ZM_WARN_PEX_SIZMIS   "polynomial expression has only %d components, while specified size is %d"
@@ -38,6 +40,8 @@
 
 #define ZM_WARN_GRAPH_DUPSPC "duplicate specification of a node"
 #define ZM_WARN_GRAPH_DUPCON "duplicate node connection, overwritten"
+
+#define ZM_MCA_NOSILHOUETTE  "silhouette score not computed, need to call zMClusterSilhouetteScore()"
 
 /* error messages */
 
@@ -80,8 +84,8 @@
 #define ZM_ERR_IP_SIZMIS     "size mismatch of sample point vector"
 #define ZM_ERR_IP_INVTYPE    "unknown edge type"
 
-#define ZM_ERR_NURBS_INVDIM  "invalid curve dimension"
-#define ZM_ERR_NURBS_INVODR  "invalid order of differentiation"
+#define ZM_ERR_NURBS_INVORDER     "invalid order for NURBS"
+#define ZM_ERR_NURBS_INVDIFFORDER "invalid order of differentiation"
 
 #define ZM_ERR_INVALID_NUMSAMP "too many samples %d required out of %d"
 
@@ -91,9 +95,13 @@
 #define ZM_ERR_OPT_UNSOLVE   "optimal solution doesn't exist"
 #define ZM_ERR_OPT_INF       "infinite solution exists"
 
-#define ZM_ERR_MCA_NOMEAN    "mean computation method not assigned"
+#define ZM_ERR_MCA_INVSIZ       "invalid size of vector for clustering: %d"
+#define ZM_ERR_MCA_EMPTY        "empty set assigned"
+#define ZM_ERR_MCA_NOCOREFUNC   "method not assigned to find core of a cluster"
+#define ZM_ERR_MCA_NOERRORFUNC  "method not assigned to compute error between samples"
+#define ZM_ERR_MCA_NODISTFUNC   "method not assigned to compute distance between samples"
 
-#define ZM_ERR_OSCIL_INVTERM "invalid natural term of oscillator"
+#define ZM_ERR_OSCIL_INVTERM "invalid natural term of the oscillator"
 
 #define ZM_ERR_FATAL         "fatal error! - please report to the author"
 

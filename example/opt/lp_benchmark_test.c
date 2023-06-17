@@ -258,26 +258,6 @@ void gen_sample13(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 void gen_sample14(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
-    1.0, 0.0, 2.0, 0.0, 1.0, 0.0, 0.0,
-    0.0, 2.0, 0.0,-7.0, 0.0, 1.0, 0.0,
-    0.0,-1.0, 1.0,-2.0, 0.0, 0.0, 1.0,
-    1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0,
-  };
-  double b_arr[] = {
-    740.0, 0.0, -0.5, 9.0,
-  };
-  double c_arr[] = {
-   -1.0, -1.0, -3.0, 0.5, 0.0, 0.0, 0.0,
-  };
-  double ans_arr[] = {
-    0.0, 3.325, 4.725, 0.95, 0.0, 0.0, 0.0,
-  };
-  alloc_sample( 4, 7, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
-}
-
-void gen_sample15(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
-{
-  double a_arr[] = {
           1.0,       1.0,       1.0,        1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     10.0/24.0,  5.0/12.0, 15.0/14.0, 120.0/18.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     10.0/24.0, 25.0/12.0, 35.0/14.0,  20.0/18.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
@@ -298,7 +278,7 @@ void gen_sample15(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
   alloc_sample( 7, 10, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
 }
 
-void gen_sample16(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
+void gen_sample15(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
     -1.9,  -0.4, -0.6,  -0.7, -0.6, -2.9, -0.6, 1.0, 0.0, 0.0,
@@ -317,7 +297,7 @@ void gen_sample16(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
   alloc_sample( 3, 10, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
 }
 
-void gen_sample17(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
+void gen_sample16(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
     4.5, 2.0, 1.5, 1.2, 8.0,-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -340,7 +320,7 @@ void gen_sample17(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
   alloc_sample( 7, 15, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
 }
 
-void gen_sample18(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
+void gen_sample17(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
     0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
@@ -360,7 +340,7 @@ void gen_sample18(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
   alloc_sample( 4, 7, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
 }
 
-void gen_sample19(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
+void gen_sample18(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
     1.0, 2.0, 1.0, 0.0, 0.0,
@@ -379,7 +359,7 @@ void gen_sample19(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
   alloc_sample( 3, 5, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
 }
 
-void gen_sample20(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
+void gen_sample19(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
    -3.0,-5.0,-1.0, 1.0, 1.0, 0.0, 0.0, 0.0,
@@ -400,7 +380,7 @@ void gen_sample20(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
   alloc_sample( 5, 8, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
 }
 
-void gen_sample21(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
+void gen_sample20(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
     1.0, 1.0, 1.0, 1.0, 1.0,
@@ -419,7 +399,7 @@ void gen_sample21(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
   alloc_sample( 3, 5, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
 }
 
-void gen_sample22(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
+void gen_sample21(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
    -1.0,-1.0, 1.0, 0.0, 0.0, 0.0,
@@ -439,7 +419,7 @@ void gen_sample22(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
   alloc_sample( 4, 6, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
 }
 
-void gen_sample23(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
+void gen_sample22(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
     1.0,-1.0, 0.0,-2.0, 0.0, 0.0,
@@ -459,7 +439,7 @@ void gen_sample23(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
   alloc_sample( 4, 6, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
 }
 
-void gen_sample24(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
+void gen_sample23(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
     1.0, 0.0, 0.0, 1.0, 0.0, 0.0,
@@ -480,7 +460,7 @@ void gen_sample24(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
   alloc_sample( 5, 6, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
 }
 
-void gen_sample25(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
+void gen_sample24(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
    -1.0, 1.0,-1.0, 1.0, 1.0, 0.0, 0.0,
@@ -499,7 +479,7 @@ void gen_sample25(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
   alloc_sample( 3, 7, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
 }
 
-void gen_sample26(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
+void gen_sample25(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
     1.0, 3.0, 1.0, 0.0, 0.0,
@@ -518,7 +498,7 @@ void gen_sample26(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
   alloc_sample( 3, 5, a_arr, b_arr, c_arr, ans_arr, a, b, c, ans, x );
 }
 
-void gen_sample27(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
+void gen_sample26(zMat *a, zVec *b, zVec *c, zVec *ans, zVec *x)
 {
   double a_arr[] = {
     4.0, 0.0, 7.0, 1.0, 0.0, 0.0, 0.0,
@@ -566,7 +546,6 @@ void (* gen_sample[])(zMat*,zVec*,zVec*,zVec*,zVec*) = {
   gen_sample24,
   gen_sample25,
   gen_sample26,
-  gen_sample27,
   NULL,
 };
 

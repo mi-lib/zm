@@ -41,32 +41,37 @@ void output_box(FILE *fp, box_t box[])
   }
 }
 
+#define W 10.0
+#define HW (0.5 *W)
+#define QW (0.25*W)
+#define MW (0.1 *W)
+
 int main(int argc, char *argv[])
 {
   zRRT rrt;
   zRRTListCell *rc;
-
   box_t box[4];
   zVec min, max, start, goal;
   FILE *fp;
 
   zRandInit();
-  box_create( box[0], zRandF(0,10), zRandF(0,10), zRandF(0,10), zRandF(0,10) );
-  box_create( box[1], zRandF(0,10), zRandF(0,10), zRandF(0,10), zRandF(0,10) );
-  box_create( box[2], zRandF(0,10), zRandF(0,10), zRandF(0,10), zRandF(0,10) );
-  box_create( box[3], zRandF(0,10), zRandF(0,10), zRandF(0,10), zRandF(0,10) );
+  box_create( box[0],    QW-zRandF(MW,HW),    QW-zRandF(MW,HW),    QW+zRandF(MW,HW),    QW+zRandF(MW,HW) );
+  box_create( box[1], HW+QW-zRandF(MW,HW),    QW-zRandF(MW,HW), HW+QW+zRandF(MW,HW),    QW+zRandF(MW,HW) );
+  box_create( box[2],    QW-zRandF(MW,HW), HW+QW-zRandF(MW,HW),    QW+zRandF(MW,HW), HW+QW+zRandF(MW,HW) );
+  box_create( box[3], HW+QW-zRandF(MW,HW), HW+QW-zRandF(MW,HW), HW+QW+zRandF(MW,HW), HW+QW+zRandF(MW,HW) );
+
   fp = fopen( "a", "w" );
   output_box( fp, box );
   fclose( fp );
 
   start = zVecAlloc( 2 );
   goal = zVecAlloc( 2 );
-  min = zVecCreateList( 2,  0.0,  0.0 );
-  max = zVecCreateList( 2, 10.0, 10.0 );
+  min = zVecCreateList( 2, 0.0, 0.0 );
+  max = zVecCreateList( 2, W, W );
   zVecRand( start, min, max );
 
-  zRRTInit( &rrt, min, max, 5e-1, NULL, NULL, testchk );
-  zRRTEsc( &rrt, start, 0, box, goal );
+  zRRTInit( &rrt, min, max, 0.5, NULL, NULL, testchk, NULL );
+  zRRTEscape( &rrt, start, 0, box, goal );
 
   fp = fopen( "s", "w" );
   fprintf( fp, "%g %g\n", zVecElem(start,0), zVecElem(start,1) );

@@ -265,7 +265,7 @@ static bool _zOptDIRECTRectSetRectDivide(zOptDIRECTRectSet *set, int level, zOpt
   zIntList index;
   zIntListCell *cp, *ncp;
   bool ret = true;
-  uint i;
+  int i;
 
   zListInit( &index );
   if( !( pat = _zOptDIRECTRectPatternAlloc( zVecSizeNC(rect->x) ) ) ) return false;

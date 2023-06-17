@@ -26,14 +26,14 @@ __BEGIN_DECLS
  * \return
  * zMPInv() returns the rank of the original matrix \a m.
  */
-__EXPORT int zMPInv(zMat m, zMat mp);
-__EXPORT int zMPInvPenrose(zMat m, zMat mp);
+__ZM_EXPORT int zMPInv(zMat m, zMat mp);
+__ZM_EXPORT int zMPInvPenrose(zMat m, zMat mp);
 
 /*! \brief MP inverse with its null space.
  */
-__EXPORT int zMPInvNull(zMat m, zMat mp, zMat mn);
+__ZM_EXPORT int zMPInvNull(zMat m, zMat mp, zMat mn);
 
-__EXPORT zMat zMulMPInvMatMat(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zMat zMulMPInvMatMat(zMat m1, zMat m2, zMat m);
 
 __END_DECLS
 

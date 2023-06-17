@@ -44,8 +44,8 @@ zListClass( zSeq, zSeqListCell, zSeqCell );
  * zSeqInit() returns the pointer \a seq.
  * zSeqFree() returns no value.
  */
-__EXPORT zSeq *zSeqInit(zSeq *seq);
-__EXPORT void zSeqFree(zSeq *seq);
+__ZM_EXPORT zSeq *zSeqInit(zSeq *seq);
+__ZM_EXPORT void zSeqFree(zSeq *seq);
 
 /*! \brief add and delete a vector cell to a sequence.
  *
@@ -56,8 +56,8 @@ __EXPORT void zSeqFree(zSeq *seq);
  * zSeqEnqueue() and zSeqDequeue() return a pointer to \a v,
  * if succeeding, or the null vector, otherwise.
  */
-__EXPORT zSeqListCell *zSeqEnqueue(zSeq *seq, zVec v, double dt);
-__EXPORT zSeqListCell *zSeqDequeue(zSeq *seq);
+__ZM_EXPORT zSeqListCell *zSeqEnqueue(zSeq *seq, zVec v, double dt);
+__ZM_EXPORT zSeqListCell *zSeqDequeue(zSeq *seq);
 
 /*! \brief forward/backward frame step and rewind a sequence.
  *
@@ -66,7 +66,7 @@ __EXPORT zSeqListCell *zSeqDequeue(zSeq *seq);
  * \return
  * All these functions return a pointer to the current step.
  */
-__EXPORT zSeqListCell *zSeqJump(zSeq *seq, int step);
+__ZM_EXPORT zSeqListCell *zSeqJump(zSeq *seq, int step);
 
 /*! \brief scan and print a sequence to a file.
  *
@@ -99,12 +99,12 @@ __EXPORT zSeqListCell *zSeqJump(zSeq *seq, int step);
  * values.
  */
 #define ZSEQ_SUFFIX "zvs"
-__EXPORT bool zSeqScanFile(zSeq *seq, char filename[]);
-__EXPORT zSeq *zSeqFScan(FILE *fp, zSeq *seq);
+__ZM_EXPORT bool zSeqScanFile(zSeq *seq, char filename[]);
+__ZM_EXPORT zSeq *zSeqFScan(FILE *fp, zSeq *seq);
 #define zSeqScan(s)  zSeqFScan( stdin, (s) )
 
-__EXPORT bool zSeqPrintFile(zSeq *seq, char filename[]);
-__EXPORT void zSeqFPrint(FILE *fp, zSeq *seq);
+__ZM_EXPORT bool zSeqPrintFile(zSeq *seq, char filename[]);
+__ZM_EXPORT void zSeqFPrint(FILE *fp, zSeq *seq);
 #define zSeqPrint(s) zSeqFPrint( stdout, (s) )
 
 __END_DECLS

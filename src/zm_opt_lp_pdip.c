@@ -176,7 +176,7 @@ static double _zLP_PDIP_PCErr(_zLP_PDIP *dat)
 /* updating step of PD-IP-PC. */
 static double _zLP_PDIP_PCStep(zVec x, zVec dx)
 {
-  uint i;
+  int i;
   bool max_ok = false, min_ok = false;
   double max, min, val, d;
 

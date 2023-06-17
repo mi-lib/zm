@@ -7,9 +7,9 @@
 #include <zm/zm_vec.h>
 
 /* allocate a vector array. */
-bool zVecArrayAlloc(zVecArray *array, uint dim, uint num)
+bool zVecArrayAlloc(zVecArray *array, int dim, int num)
 {
-  uint i;
+  int i;
 
   zArrayAlloc( array, zVec, num );
   for( i=0; i<num; i++ )
@@ -24,7 +24,7 @@ bool zVecArrayAlloc(zVecArray *array, uint dim, uint num)
 /* free vector array. */
 void zVecArrayFree(zVecArray *array)
 {
-  uint i;
+  int i;
 
   if( zArrayBuf(array) )
     for( i=0; i<zArraySize(array); i++ )
@@ -35,7 +35,7 @@ void zVecArrayFree(zVecArray *array)
 /* fill the array with the same vector. */
 zVec zVecArrayFill(zVecArray *array, zVec v)
 {
-  uint i;
+  int i;
 
   if( !zVecSizeIsEqual(*zArrayHead(array),v) ){
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );

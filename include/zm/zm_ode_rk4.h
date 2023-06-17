@@ -19,9 +19,9 @@ __BEGIN_DECLS
  * the dimention of error, so that it is thought to be
  * the most practical, while some objectives exist.
  */
-__EXPORT zODE *zODEInit_RK4(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
-__EXPORT void zODEDestroy_RK4(zODE *ode);
-__EXPORT zVec zODEUpdate_RK4(zODE *ode, double t, zVec x, double dt, void *util);
+__ZM_EXPORT zODE *zODEInit_RK4(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
+__ZM_EXPORT void zODEDestroy_RK4(zODE *ode);
+__ZM_EXPORT zVec zODEUpdate_RK4(zODE *ode, double t, zVec x, double dt, void *util);
 
 __END_DECLS
 

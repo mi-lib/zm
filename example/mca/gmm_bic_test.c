@@ -40,17 +40,19 @@ void vec_output(zVecList *points)
 void gmm_output(zGMM *gmm)
 {
   FILE *fp;
+  char filename[BUFSIZ];
   zGMMListCell *gc;
   double x0, y0;
 
-  fp = fopen( "gmm", "w" );
+  sprintf( filename, "gmm%d", zListSize(&gmm->glist) );
+  fp = fopen( filename, "w" );
   fprintf( fp, "set isosamples 30\n" );
   fprintf( fp, "set contour base\n" );
   fprintf( fp, "unset key\n" );
   fprintf( fp, "splot 'src', " );
-  zListForEach( &gmm->gl, gc ){
-    x0 = zVecElem(gc->data.mean,0);
-    y0 = zVecElem(gc->data.mean,1);
+  zListForEach( &gmm->glist, gc ){
+    x0 = zVecElem(gc->data.core,0);
+    y0 = zVecElem(gc->data.core,1);
     fprintf( fp, " +%g/sqrt(2*pi*%g)*exp(-0.5*(%g*(x-%g)**2+2*%g*(x-%g)*(y-%g)+%g*(y-%g)**2))",
       gc->data.weight,
       gc->data._cov_det,
@@ -63,13 +65,13 @@ void gmm_output(zGMM *gmm)
 }
 
 #define NP 1000
-#define NC 3
+#define NC 4
 
 int main(int argc, char *argv[])
 {
   zGMM gmm;
   zVecList points;
-  int np, nc;
+  int np, nc, k, i;
 
   zRandInit();
   np = argc > 1 ? atoi( argv[1] ) : NP;
@@ -77,10 +79,14 @@ int main(int argc, char *argv[])
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
   vec_output( &points );
 
-  zGMMInit( &gmm, nc, 2, NULL, NULL, 2, NULL );
-  zGMMCreateEM( &gmm, &points, nc, NULL, NULL );
-  gmm_output( &gmm );
-  zGMMDestroy( &gmm );
+  for( i=0; i<6; i++ ){
+    k = nc + i - 2;
+    zGMMInit( &gmm, k, 2 );
+    zGMMCreateEM( &gmm, &points );
+    gmm_output( &gmm );
+    printf( "%d: BIC = %g, AIC = %g\n", k, zGMMBIC( &gmm, &points ), zGMMAIC( &gmm ) );
+    zGMMDestroy( &gmm );
+  }
   zVecListDestroy( &points );
   return 0;
 }

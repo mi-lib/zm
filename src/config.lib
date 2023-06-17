@@ -23,4 +23,3 @@ OBJ=zm_ieee.o zm_misc.o\
 	zm_graph.o zm_graph_search.o\
 	zm_rrt.o\
 	zm_parse.o
-DLIB=libzm.so

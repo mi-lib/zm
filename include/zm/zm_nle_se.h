@@ -12,13 +12,13 @@
 __BEGIN_DECLS
 
 /* Bisec: bisection method */
-__EXPORT double zNLE_Bisec(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter);
+__ZM_EXPORT double zNLE_Bisec(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter);
 /* Secant: Secant method */
-__EXPORT double zNLE_Secant(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter);
+__ZM_EXPORT double zNLE_Secant(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter);
 /* RF: Regula-Falsi method */
-__EXPORT double zNLE_RF(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter);
+__ZM_EXPORT double zNLE_RF(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter);
 /* VDB: Van Wijngaarden-Dekker-Brent method */
-__EXPORT double zNLE_VDB(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter);
+__ZM_EXPORT double zNLE_VDB(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter);
 
 __END_DECLS
 

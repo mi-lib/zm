@@ -13,7 +13,7 @@ __BEGIN_DECLS
 
 /* Lagrange interpolation, which interpolates n points by n-1 th order
  * polynomial curve. */
-__EXPORT bool zIPCreateLagrange(zIP *ip, zSeq *seq);
+__ZM_EXPORT bool zIPCreateLagrange(zIP *ip, zSeq *seq);
 
 __END_DECLS
 

@@ -61,14 +61,14 @@ typedef struct _zNLE{
  * null pointer.
  * \sa zNLEAssign
  */
-__EXPORT zNLE *zNLECreate(zNLE *nle, int nv, int ne, double scale, zVec (*f)(zVec,zVec,void*), zMat (*jac)(zVec,zMat,void*));
+__ZM_EXPORT zNLE *zNLECreate(zNLE *nle, int nv, int ne, double scale, zVec (*f)(zVec,zVec,void*), zMat (*jac)(zVec,zMat,void*));
 
 /*! \brief destroy a simultaneous nonlinear equation solver.
  *
  * zNLEDestroy() destroys a solver instance \a nle.
  * \sa zNLECreate
  */
-__EXPORT void zNLEDestroy(zNLE *nle);
+__ZM_EXPORT void zNLEDestroy(zNLE *nle);
 
 /*! \brief assign simultaneous nonlinear equation solver.
  *
@@ -82,12 +82,12 @@ __EXPORT void zNLEDestroy(zNLE *nle);
  *  'NR' for Newton-Raphson's method, and
  *  'Broyden' for Broyden's method.
  */
-__EXPORT zNLE *zNLEAssignSD(zNLE *nle, const char *stepmethod);
-__EXPORT zNLE *zNLEAssignLM(zNLE *nle, const char *stepmethod);
-__EXPORT zNLE *zNLEAssignVM(zNLE *nle, const char *stepmethod, const char *updatemethod);
-__EXPORT zNLE *zNLEAssignCG(zNLE *nle);
-__EXPORT zNLE *zNLEAssignNR(zNLE *nle);
-__EXPORT zNLE *zNLEAssignBroyden(zNLE *nle);
+__ZM_EXPORT zNLE *zNLEAssignSD(zNLE *nle, const char *stepmethod);
+__ZM_EXPORT zNLE *zNLEAssignLM(zNLE *nle, const char *stepmethod);
+__ZM_EXPORT zNLE *zNLEAssignVM(zNLE *nle, const char *stepmethod, const char *updatemethod);
+__ZM_EXPORT zNLE *zNLEAssignCG(zNLE *nle);
+__ZM_EXPORT zNLE *zNLEAssignNR(zNLE *nle);
+__ZM_EXPORT zNLE *zNLEAssignBroyden(zNLE *nle);
 
 /*! \brief solve simultaneous nonlinear equations.
  *

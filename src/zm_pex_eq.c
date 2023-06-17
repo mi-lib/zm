@@ -9,12 +9,11 @@
 /* Bairstow-Hitchcock's method. */
 
 /* iterative calculation of quadratic factor based on Bairstow-Hitchcock's method. */
-static bool _zPexBH(double *p, double *q, zPex a, uint n, double tol, int iter)
+static bool _zPexBH(double *p, double *q, zPex a, int n, double tol, int iter)
 {
   double *b, *c;
   double dp, dq, d;
-  int i;
-  uint j;
+  int i, j;
   bool result = true;
 
   b = zAlloc( double, n + 1 );
@@ -59,11 +58,11 @@ static bool _zPexBH(double *p, double *q, zPex a, uint n, double tol, int iter)
  * (destructive) */
 zCVec zPexBHDST(zPex a, zCVec ans, double tol, int iter)
 {
-  uint n;
+  int n;
   double p, q;
 
   if( tol == 0 ) tol = ZM_PEX_EQ_TOL;
-  for( n=zPexDim(a); n>0; n-=2 )
+  for( n=zPexDim(a); n>0; n-=2 ){
     switch( n ){
     case 1: /* linear equation */
       zComplexCreate( zCVecElemNC(ans,0), -zPexCoeff(a,0)/zPexCoeff(a,1), 0 );
@@ -80,6 +79,7 @@ zCVec zPexBHDST(zPex a, zCVec ans, double tol, int iter)
       /* append solution of 'x^2 + p x + q = 0' */
       zQESolve( 1, p, q, zCVecElemNC(ans,n-2) );
     }
+  }
   return ans;
 }
 
@@ -90,7 +90,7 @@ zCVec zPexBH(zPex a, zCVec ans, double tol, int iter)
   char buf[BUFSIZ];
 
   if( zPexDim(a) > (int)zCVecSizeNC(ans) ){
-    ZRUNERROR( ZM_ERR_PEX_EQ_SIZMIS, zCVecSizeNC(ans), itoa_ordinal(zPexDim(a),buf,BUFSIZ) );
+    ZRUNERROR( ZM_ERR_PEX_EQ_SIZMIS, zCVecSizeNC(ans), zI2AOrdinal(zPexDim(a),buf,BUFSIZ) );
     return NULL;
   }
   if( !( ac = zPexClone( a ) ) ) return NULL;
@@ -113,7 +113,7 @@ zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter)
   zPex b;
 
   if( zPexDim(a) > (int)zCVecSizeNC(ans) ){
-    ZRUNERROR( ZM_ERR_PEX_EQ_SIZMIS, zCVecSizeNC(ans), itoa_ordinal(zPexDim(a),buf,BUFSIZ) );
+    ZRUNERROR( ZM_ERR_PEX_EQ_SIZMIS, zCVecSizeNC(ans), zI2AOrdinal(zPexDim(a),buf,BUFSIZ) );
     return NULL;
   }
   n = zPexDim(a);

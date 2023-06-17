@@ -33,9 +33,9 @@ __BEGIN_DECLS
  * false value if an internal iteration fails. Otherwise, the true value
  * is returned.
  */
-__EXPORT bool zFresnelIntgPI_2(double x, double *s, double *c);
-__EXPORT bool zFresnelIntgScale(double x, double f, double *s, double *c);
-__EXPORT bool zFresnelIntg(double x, double *s, double *c);
+__ZM_EXPORT bool zFresnelIntgPI_2(double x, double *s, double *c);
+__ZM_EXPORT bool zFresnelIntgScale(double x, double f, double *s, double *c);
+__ZM_EXPORT bool zFresnelIntg(double x, double *s, double *c);
 
 /*! \brief generalized Fresnel integral
  *
@@ -47,7 +47,7 @@ __EXPORT bool zFresnelIntg(double x, double *s, double *c);
  * zFresnelIntgGen() internally calls zFresnelIntgScale() The returned
  * value conforms to it.
  */
-__EXPORT bool zFresnelIntgGen(double x, double f0, double f1, double f2, double *s, double *c);
+__ZM_EXPORT bool zFresnelIntgGen(double x, double f0, double f1, double f2, double *s, double *c);
 
 __END_DECLS
 

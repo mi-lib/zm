@@ -12,6 +12,8 @@
 #include <zeda/zeda.h>
 #include <math.h>
 
+#include <zm/zm_export.h>
+
 #include <zm/zm_pi.h>
 #include <zm/zm_ieee.h>
 #include <zm/zm_errmsg.h>
@@ -34,7 +36,7 @@ __BEGIN_DECLS
 #define zIsTiny(x)    zIsTol( x, zTOL )
 
 /*! \brief check if two values are equal. */
-__EXPORT bool zIsEqual(double a, double b, double tol);
+__ZM_EXPORT bool zIsEqual(double a, double b, double tol);
 
 /*! \brief checks if an integer value \a d is an even number. */
 #define zIsEven(d)    (~(d) & 0x1 )
@@ -48,7 +50,7 @@ __EXPORT bool zIsEqual(double a, double b, double tol);
  * \retval true signs of \a a and \a b are opposite.
  * \retval false signs of \a a and \a b are the same.
  */
-__EXPORT bool zIsSgnOpp(double a, double b);
+__ZM_EXPORT bool zIsSgnOpp(double a, double b);
 
 /*! \brief a sine and cosine set.
  *
@@ -60,7 +62,7 @@ __EXPORT bool zIsSgnOpp(double a, double b);
   *(s) = sin(a);\
   *(c) = cos(a);\
 } while(0)
-__EXPORT void zSinCos(double angle, double *s, double *c);
+__ZM_EXPORT void zSinCos(double angle, double *s, double *c);
 
 /*! \brief normalize phase within the range from minus pi to pi.
  *
@@ -69,7 +71,7 @@ __EXPORT void zSinCos(double angle, double *s, double *c);
  * \a x that satisfies \a angle = \a x + 2*pi*n, where n is
  * an integer number which satisfies -pi<\a x<=pi.
  */
-__EXPORT double zPhaseNormalize(double angle);
+__ZM_EXPORT double zPhaseNormalize(double angle);
 
 /*! \brief logarithmic function with an arbitrary base. */
 #define zLog(b,x) ( log(x) / log(b) )
@@ -98,34 +100,34 @@ __EXPORT double zPhaseNormalize(double angle);
  * \note if \a y is zero, anything might happen. */
 #define zFruct(x,y) ( (x) - floor((x)/(y))*(y) )
 /*! \brief the squared value of \a x. */
-__EXPORT double zSqr(double x);
+__ZM_EXPORT double zSqr(double x);
 /*! \brief the cubed value of \a x. */
-__EXPORT double zCube(double x);
+__ZM_EXPORT double zCube(double x);
 
 /*! \brief a non-negative integer \a n power of \a x. */
-__EXPORT double zPowN(double x, unsigned int n);
+__ZM_EXPORT double zPowN(double x, unsigned int n);
 
 /*! \brief a line inter-extrapolation, connecting two
  * points on a plane, (\a x0, \a y0) and (\a x1, \a y1). */
-__EXPORT double zLine(double x, double x0, double y0, double x1, double y1);
+__ZM_EXPORT double zLine(double x, double x0, double y0, double x1, double y1);
 
 /*! \brief the x value of a cycloid curve with respect to \a phase,
  * which is mostly expected to be between 0 and 1.
  * \sa zCycloidY
  */
-__EXPORT double zCycloidX(double phase);
+__ZM_EXPORT double zCycloidX(double phase);
 
 /*! \brief the y value of a cycloid curve with respect to \a phase,
  * which is mostly expected to be between 0 and 1.
  * \sa zCycloidX
  */
-__EXPORT double zCycloidY(double phase);
+__ZM_EXPORT double zCycloidY(double phase);
 
 /*! \brief sigmoid function. */
-__EXPORT double zSigmoid(double x);
+__ZM_EXPORT double zSigmoid(double x);
 
 /*! \brief the cubic root of \a x. */
-__EXPORT double zCbrt(double x);
+__ZM_EXPORT double zCbrt(double x);
 
 __END_DECLS
 

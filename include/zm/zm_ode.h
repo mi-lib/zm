@@ -30,10 +30,10 @@ typedef struct _zODE{
 /*! \brief concatenate deviation in finite time step to the current variable vector.
  * no need to call this function in user's codes.
  */
-__EXPORT zVec _zODECatDefault(zVec x, double dt, zVec dx, zVec xn, void *util);
-__EXPORT zVec _zODESubDefault(zVec x1, zVec x2, zVec dx, void *util);
+__ZM_EXPORT zVec _zODECatDefault(zVec x, double dt, zVec dx, zVec xn, void *util);
+__ZM_EXPORT zVec _zODESubDefault(zVec x1, zVec x2, zVec dx, void *util);
 
-__EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,void*), zVec (* subf)(zVec,zVec,zVec,void*));
+__ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,void*), zVec (* subf)(zVec,zVec,zVec,void*));
 
 /*! \brief assign differential equation solver.
  *

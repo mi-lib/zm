@@ -34,9 +34,9 @@ __BEGIN_DECLS
  * Otherwise, the null pointer is returned.
  */
 #define ZM_PEX_EQ_TOL ( 1.0e-7 )
-__EXPORT zCVec zPexBHDST(zPex a, zCVec ans, double tol, int iter);
-__EXPORT zCVec zPexBH(zPex a, zCVec ans, double tol, int iter);
-__EXPORT zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter);
+__ZM_EXPORT zCVec zPexBHDST(zPex a, zCVec ans, double tol, int iter);
+__ZM_EXPORT zCVec zPexBH(zPex a, zCVec ans, double tol, int iter);
+__ZM_EXPORT zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter);
 
 __END_DECLS
 

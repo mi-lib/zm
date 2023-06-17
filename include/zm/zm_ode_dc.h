@@ -12,9 +12,9 @@ __BEGIN_DECLS
 
 /*!
  */
-__EXPORT zODE *zODEInitDC(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec));
-__EXPORT void zODEDestroyDC(zODE *ode);
-__EXPORT zVec zODEUpdateDC(zODE *ode, double t, zVec x, double dt, void *util);
+__ZM_EXPORT zODE *zODEInitDC(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec));
+__ZM_EXPORT void zODEDestroyDC(zODE *ode);
+__ZM_EXPORT zVec zODEUpdateDC(zODE *ode, double t, zVec x, double dt, void *util);
 
 __END_DECLS
 

@@ -49,16 +49,16 @@ __BEGIN_DECLS
  * \sa
  * zLESolveGaussDST
  */
-__EXPORT void zBalancingColDST(zMat m, zVec s);
-__EXPORT void zBalancingDST(zMat m, zVec v, zVec s);
-__EXPORT bool zBalancing(zMat morg, zVec vorg, zMat m, zVec v, zVec s);
+__ZM_EXPORT void zBalancingColDST(zMat m, zVec s);
+__ZM_EXPORT void zBalancingDST(zMat m, zVec v, zVec s);
+__ZM_EXPORT bool zBalancing(zMat morg, zVec vorg, zMat m, zVec v, zVec s);
 
 /*! \brief residual b - a x.
  *
  * \notes Sizes are not checked. It is not recommended to use
  * this function in user programs.
  */
-__EXPORT zVec zLEResidual(zMat a, zVec b, zVec x, zVec res);
+__ZM_EXPORT zVec zLEResidual(zMat a, zVec b, zVec x, zVec res);
 
 /*! \brief linear equation solver by Gauss elimination method.
  *
@@ -75,8 +75,8 @@ __EXPORT zVec zLEResidual(zMat a, zVec b, zVec x, zVec res);
  * When \a a is a singular matrix, the equation does not have
  * a unique answer and the null pointer is returned.
  */
-__EXPORT zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex index, zVec s);
-__EXPORT zVec zLESolveGauss(zMat a, zVec b, zVec ans);
+__ZM_EXPORT zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex index, zVec s);
+__ZM_EXPORT zVec zLESolveGauss(zMat a, zVec b, zVec ans);
 
 /*! \brief linear equation solver by LU decomposition method.
  *
@@ -97,9 +97,9 @@ __EXPORT zVec zLESolveGauss(zMat a, zVec b, zVec ans);
  * \sa
  * zLUDecomp
  */
-__EXPORT zVec zLESolveL(zMat l, zVec b, zVec ans, zIndex idx);
-__EXPORT zVec zLESolveU(zMat u, zVec b, zVec ans);
-__EXPORT zVec zLESolveLU(zMat l, zMat u, zVec b, zVec ans, zIndex index);
+__ZM_EXPORT zVec zLESolveL(zMat l, zVec b, zVec ans, zIndex idx);
+__ZM_EXPORT zVec zLESolveU(zMat u, zVec b, zVec ans);
+__ZM_EXPORT zVec zLESolveLU(zMat l, zMat u, zVec b, zVec ans, zIndex index);
 
 /*! \brief linear equation solver by residual iteration.
  *
@@ -110,7 +110,7 @@ __EXPORT zVec zLESolveLU(zMat l, zMat u, zVec b, zVec ans, zIndex index);
  * When \a a is a singular matrix, the equation does not have
  * a unique answer and the null pointer is returned.
  */
-__EXPORT zVec zLESolveRI(zMat a, zVec b, zVec ans);
+__ZM_EXPORT zVec zLESolveRI(zMat a, zVec b, zVec ans);
 
 /*! \brief linear equation solver by Gauss-Seidel method.
  *
@@ -134,7 +134,7 @@ __EXPORT zVec zLESolveRI(zMat a, zVec b, zVec ans);
  * If the iteration does not finish even after trying over
  * Z_MAX_ITER_NUM times, the function gives it up to calculate.
  */
-__EXPORT zVec zLESolveGS(zMat a, zVec b, zVec ans);
+__ZM_EXPORT zVec zLESolveGS(zMat a, zVec b, zVec ans);
 
 __END_DECLS
 

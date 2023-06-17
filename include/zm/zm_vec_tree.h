@@ -24,12 +24,12 @@ typedef struct _zVecTree{
   struct _zVecTree *s[2]; /*!< binary branches */
 } zVecTree;
 
-__EXPORT zVecTree *zVecTreeInit(zVecTree *tree, int dim);
-__EXPORT void zVecTreeDestroy(zVecTree *tree);
+__ZM_EXPORT zVecTree *zVecTreeInit(zVecTree *tree, int dim);
+__ZM_EXPORT void zVecTreeDestroy(zVecTree *tree);
 
-__EXPORT zVecTree *zVecTreeAdd(zVecTree *tree, zVec v);
+__ZM_EXPORT zVecTree *zVecTreeAdd(zVecTree *tree, zVec v);
 
-__EXPORT double zVecTreeNN(zVecTree *tree, zVec v, zVecTree **nn);
+__ZM_EXPORT double zVecTreeNN(zVecTree *tree, zVec v, zVecTree **nn);
 
 __END_DECLS
 

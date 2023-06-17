@@ -15,7 +15,7 @@
 /* set matrix components from value list. */
 static zMat _zMatSetElemList(zMat m, va_list args)
 {
-  uint i, j;
+  int i, j;
 
   for( i=0; i<zMatRowSizeNC(m); i++ )
     for( j=0; j<zMatColSizeNC(m); j++ )
@@ -173,7 +173,7 @@ zMat zMatCopy(zMat src, zMat dest)
 }
 
 /* copy matrix from 2-dim array of double precision floating point values. */
-zMat zMatCopyArray(double array[], uint r, uint c, zMat m)
+zMat zMatCopyArray(double array[], int r, int c, zMat m)
 {
   if( zMatRowSizeNC(m) != r || zMatColSizeNC(m) != c ){
     ZRUNERROR( ZM_ERR_SIZMIS_MAT );
@@ -194,7 +194,7 @@ zMat zMatClone(zMat src)
 }
 
 /* create a matrix from an array of double precision floating point values. */
-zMat zMatCloneArray(double array[], uint r, uint c)
+zMat zMatCloneArray(double array[], int r, int c)
 {
   zMat m;
 
@@ -276,21 +276,21 @@ zMat zMatTPut(zMat dest, int pr, int pc, zMat src)
 }
 
 /* abstract row vector of matrix without checking size consistency. */
-zVec zMatGetRowNC(zMat m, uint row, zVec v)
+zVec zMatGetRowNC(zMat m, int row, zVec v)
 {
   zRawMatGetRow( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), row, zVecBufNC(v) );
   return v;
 }
 
 /* abstract column vector of matrix without checking size consistency. */
-zVec zMatGetColNC(zMat m, uint col, zVec v)
+zVec zMatGetColNC(zMat m, int col, zVec v)
 {
   zRawMatGetCol( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), col, zVecBufNC(v) );
   return v;
 }
 
 /* abstract row vector of matrix. */
-zVec zMatGetRow(zMat m, uint row, zVec v)
+zVec zMatGetRow(zMat m, int row, zVec v)
 {
   if( !zMatColVecSizeIsEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
@@ -304,7 +304,7 @@ zVec zMatGetRow(zMat m, uint row, zVec v)
 }
 
 /* abstract column vector of matrix. */
-zVec zMatGetCol(zMat m, uint col, zVec v)
+zVec zMatGetCol(zMat m, int col, zVec v)
 {
   if( !zMatRowVecSizeIsEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
@@ -318,21 +318,21 @@ zVec zMatGetCol(zMat m, uint col, zVec v)
 }
 
 /* put a row vector to matrix without checking size consistency. */
-zMat zMatPutRowNC(zMat m, uint row, zVec v)
+zMat zMatPutRowNC(zMat m, int row, zVec v)
 {
   zRawMatPutRow( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), row, zVecBufNC(v) );
   return m;
 }
 
 /* put a column vector to matrix without checking size consistency. */
-zMat zMatPutColNC(zMat m, uint col, zVec v)
+zMat zMatPutColNC(zMat m, int col, zVec v)
 {
   zRawMatPutCol( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), col, zVecBufNC(v) );
   return m;
 }
 
 /* put a row vector to matrix. */
-zMat zMatPutRow(zMat m, uint row, zVec v)
+zMat zMatPutRow(zMat m, int row, zVec v)
 {
   if( !zMatColVecSizeIsEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
@@ -346,7 +346,7 @@ zMat zMatPutRow(zMat m, uint row, zVec v)
 }
 
 /* put a column vector to matrix. */
-zMat zMatPutCol(zMat m, uint col, zVec v)
+zMat zMatPutCol(zMat m, int col, zVec v)
 {
   if( !zMatRowVecSizeIsEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
@@ -360,14 +360,14 @@ zMat zMatPutCol(zMat m, uint col, zVec v)
 }
 
 /* swap two matrix rows without checking size consistency. */
-zMat zMatSwapRowNC(zMat m, uint r1, uint r2)
+zMat zMatSwapRowNC(zMat m, int r1, int r2)
 {
   zRawMatSwapRow( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), r1, r2 );
   return m;
 }
 
 /* swap two rows of a matrix. */
-zMat zMatSwapRow(zMat m, uint r1, uint r2)
+zMat zMatSwapRow(zMat m, int r1, int r2)
 {
   if( r1 >= zMatRowSizeNC(m) || r2 >= zMatRowSizeNC(m) ){
     ZRUNERROR( ZM_ERR_INV_ROW );
@@ -377,14 +377,14 @@ zMat zMatSwapRow(zMat m, uint r1, uint r2)
 }
 
 /* swap two columns of a matrix without checking size consistency. */
-zMat zMatSwapColNC(zMat m, uint c1, uint c2)
+zMat zMatSwapColNC(zMat m, int c1, int c2)
 {
   zRawMatSwapCol( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), c1, c2 );
   return m;
 }
 
 /* swap two matrix columns. */
-zMat zMatSwapCol(zMat m, uint c1, uint c2)
+zMat zMatSwapCol(zMat m, int c1, int c2)
 {
   if( c1 >= zMatColSizeNC(m) || c2 >= zMatColSizeNC(m) ){
     ZRUNERROR( ZM_ERR_INV_COL );
@@ -396,7 +396,7 @@ zMat zMatSwapCol(zMat m, uint c1, uint c2)
 /* shift diagonal values of a matrix. */
 void zMatShift(zMat m, double shift)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zMatRowSizeNC(m); i++ )
     zMatElemNC( m, i, i ) += shift;
@@ -405,7 +405,7 @@ void zMatShift(zMat m, double shift)
 /* see if two matrices are equal. */
 bool zMatIsEqual(zMat m1, zMat m2, double tol)
 {
-  uint i, j;
+  int i, j;
 
   if( !zMatSizeIsEqual( m1, m2 ) ) return false;
   for( i=0; i<zMatRowSizeNC(m1); i++ )
@@ -421,16 +421,16 @@ bool zMatIsTol(zMat m, double tol)
 }
 
 /* row regression of a matrix. */
-zMat zMatRowReg(zMat m, uint rank)
+zMat zMatRowReg(zMat m, int rank)
 {
   if( rank < zMatRowSizeNC(m) ) zMatSetRowSizeNC( m, rank );
   return m;
 }
 
 /* column regression of a matrix. */
-zMat zMatColReg(zMat m, uint rank)
+zMat zMatColReg(zMat m, int rank)
 {
-  uint i;
+  int i;
   double *sp, *dp;
 
   if( rank < zMatColSizeNC(m) ){
@@ -557,7 +557,7 @@ double zMatSqrNorm(zMat m)
 double zMatInfNorm(zMat m)
 {
   double *mp, rs, rsmax = 0;
-  uint i, j;
+  int i, j;
 
   mp = zMatBufNC(m);
   for( i=0; i<zMatRowSizeNC(m); i++ ){
@@ -810,7 +810,7 @@ zVec zMulMatTVecDRC(zMat m, zVec v)
 /* quadratic multiplication of matrices ('q = a diag{w} a^T') without checking size consistency. */
 zMat zMatQuadNC(zMat a, zVec w, zMat q)
 {
-  uint i, j, k;
+  int i, j, k;
   double wa;
 
   zMatZero( q );
@@ -847,7 +847,7 @@ zMat zMatQuad(zMat a, zVec w, zMat q)
 /* quadratic multiplication of matrices ('q = a^T diag{w} a') without checking size consistency. */
 zMat zMatTQuadNC(zMat a, zVec w, zMat q)
 {
-  uint i, j, k;
+  int i, j, k;
   double wa;
 
   zMatZero( q );
@@ -928,7 +928,7 @@ zMat zMatFScan(FILE *fp)
 /* print information of a matrix to file. */
 void zMatFPrint(FILE *fp, zMat m)
 {
-  uint i, j;
+  int i, j;
 
   if( !m )
     fprintf( fp, "(null matrix)\n" );
@@ -950,7 +950,7 @@ void zMatImg(zMat m)
   double max, min, d;
   const char pat_pos[] = ",x*M";
   const char pat_neg[] = ".oO@";
-  uint i, j;
+  int i, j;
   int c;
 
   max = fabs( zDataMax( zMatBufNC(m), zMatRowSizeNC(m)*zMatColSizeNC(m), NULL ) );

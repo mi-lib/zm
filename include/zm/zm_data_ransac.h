@@ -37,8 +37,8 @@ __BEGIN_DECLS
  * allocate memory for internal vector computations. Otherwise, a pointer
  * \a q is returned.
  */
-__EXPORT zVec zRANSAC(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,zVecList*,void*), double (* error_fp)(zVec,zVec,void*), void *util, uint ns, uint nt, double th);
-__EXPORT zVec zRANSACAuto(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,zVecList*,void*), double (* error_fp)(zVec,zVec,void*), void *util, double r, double nl);
+__ZM_EXPORT zVec zRANSAC(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,zVecList*,void*), double (* error_fp)(zVec,zVec,void*), void *util, int ns, int nt, double th);
+__ZM_EXPORT zVec zRANSACAuto(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,zVecList*,void*), double (* error_fp)(zVec,zVec,void*), void *util, double r, double nl);
 
 __END_DECLS
 

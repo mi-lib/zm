@@ -31,8 +31,8 @@ __BEGIN_DECLS
  * 2 for zQESolve() and 3 for zCESolve(), respectively.
  * If not, anything might happen.
  */
-__EXPORT zComplex *zQESolve(double a, double b, double c, zComplex ans[]);
-__EXPORT zComplex *zCESolve(double a, double b, double c, double d, zComplex ans[]);
+__ZM_EXPORT zComplex *zQESolve(double a, double b, double c, zComplex ans[]);
+__ZM_EXPORT zComplex *zCESolve(double a, double b, double c, double d, zComplex ans[]);
 
 __END_DECLS
 

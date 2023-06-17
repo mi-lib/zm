@@ -20,14 +20,14 @@ struct _zmParseCell;
 /* number */
 
 typedef struct{
-  Z_NAMED_CLASS
+  Z_NAMED_CLASS;
   double val;
 } zmParseNum;
 
 /* list of variables */
 
 typedef struct{
-  Z_NAMED_CLASS
+  Z_NAMED_CLASS;
   struct _zmParseCell *cell;
 } zmParseVar;
 zListClass( zmParseVarList, zmParseVarCell, zmParseVar );
@@ -58,7 +58,7 @@ typedef enum{
 } zmParseFuncID;
 
 typedef struct{
-  Z_NAMED_CLASS
+  Z_NAMED_CLASS;
   zmParseFuncID id;
   int argc;
   struct _zmParseCell *cell;
@@ -170,10 +170,10 @@ typedef struct{
   zmParseStatus status;
 } zmParser;
 
-void zmParserInit(zmParser *parser);
-void zmParserDestroy(zmParser *parser);
-void zmParse(zmParser *parser, char *str);
-double zmParseEval(zmParser *parser);
+__ZM_EXPORT void zmParserInit(zmParser *parser);
+__ZM_EXPORT void zmParserDestroy(zmParser *parser);
+__ZM_EXPORT void zmParse(zmParser *parser, char *str);
+__ZM_EXPORT double zmParseEval(zmParser *parser);
 
 __END_DECLS
 

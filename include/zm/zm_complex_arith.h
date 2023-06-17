@@ -15,20 +15,20 @@ __BEGIN_DECLS
  * \retval the squared absolute value of a complex number \a c.
  */
 #define _zComplexSqrAbs(c) ( zSqr((c)->re) + zSqr((c)->im) )
-__EXPORT double zComplexSqrAbs(zComplex *c);
+__ZM_EXPORT double zComplexSqrAbs(zComplex *c);
 
 /*! \brief absolute value of a complex number
  * \retval the absolute value of a complex number \a c.
  */
 #define _zComplexAbs(c) sqrt( _zComplexSqrAbs(c) )
-__EXPORT double zComplexAbs(zComplex *c);
+__ZM_EXPORT double zComplexAbs(zComplex *c);
 
 /*! \brief argument angle of a complex number
  * \retval the argument angle of a complex number \a c,
  * which is in radians between -PI and PI.
  */
 #define _zComplexArg(c) atan2( (c)->im, (c)->re )
-__EXPORT double zComplexArg(zComplex *c);
+__ZM_EXPORT double zComplexArg(zComplex *c);
 
 /*! \brief the complex conjugate of a complex number.
  * zComplexConj() computes the complex conjugate of a complex
@@ -36,7 +36,7 @@ __EXPORT double zComplexArg(zComplex *c);
  * \retval a pointer \a cc.
  */
 #define _zComplexConj(c,cc) _zComplexCreate( cc, (c)->re, -(c)->im )
-__EXPORT zComplex *zComplexConj(zComplex *c, zComplex *cc);
+__ZM_EXPORT zComplex *zComplexConj(zComplex *c, zComplex *cc);
 
 #define _zComplexCreateAdd(c,r1,i1,r2,i2) _zComplexCreate( c, (r1)+(r2), (i1)+(i2) )
 #define _zComplexCreateSub(c1,c2,c)       _zComplexCreate( c, (r1)-(r2), (i1)-(i2) )
@@ -82,16 +82,16 @@ __EXPORT zComplex *zComplexConj(zComplex *c, zComplex *cc);
 #define _zComplexCMul(c1,c2,c)     _zComplexCreate( c, (c1)->re*(c2)->re - (c1)->im*(c2)->im, (c1)->re*(c2)->im + (c1)->im*(c2)->re )
 #define _zComplexCMulConj(c1,c2,c) _zComplexCreate( c, (c1)->re*(c2)->re + (c1)->im*(c2)->im, -(c1)->re*(c2)->im + (c1)->im*(c2)->re )
 
-__EXPORT zComplex *zComplexAdd(zComplex *c1, zComplex *c2, zComplex *c);
-__EXPORT zComplex *zComplexSub(zComplex *c1, zComplex *c2, zComplex *c);
-__EXPORT zComplex *zComplexRev(zComplex *c, zComplex *rc);
-__EXPORT zComplex *zComplexMul(zComplex *c, double k, zComplex *ec);
-__EXPORT zComplex *zComplexDiv(zComplex *c, double k, zComplex *rc);
-__EXPORT zComplex *zComplexCMul(zComplex *c1, zComplex *c2, zComplex *c);
-__EXPORT zComplex *zComplexCMulConj(zComplex *c1, zComplex *c2, zComplex *c);
+__ZM_EXPORT zComplex *zComplexAdd(zComplex *c1, zComplex *c2, zComplex *c);
+__ZM_EXPORT zComplex *zComplexSub(zComplex *c1, zComplex *c2, zComplex *c);
+__ZM_EXPORT zComplex *zComplexRev(zComplex *c, zComplex *rc);
+__ZM_EXPORT zComplex *zComplexMul(zComplex *c, double k, zComplex *ec);
+__ZM_EXPORT zComplex *zComplexDiv(zComplex *c, double k, zComplex *rc);
+__ZM_EXPORT zComplex *zComplexCMul(zComplex *c1, zComplex *c2, zComplex *c);
+__ZM_EXPORT zComplex *zComplexCMulConj(zComplex *c1, zComplex *c2, zComplex *c);
 /*! \brief invert a complex number. */
-__EXPORT zComplex *zComplexInv(zComplex *c, zComplex *ic);
-__EXPORT zComplex *zComplexCDiv(zComplex *c1, zComplex *c2, zComplex *c);
+__ZM_EXPORT zComplex *zComplexInv(zComplex *c, zComplex *ic);
+__ZM_EXPORT zComplex *zComplexCDiv(zComplex *c1, zComplex *c2, zComplex *c);
 
 #define _zComplexAddDRC(c1,c2) _zComplexAdd( c1, c2, c1 )
 #define _zComplexSubDRC(c1,c2) _zComplexSub( c1, c2, c1 )
@@ -106,11 +106,11 @@ __EXPORT zComplex *zComplexCDiv(zComplex *c1, zComplex *c2, zComplex *c);
 #define zComplexDivDRC(c,k)   zComplexDiv( c, k, c )
 
 /*! \brief multiply two complex numbers. */
-__EXPORT zComplex *zComplexCMulDRC(zComplex *c1, zComplex *c2);
+__ZM_EXPORT zComplex *zComplexCMulDRC(zComplex *c1, zComplex *c2);
 /*! \brief multiply a complex numbers by the conjugate of another complex number. */
-__EXPORT zComplex *zComplexCMulConjDRC(zComplex *c1, zComplex *c2);
+__ZM_EXPORT zComplex *zComplexCMulConjDRC(zComplex *c1, zComplex *c2);
 /*! \brief divide a complex number by another. */
-__EXPORT zComplex *zComplexCDivDRC(zComplex *c1, zComplex *c2);
+__ZM_EXPORT zComplex *zComplexCDivDRC(zComplex *c1, zComplex *c2);
 
 /*! \brief power and logarithm of complex numbers.
  *
@@ -138,11 +138,11 @@ __EXPORT zComplex *zComplexCDivDRC(zComplex *c1, zComplex *c2);
  * calculate only one solution with the argument angle of \a c
  * between -pi and pi.
  */
-__EXPORT zComplex *zComplexPow(zComplex *c, double z, zComplex *pc);
-__EXPORT zComplex *zComplexPowRef(zComplex *c, double z, zComplex *ref, zComplex *pc);
-__EXPORT zComplex *zComplexCPow(zComplex *c, zComplex *z, zComplex *pc);
-__EXPORT zComplex *zComplexLog(zComplex *c, double base, zComplex *lc);
-__EXPORT zComplex *zComplexCLog(zComplex *c, zComplex *base, zComplex *lc);
+__ZM_EXPORT zComplex *zComplexPow(zComplex *c, double z, zComplex *pc);
+__ZM_EXPORT zComplex *zComplexPowRef(zComplex *c, double z, zComplex *ref, zComplex *pc);
+__ZM_EXPORT zComplex *zComplexCPow(zComplex *c, zComplex *z, zComplex *pc);
+__ZM_EXPORT zComplex *zComplexLog(zComplex *c, double base, zComplex *lc);
+__ZM_EXPORT zComplex *zComplexCLog(zComplex *c, zComplex *base, zComplex *lc);
 
 /*! \brief normalize a complex number.
  *
@@ -152,7 +152,7 @@ __EXPORT zComplex *zComplexCLog(zComplex *c, zComplex *base, zComplex *lc);
  * \retval a pointer \a nc
  * \retval the null pointer if the absolute value of \a c is 0
  */
-__EXPORT zComplex *zComplexNormalize(zComplex *c, zComplex *nc);
+__ZM_EXPORT zComplex *zComplexNormalize(zComplex *c, zComplex *nc);
 
 __END_DECLS
 

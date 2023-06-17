@@ -20,7 +20,7 @@ static int _zMPInvAllocWork1(zMat m, zMat *l, zMat *q, zIndex *idx)
 }
 
 /* initialization: workspace for matrix computation */
-static int _zMPInvAllocWork2(int rank, uint row, zMat *tmp1, zMat *tmp2, zMat *tmp3)
+static int _zMPInvAllocWork2(int rank, int row, zMat *tmp1, zMat *tmp2, zMat *tmp3)
 {
   *tmp1 = zMatAlloc( rank, row );
   *tmp2 = zMatAllocSqr( rank );
@@ -58,16 +58,15 @@ int zMPInv(zMat m, zMat mp)
 /* Moore-Penrose's inverse matrix with its null space. */
 int zMPInvNull(zMat m, zMat mp, zMat mn)
 {
-  int rank;
-  uint i;
+  int i, rank;
   zMat l, q, tmp1, tmp2, tmp3;
   zIndex idx;
 
   if( ( rank = _zMPInvAllocWork1( m, &l, &q, &idx ) ) < 0 ) return -1;
   if( _zMPInvAllocWork2( rank, zMatRowSizeNC(l), &tmp1, &tmp2, &tmp3 ) < 0 ) return -1;
-  if( zMatIsSqr(l) )
+  if( zMatIsSqr(l) ){
     zMatInv( l, tmp3 );
-  else{
+  } else{
     zMatT( l, tmp1 );
     zMulMatTMat( l, l, tmp2 );
     zMulInvMatMat( tmp2, tmp1, tmp3 );

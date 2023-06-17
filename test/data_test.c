@@ -1,6 +1,23 @@
 #include <zm/zm_data.h>
 #include <zm/zm_fourier.h>
 
+#define N 1000
+
+void assert_sort(void)
+{
+  double data[N];
+  int i;
+  bool result = true;
+
+  zRandInit();
+  for( i=0; i<N; i++ )
+    data[i] = zRandF(-10,10);
+  zDataSort( data, N );
+  for( i=1; i<N; i++ )
+    if( data[i-1] > data[i] ) result = false;
+  zAssert( zDataSort, result );
+}
+
 #define FFT_TEST_N 100
 #define FFT_TEST_DIM 9
 
@@ -34,6 +51,7 @@ void assert_fft(void)
 int main(int argc, char *argv[])
 {
   zRandInit();
+  assert_sort();
   assert_fft();
   return EXIT_SUCCESS;
 }

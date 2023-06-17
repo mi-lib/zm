@@ -103,7 +103,7 @@ zVecTree *zVecTreeAdd(zVecTree *tree, zVec v)
 /* check if a sphere is overlapped with a bounding box of a node. */
 static bool _zVecTreeIsOverlap(zVecTree *node, zVec c, double r)
 {
-  uint i;
+  int i;
   double d, vd;
 
   for( d=0, i=0; i<zVecSizeNC(c); i++ ){

@@ -14,7 +14,7 @@ static bool _zDataIsPeak(double src[], size_t n, uint i)
   return src[i] > src[i-1] && src[i] > src[i+1];
 }
 
-/* pick up peaks a data sequence. */
+/* pick up peaks of a data sequence. */
 zIndex zDataPeak(double src[], size_t n, uint w)
 {
   zIndex peakidx = NULL;
@@ -116,6 +116,21 @@ zIndex zDataPeakSG(double src[], size_t n, size_t w, uint dim)
   return peakidx;
 }
 
+/* an internal comparison function for zDataSort. */
+static int _zDataSortCmp(void *v1, void *v2, void *dummy)
+{
+  if( *(double*)v1 > *(double*)v2 ) return 1;
+  if( *(double*)v1 < *(double*)v2 ) return -1;
+  return 0;
+}
+
+/* sort an array of double-precision floating-point vector in the descent order. */
+double *zDataSort(double data[], size_t n)
+{
+  zQuickSort( data, n, sizeof(double), _zDataSortCmp, NULL );
+  return data;
+}
+
 /* an internal comparison function for zDataSortIndex. */
 static int _zDataSortIndexCmp(void *i1, void *i2, void *priv)
 {
@@ -128,5 +143,24 @@ static int _zDataSortIndexCmp(void *i1, void *i2, void *priv)
 zIndex zDataSortIndex(double data[], size_t n, zIndex index)
 {
   zQuickSort( zArrayBuf(index), zArraySize(index), sizeof(int), _zDataSortIndexCmp, data );
+  return index;
+}
+
+/* an internal comparison function for zDataSortAbsIndex. */
+static int _zDataSortAbsIndexCmp(void *i1, void *i2, void *priv)
+{
+  double d1, d2;
+
+  d1 = fabs( ((double *)priv)[*(int*)i1] );
+  d2 = fabs( ((double *)priv)[*(int*)i2] );
+  if( d1 < d2 ) return 1;
+  if( d1 > d2 ) return -1;
+  return 0;
+}
+
+/* sort an integer vector in the descent order of absolute values of the corresponding samples. */
+zIndex zDataSortAbsIndex(double data[], size_t n, zIndex index)
+{
+  zQuickSort( zArrayBuf(index), zArraySize(index), sizeof(int), _zDataSortAbsIndexCmp, data );
   return index;
 }

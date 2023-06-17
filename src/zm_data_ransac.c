@@ -7,10 +7,10 @@
 #include <zm/zm_data.h>
 
 /* randomly select test data from original data set. */
-static bool _zRANSACSelectRandom(zVecList *sample, zVecList *va, uint n)
+static bool _zRANSACSelectRandom(zVecList *sample, zVecList *va, int n)
 {
   zVecListCell *sp;
-  uint i;
+  int i;
 
   if( n > zListSize(sample) ){
     ZRUNERROR( ZM_ERR_INVALID_NUMSAMP, n, zListSize(sample) );
@@ -27,10 +27,10 @@ static bool _zRANSACSelectRandom(zVecList *sample, zVecList *va, uint n)
 }
 
 /* count number of inliers with respect to a guess. */
-static uint _zRANSACCountInlier(zVec q, zVecList *sample, double (* error_fp)(zVec,zVec,void*), void *util, double th)
+static int _zRANSACCountInlier(zVec q, zVecList *sample, double (* error_fp)(zVec,zVec,void*), void *util, double th)
 {
   zVecListCell *sp;
-  uint count = 0;
+  int count = 0;
 
   zListForEach( sample, sp ){
     if( fabs( error_fp( q, sp->data, util ) ) < th ) count++;
@@ -39,7 +39,7 @@ static uint _zRANSACCountInlier(zVec q, zVecList *sample, double (* error_fp)(zV
 }
 
 /* resample test data for model refinement from original data set. */
-static uint _zRANSACSelectInlier(zVecList *va, zVec q, zVecList *sample, double (* error_fp)(zVec,zVec,void*), void *util, double th)
+static int _zRANSACSelectInlier(zVecList *va, zVec q, zVecList *sample, double (* error_fp)(zVec,zVec,void*), void *util, double th)
 {
   zVecListCell *sp, *sp_prev;
 
@@ -56,11 +56,11 @@ static uint _zRANSACSelectInlier(zVecList *va, zVec q, zVecList *sample, double 
 }
 
 /* RANSAC: random sample consensus. */
-zVec zRANSAC(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,zVecList*,void*), double (* error_fp)(zVec,zVec,void*), void *util, uint ns, uint nt, double th)
+zVec zRANSAC(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,zVecList*,void*), double (* error_fp)(zVec,zVec,void*), void *util, int ns, int nt, double th)
 {
   zVec qt;
   zVecList va;
-  uint count, count_prev = 0;
+  int count, count_prev = 0;
 
   if( !( qt = zVecAlloc( zVecSizeNC(q) ) ) ) return NULL;
   if( ns < zVecSizeNC(q) )

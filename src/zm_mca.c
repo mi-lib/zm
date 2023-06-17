@@ -11,7 +11,7 @@
 bool zVecListMinMax(zVecList *list, zVec min, zVec max)
 {
   zVecListCell *vc;
-  uint i;
+  int i;
 
   if( !zVecSizeIsEqual( zListHead(list)->data, min ) ||
       !zVecSizeIsEqual( zListHead(list)->data, max ) ){
@@ -76,7 +76,7 @@ zMat zVecListCov(zVecList *list, zVec mean, zMat cov)
 {
   zVec v;
   zVecListCell *vc;
-  uint s;
+  int s;
 
   s = zVecSizeNC( zListHead(list)->data );
   if( zVecSizeNC(mean) != s ){
@@ -111,7 +111,7 @@ zMat zVecListMeanCov(zVecList *list, zVec mean, zMat cov)
 int zPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loading)
 {
   zMat cov;
-  uint s, n;
+  int s, n;
   double score_th, score_sum;
 
   s = zVecSize( zListHead(points)->data );
@@ -138,9 +138,9 @@ int zPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loading)
 }
 
 /* generate vectors generate vectors from normal distribution. */
-int zVecListGenRandND(zVecList *vl, uint n, zVec mean, zMat cov)
+int zVecListGenRandND(zVecList *vl, int n, zVec mean, zMat cov)
 {
-  uint i = 0, j;
+  int i = 0, j;
   zVec v, vo;
   zMat b = NULL;
   zIndex idx = NULL;

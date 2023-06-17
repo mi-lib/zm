@@ -40,7 +40,7 @@ void zCVecFree(zCVec v)
 /* zero a complex vector. */
 zCVec zCVecZero(zCVec v)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zCVecSizeNC(v); i++ )
     zComplexZero( zCVecElemNC( v, i ) );
@@ -50,7 +50,7 @@ zCVec zCVecZero(zCVec v)
 /* touchup a complex vector. */
 zCVec zCVecTouchup(zCVec v)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zCVecSizeNC(v); i++ )
     zComplexTouchup( zCVecElemNC(v,i) );
@@ -60,7 +60,7 @@ zCVec zCVecTouchup(zCVec v)
 /* copy a complex vector without checking size consistency. */
 zCVec zCVecCopyNC(zCVec src, zCVec dest)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zCVecSizeNC(dest); i++ )
     zComplexCopy( zCVecElemNC(src,i), zCVecElemNC(dest,i) );
@@ -87,7 +87,7 @@ zCVec zCVecClone(zCVec src)
 /* convert a real vector to a complex vector. */
 zCVec zVec2CVec(zVec v, zCVec cv)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zCVecSizeNC(cv); i++ )
     zComplexCreate( zCVecElemNC(cv,i), zVecElemNC(v,i), 0 );
@@ -97,7 +97,7 @@ zCVec zVec2CVec(zVec v, zCVec cv)
 /* generate a uniformly random complex vector. */
 zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rmax, double imax)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zCVecSizeNC(v); i++ )
     zComplexCreate( zCVecElemNC(v,i), zRandF(rmin,rmax), zRandF(imin,imax) );
@@ -107,7 +107,7 @@ zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rmax, double im
 /* check if two complex vectors are equal. */
 bool zCVecIsEqual(zCVec v1, zCVec v2, double tol)
 {
-  uint i;
+  int i;
 
   if( !zCVecSizeIsEqual( v1, v2 ) ) return false;
   for( i=0; i<zCVecSizeNC(v1); i++ )
@@ -118,7 +118,7 @@ bool zCVecIsEqual(zCVec v1, zCVec v2, double tol)
 /* check if a complex vector is tiny. */
 bool zCVecIsTol(zCVec v, double tol)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zCVecSizeNC(v); i++ )
     if( !zComplexIsTol( zCVecElemNC(v,i), tol ) ) return false;
@@ -129,7 +129,7 @@ bool zCVecIsTol(zCVec v, double tol)
 bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec, double tol)
 {
   zIndex ridx, iidx;
-  uint i, rsize, isize;
+  int i, rsize, isize;
   bool ret = true;
 
   ridx = zIndexCreate( zCVecSizeNC(cvec) );
@@ -168,7 +168,7 @@ bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec, double tol)
 /* reorder a complex vector as co-conjugate numbers are paired as adjacencies. */
 zCVec zCVecConjPair(zCVec v, double tol)
 {
-  uint i, j;
+  int i, j;
 
   if( zIsOdd( zCVecSizeNC(v) ) ){
     ZRUNERROR( ZM_ERR_CVEC_CONJPAIR_UNABLE );
@@ -194,7 +194,7 @@ zCVec zCVecConjPair(zCVec v, double tol)
 /* add two complex vectors without checking size consistency. */
 zCVec zCVecAddNC(zCVec v1, zCVec v2, zCVec v)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zCVecSizeNC(v); i++ )
     zComplexAdd( zCVecElemNC(v1,i), zCVecElemNC(v2,i), zCVecElemNC(v,i) );
@@ -204,7 +204,7 @@ zCVec zCVecAddNC(zCVec v1, zCVec v2, zCVec v)
 /* subtract a complex vector from another without checking size consistency. */
 zCVec zCVecSubNC(zCVec v1, zCVec v2, zCVec v)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zCVecSizeNC(v); i++ )
     zComplexSub( zCVecElemNC(v1,i), zCVecElemNC(v2,i), zCVecElemNC(v,i) );
@@ -214,7 +214,7 @@ zCVec zCVecSubNC(zCVec v1, zCVec v2, zCVec v)
 /* reverse a complex vector without checking size consistency. */
 zCVec zCVecRevNC(zCVec v1, zCVec v)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zCVecSizeNC(v); i++ )
     zComplexRev( zCVecElemNC(v1,i), zCVecElemNC(v,i) );
@@ -225,7 +225,7 @@ zCVec zCVecRevNC(zCVec v1, zCVec v)
  * without checking size consistency. */
 zCVec zCVecMulNC(zCVec v1, zComplex *z, zCVec v)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zCVecSizeNC(v); i++ )
     zComplexCMul( zCVecElemNC(v1,i), z, zCVecElemNC(v,i) );
@@ -236,7 +236,7 @@ zCVec zCVecMulNC(zCVec v1, zComplex *z, zCVec v)
  * without checking size consistency. */
 zCVec zCVecDivNC(zCVec v1, zComplex *z, zCVec v)
 {
-  uint i;
+  int i;
   double r;
   zComplex dz;
 
@@ -252,7 +252,7 @@ zCVec zCVecDivNC(zCVec v1, zComplex *z, zCVec v)
  * complex scalar value without checking size consistency. */
 zCVec zCVecCatNC(zCVec v1, zComplex *z, zCVec v2, zCVec v)
 {
-  uint i;
+  int i;
   zComplex dz;
 
   for( i=0; i<zCVecSizeNC(v); i++ ){
@@ -322,7 +322,7 @@ zCVec zCVecCat(zCVec v1, zComplex *z, zCVec v2, zCVec v)
 /* inner product of two complex vectors without checking size consistency. */
 zComplex *zCVecInnerProdNC(zCVec v1, zCVec v2, zComplex *z)
 {
-  uint i;
+  int i;
   zComplex c;
 
   zComplexZero( z );
@@ -354,7 +354,7 @@ double zCVecSqrNorm(zCVec v)
 /* normalize a complex vector. */
 zCVec zCVecNormalize(zCVec src, zCVec dest)
 {
-  uint i;
+  int i;
   double r;
 
   if( zIsTiny( ( r = zCVecNorm( src ) ) ) ){
@@ -369,7 +369,7 @@ zCVec zCVecNormalize(zCVec src, zCVec dest)
 /* print a complex vector to a file. */
 void zCVecFPrint(FILE *fp, zCVec v)
 {
-  uint i;
+  int i;
 
   if( !v )
     fprintf( fp, "(null vector)\n" );

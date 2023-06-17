@@ -20,23 +20,23 @@ __BEGIN_DECLS
 /* Runge-Kutta-Fehlberg method is forth-dimension-embedded
  * six-step fifth-dimension Runge-Kutta method.
  */
-__EXPORT zODE *zODEInit_RKF45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
-__EXPORT void zODEDestroy_RKF45(zODE *ode);
-__EXPORT zVec zODEUpdate_RKF45(zODE *ode, double t, zVec x, double dt, void *util);
+__ZM_EXPORT zODE *zODEInit_RKF45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
+__ZM_EXPORT void zODEDestroy_RKF45(zODE *ode);
+__ZM_EXPORT zVec zODEUpdate_RKF45(zODE *ode, double t, zVec x, double dt, void *util);
 
 /* Cash-Karp method is forth-dimension-embedded
  * six-step fifth-dimension Runge-Kutta method.
  */
-__EXPORT zODE *zODEInit_CK45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
-__EXPORT void zODEDestroy_CK45(zODE *ode);
-__EXPORT zVec zODEUpdate_CK45(zODE *ode, double t, zVec x, double dt, void *util);
+__ZM_EXPORT zODE *zODEInit_CK45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
+__ZM_EXPORT void zODEDestroy_CK45(zODE *ode);
+__ZM_EXPORT zVec zODEUpdate_CK45(zODE *ode, double t, zVec x, double dt, void *util);
 
 /* Dormand-Prince method is forth-dimension-embedded
  * seven-step fifth-dimension Runge-Kutta method.
  */
-__EXPORT zODE *zODEInit_DP45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
-__EXPORT void zODEDestroy_DP45(zODE *ode);
-__EXPORT zVec zODEUpdate_DP45(zODE *ode, double t, zVec x, double dt, void *util);
+__ZM_EXPORT zODE *zODEInit_DP45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
+__ZM_EXPORT void zODEDestroy_DP45(zODE *ode);
+__ZM_EXPORT zVec zODEUpdate_DP45(zODE *ode, double t, zVec x, double dt, void *util);
 
 __END_DECLS
 

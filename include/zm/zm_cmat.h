@@ -83,10 +83,10 @@ typedef zCMatStruct * zCMat;
  *
  * zCMatZero() returns a pointer \a m.
  */
-__EXPORT zCMat zCMatAlloc(int row, int col);
+__ZM_EXPORT zCMat zCMatAlloc(int row, int col);
 #define zCMatAllocSqr(s) zCMatAlloc( (s), (s) )
-__EXPORT void zCMatFree(zCMat m);
-__EXPORT zCMat zCMatZero(zCMat m);
+__ZM_EXPORT void zCMatFree(zCMat m);
+__ZM_EXPORT zCMat zCMatZero(zCMat m);
 
 /*! \brief copy a complex  matrix.
  *
@@ -113,11 +113,11 @@ __EXPORT zCMat zCMatZero(zCMat m);
  * different. If it is not urgent and you are not hasty, you
  * should use zCMatCopy() for safety.
  */
-__EXPORT zCMat zCMatCopyNC(zCMat src, zCMat dest);
-__EXPORT zCMat zCMatCopy(zCMat src, zCMat dest);
-__EXPORT zCMat zCMatClone(zCMat src);
+__ZM_EXPORT zCMat zCMatCopyNC(zCMat src, zCMat dest);
+__ZM_EXPORT zCMat zCMatCopy(zCMat src, zCMat dest);
+__ZM_EXPORT zCMat zCMatClone(zCMat src);
 
-__EXPORT zCMat zMat2CMat(zMat m, zCMat cm);
+__ZM_EXPORT zCMat zMat2CMat(zMat m, zCMat cm);
 
 /*! \brief check if a complex matrix is tiny.
  *
@@ -131,7 +131,7 @@ __EXPORT zCMat zMat2CMat(zMat m, zCMat cm);
  * \return
  * zCMatIsTol() and zCMatIsTiny() return a boolean value.
  */
-__EXPORT bool zCMatIsTol(zCMat m, double tol);
+__ZM_EXPORT bool zCMatIsTol(zCMat m, double tol);
 #define zCMatIsTiny(m) zCMatIsTol( (m), zTOL )
 
 /*! \brief basic arithmetics for the complex matrix.
@@ -171,17 +171,17 @@ __EXPORT bool zCMatIsTol(zCMat m, double tol);
  * size consistency. If it is not urgent and you are not
  * hasty, you should not use them.
  */
-__EXPORT zCMat zCMatAddNC(zCMat m1, zCMat m2, zCMat m);
-__EXPORT zCMat zCMatSubNC(zCMat m1, zCMat m2, zCMat m);
-__EXPORT zCMat zCMatRevNC(zCMat m1, zCMat m);
-__EXPORT zCMat zCMatMulNC(zCMat m1, zComplex *z, zCMat m);
-__EXPORT zCMat zCMatDivNC(zCMat m1, zComplex *z, zCMat m);
+__ZM_EXPORT zCMat zCMatAddNC(zCMat m1, zCMat m2, zCMat m);
+__ZM_EXPORT zCMat zCMatSubNC(zCMat m1, zCMat m2, zCMat m);
+__ZM_EXPORT zCMat zCMatRevNC(zCMat m1, zCMat m);
+__ZM_EXPORT zCMat zCMatMulNC(zCMat m1, zComplex *z, zCMat m);
+__ZM_EXPORT zCMat zCMatDivNC(zCMat m1, zComplex *z, zCMat m);
 
-__EXPORT zCMat zCMatAdd(zCMat m1, zCMat m2, zCMat m);
-__EXPORT zCMat zCMatSub(zCMat m1, zCMat m2, zCMat m);
-__EXPORT zCMat zCMatRev(zCMat m1, zCMat m);
-__EXPORT zCMat zCMatMul(zCMat m1, zComplex *z, zCMat m);
-__EXPORT zCMat zCMatDiv(zCMat m1, zComplex *z, zCMat m);
+__ZM_EXPORT zCMat zCMatAdd(zCMat m1, zCMat m2, zCMat m);
+__ZM_EXPORT zCMat zCMatSub(zCMat m1, zCMat m2, zCMat m);
+__ZM_EXPORT zCMat zCMatRev(zCMat m1, zCMat m);
+__ZM_EXPORT zCMat zCMatMul(zCMat m1, zComplex *z, zCMat m);
+__ZM_EXPORT zCMat zCMatDiv(zCMat m1, zComplex *z, zCMat m);
 
 #define zCMatAddNCDRC(m1,m2) zCMatAddNC( (m1), (m2), (m1) )
 #define zCMatSubNCDRC(m1,m2) zCMatSubNC( (m1), (m2), (m1) )
@@ -206,8 +206,8 @@ __EXPORT zCMat zCMatDiv(zCMat m1, zComplex *z, zCMat m);
  * \return
  * These functions return a pointer to the result.
  */
-__EXPORT zCVec zCMulMatVecNC(zCMat m, zCVec v1, zCVec v);
-__EXPORT zCVec zCMulMatVec(zCMat m, zCVec v1, zCVec v);
+__ZM_EXPORT zCVec zCMulMatVecNC(zCMat m, zCVec v1, zCVec v);
+__ZM_EXPORT zCVec zCMulMatVec(zCMat m, zCVec v1, zCVec v);
 
 /*! \brief print a complex matrix to a file.
  *
@@ -229,7 +229,7 @@ __EXPORT zCVec zCMulMatVec(zCMat m, zCVec v1, zCVec v);
  * \return
  * zCMatFPrint() and zCMatPrint() return no values.
  */
-__EXPORT void zCMatFPrint(FILE *fp, zCMat m);
+__ZM_EXPORT void zCMatFPrint(FILE *fp, zCMat m);
 #define zCMatPrint(m) zCMatFPrint( stdout, (m) )
 
 __END_DECLS

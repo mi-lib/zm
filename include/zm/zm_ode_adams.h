@@ -15,9 +15,9 @@ __BEGIN_DECLS
 /* Predictor-Corrector method with a combination of
  * Adams=Bashforth / Adams=Moulton formulae.
  */
-__EXPORT zODE *zODEInit_Adams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec));
-__EXPORT void zODEDestroy_Adams(zODE *ode);
-__EXPORT zVec zODEUpdate_Adams(zODE *ode, double t, zVec x, double dt, void *util);
+__ZM_EXPORT zODE *zODEInit_Adams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec));
+__ZM_EXPORT void zODEDestroy_Adams(zODE *ode);
+__ZM_EXPORT zVec zODEUpdate_Adams(zODE *ode, double t, zVec x, double dt, void *util);
 
 __END_DECLS
 

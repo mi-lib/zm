@@ -34,19 +34,19 @@ void output_src(zSeq *seq)
   fclose( fp );
 }
 
-#define DIM 3
+#define ORDER 3
 
 int main(int argc, char *argv[])
 {
   zNURBS nurbs;
   zSeq seq;
   zVec v;
-  int dim, num, i;
+  int order, num, i;
   /* example data array */
   double xp[] = { 2.0, 3.0, 5.0, 4.0, 5.0, 7.0 };
   double yp[] = { 3.0,-1.0,-2.0, 0.0, 4.0, 1.5 };
 
-  dim = argc > 1 ? atoi(argv[1]) : DIM;
+  order = argc > 1 ? atoi(argv[1]) : ORDER;
   /* creation of x-values and y-values vector */
   num = sizeof(xp) / sizeof(double);
   zListInit( &seq );
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
   output_src( &seq );
 
   /* creation of spline interpolator */
-  if( zNURBSCreate( &nurbs, &seq, dim ) ){
+  if( zNURBSCreate( &nurbs, &seq, order ) ){
     for( i=0; i<5; i++ )
       test_weight( &nurbs, i );
     zNURBSDestroy( &nurbs );

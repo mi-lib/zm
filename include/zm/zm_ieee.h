@@ -20,26 +20,26 @@ typedef union{ unsigned char c[8]; double d; } __ieee_fp_t;
 /*! \brief HUGE_VAL, if not conforming to C99. */
 #ifndef HUGE_VAL
 /*! \cond __huge_val only required for my HUGE_VAL */
-extern __ieee_fp_t __huge_val;
+__ZM_EXPORT __ieee_fp_t __huge_val;
 /*! \endcond */
 #define __ZM_NEED_HUGE_VAL
 #define HUGE_VAL ( __huge_val.d )
 #endif /* HUGE_VAL */
 
 /*! \brief check if the value \a x is HUGE_VAL. */
-__EXPORT int zIsInf(double x);
+__ZM_EXPORT int zIsInf(double x);
 
 /* define NAN, if not conforming to C99. */
 #ifndef NAN
 /*! \cond __nan_val only required for my NAN */
-extern __ieee_fp_t __nan_val;
+__ZM_EXPORT __ieee_fp_t __nan_val;
 /*! \endcond */
 #define __ZM_NEED_NAN
 #define NAN ( __nan_val.d )
 #endif /* NAN */
 
 /*! \brief check if the value \a x is NAN. */
-__EXPORT int zIsNan(double x);
+__ZM_EXPORT int zIsNan(double x);
 
 __END_DECLS
 

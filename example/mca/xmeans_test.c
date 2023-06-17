@@ -41,11 +41,11 @@ int main(int argc, char *argv[])
   np = argc > 1 ? atoi( argv[1] ) : NP;
   nc = argc > 2 ? atoi( argv[2] ) : NC;
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
-  zMClusterInit( &mc, 2, NULL, 2, NULL );
+  zMClusterInit( &mc, 2 );
   printf( "X-means completed in %d times of iteration.\n",
-    zMClusterXMeans( &mc, &points, NULL, NULL ) );
+    zMClusterXMeansDensity( &mc, &points ) );
 
-  zListForEach( &mc.cl, vcc ){
+  zListForEach( zMClusterClusterList(&mc), vcc ){
     sprintf( filename, "%d", i++ );
     fp = fopen( filename, "w" );
     zClusterDataFPrint( fp, &vcc->data );

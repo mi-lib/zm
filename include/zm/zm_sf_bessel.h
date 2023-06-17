@@ -26,62 +26,62 @@ __BEGIN_DECLS
  * \{ *//* ************************************************** */
 
 /*! \brief the first kind of the zero-order Bessel function. */
-__EXPORT double zBesselJ0(double x);
+__ZM_EXPORT double zBesselJ0(double x);
 
 /*! \brief the first kind of the first-order Bessel function. */
-__EXPORT double zBesselJ1(double x);
+__ZM_EXPORT double zBesselJ1(double x);
 
 /*! \brief the first kind of n-order Bessel function.
  * \a n is an integer index. */
-__EXPORT double zBesselJ(int n, double x);
+__ZM_EXPORT double zBesselJ(int n, double x);
 
 /*! \brief the second kind of the zero-order Bessel function.
  * \note
  * From the definition, it is undefined for non-positive \a x.
  */
-__EXPORT double zBesselY0(double x);
+__ZM_EXPORT double zBesselY0(double x);
 
 /*! \brief the second kind of the first-order Bessel function.
  * \note
  * From the definition, it is undefined for non-positive \a x.
  */
-__EXPORT double zBesselY1(double x);
+__ZM_EXPORT double zBesselY1(double x);
 
 /*! \brief the second kind of n-order Bessel function.
  * \a n is an integer index.
  * \note
  * From the definition, it is undefined for non-positive \a x.
  */
-__EXPORT double zBesselY(int n, double x);
+__ZM_EXPORT double zBesselY(int n, double x);
 
 /*! \brief the first kind of the zero-order modified Bessel function. */
-__EXPORT double zBesselI0(double x);
+__ZM_EXPORT double zBesselI0(double x);
 
 /*! \brief the first kind of the first-order modified Bessel function. */
-__EXPORT double zBesselI1(double x);
+__ZM_EXPORT double zBesselI1(double x);
 
 /*! \brief the first kind of n-order modified Bessel function.
  * \a n is an integer index. */
-__EXPORT double zBesselI(int n, double x);
+__ZM_EXPORT double zBesselI(int n, double x);
 
 /*! \brief the second kind of the zero-order modified Bessel function.
  * \note
  * From the definition, it is undefined for non-positive \a x.
  */
-__EXPORT double zBesselK0(double x);
+__ZM_EXPORT double zBesselK0(double x);
 
 /*! \brief the second kind of the first-order modified Bessel function.
  * \note
  * From the definition, it is undefined for non-positive \a x.
  */
-__EXPORT double zBesselK1(double x);
+__ZM_EXPORT double zBesselK1(double x);
 
 /*! \brief the second kind of n-order modified Bessel function.
  * \a n is an integer index.
  * \note
  * From the definition, it is undefined for non-positive \a x.
  */
-__EXPORT double zBesselK(int n, double x);
+__ZM_EXPORT double zBesselK(int n, double x);
 
 /*! \} */
 

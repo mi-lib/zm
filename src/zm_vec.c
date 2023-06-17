@@ -14,7 +14,7 @@
 /* set vector components from variable argument list. */
 zVec zVecSetElemVList(zVec v, va_list args)
 {
-  uint i;
+  int i;
 
   for( i=0; i<zVecSizeNC(v); i++ )
     zVecSetElemNC( v, i, (double)va_arg( args, double ) );
@@ -115,7 +115,7 @@ zVec zVecCopy(zVec src, zVec dest)
 }
 
 /* copy a vector from an array of double-precision floating-point values. */
-zVec zVecCopyArray(double array[], uint s, zVec v)
+zVec zVecCopyArray(double array[], int s, zVec v)
 {
   if( zVecSizeNC(v) != s ) return NULL;
   zRawVecCopy( array, zVecBufNC(v), s );
@@ -133,7 +133,7 @@ zVec zVecClone(zVec src)
 }
 
 /* create a vector from an array of double-precision floating-point values. */
-zVec zVecCloneArray(double array[], uint s)
+zVec zVecCloneArray(double array[], int s)
 {
   zVec v;
 
@@ -212,14 +212,14 @@ zVec zVecShift(zVec v, double shift)
 }
 
 /* swap vector components without checking size. */
-zVec zVecSwapNC(zVec v, uint i1, uint i2)
+zVec zVecSwapNC(zVec v, int i1, int i2)
 {
   zRawVecSwap( zVecBufNC(v), i1, i2 );
   return v;
 }
 
 /* swap vector components. */
-zVec zVecSwap(zVec v, uint i1, uint i2)
+zVec zVecSwap(zVec v, int i1, int i2)
 {
   if( i1 > zVecSizeNC(v) || i2 > zVecSizeNC(v) ){
     ZRUNWARN( ZM_ERR_INV_INDEX );
@@ -249,10 +249,25 @@ void zVecSort(zVec v, zIndex idx)
   zQuickSort( zVecBufNC(idx), zArraySize(idx), sizeof(int), _zVecSortCmp, zVecBufNC(v) );
 }
 
+/* maximum of vector elements. */
+double zVecMax(zVec v, int *im){ return _zVecMax( v, im ); }
+/* minimum of vector elements. */
+double zVecMin(zVec v, int *im){ return _zVecMin( v, im ); }
+/* absolute maximum of vector elements. */
+double zVecAbsMax(zVec v, int *im){ return _zVecAbsMax( v, im ); }
+/* absolute minimum of vector elements. */
+double zVecAbsMin(zVec v, int *im){ return _zVecAbsMin( v, im ); }
+/* summation of vector elements. */
+double zVecSum(zVec v){ return _zVecSum( v ); }
+/* mean of vector elements. */
+double zVecMean(zVec v){ return _zVecMean( v ); }
+/* variance of vector elements. */
+double zVecVar(zVec v){ return _zVecVar( v ); }
+
 /* check if two vectors are equal. */
 bool zVecIsEqual(zVec v1, zVec v2, double tol)
 {
-  uint i;
+  int i;
 
   if( !zVecSizeIsEqual( v1, v2 ) ) return false;
   for( i=0; i<zVecSizeNC(v1); i++ )
@@ -554,7 +569,7 @@ zVec zVecFScan(FILE *fp)
 /* print a vector out to a file. */
 void zVecFPrint(FILE *fp, zVec v)
 {
-  uint i;
+  int i;
 
   if( !v )
     fprintf( fp, "(null vector)\n" );
@@ -566,10 +581,30 @@ void zVecFPrint(FILE *fp, zVec v)
   }
 }
 
+/* scan a vector from a file. */
+zVec zVecDataFScan(FILE *fp)
+{
+  char buf[BUFSIZ], valstr[BUFSIZ];
+  int size, dim, i;
+  char *sp;
+  zVec v;
+
+  if( !fgets( buf, BUFSIZ, fp ) ) return NULL;
+  for( dim=0, size=strlen(buf), sp=buf; ; dim++ ){
+    if( !*( sp = zSTokenSkim( sp, valstr, size ) ) ) break;
+    size -= strlen( valstr );
+  }
+  if( dim == 0 ) return NULL;
+  if( !( v = zVecAlloc( dim ) ) ) return NULL;
+  for( i=0; i<dim; i++ )
+    zSDouble( buf, &zVecElemNC(v,i) );
+  return v;
+}
+
 /* print a vector out to a file. */
 void zVecDataFPrint(FILE *fp, zVec v)
 {
-  uint i;
+  int i;
 
   if( !v ) return;
   for( i=0; i<zVecSizeNC(v); i++ )

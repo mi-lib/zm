@@ -56,23 +56,23 @@ typedef struct{
  *
  * zPexIPFree() returns no value.
  */
-__EXPORT bool zPexIPAlloc(zPexIP *pc, double term, int dim);
-__EXPORT void zPexIPFree(zPexIP *pc);
+__ZM_EXPORT bool zPexIPAlloc(zPexIP *pc, double term, int dim);
+__ZM_EXPORT void zPexIPFree(zPexIP *pc);
 
 /*! \brief set the boundary condition of a polynomial curve. */
-__EXPORT bool zPexIPBoundary(zPexIP *pc, double x1, double v1, double a1, double x2, double v2, double a2, zVec v);
+__ZM_EXPORT bool zPexIPBoundary(zPexIP *pc, double x1, double v1, double a1, double x2, double v2, double a2, zVec v);
 
 /*! \brief allocate a polynomial curve from the boundary condition. */
-__EXPORT bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, zVec v);
+__ZM_EXPORT bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, zVec v);
 
 /*! \brief fit a polynomial curve to a sequence of points based on the least square method. */
-__EXPORT bool zPexIPLSM(zPexIP *pc, zVec t, zVec x);
+__ZM_EXPORT bool zPexIPLSM(zPexIP *pc, zVec t, zVec x);
 
 /*! \brief create a polynomial curve that fits a sequence of points based on the least square method. */
-__EXPORT bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, zVec t, zVec x);
+__ZM_EXPORT bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, zVec t, zVec x);
 
 /*! \brief create a polynomial curve from the boundary condition and a sequence of points to fit. */
-__EXPORT bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, zVec t, zVec x);
+__ZM_EXPORT bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, zVec t, zVec x);
 
 #define zPexIPDim(p)          zPexDim( (p)->c )
 
@@ -89,13 +89,13 @@ __EXPORT bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double
  * \return
  * zPexIPVal() returns the value calculated.
  */
-__EXPORT double zPexIPVal(zPexIP *pc, double t);
+__ZM_EXPORT double zPexIPVal(zPexIP *pc, double t);
 
 /*! \brief velocity of a polynomial curve. */
-__EXPORT double zPexIPVel(zPexIP *pc, double t);
+__ZM_EXPORT double zPexIPVel(zPexIP *pc, double t);
 
 /*! \brief acceleration of a polynomial curve. */
-__EXPORT double zPexIPAcc(zPexIP *pc, double t);
+__ZM_EXPORT double zPexIPAcc(zPexIP *pc, double t);
 
 /*! \brief print a polynomial curve.
  *
@@ -106,7 +106,7 @@ __EXPORT double zPexIPAcc(zPexIP *pc, double t);
  * \return
  * zPexIPFPrint() and zPexIPPrint() return no value.
  */
-__EXPORT void zPexIPFPrint(FILE *fp, zPexIP *pc);
+__ZM_EXPORT void zPexIPFPrint(FILE *fp, zPexIP *pc);
 #define zPexIPPrint(p) zPexIPFPrint( stdout, (p) )
 
 __END_DECLS

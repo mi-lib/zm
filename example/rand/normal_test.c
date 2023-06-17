@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
   zRandInitMT( NULL );
   fp = fopen( "nd", "w" );
   for( i=0; i<N; i++ ){
-    x = zRandND0( NULL );
+    x = zRandND( NULL, 0.0, 0.0 );
     fprintf( fp, "%.15f %d\n", x, ++count[(int)((x+5.0)/10.0*DIV)] );
   }
   fclose( fp );

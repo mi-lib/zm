@@ -85,7 +85,7 @@ typedef zMatStruct * zMat;
  * \return
  * zVecSetElemList() returns a pointer \a m.
  */
-__EXPORT zMat zMatSetElemList(zMat m, ... );
+__ZM_EXPORT zMat zMatSetElemList(zMat m, ... );
 
 /*! \brief create, destroy and cleanup a matrix.
  *
@@ -121,13 +121,13 @@ __EXPORT zMat zMatSetElemList(zMat m, ... );
  * It should be written as follows.
  *   v = zVecCreateList( 3, 1.0, 2.0, 3.0 );
  */
-__EXPORT zMat zMatAlloc(int row, int col);
+__ZM_EXPORT zMat zMatAlloc(int row, int col);
 #define zMatAllocSqr(s) zMatAlloc( (s), (s) )
-__EXPORT zMat zMatCreateList(int row, int col, ...);
-__EXPORT void zMatFree(zMat m);
-__EXPORT void zMatFreeAO(int n, ...);
-__EXPORT zMat zMatZero(zMat m);
-__EXPORT zMat zMatTouchup(zMat m);
+__ZM_EXPORT zMat zMatCreateList(int row, int col, ...);
+__ZM_EXPORT void zMatFree(zMat m);
+__ZM_EXPORT void zMatFreeAO(int n, ...);
+__ZM_EXPORT zMat zMatZero(zMat m);
+__ZM_EXPORT zMat zMatTouchup(zMat m);
 
 /*! \brief identity matrix, diagonal matrix and random matrix.
  *
@@ -163,12 +163,12 @@ __EXPORT zMat zMatTouchup(zMat m);
  * If it is not urgent and you are not hasty, you'd better use
  * zMatIdent() and zMatDiag() for safety.
  */
-__EXPORT zMat zMatIdentNC(zMat m);
-__EXPORT zMat zMatDiagNC(zMat m, zVec d);
-__EXPORT zMat zMatIdent(zMat m);
-__EXPORT zMat zMatDiag(zMat m, zVec d);
-__EXPORT zMat zMatRandUniform(zMat m, double min, double max);
-__EXPORT zMat zMatRand(zMat m, zMat min, zMat max);
+__ZM_EXPORT zMat zMatIdentNC(zMat m);
+__ZM_EXPORT zMat zMatDiagNC(zMat m, zVec d);
+__ZM_EXPORT zMat zMatIdent(zMat m);
+__ZM_EXPORT zMat zMatDiag(zMat m, zVec d);
+__ZM_EXPORT zMat zMatRandUniform(zMat m, double min, double max);
+__ZM_EXPORT zMat zMatRand(zMat m, zMat min, zMat max);
 
 /*! \brief copy and clone a matrix.
  *
@@ -197,11 +197,11 @@ __EXPORT zMat zMatRand(zMat m, zMat min, zMat max);
  * inconsistent. If it is not urgent and you are not hasty, you'd
  * better use zMatCopy() for safety.
  */
-__EXPORT zMat zMatCopyNC(zMat src, zMat dest);
-__EXPORT zMat zMatCopy(zMat src, zMat dest);
-__EXPORT zMat zMatCopyArray(double array[], uint r, uint c, zMat m);
-__EXPORT zMat zMatClone(zMat src);
-__EXPORT zMat zMatCloneArray(double array[], uint r, uint c);
+__ZM_EXPORT zMat zMatCopyNC(zMat src, zMat dest);
+__ZM_EXPORT zMat zMatCopy(zMat src, zMat dest);
+__ZM_EXPORT zMat zMatCopyArray(double array[], int r, int c, zMat m);
+__ZM_EXPORT zMat zMatClone(zMat src);
+__ZM_EXPORT zMat zMatCloneArray(double array[], int r, int c);
 
 /*! \brief partially copy a matrix.
  *
@@ -221,14 +221,14 @@ __EXPORT zMat zMatCloneArray(double array[], uint r, uint c);
  * \sa
  * zRawMatGet, zRawMatPut
  */
-__EXPORT zMat zMatGetNC(zMat src, int pr, int pc, zMat dest);
-__EXPORT zMat zMatGet(zMat src, int pr, int pc, zMat dest);
-__EXPORT zMat zMatTGetNC(zMat src, int pr, int pc, zMat dest);
-__EXPORT zMat zMatTGet(zMat src, int pr, int pc, zMat dest);
-__EXPORT zMat zMatPutNC(zMat dest, int pr, int pc, zMat src);
-__EXPORT zMat zMatPut(zMat dest, int pr, int pc, zMat src);
-__EXPORT zMat zMatTPutNC(zMat dest, int pr, int pc, zMat src);
-__EXPORT zMat zMatTPut(zMat dest, int pr, int pc, zMat src);
+__ZM_EXPORT zMat zMatGetNC(zMat src, int pr, int pc, zMat dest);
+__ZM_EXPORT zMat zMatGet(zMat src, int pr, int pc, zMat dest);
+__ZM_EXPORT zMat zMatTGetNC(zMat src, int pr, int pc, zMat dest);
+__ZM_EXPORT zMat zMatTGet(zMat src, int pr, int pc, zMat dest);
+__ZM_EXPORT zMat zMatPutNC(zMat dest, int pr, int pc, zMat src);
+__ZM_EXPORT zMat zMatPut(zMat dest, int pr, int pc, zMat src);
+__ZM_EXPORT zMat zMatTPutNC(zMat dest, int pr, int pc, zMat src);
+__ZM_EXPORT zMat zMatTPut(zMat dest, int pr, int pc, zMat src);
 
 /*! \brief abstract, put and swap row/column vector of a matrix.
  *
@@ -267,18 +267,18 @@ __EXPORT zMat zMatTPut(zMat dest, int pr, int pc, zMat src);
  * If it is not urgent and you are not hasty, you'd better not
  * use NC functions for safety.
  */
-__EXPORT zVec zMatGetRowNC(zMat m, uint row, zVec v);
-__EXPORT zVec zMatGetColNC(zMat m, uint col, zVec v);
-__EXPORT zVec zMatGetRow(zMat m, uint row, zVec v);
-__EXPORT zVec zMatGetCol(zMat m, uint col, zVec v);
-__EXPORT zMat zMatPutRowNC(zMat m, uint row, zVec v);
-__EXPORT zMat zMatPutColNC(zMat m, uint col, zVec v);
-__EXPORT zMat zMatPutRow(zMat m, uint row, zVec v);
-__EXPORT zMat zMatPutCol(zMat m, uint col, zVec v);
-__EXPORT zMat zMatSwapRowNC(zMat m, uint r1, uint r2);
-__EXPORT zMat zMatSwapColNC(zMat m, uint c1, uint c2);
-__EXPORT zMat zMatSwapRow(zMat m, uint r1, uint r2);
-__EXPORT zMat zMatSwapCol(zMat m, uint c1, uint c2);
+__ZM_EXPORT zVec zMatGetRowNC(zMat m, int row, zVec v);
+__ZM_EXPORT zVec zMatGetColNC(zMat m, int col, zVec v);
+__ZM_EXPORT zVec zMatGetRow(zMat m, int row, zVec v);
+__ZM_EXPORT zVec zMatGetCol(zMat m, int col, zVec v);
+__ZM_EXPORT zMat zMatPutRowNC(zMat m, int row, zVec v);
+__ZM_EXPORT zMat zMatPutColNC(zMat m, int col, zVec v);
+__ZM_EXPORT zMat zMatPutRow(zMat m, int row, zVec v);
+__ZM_EXPORT zMat zMatPutCol(zMat m, int col, zVec v);
+__ZM_EXPORT zMat zMatSwapRowNC(zMat m, int r1, int r2);
+__ZM_EXPORT zMat zMatSwapColNC(zMat m, int c1, int c2);
+__ZM_EXPORT zMat zMatSwapRow(zMat m, int r1, int r2);
+__ZM_EXPORT zMat zMatSwapCol(zMat m, int c1, int c2);
 
 /*! \brief shift diagonal values of a matrix.
  *
@@ -287,7 +287,7 @@ __EXPORT zMat zMatSwapCol(zMat m, uint c1, uint c2);
  * \return
  * zMatShift() returns no value.
  */
-__EXPORT void zMatShift(zMat m, double shift);
+__ZM_EXPORT void zMatShift(zMat m, double shift);
 
 /*! \brief check if two matrices are equal.
  *
@@ -298,7 +298,7 @@ __EXPORT void zMatShift(zMat m, double shift);
  * zMatIsEqual() returns the true value if \a m1 and \a m2
  * are equal, or the false value otherwise.
  */
-__EXPORT bool zMatIsEqual(zMat m1, zMat m2, double tol);
+__ZM_EXPORT bool zMatIsEqual(zMat m1, zMat m2, double tol);
 
 /*! \brief check if a matrix is tiny.
  *
@@ -311,7 +311,7 @@ __EXPORT bool zMatIsEqual(zMat m1, zMat m2, double tol);
  * zMatIsTol() and zMatIsTiny() return the result as a
  * boolean value.
  */
-__EXPORT bool zMatIsTol(zMat m, double tol);
+__ZM_EXPORT bool zMatIsTol(zMat m, double tol);
 #define zMatIsTiny(m) zMatIsTol( (m), zTOL )
 
 /*! \brief matrix regression.
@@ -328,8 +328,8 @@ __EXPORT bool zMatIsTol(zMat m, double tol);
  * \return
  * zMatRowReg() and zMatColReg() return a pointer \a m.
  */
-__EXPORT zMat zMatRowReg(zMat m, uint rank);
-__EXPORT zMat zMatColReg(zMat m, uint rank);
+__ZM_EXPORT zMat zMatRowReg(zMat m, int rank);
+__ZM_EXPORT zMat zMatColReg(zMat m, int rank);
 
 /*! \brief basic arithmetics for matrix.
  *
@@ -372,12 +372,12 @@ __EXPORT zMat zMatColReg(zMat m, uint rank);
  * consistency. If it is not urgent and you are not hasty,
  * you'd better not use them.
  */
-__EXPORT zMat zMatAddNC(zMat m1, zMat m2, zMat m);
-__EXPORT zMat zMatSubNC(zMat m1, zMat m2, zMat m);
-__EXPORT zMat zMatRevNC(zMat m1, zMat m);
-__EXPORT zMat zMatMulNC(zMat m1, double k, zMat m);
-__EXPORT zMat zMatDivNC(zMat m1, double k, zMat m);
-__EXPORT zMat zMatCatNC(zMat m1, double k, zMat m2, zMat m);
+__ZM_EXPORT zMat zMatAddNC(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zMat zMatSubNC(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zMat zMatRevNC(zMat m1, zMat m);
+__ZM_EXPORT zMat zMatMulNC(zMat m1, double k, zMat m);
+__ZM_EXPORT zMat zMatDivNC(zMat m1, double k, zMat m);
+__ZM_EXPORT zMat zMatCatNC(zMat m1, double k, zMat m2, zMat m);
 
 #define zMatAddNCDRC(m1,m2)   zMatAddNC( (m1), (m2), (m1) )
 #define zMatSubNCDRC(m1,m2)   zMatSubNC( (m1), (m2), (m1) )
@@ -386,12 +386,12 @@ __EXPORT zMat zMatCatNC(zMat m1, double k, zMat m2, zMat m);
 #define zMatDivNCDRC(m,k)     zMatDivNC( (m), (k) , (m) )
 #define zMatCatNCDRC(m1,k,m2) zMatCatNC( (m1), (k) , (m2), (m1) )
 
-__EXPORT zMat zMatAdd(zMat m1, zMat m2, zMat m);
-__EXPORT zMat zMatSub(zMat m1, zMat m2, zMat m);
-__EXPORT zMat zMatRev(zMat m1, zMat m);
-__EXPORT zMat zMatMul(zMat m1, double k, zMat m);
-__EXPORT zMat zMatDiv(zMat m1, double k, zMat m);
-__EXPORT zMat zMatCat(zMat m1, double k, zMat m2, zMat m);
+__ZM_EXPORT zMat zMatAdd(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zMat zMatSub(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zMat zMatRev(zMat m1, zMat m);
+__ZM_EXPORT zMat zMatMul(zMat m1, double k, zMat m);
+__ZM_EXPORT zMat zMatDiv(zMat m1, double k, zMat m);
+__ZM_EXPORT zMat zMatCat(zMat m1, double k, zMat m2, zMat m);
 
 #define zMatAddDRC(m1,m2)     zMatAdd( (m1), (m2), (m1) )
 #define zMatSubDRC(m1,m2)     zMatSub( (m1), (m2), (m1) )
@@ -407,10 +407,10 @@ __EXPORT zMat zMatCat(zMat m1, double k, zMat m2, zMat m);
  * \return
  * zMatNorm() returns the norm of \a m.
  */
-__EXPORT double zMatSqrNorm(zMat m);
+__ZM_EXPORT double zMatSqrNorm(zMat m);
 #define zMatNorm(m) sqrt( zMatSqrNorm(m) )
 
-__EXPORT double zMatInfNorm(zMat m);
+__ZM_EXPORT double zMatInfNorm(zMat m);
 
 /*! \brief transpose a matrix.
  *
@@ -426,10 +426,10 @@ __EXPORT double zMatInfNorm(zMat m);
  * If it is not urgent and you are not hasty, you'd better
  * not use it.
  */
-__EXPORT zMat zMatTNC(zMat m, zMat tm);
-__EXPORT zMat zMatT(zMat m, zMat tm);
-__EXPORT zMat zMatTDRC(zMat m);
-__EXPORT zMat zMatTClone(zMat src);
+__ZM_EXPORT zMat zMatTNC(zMat m, zMat tm);
+__ZM_EXPORT zMat zMatT(zMat m, zMat tm);
+__ZM_EXPORT zMat zMatTDRC(zMat m);
+__ZM_EXPORT zMat zMatTClone(zMat src);
 
 /*! \brief dyadic product of two vectors.
  *
@@ -454,14 +454,14 @@ __EXPORT zMat zMatTClone(zMat src);
  * between the vectors. If it is not urgent and you are
  * not hasty, you'd better not use them.
  */
-__EXPORT zMat zVecDyadNC(zVec v1, zVec v2, zMat dyad);
-__EXPORT zMat zVecDyad(zVec v1, zVec v2, zMat dyad);
-__EXPORT zMat zMatAddDyadNC(zMat m, zVec v1, zVec v2);
-__EXPORT zMat zMatAddDyad(zMat m, zVec v1, zVec v2);
-__EXPORT zMat zMatSubDyadNC(zMat m, zVec v1, zVec v2);
-__EXPORT zMat zMatSubDyad(zMat m, zVec v1, zVec v2);
-__EXPORT zMat zMatCatDyadNC(zMat m, double k, zVec v1, zVec v2);
-__EXPORT zMat zMatCatDyad(zMat m, double k, zVec v1, zVec v2);
+__ZM_EXPORT zMat zVecDyadNC(zVec v1, zVec v2, zMat dyad);
+__ZM_EXPORT zMat zVecDyad(zVec v1, zVec v2, zMat dyad);
+__ZM_EXPORT zMat zMatAddDyadNC(zMat m, zVec v1, zVec v2);
+__ZM_EXPORT zMat zMatAddDyad(zMat m, zVec v1, zVec v2);
+__ZM_EXPORT zMat zMatSubDyadNC(zMat m, zVec v1, zVec v2);
+__ZM_EXPORT zMat zMatSubDyad(zMat m, zVec v1, zVec v2);
+__ZM_EXPORT zMat zMatCatDyadNC(zMat m, double k, zVec v1, zVec v2);
+__ZM_EXPORT zMat zMatCatDyad(zMat m, double k, zVec v1, zVec v2);
 
 /*! \brief trace of a matrix.
  *
@@ -473,8 +473,8 @@ __EXPORT zMat zMatCatDyad(zMat m, double k, zVec v1, zVec v2);
  * \a m must be a square matrix.
  * zMatTrNC() does not check if \a m is square.
  */
-__EXPORT double zMatTrNC(zMat m);
-__EXPORT double zMatTr(zMat m);
+__ZM_EXPORT double zMatTrNC(zMat m);
+__ZM_EXPORT double zMatTr(zMat m);
 
 /*! \brief multiplication of a matrix and a vector, or of two matrices.
  *
@@ -505,20 +505,20 @@ __EXPORT double zMatTr(zMat m);
  * \return
  * These functions return a pointer to the result.
  */
-__EXPORT zVec zMulMatVecNC(zMat m, zVec v1, zVec v);
-__EXPORT zVec zMulMatTVecNC(zMat m, zVec v1, zVec v);
-__EXPORT zMat zMulMatMatNC(zMat m1, zMat m2, zMat m);
-__EXPORT zMat zMulMatMatTNC(zMat m1, zMat m2, zMat m);
-__EXPORT zMat zMulMatTMatNC(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zVec zMulMatVecNC(zMat m, zVec v1, zVec v);
+__ZM_EXPORT zVec zMulMatTVecNC(zMat m, zVec v1, zVec v);
+__ZM_EXPORT zMat zMulMatMatNC(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zMat zMulMatMatTNC(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zMat zMulMatTMatNC(zMat m1, zMat m2, zMat m);
 
-__EXPORT zVec zMulMatVec(zMat m, zVec v1, zVec v);
-__EXPORT zVec zMulMatTVec(zMat m, zVec v1, zVec v);
-__EXPORT zMat zMulMatMat(zMat m1, zMat m2, zMat m);
-__EXPORT zMat zMulMatMatT(zMat m1, zMat m2, zMat m);
-__EXPORT zMat zMulMatTMat(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zVec zMulMatVec(zMat m, zVec v1, zVec v);
+__ZM_EXPORT zVec zMulMatTVec(zMat m, zVec v1, zVec v);
+__ZM_EXPORT zMat zMulMatMat(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zMat zMulMatMatT(zMat m1, zMat m2, zMat m);
+__ZM_EXPORT zMat zMulMatTMat(zMat m1, zMat m2, zMat m);
 
-__EXPORT zVec zMulMatVecDRC(zMat m, zVec v);
-__EXPORT zVec zMulMatTVecDRC(zMat m, zVec v);
+__ZM_EXPORT zVec zMulMatVecDRC(zMat m, zVec v);
+__ZM_EXPORT zVec zMulMatTVecDRC(zMat m, zVec v);
 
 /*! \brief quadratic multiplication of matrices.
  *
@@ -540,13 +540,13 @@ __EXPORT zVec zMulMatTVecDRC(zMat m, zVec v);
  * zMatQuad() and zMatTQuad() also return a pointer \a q,
  * if succeeding. Otherwise, the null pointer is returned.
  */
-__EXPORT zMat zMatQuadNC(zMat a, zVec w, zMat q);
-__EXPORT zMat zMatQuad(zMat a, zVec w, zMat q);
-__EXPORT zMat zMatTQuadNC(zMat a, zVec w, zMat q);
-__EXPORT zMat zMatTQuad(zMat a, zVec w, zMat q);
+__ZM_EXPORT zMat zMatQuadNC(zMat a, zVec w, zMat q);
+__ZM_EXPORT zMat zMatQuad(zMat a, zVec w, zMat q);
+__ZM_EXPORT zMat zMatTQuadNC(zMat a, zVec w, zMat q);
+__ZM_EXPORT zMat zMatTQuad(zMat a, zVec w, zMat q);
 
 /*! \brief read a matrix from a ZTK format processor. */
-__EXPORT zMat zMatFromZTK(ZTK *ztk);
+__ZM_EXPORT zMat zMatFromZTK(ZTK *ztk);
 
 /*! \brief scan and print a matrix.
  *
@@ -582,11 +582,11 @@ __EXPORT zMat zMatFromZTK(ZTK *ztk);
  *
  * zMatFPrint() and zMatPrint() return no values.
  */
-__EXPORT zMat zMatFScan(FILE *fp);
-__EXPORT void zMatFPrint(FILE *fp, zMat m);
+__ZM_EXPORT zMat zMatFScan(FILE *fp);
+__ZM_EXPORT void zMatFPrint(FILE *fp, zMat m);
 #define zMatScan()   zMatFScan( stdin )
 #define zMatPrint(m) zMatFPrint( stdout, (m) )
-__EXPORT void zMatImg(zMat m);
+__ZM_EXPORT void zMatImg(zMat m);
 
 __END_DECLS
 

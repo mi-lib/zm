@@ -35,7 +35,7 @@ typedef struct{
   (c)->re = (r);\
   (c)->im = (i);\
 } while(0)
-__EXPORT zComplex *zComplexCreate(zComplex *c, double r, double i);
+__ZM_EXPORT zComplex *zComplexCreate(zComplex *c, double r, double i);
 
 /*! \brief create a complex number from the polar expression.
  *
@@ -45,13 +45,13 @@ __EXPORT zComplex *zComplexCreate(zComplex *c, double r, double i);
  * The result is put where \a c points.
  */
 #define _zComplexCreatePolar(c,r,t) _zComplexCreate( c, (r)*cos(t), (r)*sin(t) )
-__EXPORT zComplex *zComplexCreatePolar(zComplex *c, double r, double t);
+__ZM_EXPORT zComplex *zComplexCreatePolar(zComplex *c, double r, double t);
 
 /*! \brief copy a complex number to another.
  *
  * zComplexCopy() copies a complex number \a src to another \a dest. */
 #define _zComplexCopy(src,dest) ( *(dest) = *(src) )
-__EXPORT zComplex *zComplexCopy(zComplex *src, zComplex *dest);
+__ZM_EXPORT zComplex *zComplexCopy(zComplex *src, zComplex *dest);
 
 /*! \brief create a zero complex number.
  *
@@ -68,7 +68,7 @@ __EXPORT zComplex *zComplexCopy(zComplex *src, zComplex *dest);
  * \return
  * zComplexTouchup() returns a pointer \a c.
  */
-__EXPORT zComplex *zComplexTouchup(zComplex *c);
+__ZM_EXPORT zComplex *zComplexTouchup(zComplex *c);
 
 /*! \brief test if a complex number is under the tolerance.
  *
@@ -93,10 +93,10 @@ __EXPORT zComplex *zComplexTouchup(zComplex *c);
 #define zComplexIsConj(c1,c2,tol) ( zIsEqual( (c1)->re, (c2)->re, tol ) && zIsEqual( (c1)->im, -(c2)->im, tol ) )
 
 /*! \brief read a complex number from a string. */
-__EXPORT zComplex *zComplexFromStr(zComplex *c, char *str);
+__ZM_EXPORT zComplex *zComplexFromStr(zComplex *c, char *str);
 
 /*! \brief read a complex number from a ZTK format processor. */
-__EXPORT zComplex *zComplexFromZTK(zComplex *c, ZTK *ztk);
+__ZM_EXPORT zComplex *zComplexFromZTK(zComplex *c, ZTK *ztk);
 
 /*! \brief primt a complex number.
  *
@@ -104,7 +104,7 @@ __EXPORT zComplex *zComplexFromZTK(zComplex *c, ZTK *ztk);
  * current position of a file \a fp in the following style:
  *  x + y i
  */
-__EXPORT void zComplexFPrint(FILE *fp, zComplex *c);
+__ZM_EXPORT void zComplexFPrint(FILE *fp, zComplex *c);
 /*! \brief print a complex number to the standard output. */
 #define zComplexPrint(c) zComplexFPrint( stdout, (c) )
 
@@ -115,7 +115,7 @@ __EXPORT void zComplexFPrint(FILE *fp, zComplex *c);
  * position of \a file \a fp in the following style.
  *  x y
  */
-__EXPORT void zComplexCoordFPrint(FILE *fp, zComplex *c);
+__ZM_EXPORT void zComplexCoordFPrint(FILE *fp, zComplex *c);
 /*! \brief prints the coordinates of a complex number
  * to the standard output. */
 #define zComplexCoordPrint(c) zComplexCoordFPrint( stdout, (c) )
@@ -135,8 +135,8 @@ __EXPORT void zComplexCoordFPrint(FILE *fp, zComplex *c);
  * of \a c is included in \a \array. Otherwise, the false value
  * is returned.
  */
-__EXPORT bool zComplexValIsIncluded(zComplex *array, int size, zComplex *c, double tol);
-__EXPORT bool zComplexValConjIsIncluded(zComplex *array, int size, zComplex *c, double tol);
+__ZM_EXPORT bool zComplexValIsIncluded(zComplex *array, int size, zComplex *c, double tol);
+__ZM_EXPORT bool zComplexValConjIsIncluded(zComplex *array, int size, zComplex *c, double tol);
 
 /*! \} */
 

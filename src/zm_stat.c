@@ -116,14 +116,14 @@ double zChi2CumDistrib(double x, int k)
 /* maximum component of data. */
 double zDataMax(double *data, int size, int *im)
 {
-  int i;
+  int i, __im;
   double max;
 
-  if( im ) *im = 0;
-  for( max = data[0], i=1; i<size; i++ )
+  if( !im ) im = &__im;
+  for( *im=0, max=data[0], i=1; i<size; i++ )
     if( data[i] > max ){
       max = data[i];
-      if( im ) *im = i;
+      *im = i;
     }
   return max;
 }
@@ -131,14 +131,14 @@ double zDataMax(double *data, int size, int *im)
 /* minimum component of data. */
 double zDataMin(double *data, int size, int *im)
 {
-  int i;
+  int i, __im;
   double min;
 
-  if( im ) *im = 0;
-  for( min = data[0], i=1; i<size; i++ )
+  if( !im ) im = &__im;
+  for( *im=0, min=data[0], i=1; i<size; i++ )
     if( data[i] < min ){
       min = data[i];
-      if( im ) *im = i;
+      *im = i;
     }
   return min;
 }
@@ -146,14 +146,14 @@ double zDataMin(double *data, int size, int *im)
 /* maximum absolute component of data. */
 double zDataAbsMax(double *data, int size, int *im)
 {
-  int i;
+  int i, __im;
   double val, max;
 
-  if( im ) *im = 0;
-  for( max = fabs( data[0] ), i=1; i<size; i++ )
+  if( !im ) im = &__im;
+  for( *im=0, max=fabs( data[0] ), i=1; i<size; i++ )
     if( ( val = fabs( data[i] ) ) > max ){
       max = val;
-      if( im ) *im = i;
+      *im = i;
     }
   return max;
 }
@@ -161,14 +161,14 @@ double zDataAbsMax(double *data, int size, int *im)
 /* minimum absolute component of data. */
 double zDataAbsMin(double *data, int size, int *im)
 {
-  int i;
+  int i, __im;
   double val, min;
 
-  if( im ) *im = 0;
-  for( min = fabs( data[0] ), i=1; i<size; i++ )
+  if( !im ) im = &__im;
+  for( *im=0, min=fabs( data[0] ), i=1; i<size; i++ )
     if( ( val = fabs( data[i] ) ) < min ){
       min = val;
-      if( im ) *im = i;
+      *im = i;
     }
   return min;
 }

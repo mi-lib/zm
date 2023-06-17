@@ -7,8 +7,8 @@ int main(void)
   register int i=0;
 
   zSeqScanFile( &seq, "test" );
-  zListForEach( &seq, cp ){
-    if( !cp ) continue;
+  for( i=0; i<zListSize(&seq)+1; i++ ){
+    if( !( cp = zSeqJump( &seq, i ) ) ) continue;
     printf( "jump to->%2d : %f ", i, cp->data.dt );
     zVecPrint( cp->data.v );
     i++;

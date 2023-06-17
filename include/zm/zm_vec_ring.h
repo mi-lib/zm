@@ -30,8 +30,8 @@ zRingClass( zVecRing, zVec );
  *
  * zVecRingFree() returns no value.
  */
-__EXPORT bool zVecRingAlloc(zVecRing *ring, int dim, int size);
-__EXPORT void zVecRingFree(zVecRing *ring);
+__ZM_EXPORT bool zVecRingAlloc(zVecRing *ring, int dim, int size);
+__ZM_EXPORT void zVecRingFree(zVecRing *ring);
 
 /* fill the ring with the same vector.
  *
@@ -42,7 +42,7 @@ __EXPORT void zVecRingFree(zVecRing *ring);
  * If the size of \a v and the components of \a ring are different
  * from each other, the null pointer is returned.
  */
-__EXPORT zVec zVecRingFill(zVecRing *ring, zVec v);
+__ZM_EXPORT zVec zVecRingFill(zVecRing *ring, zVec v);
 
 /* concatenate vector ring.
  *
@@ -61,8 +61,8 @@ __EXPORT zVec zVecRingFill(zVecRing *ring, zVec v);
  * zVecRingCat() and zVecRingLS() return the resultant vector
  * \a v.
  */
-__EXPORT zVec zVecRingCat(zVec v, zVec c, zVecRing *ring);
-__EXPORT zVec zVecRingLS(zVec v, zVec c, zVecRing *ring);
+__ZM_EXPORT zVec zVecRingCat(zVec v, zVec c, zVecRing *ring);
+__ZM_EXPORT zVec zVecRingLS(zVec v, zVec c, zVecRing *ring);
 
 __END_DECLS
 

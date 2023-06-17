@@ -16,19 +16,17 @@ __BEGIN_DECLS
  * line search class
  * ********************************************************** */
 
-/* MACRO: Z_GSEC
- * - golden section proportion
- */
+/*! \brief golden section proportion */
 #define Z_GSEC 0.38196601125911
 
-/* golden section method */
-__EXPORT double zOptLineGSEC(double (*eval)(double,void*), double a, double b, void *util, int iter);
+/*! \brief golden section method */
+__ZM_EXPORT double zOptLineGSEC(double (*eval)(double,void*), double a, double b, void *util, int iter);
 
-/* bisection method */
-__EXPORT double zOptLineBisec(double (*eval)(double,void*), double a, double b, void *util, int iter);
+/*! \brief bisection method */
+__ZM_EXPORT double zOptLineBisec(double (*eval)(double,void*), double a, double b, void *util, int iter);
 
-/* Brent's method */
-__EXPORT double zOptLineBrent(double (*eval)(double,void*), double a, double b, void *util, int iter);
+/*! \brief Brent's method */
+__ZM_EXPORT double zOptLineBrent(double (*eval)(double,void*), double a, double b, void *util, int iter);
 
 __END_DECLS
 

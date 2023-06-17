@@ -27,7 +27,7 @@ __BEGIN_DECLS
  * \notes a heuristic function should be assigned in advance as
  * \a graph->h = h, for instance.
  */
-__EXPORT double zGraphAStar(zGraph *graph, void *start, void *goal, void *util, zGraphNodeList *path);
+__ZM_EXPORT double zGraphAStar(zGraph *graph, void *start, void *goal, void *util, zGraphNodeList *path);
 
 /*! \brief find the shortest path of a graph by Dijkstra's method.
  *
@@ -37,7 +37,7 @@ __EXPORT double zGraphAStar(zGraph *graph, void *start, void *goal, void *util, 
  * start to the goal.
  * \retval the minimum cost to get to the goal from the start.
  */
-__EXPORT double zGraphDijkstra(zGraph *graph, void *start, void *goal, zGraphNodeList *path);
+__ZM_EXPORT double zGraphDijkstra(zGraph *graph, void *start, void *goal, zGraphNodeList *path);
 
 /*! \} */
 
