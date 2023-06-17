@@ -24,7 +24,7 @@ typedef struct{
   zVec _lambda;
 } zQPASM;
 
-bool _zQPASMInitBase(zQPASM *asm, zMat a, zVec b, zVec x)
+bool _zQPASMInitBase(zQPASM *qpasm, zMat a, zVec b, zVec x)
 {
   zLPTableau tab;
   int i, k, n;
@@ -53,7 +53,7 @@ bool _zQPASMInitBase(zQPASM *asm, zMat a, zVec b, zVec x)
       zVecSetElemNC( tab.b, i,-zVecElemNC(b,i) );
     }
     zMatSetElemNC( tab.a, i, zArraySize(tab.in)+i, 1.0 );
-    asm->is_active[i] = false;
+    qpasm->is_active[i] = false;
   }
   for( i=zArraySize(tab.in); i<zVecSizeNC(tab.c); i++ )
     zVecSetElemNC( tab.c, i, 1.0 );
@@ -61,7 +61,7 @@ bool _zQPASMInitBase(zQPASM *asm, zMat a, zVec b, zVec x)
   zIndexOrder( tab.ib, zArraySize(tab.in) );
   zIndexOrder( tab.in, 0 );
   zIndexOrder( tab.ir, 0 );
-_zLPTableauPrint( &tab );
+  _zLPTableauPrint( &tab );
   if( !zLPTableauSimplex( &tab ) || !zIsTiny(tab.d) ){
     ZRUNWARN( ZM_ERR_OPT_UNSOLVE );
     goto TERMINATE;
@@ -72,81 +72,81 @@ _zLPTableauPrint( &tab );
   for( i=0; i<zArraySize(tab.ib); i++ ){
     if( zIndexElemNC(tab.ib,i) < zMatColSizeNC(a) ){
       zVecSetElemNC( x, zIndexElemNC(tab.ib,i), zVecElemNC(tab.b,i) );
-      asm->is_active[zIndexElemNC(tab.ir,i)] = true;
+      qpasm->is_active[zIndexElemNC(tab.ir,i)] = true;
     }
     else
     if( zIndexElemNC(tab.ib,i) < n ){
       zVecSetElemNC( x, zIndexElemNC(tab.ib,i)-zMatColSizeNC(a),-zVecElemNC(tab.b,i) );
-      asm->is_active[zIndexElemNC(tab.ir,i)] = true;
+      qpasm->is_active[zIndexElemNC(tab.ir,i)] = true;
     }
     else
     if( ( k = zIndexElemNC(tab.ib,i) - n ) < zMatRowSizeNC(a) &&
         zVecElemNC(tab.b,i) > 0 ){
     }
   }
-_zLPTableauPrint( &tab );
-zVecPrint( x );
-for( i=0; i<zMatRowSizeNC(a); i++ ){
- printf( "constraint #%d: %s\n", i, asm->is_active[i] ? "active" : "inactive" );
-}
+  _zLPTableauPrint( &tab );
+  zVecPrint( x );
+  for( i=0; i<zMatRowSizeNC(a); i++ ){
+    printf( "constraint #%d: %s\n", i, qpasm->is_active[i] ? "active" : "inactive" );
+  }
 
  TERMINATE:
   zLPTableauDestroy( &tab );
   return true;
 }
 
-static zQPASM *_zQPASMInit(zQPASM *asm, zMat q, zVec c, zMat a, zVec b, zVec x)
+static zQPASM *_zQPASMInit(zQPASM *qpasm, zMat q, zVec c, zMat a, zVec b, zVec x)
 {
-  asm->qinv = zMatAllocSqr( zVecSizeNC(c) );
-  asm->qinvc = zVecAlloc( zVecSizeNC(c) );
-  asm->xtmp = zVecAlloc( zVecSizeNC(c) );
-  asm->is_active = zAlloc( bool, zMatRowSizeNC(a) );
-  asm->_m = zMatAllocSqr( zMatRowSizeNC(a) );
-  asm->_v = zVecAlloc( zMatRowSizeNC(a) );
-  asm->_lambda = zVecAlloc( zMatRowSizeNC(a) );
+  qpasm->qinv = zMatAllocSqr( zVecSizeNC(c) );
+  qpasm->qinvc = zVecAlloc( zVecSizeNC(c) );
+  qpasm->xtmp = zVecAlloc( zVecSizeNC(c) );
+  qpasm->is_active = zAlloc( bool, zMatRowSizeNC(a) );
+  qpasm->_m = zMatAllocSqr( zMatRowSizeNC(a) );
+  qpasm->_v = zVecAlloc( zMatRowSizeNC(a) );
+  qpasm->_lambda = zVecAlloc( zMatRowSizeNC(a) );
 
-  if( !asm->qinv || !asm->qinvc || !asm->xtmp || !asm->is_active ||
-      !asm->_m || !asm->_v || !asm->_lambda ) return NULL;
-  asm->n_active = 0;
-  zMatInv( q, asm->qinv );
-  zMulMatVec( asm->qinv, c, asm->qinvc );
+  if( !qpasm->qinv || !qpasm->qinvc || !qpasm->xtmp || !qpasm->is_active ||
+      !qpasm->_m || !qpasm->_v || !qpasm->_lambda ) return NULL;
+  qpasm->n_active = 0;
+  zMatInv( q, qpasm->qinv );
+  zMulMatVec( qpasm->qinv, c, qpasm->qinvc );
 
-  _zQPASMInitBase( asm, a, b, x );
-  return asm;
+  _zQPASMInitBase( qpasm, a, b, x );
+  return qpasm;
 }
 
-static bool _zQPASMSolveEq(zQPASM *asm, zMat a, zVec b)
+static bool _zQPASMSolveEq(zQPASM *qpasm, zMat a, zVec b)
 {
   int i;
 
-  zMatSetSize( asm->_m, asm->n_active, asm->n_active );
-  zVecSetSize( asm->_v, asm->n_active );
-  zVecSetSize( asm->_lambda, asm->n_active );
-  for( i=0; i<asm->n_active; i++ ){
+  zMatSetSize( qpasm->_m, qpasm->n_active, qpasm->n_active );
+  zVecSetSize( qpasm->_v, qpasm->n_active );
+  zVecSetSize( qpasm->_lambda, qpasm->n_active );
+  for( i=0; i<qpasm->n_active; i++ ){
 
   }
   return true;
 }
 
-static void _zQPASMDestroy(zQPASM *asm)
+static void _zQPASMDestroy(zQPASM *qpasm)
 {
-  zMatFree( asm->qinv );
-  zVecFree( asm->qinvc );
-  zVecFree( asm->xtmp );
-  zFree( asm->is_active );
-  zMatFree( asm->_m );
-  zVecFree( asm->_v );
-  zVecFree( asm->_lambda );
+  zMatFree( qpasm->qinv );
+  zVecFree( qpasm->qinvc );
+  zVecFree( qpasm->xtmp );
+  zFree( qpasm->is_active );
+  zMatFree( qpasm->_m );
+  zVecFree( qpasm->_v );
+  zVecFree( qpasm->_lambda );
 }
 
 
 bool _zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
 {
-  zQPASM asm;
+  zQPASM qpasm;
 
-  _zQPASMInit( &asm, q, c, a, b, ans );
-  _zQPASMSolveEq( &asm, a, b );
-  _zQPASMDestroy( &asm );
+  _zQPASMInit( &qpasm, q, c, a, b, ans );
+  _zQPASMSolveEq( &qpasm, a, b );
+  _zQPASMDestroy( &qpasm );
   return true;
 }
 

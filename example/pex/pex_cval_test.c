@@ -15,10 +15,10 @@ int main(void)
   zPexSetCoeff( p, 0,-1.0 );
   for( i=0; i<=N; i++ ){
     t = 2 * zPI * i / N;
-    zComplexPolar( &arg, 1.0, t );
+    zComplexCreatePolar( &arg, 1.0, t);
     zPexCVal( p, &arg, &c );
-    printf( "%.10g %.10g ", zComplexRe(&arg), zComplexIm(&arg) );
-    printf( "%.10g %.10g\n", zComplexRe(&c), zComplexIm(&c) );
+    printf( "%.10g %.10g ", arg.re, arg.im );
+    printf( "%.10g %.10g\n", c.re, c.im );
   }
   zPexFree( p );
   return 0;

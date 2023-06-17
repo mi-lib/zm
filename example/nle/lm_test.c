@@ -25,7 +25,7 @@ int NLESolveLM(zVec var, int nc, zVec (* f)(zVec,zVec,void*), zMat (* j)(zVec,zM
   double e;
   register int i;
 
-  x = zVecCopy( var );
+  zVecCopy( var, x );
   r = zVecAlloc( nc );
   jac = zMatAlloc( nc, zVecSizeNC(var) );
   _j = zMatAllocSqr( nc );
@@ -58,14 +58,17 @@ int main(int argc, char *argv[])
 
   zVecSetAll( var, 1.0 );
 
-  NLESolveLM( var, f1, jac1, zTOL, 0, util );
+  /* dummy */
+  void* util;
+
+  NLESolveLM( var, DIM, f1, jac1, zTOL, 0, util );
   printf( " answer  : " );
   zVecPrint( var );
   f1( var, r, NULL );
   printf( " residual: " );
   zVecPrint( r );
 
-  zNLEDestroy( &nle );
+  /* zNLEDestroy( &nle ); */ /* <-? */
   zVecFree( var );
   return 0;
 }
