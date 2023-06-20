@@ -1,3 +1,4 @@
+2023. 6.20. Corrected some tests and examples to conform to the current specifications. [example, test]
 2023. 6. 1. Reflected modification of zeda-makefile-gen to keep zm_export.h. [zm_export]
 2023. 5.20. Reflected new specification of ZDEF_STRUCT and ZDEF_UNION. [zm_mca_cluster, zm_nurbs]
 2023. 5.20. Reflected new specification of zeda-makefile-gen, and modified src/makefile. [src]

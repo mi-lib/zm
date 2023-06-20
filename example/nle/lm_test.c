@@ -1,5 +1,35 @@
 #include <zm/zm.h>
 
+int NLESolveLM(zVec var, int nc, zVec (* f)(zVec,zVec,void*), zMat (* j)(zVec,zMat,void*), double tol, int iternum, void *util)
+{
+  zVec x, r;
+  zMat jac, _j;
+  double e;
+  register int i;
+
+  x = zVecClone( var );
+  r = zVecAlloc( nc );
+  jac = zMatAlloc( nc, zVecSizeNC(var) );
+  _j = zMatAllocSqr( nc );
+  ZITERINIT( iternum );
+  for( i=0; i<iternum; i++ ){
+    f( var, r, util );
+    e = zVecSqrNorm( r );
+    if( zIsTol( sqrt(e), tol ) ) goto TERMINATE;
+
+
+  }
+  ZITERWARN( i );
+ TERMINATE:
+  zVecFree( x );
+  zVecFree( r );
+  zMatFree( jac );
+  zMatFree( _j );
+  return i;
+}
+
+
+
 zVec f1(zVec var, zVec r, void *dummy)
 {
   register int i;
@@ -17,36 +47,6 @@ zMat jac1(zVec var, zMat j, void *dummy)
   return j;
 }
 
-
-int NLESolveLM(zVec var, int nc, zVec (* f)(zVec,zVec,void*), zMat (* j)(zVec,zMat,void*), double tol, int iternum, void *util)
-{
-  zVec x, r;
-  zMat jac, _j;
-  double e;
-  register int i;
-
-  x = zVecCopy( var );
-  r = zVecAlloc( nc );
-  jac = zMatAlloc( nc, zVecSizeNC(var) );
-  _j = zMatAllocSqr( nc );
-  ZITERINIT( iternum );
-  for( i=0; i<iternum; i++ ){
-    f( var, r, util );
-    e = zVecSqrNorm( r );
-    if( zIsTol( sqrt(e), tol ) ) goto TERMINATE;
-
-
-  }
-  ZITERWARN( i );
- TERMINATE:
-  zVecFree( x );
-  zVecFree( r );
-  zMatFree( jac );
-  return i;
-}
-
-
-
 #define DIM 3
 
 int main(int argc, char *argv[])
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 
   zVecSetAll( var, 1.0 );
 
-  NLESolveLM( var, f1, jac1, zTOL, 0, util );
+  NLESolveLM( var, DIM, f1, jac1, zTOL, 0, NULL );
   printf( " answer  : " );
   zVecPrint( var );
   f1( var, r, NULL );

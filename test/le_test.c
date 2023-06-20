@@ -1,7 +1,7 @@
 #include <zm/zm.h>
 
-#define N 30
-#define M 50
+#define N 40
+#define M 80
 #define R 20
 
 void mat_deg(zMat m, int rank)
@@ -19,6 +19,43 @@ void mat_deg(zMat m, int rank)
 }
 
 #define TOL (1.0e-10)
+
+void assert_mpinv(void)
+{
+  zMat mp, m1, m2, ma, mb;
+  zVec v1, v2, v3;
+  int i;
+  bool result1, result2, result3;
+
+  mp = zMatAlloc( M, N );
+  m1 = zMatAlloc( N, M );
+  m2 = zMatAlloc( N, R );
+  ma = zMatAlloc( M, R );
+  mb = zMatAlloc( M, R );
+  v1 = zVecAlloc( N );
+  v2 = zVecAlloc( M );
+  v3 = zVecAlloc( M );
+  result1 = result2 = result3 = true;
+  for( i=0; i<N; i++ ){
+    zMatRandUniform( m1, -10, 10 );
+    zMatRandUniform( m2, -10, 10 );
+    zMatGetCol( m2, 0, v1 );
+
+    zMPInv( m1, mp );
+    zMulMatMat( mp, m2, ma );
+    zMulMPInvMatMat( m1, m2, mb );
+    if( !zMatIsEqual(ma,mb,TOL) ) result1 = false;
+
+    zLESolveMP( m1, v1, NULL, NULL, v2 );
+    zMulMatVec( mp, v1, v3 );
+    if( !zVecIsEqual(v2,v3,TOL) ) result2 = false;
+  }
+  zAssert( zMPInv + zMulMPInvMatMat, result1 );
+  zAssert( zLESolveMP, result2 );
+
+  zMatFreeAO( 5, m1, m2, ma, mb, mp );
+  zVecFreeAO( 3, v1, v2, v3 );
+}
 
 void assert_mpnull(void)
 {
@@ -46,6 +83,7 @@ void assert_mpnull(void)
 int main(void)
 {
   zRandInit();
+  assert_mpinv();
   assert_mpnull();
   return EXIT_SUCCESS;
 }
