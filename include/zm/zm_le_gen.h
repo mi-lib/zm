@@ -137,13 +137,17 @@ __ZM_EXPORT zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLE *le);
 __ZM_EXPORT zVec zLESolveErrorMin(zMat a, zVec b, zVec w, zVec ans);
 __ZM_EXPORT zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLE *le);
 __ZM_EXPORT zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans);
+
 __ZM_EXPORT zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans);
 __ZM_EXPORT zVec zLESolveMPLU(zMat a, zVec b, zVec wn, zVec we, zVec ans);
 __ZM_EXPORT zVec zLESolveMPSVD(zMat a, zVec b, zVec ans);
 __ZM_EXPORT zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn);
 __ZM_EXPORT zVec zLESolveMPAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux);
-__ZM_EXPORT zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zLE *le);
-__ZM_EXPORT zVec zLESolveSR(zMat a, zVec b, zVec wn, zVec we, zVec ans);
+
+__ZM_EXPORT zVec zLESolveSRBiasDST(zMat a, zVec b, zVec wn, zVec we, double bias, zVec ans, zLE *le);
+#define zLESolveSRDST(a,b,wn,we,ans,le) zLESolveSRBiasDST( a, b, wn, we, 0, ans, le )
+__ZM_EXPORT zVec zLESolveSRBias(zMat a, zVec b, zVec wn, zVec we, double bias, zVec ans);
+#define zLESolveSR( a, b, wn, we, ans ) zLESolveSRBias( a, b, wn, we, 0, ans )
 __ZM_EXPORT zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zLE *le, zVec bb);
 __ZM_EXPORT zVec zLESolveSRAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux);
 __ZM_EXPORT zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLE *le);

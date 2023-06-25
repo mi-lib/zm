@@ -325,9 +325,8 @@ static bool _zLESolveSRSizeIsEqual(zMat a, zVec b, zVec wn, zVec we, zVec ans)
   return true;
 }
 
-/* linear equation solver using singularity-robust inverse
- * (SR-inverse) matrix (destructive). */
-zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zLE *le)
+/* linear equation solver using singularity-robust inverse matrix (destructive). */
+zVec zLESolveSRBiasDST(zMat a, zVec b, zVec wn, zVec we, double bias, zVec ans, zLE *le)
 {
   int i;
 
@@ -335,25 +334,23 @@ zVec zLESolveSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zLE *le)
   zMulMatTVecNC( a, b, le->v1 );
   zMatTQuadNC( a, we, le->m );
   for( i=0; i<zMatRowSizeNC(le->m); i++ )
-    zMatElemNC(le->m,i,i) += zVecElemNC(wn,i);
+    zMatElemNC(le->m,i,i) += zVecElemNC(wn,i) + bias;
   return zLESolveGaussDST( le->m, le->v1, ans, le->idx1, le->s );
 }
 
-/* linear equation solver using singularity-robust inverse
- * (SR-inverse) matrix, proposed by Y. Nakamura(1991). */
-zVec zLESolveSR(zMat a, zVec b, zVec wn, zVec we, zVec ans)
+/* linear equation solver using singularity-robust inverse matrix. */
+zVec zLESolveSRBias(zMat a, zVec b, zVec wn, zVec we, double bias, zVec ans)
 {
   zLE le;
 
   if( !_zLESolveSRSizeIsEqual( a, b, wn, we, ans ) ) return NULL;
   ans = zLEAlloc( &le, b, zVecSizeNC(ans) ) ?
-    zLESolveSRDST( a, le.b, wn, we, ans, &le ) : NULL;
+    zLESolveSRBiasDST( a, le.b, wn, we, bias, ans, &le ) : NULL;
   zLEFree( &le );
   return ans;
 }
 
-/* generalized linear equation solver using SR-inverse
- * biasing a vector in the null space (destructive). */
+/* generalized linear equation solver using SR-inverse biasing a vector in the null space (destructive). */
 zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zLE *le, zVec bb)
 {
   zLEResidual( a, b, aux, bb );
@@ -361,8 +358,7 @@ zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zLE 
   return zVecAddNCDRC( ans, aux );
 }
 
-/* generalized linear equation solver using SR-inverse
- * biasing a vector in the null space. */
+/* generalized linear equation solver using SR-inverse biasing a vector in the null space. */
 zVec zLESolveSRAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
 {
   zVec bb;
@@ -377,8 +373,7 @@ zVec zLESolveSRAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
   return zVecAddNCDRC( ans, aux );
 }
 
-/* linear equation solver using referred singularity-robust
- * inverse matrix (destructive). */
+/* linear equation solver using referred singularity-robust inverse matrix (destructive). */
 zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLE *le)
 {
   int i;
