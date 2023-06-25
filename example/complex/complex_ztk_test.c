@@ -4,8 +4,7 @@ void eval_test(ZTK *ztk)
 {
   zComplex c;
 
-  ZTKTagRewind( ztk );
-  ZTKKeyRewind( ztk );
+  ZTKRewind( ztk );
   do{
     if( ZTKKeyCmp( ztk, "complex" ) ){
       eprintf( "original string = %s\t-> ", ZTKVal(ztk) );
@@ -15,18 +14,16 @@ void eval_test(ZTK *ztk)
   } while( ZTKKeyNext(ztk) );
 }
 
-
 int main(int argc, char *argv[])
 {
   ZTK ztk;
 
-  if( argc <= 1 ) return 1;
-
   ZTKInit( &ztk );
 
-  eprintf("\nparsing...%s\n","");
-  ZTKParse( &ztk, argv[1] );
-  eprintf("done.\n\n&s","");
+  eprintf("\nparsing...\n");
+  ZTKParse( &ztk, "complex.ztk" );
+  eprintf("done.\n\n");
+  ZTKPrint( &ztk );
   eval_test( &ztk );
 
   ZTKDestroy( &ztk );

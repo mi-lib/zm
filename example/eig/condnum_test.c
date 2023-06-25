@@ -4,8 +4,8 @@ zMat hilbert_mat(zMat m)
 {
   register int i, j;
 
-  for( i=0; i<zMatRowSize(m); i++ )
-    for( j=0; j<zMatColSize(m); j++ )
+  for( i=0; i<zMatRowSizeNC(m); i++ )
+    for( j=0; j<zMatColSizeNC(m); j++ )
       zMatElemNC(m,i,j) = 1.0 / ( i + j + 1 );
   return m;
 }

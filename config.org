@@ -1,5 +1,1 @@
-PREFIX=$(HOME)/usr
-PROJNAME=zm
-VERSION=1.7.3
-
-DEPENDENCY="zeda=1.7.7"
+PREFIX=${HOME}/usr

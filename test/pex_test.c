@@ -72,6 +72,52 @@ void assert_pex_val(void)
   zAssert( zPexVal, result );
 }
 
+#define N 100
+
+void assert_pex_cval(void)
+{
+  int i;
+  double t;
+  zPex p;
+  zComplex arg, c;
+  bool result = true;
+
+  p = zPexAlloc( N );
+  zPexSetCoeff( p, N, 1.0 );
+  zPexSetCoeff( p, 0,-1.0 );
+  for( i=0; i<=N; i++ ){
+    t = 2 * zPI * i / N;
+    zComplexCreatePolar( &arg, 1.0, t );
+    zPexCVal( p, &arg, &c );
+    if( !zComplexIsTiny( &c ) ) result = false;
+  }
+  zPexFree( p );
+  zAssert( zPexCVal, result );
+}
+
+void assert_pex_div(void)
+{
+  zPex p, f, q, r, g;
+  int i;
+  bool result = true;
+
+  p = zPexAlloc( 5 );
+  f = zPexAlloc( 3 );
+  for( i=0; i<N; i++ ){
+    zVecRandUniform( p, -10, 10 );
+    zVecRandUniform( f, -10, 10 );
+    zPexDiv( p, f, &q, &r );
+    g = zPexMul( f, q );
+    zPexAddDRC( g, r );
+    if( !zBoolStr( zPexIsEqual( p, g, zTOL ) ) ) result = false;
+  }
+  zAssert( zPexDiv + zPexMul + zPexAdd, result );
+  zPexFree( p );
+  zPexFree( f );
+  zPexFree( q );
+  zPexFree( r );
+}
+
 void assert_peqsolve(void)
 {
   double a[DIM];
@@ -166,6 +212,8 @@ int main(void)
 {
   zRandInit();
   assert_pex_val();
+  assert_pex_cval();
+  assert_pex_div();
   assert_peqsolve();
   assert_exp();
   assert_cexp();

@@ -1,5 +1,3 @@
-include ../../config
-
 INCLUDE=`zm-config -I`
 LIB=`zm-config -L`
 LINK=`zm-config -l`
