@@ -22,7 +22,6 @@ int gettimeofday(struct timeval* tp, struct timezone* dummy)
     SystemTimeToFileTime(&system_time, &file_time);
     ularge.LowPart = file_time.dwLowDateTime;
     ularge.HighPart = file_time.dwHighDateTime;
-    /*tp->tv_sec = (long)((ularge.QuadPart - Epoch) / 10000000i64);*/
     tp->tv_sec = (long)((ularge.QuadPart - Epoch) / 10000000i64);
     tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
     return 0;
@@ -69,6 +68,5 @@ int main(int argc, char *argv[])
   printf( "Tn=%d\n", deltatime(&tv1,&tv2) );
 
   zVecListDestroy( &list );
-  /*zVecTreeDestroy( &tree );*/
   return 0;
 }
