@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
   printf( " residual: " );
   zVecPrint( r );
 
-  /* zNLEDestroy( &nle ); */ /* <-? */
+  zNLEDestroy( &nle );
   zVecFree( var );
   return 0;
 }
