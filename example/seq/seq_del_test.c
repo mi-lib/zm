@@ -8,10 +8,9 @@ int main(void)
   zVec v;
   zSeqListCell *cp;
   double t = 0;
-  register int i;
 
   zSeqInit( &seq );
-  for( i=0; i<10; i++ ){
+  for( int i=0; i<10; i++ ){
     v = zVecCreateList( 1, (double)i );
     zSeqEnqueue( &seq, v, DT );
   }
