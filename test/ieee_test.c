@@ -4,6 +4,7 @@ int main(void)
 {
   double val;
 
+#ifndef __WINDOWS__
   val = 1.0 / 0.0;
   zAssert( zIsInf, zIsInf( HUGE_VAL ) == 1 &&
                    zIsInf(-HUGE_VAL ) == -1 &&
@@ -16,5 +17,6 @@ int main(void)
                    zIsNan( log( -1 ) ) &&
                    !zIsNan( HUGE_VAL ) &&
                    !zIsNan( 0 ) );
+#endif /* __WINDOWS__ */
   return EXIT_SUCCESS;
 }

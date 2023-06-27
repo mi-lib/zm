@@ -8,7 +8,7 @@ int main(void)
   zVec v;
   zSeqListCell *cp;
   double t = 0;
-  register int i;
+  int i;
 
   zSeqInit( &seq );
   for( i=0; i<10; i++ ){

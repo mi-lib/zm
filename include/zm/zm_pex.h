@@ -44,8 +44,8 @@ typedef zVec zPex;
 #define zPexClone(p)             zVecClone(p)
 #define zPexCloneArray(a,n)      zVecCloneArray(a,(n)+1)
 
-#define zPexSetCoeffList(p,a...) zVecSetElemList(p,##a)
-#define zPexCreateList(s,a...)   zVecCreateList((s)+1,##a)
+#define zPexSetCoeffList(p, ...) zVecSetElemList(p,##__VA_ARGS__)
+#define zPexCreateList(s, ...)   zVecCreateList((s)+1,##__VA_ARGS__)
 
 /*! \brief regulate polynomial.
  *

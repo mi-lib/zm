@@ -6,10 +6,10 @@ int main(void)
 {
   zSeq seq;
   zVec v;
-  register int i;
+  int i;
 
   zSeqInit( &seq );
-  for( i=0; i<10; i++ ){
+  for(i=0; i<10; i++ ){
     v = zVecCreateList( 1, (double)i );
     zSeqEnqueue( &seq, v, DT );
   }

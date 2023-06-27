@@ -1,10 +1,32 @@
 #include <zm/zm_vec.h>
+#ifdef __WINDOWS__
+#include <time.h>
+#else
 #include <sys/time.h>
+#endif /* __ WINDOWS__ */
 
-int deltatime(struct timeval *tv1, struct timeval *tv2)
+unsigned long deltatime(struct timeval *tv1, struct timeval *tv2)
 {
-  return (int)( (tv2->tv_sec-tv1->tv_sec)*1000000+tv2->tv_usec-tv1->tv_usec );
+  return (unsigned long)( (tv2->tv_sec-tv1->tv_sec)*1000000+tv2->tv_usec-tv1->tv_usec );
 }
+
+#ifdef __WINDOWS__
+/* FILETIME of 1stJan1970 */
+static const unsigned __int64 Epoch = ((unsigned __int64)116444736000000000i64);
+int gettimeofday(struct timeval* tp, struct timezone* dummy)
+{
+    FILETIME file_time;
+    SYSTEMTIME system_time;
+    ULARGE_INTEGER ularge;
+    GetSystemTime(&system_time);
+    SystemTimeToFileTime(&system_time, &file_time);
+    ularge.LowPart = file_time.dwLowDateTime;
+    ularge.HighPart = file_time.dwHighDateTime;
+    tp->tv_sec = (long)((ularge.QuadPart - Epoch) / 10000000i64);
+    tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
+    return 0;
+}
+#endif
 
 #define N   1000
 #define DIM 3
@@ -46,6 +68,5 @@ int main(int argc, char *argv[])
   printf( "Tn=%d\n", deltatime(&tv1,&tv2) );
 
   zVecListDestroy( &list );
-  zVecTreeDestroy( &tree );
   return 0;
 }
