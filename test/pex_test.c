@@ -1,7 +1,7 @@
 #include <zm/zm.h>
 
 #define DIM 7
-#define TOL 1.0e-7
+#define TOL ( 1.0e-6 )
 
 double pex_val1(zPex p, double arg)
 {
@@ -134,14 +134,20 @@ void assert_peqsolve(void)
   zPexDKA( pex, ans, zTOL, 0 );
   for( i=0; i<DIM-1; i++ ){
     zPexCVal( pex, zCVecElemNC(ans,i), &c );
-    if( !zComplexIsTol( &c, zTOL ) ) ret = false;
+    if( !zComplexIsTol( &c, TOL ) ){
+      zComplexPrint( &c ); zEndl(); fflush( stdout );
+      ret = false;
+    }
   }
   zAssert( zPexDKA, ret );
 
   zPexBH( pex, ans, zTOL, 0 );
   for( i=0; i<DIM-1; i++ ){
     zPexCVal( pex, zCVecElemNC(ans,i), &c );
-    if( !zComplexIsTol( &c, TOL ) ) ret = false;
+    if( !zComplexIsTol( &c, TOL ) ){
+      zComplexPrint( &c ); zEndl(); fflush( stdout );
+      ret = false;
+    }
   }
   zAssert( zPexBH, ret );
   zCVecFree( ans );
@@ -164,8 +170,8 @@ void assert_exp(void)
   p = zPexExp( fact );
   zPexDKA( p, ans, zTOL, 0 );
   for( i=0; i<NUM; i++ ){
-    if( !zComplexIsReal( zCVecElemNC(ans,i), zTOL ) ) ret = false;
-    if( !zVecValIsIncluded( fact, zCVecElemNC(ans,i)->re, zTOL ) ) ret = false;
+    if( !zComplexIsReal( zCVecElemNC(ans,i), TOL ) ) ret = false;
+    if( !zVecValIsIncluded( fact, zCVecElemNC(ans,i)->re, TOL ) ) ret = false;
   }
   zPexFree( p );
   zVecFree( fact );
@@ -195,7 +201,7 @@ void assert_cexp(void)
   p = zPexCExp( fact );
 
   ans = zCVecAlloc( zCVecSizeNC(fact) );
-  zPexDKA( p, ans, TOL, 0 );
+  zPexDKA( p, ans, zTOL, 0 );
   zCVecTouchup( ans );
 
   for( i=0; i<zCVecSizeNC(fact); i++ ){

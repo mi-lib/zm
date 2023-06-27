@@ -17,7 +17,7 @@ int main(void)
   }
   while( !zListIsEmpty( &seq ) ){
     cp = zSeqDequeue( &seq );
-    printf( "%f ", t );
+    printf( "%g ", t );
     zVecPrint( cp->data.v );
     t += cp->data.dt;
     zSeqListCellFree( cp );

@@ -7,11 +7,11 @@ int main(void)
   int i;
 
   zSeqScanFile( &seq, "test" );
-  for( i=0; i<zListSize(&seq)+1; i++ ){
+  /* a warning is issued at the end. */
+  for( i=0; i<=zListSize(&seq); i++ ){
     if( !( cp = zSeqJump( &seq, i ) ) ) continue;
-    printf( "jump to->%2d : %f ", i, cp->data.dt );
+    printf( "jump to %2d : %g ", i, cp->data.dt );
     zVecPrint( cp->data.v );
-    i++;
   }
   zSeqFree( &seq );
   return 0;

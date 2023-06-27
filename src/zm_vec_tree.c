@@ -27,14 +27,17 @@ zVecTree *zVecTreeInit(zVecTree *tree, int dim)
 /* destroy a 3D vector tree. */
 void zVecTreeDestroy(zVecTree *tree)
 {
-  if( tree->s[0] )
+  if( tree->s[0] ){
     zVecTreeDestroy( tree->s[0] );
-  if( tree->s[1] )
+    free( tree->s[0] );
+  }
+  if( tree->s[1] ){
     zVecTreeDestroy( tree->s[1] );
+    free( tree->s[1] );
+  }
   zVecFree( tree->v );
   zVecFree( tree->vmin );
   zVecFree( tree->vmax );
-  free( tree );
 }
 
 /* create a leaf of a 3D vector tree. */

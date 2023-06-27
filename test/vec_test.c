@@ -122,6 +122,38 @@ void assert_normalize(void)
   zVecFreeAO( 2, test_vec1, test_vec2 );
 }
 
+#define N_NODE 1000
+#define DIM 3
+
+void assert_nearest_neighbor(void)
+{
+  zVecList list;
+  zVecTree tree, *node;
+  zVec v, nn;
+  int i;
+  double dmin1, dmin2;
+  bool result;
+
+  zListInit( &list );
+  zVecTreeInit( &tree, DIM );
+  v = zVecAlloc( DIM );
+  for( i=0; i<N_NODE; i++ ){
+    zVecRandUniform( v, -10, 10 );
+    zVecTreeAdd( &tree, v );
+    zVecListInsertHead( &list, v );
+  }
+  zVecRandUniform( v, -10, 10 );
+
+  dmin1 = zVecTreeNN( &tree, v, &node );
+  nn = zVecListNN( &list, v, &dmin2 );
+  result = ( dmin1 == dmin2 ) && zVecIsEqual( node->v, nn, 0 ) ? true : false;
+
+  zVecFree( v );
+  zVecListDestroy( &list );
+  zVecTreeDestroy( &tree );
+  zAssert( zVecListNN + zVecTreeNN, result );
+}
+
 int main(void)
 {
   zRandInit();
@@ -129,6 +161,8 @@ int main(void)
   assert_misc();
   assert_arith();
   assert_normalize();
+
+  assert_nearest_neighbor();
 
   return EXIT_SUCCESS;
 }

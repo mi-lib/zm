@@ -289,7 +289,7 @@ sample_t *sample[] = {
   NULL,
 };
 
-unsigned long timespect2nanosec(struct timespec *tp1, struct timespec *tp2)
+ulong timespec2nanosec(struct timespec *tp1, struct timespec *tp2)
 {
   return ( tp2->tv_sec - tp1->tv_sec ) * 1000000000 + ( tp2->tv_nsec - tp1->tv_nsec );
 }
@@ -298,7 +298,7 @@ void output(char *method, struct timespec *tp1, struct timespec *tp2, zVec var, 
 {
   printf( " (%s)", method );
   strlen( method ) > 5 ? printf( "\t" ) : printf( "\t\t" );
-  printf( "%d %.10g\t", timespect2nanosec(tp1,tp2), val );
+  printf( "%lu %.10g\t", timespec2nanosec(tp1,tp2), val );
   zVecPrint( var );
 }
 
@@ -308,13 +308,13 @@ void output(char *method, struct timespec *tp1, struct timespec *tp2, zVec var, 
 # endif /* CLOCK_PROCESS_CPUTIME_ID */
 int clock_gettime(int dummy, struct timespec* spec)
 {
-    /* get system clock (nsno sec order) as FILETIME type since 1stJan1601 */
-    __int64 wintime;
-    GetSystemTimeAsFileTime((FILETIME*)&wintime);
-    wintime -= 116444736000000000i64; /* since 1stJan1601 to 1stJan1970 */
-    spec->tv_sec = wintime / 10000000i64; /* seconds */
-    spec->tv_nsec = wintime % 10000000i64 * 100; /* nano - seconds */
-    return 0;
+  /* get system clock (nsno sec order) as FILETIME type since 1stJan1601 */
+  __int64 wintime;
+  GetSystemTimeAsFileTime((FILETIME*)&wintime);
+  wintime -= 116444736000000000i64; /* since 1stJan1601 to 1stJan1970 */
+  spec->tv_sec = wintime / 10000000i64; /* seconds */
+  spec->tv_nsec = wintime % 10000000i64 * 100; /* nano - seconds */
+  return 0;
 };
 #endif
 

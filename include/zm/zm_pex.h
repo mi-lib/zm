@@ -33,19 +33,19 @@ typedef zVec zPex;
 #define zPexSetCoeffHigh(p,i,c)  zPexSetCoeff(p,zPexDim(p)-(i),c)
 #define zPexSetCoeffLow(p,i,c)   zPexSetCoeff(p,i,c)
 
-#define zPexIsEqual(p1,p2,tol)   zVecIsEqual(p1,p2,tol)
+#define zPexIsEqual(p1,p2,tol)   zVecIsEqual( p1, p2, tol )
 
-#define zPexTouchup(p)           zVecTouchup(p)
+#define zPexTouchup(p)           zVecTouchup( p )
 
-#define zPexAlloc(n)             zVecAlloc((n)+1)
-#define zPexFree(p)              zVecFree(p)
-#define zPexCopy(s,d)            zVecCopy(s,d)
-#define zPexCopyArray(a,n,p)     zVecCopyArray(a,(n)+1,p)
-#define zPexClone(p)             zVecClone(p)
-#define zPexCloneArray(a,n)      zVecCloneArray(a,(n)+1)
+#define zPexAlloc(n)             zVecAlloc( (n)+1 )
+#define zPexFree(p)              zVecFree( p )
+#define zPexCopy(s,d)            zVecCopy( s, d )
+#define zPexCopyArray(a,n,p)     zVecCopyArray( a, (n)+1, p )
+#define zPexClone(p)             zVecClone( p )
+#define zPexCloneArray(a,n)      zVecCloneArray( a, (n)+1 )
 
-#define zPexSetCoeffList(p, ...) zVecSetElemList(p,##__VA_ARGS__)
-#define zPexCreateList(s, ...)   zVecCreateList((s)+1,##__VA_ARGS__)
+#define zPexSetCoeffList(p, ...) zVecSetElemList( p, ##__VA_ARGS__ )
+#define zPexCreateList(s, ...)   zVecCreateList( (s)+1, ##__VA_ARGS__ )
 
 /*! \brief regulate polynomial.
  *

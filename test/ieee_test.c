@@ -2,9 +2,9 @@
 
 int main(void)
 {
+#ifndef __WINDOWS__
   double val;
 
-#ifndef __WINDOWS__
   val = 1.0 / 0.0;
   zAssert( zIsInf, zIsInf( HUGE_VAL ) == 1 &&
                    zIsInf(-HUGE_VAL ) == -1 &&
