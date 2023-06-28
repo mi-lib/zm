@@ -145,7 +145,7 @@ void assert_nearest_neighbor(void)
   zVecRandUniform( v, -10, 10 );
 
   dmin1 = zVecTreeNN( &tree, v, &node );
-  nn = zVecListNN( &list, v, &dmin2 );
+  dmin2 = zVecListNN( &list, v, &nn );
   result = ( dmin1 == dmin2 ) && zVecIsEqual( node->v, nn, 0 ) ? true : false;
 
   zVecFree( v );

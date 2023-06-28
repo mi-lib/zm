@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
   /* for comparison */
   gettimeofday( &tv1, NULL );
-  nn = zVecListNN( &list, v, &dmin2 );
+  dmin2 = zVecListNN( &list, v, &nn );
   gettimeofday( &tv2, NULL );
   eprintf( "naive  : %g - ", dmin2 ); zVecFPrint( stderr, nn );
   printf( "Tn=%lu\n", deltatime( &tv1, &tv2 ) );

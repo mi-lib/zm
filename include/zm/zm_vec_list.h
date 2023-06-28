@@ -47,13 +47,11 @@ __ZM_EXPORT void zVecListDestroy(zVecList *list);
 /*! \brief nearest neighbor cell in a list to a vector.
  *
  * zVecListNN() finds the nearest neighbor to a vector \a v in a list of
- * vectors \a list. If \a dmin is not the null pointer, the distance
- * between \a v to the nearest neighbor is stored where is pointed by
- * \a dmin.
+ * vectors \a list. The pointer to the nearest neighbor vector is stored in \a nn.
  * \return
- * zVecListNN() returns a pointer to the nearest neighbor vector.
+ * zVecListNN() returns the distance between \a v and the nearest neighbor.
  */
-__ZM_EXPORT zVec zVecListNN(zVecList *list, zVec v, double *dmin);
+__ZM_EXPORT double zVecListNN(zVecList *list, zVec v, zVec *nn);
 
 /*! \brief scan/print a list of vectors from/to a file.
  *

@@ -1,3 +1,4 @@
+2023. 6.28. Modified specification of zVecListNN. [zm_vec_list, example, test]
 2023. 6.27. Modified zPexSetCoeffList and zPexCreateList (thanks to Daishi Kaneta). [zm_pex]
 2023. 6.27. Modified some examples and tests (thanks to Daishi Kaneta). [example, test]
 2023. 6.27. Debugged zVecTreeDestroy not to free the root node. [zm_vec_tree]

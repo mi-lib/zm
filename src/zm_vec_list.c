@@ -75,21 +75,19 @@ void zVecListDestroy(zVecList *list)
 }
 
 /* find the nearest neighbor of a vector by a naive algorithm. */
-zVec zVecListNN(zVecList *list, zVec v, double *dmin)
+double zVecListNN(zVecList *list, zVec v, zVec *nn)
 {
   zVecListCell *cell;
-  double d, __dmin;
-  zVec nn = NULL;
+  double d2, dmin2;
 
-  if( dmin == NULL ) dmin = &__dmin; /* dummy pointer */
-  *dmin = HUGE_VAL;
+  *nn = NULL;
+  dmin2 = HUGE_VAL;
   zListForEach( list, cell )
-    if( ( d = zVecSqrDist( cell->data, v ) ) < *dmin ){
-      *dmin = d;
-      nn = cell->data;
+    if( ( d2 = zVecSqrDist( cell->data, v ) ) < dmin2 ){
+      dmin2 = d2;
+      *nn = cell->data;
     }
-  *dmin = sqrt( *dmin );
-  return nn;
+  return sqrt( dmin2 );
 }
 
 /* scan vectors from a file and creates a list of them. */
