@@ -101,6 +101,8 @@
 #define ZM_ERR_MCA_NOERRORFUNC  "method not assigned to compute error between samples"
 #define ZM_ERR_MCA_NODISTFUNC   "method not assigned to compute distance between samples"
 
+#define ZM_ERR_GNG_NONEMPTY_UNIT "not an empty GNG unit"
+
 #define ZM_ERR_OSCIL_INVTERM "invalid natural term of the oscillator"
 
 #define ZM_ERR_FATAL         "fatal error! - please report to the author"

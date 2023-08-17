@@ -350,6 +350,7 @@ zVec zVecCatNC(zVec v1, double k, zVec v2, zVec v)
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );\
     return NULL;\
   }
+
 #define __z_vec_size_check_3(v1,v2,v) \
   if( !zVecSizeIsEqual(v1,v2) || !zVecSizeIsEqual(v1,v) ){\
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );\
@@ -417,7 +418,7 @@ zVec zVecCat(zVec v1, double k, zVec v2, zVec v)
 }
 
 /* concatenate multiple vectors multiplied by scalar values.
- * this function is internally called to mange variable arguments.
+ * this function is internally called to manage variable arguments.
  */
 static void _zVecCats(zVec v, int n, va_list args)
 {
@@ -461,6 +462,13 @@ zVec zVecLS(zVec v, int n, ...)
 zVec zVecInterDiv(zVec v1, zVec v2, double ratio, zVec v)
 {
   zRawVecInterDiv( zVecBufNC(v1), zVecBufNC(v2), ratio, zVecBufNC(v), zVecSizeNC(v) );
+  return v;
+}
+
+/* replace a vector with the interior division with another. */
+zVec zVecInterDivDRC(zVec v, zVec v2, double ratio)
+{
+  zRawVecInterDivDRC( zVecBuf(v), zVecBuf(v2), ratio, zVecSizeNC(v) );
   return v;
 }
 

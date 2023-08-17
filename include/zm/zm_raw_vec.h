@@ -179,15 +179,19 @@ __ZM_EXPORT void zRawVecLS(double *v, int size, int n, ...);
 
 /*! \brief interior division of two raw vectors.
  *
- * zRawVecInterDiv() calculates the interior division of two
- * raw vectors \a v1 and \a v2 with a division ratio \a ratio.
- * The result is put into \a v.
- *
+ * zRawVecInterDiv() calculates the interior division of two raw vectors
+ * \a v1 and \a v2 with a division ratio \a ratio.
+ * The result is put into \a v,
  * i.e. \a v = (1-\a ratio)* \a v1 + \a ratio * \a v2.
+ *
+ * zRawVecInterDivDRC() replaces a raw vector \a v with the interior
+ * division with another \a v2,
+ * i.e. \a v = (1-\a ratio)* \a v + \a ratio * \a v2.
  * \return
- * zRawVecInterDiv() does not return any value.
+ * zRawVecInterDiv() and zRawVecInterDivDRC() return no value.
  */
 __ZM_EXPORT void zRawVecInterDiv(double *v1, double *v2, double ratio, double *v, int size);
+__ZM_EXPORT void zRawVecInterDivDRC(double *v, double *v2, double ratio, int size);
 
 /*! \brief midpoint of two raw vectors.
  *

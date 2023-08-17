@@ -47,7 +47,7 @@ zVec meanlLSM(zClusterMethod *cm, zVecList *pl, double load[], double n, void *d
   zMat c;
   zVec b, g;
   double xm;
-  register int i = 0;
+  int i = 0;
 
   c = zMatAllocSqr( zVecSizeNC(zListTail(pl)->data) );
   b = zVecAlloc( zVecSizeNC(zListTail(pl)->data) );
@@ -79,7 +79,7 @@ zVec meanlLSM(zClusterMethod *cm, zVecList *pl, double load[], double n, void *d
 
 void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double zmin, double xmax, double ymax, double zmax)
 {
-  register int i, j;
+  int i, j;
   zVec vc;
   double xc, yc, zc, a, b, c, e;
   double x, y, z;

@@ -44,6 +44,14 @@ __ZM_EXPORT zVecListCell *zVecListInsertTail(zVecList *list, zVec v);
  */
 __ZM_EXPORT void zVecListDestroy(zVecList *list);
 
+/*! \brief select a vector of a vector list randomly.
+ *
+ * zVecListSelectRand() selects a vector of a vector list \a vl randomly.
+ * \return
+ * zVecListSelectRand() returns a pointer to the selected vector.
+ */
+__ZM_EXPORT zVec zVecListSelectRand(zVecList *vl);
+
 /*! \brief nearest neighbor cell in a list to a vector.
  *
  * zVecListNN() finds the nearest neighbor to a vector \a v in a list of

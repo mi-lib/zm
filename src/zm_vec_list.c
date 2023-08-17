@@ -74,6 +74,17 @@ void zVecListDestroy(zVecList *list)
   }
 }
 
+/* select a vector of a vector list randomly. */
+zVec zVecListSelectRand(zVecList *vl)
+{
+  zVecListCell *cp;
+  int i;
+
+  i = zRandI( 0, zListSize(vl)-1 );
+  zListItem( vl, i, &cp );
+  return cp->data;
+}
+
 /* find the nearest neighbor of a vector by a naive algorithm. */
 double zVecListNN(zVecList *list, zVec v, zVec *nn)
 {

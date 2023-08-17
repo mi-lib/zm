@@ -22,4 +22,5 @@ OBJ=zm_ieee.o zm_misc.o\
 	zm_intg.o zm_oscil_vdp.o zm_oscil_kura.o\
 	zm_graph.o zm_graph_search.o\
 	zm_rrt.o\
+	zm_gng.o\
 	zm_parse.o

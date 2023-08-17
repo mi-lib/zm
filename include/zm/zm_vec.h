@@ -383,15 +383,18 @@ __ZM_EXPORT zVec zVecLS(zVec v, int n, ...);
 
 /*! \brief interior division of two vectors.
  *
- * zVecInterDiv() calculates the interior division vector of two
- * vectors \a v1 and \a v2 with a division ratio \a ratio.
- * The result is put into \a v.
- *
+ * zVecInterDiv() calculates the interior division vector of two vectors \a v1 and
+ * \a v2 with a division ratio \a ratio. The result is put into \a v,
  * i.e. \a v = (1-\a ratio)* \a v1 + \a ratio * \a v2.
+ *
+ * zVecInterDivDRC() replaces a vector \a v with the interior division with another
+ * \a v2,
+ * i.e. \a v = (1-\a ratio)* \a v + \a ratio * \a v2.
  * \return
- * zVecInterDiv() returns a pointer \a v.
+ * zVecInterDiv() and zVecInterDivDRC() return a pointer \a v.
  */
 __ZM_EXPORT zVec zVecInterDiv(zVec v1, zVec v2, double ratio, zVec v);
+__ZM_EXPORT zVec zVecInterDivDRC(zVec v, zVec v2, double ratio);
 
 /*! \brief midpoint of two vectors.
  *

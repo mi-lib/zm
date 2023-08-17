@@ -17,8 +17,7 @@ __BEGIN_DECLS
 /*! \defgroup RRT
  * \{ *//* ************************************************** */
 
-/*! \brief RRT node class to construct open tree
- */
+/*! \brief RRT node class to construct open tree */
 typedef struct _zRRTNode{
   zVec v;                   /*!< a point vector */
   double cost_edge;         /*!< edge cost to the parent */

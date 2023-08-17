@@ -18,7 +18,7 @@ including:
 - matrix decompositions (LU, Choresky, LQ/QR)
 - eigenvalue analysis
 - finite Fourier series and Fast Fourier Transform
-- graph search and rapidly-explored random tree.
+- graph search and rapidly-explored random tree
 - kd-tree
 - vector sequence and interpolations (linear, Lagrange, Chebyshev,
   spline, Akima, PCHIP, polynomial fitting, NURBS)
@@ -32,6 +32,7 @@ including:
   backward Euler, Butcher-Kuntzmann family, deferred correction,
   Leapflog)
 - multiple classification analysis (K-means, GMM)
+- growing neural gas algorithm
 - nonlinear oscillator
 - parser of mathematical expression
 

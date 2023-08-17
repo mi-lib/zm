@@ -162,8 +162,7 @@ void zRawVecDemDRC(double *v, double *dem, int size)
   while( size-- > 0 ) *v++ /= *dem++;
 }
 
-/* concatenate a raw vector directly by another vector
- * multiplied by a scalar. */
+/* concatenate a raw vector directly by another vector multiplied by a scalar. */
 void zRawVecCatDRC(double *v1, double k, double *v2, int size)
 {
   while( size-- > 0 ) *v1++ += *v2++ * k;
@@ -210,6 +209,16 @@ void zRawVecInterDiv(double *v1, double *v2, double ratio, double *v, int size)
   while( size-- > 0 ){
     *v++ = *v1 + ratio * ( *v2 - *v1 );
     v1++;
+    v2++;
+  }
+}
+
+/* replace a raw vector with the interior division with another. */
+void zRawVecInterDivDRC(double *v, double *v2, double ratio, int size)
+{
+  while( size-- > 0 ){
+    *v += ratio * ( *v2 - *v );
+    v++;
     v2++;
   }
 }
