@@ -54,7 +54,7 @@ void seqmodInterpolate(double dt)
   double tt = 0;
   zIP ip;
   zSeq ipseq;
-  zSeqListCell *cp;
+  zSeqCell *cp;
   zVec v;
   char filename[BUFSIZ];
 
@@ -89,7 +89,7 @@ void seqmodInterpolate(double dt)
 void seqmodReverse(void)
 {
   zSeq revseq;
-  zSeqListCell *cp;
+  zSeqCell *cp;
   char filename[BUFSIZ];
 
   zSeqInit( &revseq );

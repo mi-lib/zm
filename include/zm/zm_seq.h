@@ -20,11 +20,11 @@ __BEGIN_DECLS
 typedef struct{
   double dt;
   zVec v;
-} zSeqCell;
+} zSeqData;
 
-zListClass( zSeq, zSeqListCell, zSeqCell );
+zListClass( zSeq, zSeqCell, zSeqData );
 
-#define zSeqListCellFree(c) do{\
+#define zSeqCellFree(c) do{\
   if( (c) ){\
     zVecFree( (c)->data.v );\
     free( (c) );\
@@ -56,8 +56,8 @@ __ZM_EXPORT void zSeqFree(zSeq *seq);
  * zSeqEnqueue() and zSeqDequeue() return a pointer to \a v,
  * if succeeding, or the null vector, otherwise.
  */
-__ZM_EXPORT zSeqListCell *zSeqEnqueue(zSeq *seq, zVec v, double dt);
-__ZM_EXPORT zSeqListCell *zSeqDequeue(zSeq *seq);
+__ZM_EXPORT zSeqCell *zSeqEnqueue(zSeq *seq, zVec v, double dt);
+__ZM_EXPORT zSeqCell *zSeqDequeue(zSeq *seq);
 
 /*! \brief forward/backward frame step and rewind a sequence.
  *
@@ -66,7 +66,7 @@ __ZM_EXPORT zSeqListCell *zSeqDequeue(zSeq *seq);
  * \return
  * All these functions return a pointer to the current step.
  */
-__ZM_EXPORT zSeqListCell *zSeqJump(zSeq *seq, int step);
+__ZM_EXPORT zSeqCell *zSeqJump(zSeq *seq, int step);
 
 /*! \brief scan and print a sequence to a file.
  *

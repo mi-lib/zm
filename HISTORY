@@ -1,3 +1,4 @@
+2023. 8.18. Renamed zSeqCell and zSeqListCell to zSeqData and zSeqCell, respectively. [zm_seq, zm_ip, zm_ip_chebyshev, zm_nurbs, app]
 2023. 8.18. Implemented Growing Neural Gas. [zm_errmsg, zm_gng]
 2023. 8.18. Added zVecListSelectRand. [zm_vec_list]
 2023. 8.18. Added zVecInterDivDRC. [zm_vec]

@@ -23,7 +23,7 @@ static void _zNURBSKnotInit(zNURBS *nurbs)
 bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order)
 {
   int i;
-  zSeqListCell *cp;
+  zSeqCell *cp;
   bool ret = true;
 
   if( zListSize(seq) <= order ){

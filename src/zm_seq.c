@@ -23,23 +23,23 @@ zSeq *zSeqInit(zSeq *seq)
 /* free a sequence. */
 void zSeqFree(zSeq *seq)
 {
-  zSeqListCell *cp;
+  zSeqCell *cp;
 
   while( !zListIsEmpty( seq ) )
     if( ( cp = zSeqDequeue( seq ) ) )
-      zSeqListCellFree( cp );
+      zSeqCellFree( cp );
 }
 
 /* enqueue a vector to a sequence. */
-zSeqListCell *zSeqEnqueue(zSeq *seq, zVec v, double dt)
+zSeqCell *zSeqEnqueue(zSeq *seq, zVec v, double dt)
 {
-  zSeqListCell *cp;
+  zSeqCell *cp;
 
   if( !v ){
     ZRUNERROR( ZM_ERR_NULLVEC );
     return NULL;
   }
-  if( !( cp = zAlloc( zSeqListCell, 1 ) ) ){
+  if( !( cp = zAlloc( zSeqCell, 1 ) ) ){
     ZALLOCERROR();
     return NULL;
   }
@@ -50,9 +50,9 @@ zSeqListCell *zSeqEnqueue(zSeq *seq, zVec v, double dt)
 }
 
 /* dequeue a vector from a sequence. */
-zSeqListCell *zSeqDequeue(zSeq *seq)
+zSeqCell *zSeqDequeue(zSeq *seq)
 {
-  zSeqListCell *cp;
+  zSeqCell *cp;
 
   if( zListIsEmpty( seq ) ){
     ZRUNWARN( ZM_WARN_SEQ_EMPTY );
@@ -63,9 +63,9 @@ zSeqListCell *zSeqDequeue(zSeq *seq)
 }
 
 /* jump to the specified frame of a sequence. */
-zSeqListCell *zSeqJump(zSeq *seq, int step)
+zSeqCell *zSeqJump(zSeq *seq, int step)
 {
-  zSeqListCell *cp;
+  zSeqCell *cp;
 
   for( cp=zListHead(seq); ; step--, cp=zListCellPrev(cp) ){
     if( cp == zListRoot(seq) ){
@@ -92,12 +92,12 @@ bool zSeqScanFile(zSeq *seq, char filename[])
 /* scan a sequence from a file. */
 zSeq *zSeqFScan(FILE *fp, zSeq *seq)
 {
-  zSeqListCell *cp;
+  zSeqCell *cp;
 
   zSeqInit( seq );
   while( !feof( fp ) ){
     if( !zFSkipDelimiter( fp ) ) break;
-    if( !( cp = zAlloc( zSeqListCell, 1 ) ) ){
+    if( !( cp = zAlloc( zSeqCell, 1 ) ) ){
       ZALLOCERROR();
       break;
     }
@@ -134,7 +134,7 @@ bool zSeqPrintFile(zSeq *seq, char filename[])
 /* print a sequence to a file. */
 void zSeqFPrint(FILE *fp, zSeq *seq)
 {
-  zSeqListCell *cp;
+  zSeqCell *cp;
 
   zListForEachRew( seq, cp ){
     fprintf( fp, "%.10g ", cp->data.dt );

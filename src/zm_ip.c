@@ -14,7 +14,7 @@
 /* assign a sequence to an interpolator and allocate the internal workspace. */
 bool zIPDataAlloc(zIPData *dat, zSeq *seq)
 {
-  zSeqListCell *cp;
+  zSeqCell *cp;
   zIPKnotCell *kp;
   double t = 0;
   int i = 0;

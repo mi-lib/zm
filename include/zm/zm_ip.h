@@ -20,7 +20,7 @@ __BEGIN_DECLS
 
 typedef struct{
   double t;         /*!< time stamp */
-  zSeqListCell *cp; /*!< a pointer to the corresponding sequence cell */
+  zSeqCell *cp; /*!< a pointer to the corresponding sequence cell */
 } zIPKnotCell;
 
 zArrayClass( zIPKnotArray, zIPKnotCell );

@@ -111,7 +111,7 @@ static zIPCom _zm_ip_com_chebyshev = {
 bool zIPCreateChebyshev(zIP *ip, zSeq *seq)
 {
   int i, j;
-  zSeqListCell *cp;
+  zSeqCell *cp;
   zMat r, p, v;
   double x, f1, f2, f;
   bool ret = true;
