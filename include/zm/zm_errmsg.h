@@ -87,13 +87,14 @@
 #define ZM_ERR_NURBS_INVORDER     "invalid order for NURBS"
 #define ZM_ERR_NURBS_INVDIFFORDER "invalid order of differentiation"
 
-#define ZM_ERR_INVALID_NUMSAMP "too many samples %d required out of %d"
+#define ZM_ERR_INVALID_NUMSAMP  "too many samples %d required out of %d"
 
-#define ZM_ERR_OPT_NOEVAL    "no evaluator assigned"
-#define ZM_ERR_OPT_INI       "unable to set the initial point"
-#define ZM_ERR_OPT_STEP      "unable to compute step length"
-#define ZM_ERR_OPT_UNSOLVE   "optimal solution doesn't exist"
-#define ZM_ERR_OPT_INF       "infinite solution exists"
+#define ZM_ERR_OPT_NOEVAL       "no evaluator assigned"
+#define ZM_ERR_OPT_INI          "unable to set the initial point"
+#define ZM_ERR_OPT_STEP         "unable to compute step length"
+#define ZM_ERR_OPT_UNSOLVE      "optimal solution doesn't exist"
+#define ZM_ERR_OPT_INF          "infinite solution exists"
+#define ZM_ERR_OPT_NONCONVEX    "cannot solve non-convex QP programs"
 
 #define ZM_ERR_MCA_INVSIZ       "invalid size of vector for clustering: %d"
 #define ZM_ERR_MCA_EMPTY        "empty set assigned"

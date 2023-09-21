@@ -148,7 +148,7 @@ zVec zLESolveL(zMat l, zVec b, zVec ans, zIndex idx)
   int i, j, p;
   double x;
 
-  for( i=0; i<zArraySize(idx); i++ ){
+  for( i=0; i<zIndexSizeNC(idx); i++ ){
     x = zVecElemNC( b, (p=zIndexElemNC(idx,i)) );
     for( j=0; j<i; j++ )
       x -= zMatElemNC(l,p,j)*zVecElemNC(ans,j);
@@ -181,14 +181,14 @@ zVec zLESolveLU(zMat l, zMat u, zVec b, zVec ans, zIndex idx)
     ZRUNERROR( ZM_ERR_NONSQR_MAT );
     return NULL;
   }
-  if( zMatRowSize(l) != zArraySize(idx) ||
-      zMatRowSize(u) != zArraySize(idx) ||
-      zVecSize(b) != zArraySize(idx) ||
-      zVecSize(ans) != zArraySize(idx) ){
+  if( zMatRowSize(l) != zIndexSizeNC(idx) ||
+      zMatRowSize(u) != zIndexSizeNC(idx) ||
+      zVecSize(b) != zIndexSizeNC(idx) ||
+      zVecSize(ans) != zIndexSizeNC(idx) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return NULL;
   }
-  if( !( c = zVecAlloc( zArraySize(idx) ) ) ) return NULL;
+  if( !( c = zVecAlloc( zIndexSizeNC(idx) ) ) ) return NULL;
   zLESolveL( l, b, c, idx );
   zLESolveU( u, c, ans );
   zVecFree( c );
@@ -253,7 +253,7 @@ zVec zLESolveGS(zMat a, zVec b, zVec ans)
     return NULL;
   }
   if( !( idx = zIndexCreate(zVecSizeNC(ans)) ) ) return NULL;
-  for( i=0; i<zArraySize(idx); i++ )
+  for( i=0; i<zIndexSizeNC(idx); i++ )
     zPivoting( a, idx, i, i );
 
   for( i=0; ; i++ ){

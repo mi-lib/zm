@@ -21,48 +21,72 @@ __BEGIN_DECLS
  */
 __ZM_EXPORT double zQuadraticValue(zMat q, zVec c, zVec x);
 
+/* TODO: remove description about zQPSolve(). */
 /*! \brief convex quadratic programming solver.
  *
- * zQPSolve() solves a quadratic programming with equality
- * constraint conditions to find the vector x which
- * minimizes 0.5 xT q x + cT x subject to a x = b
- * where \a q is a positive definite quadratic coefficient matrix.
- * \a c is an offset coefficient vector.
- * \a a and \a b are the coefficient matrix and constant vector
- * to describe equality constraint.
+ * zQPSolve() solves a quadratic programming with equality constraint conditions
+ * to find the vector x that minimizes 0.5 x^T \a q x + \a c^T x subject to
+ * \a a x = \a b, where \a q is a positive definite quadratic coefficient matrix,
+ * \a c is an offset coefficient vector, \a a and \a b are the coefficient matrix
+ * and a constant vector to describe the equality constraint.
  *
- * zQPSolveLemke() solves a quadratic programming with inequality
- * constraint to find the vector x which minimizes 0.5 xT q x + cT x
- * subject to a x >= b and x >= 0 based on Lemke method. For this
- * function, \a q must be positive definite.
- *
- * zQPSolveIP() solves a quadratic programming with inequality
- * constraint to find the vector x which minimizes 0.5 xT q x + cT x
- * subject to a x >= b and x >= 0 based on interior point method.
- * For this function, \a q must be positive definite.
- *
- * For these functions, the result is put into \a ans, and
- * if \a cost is not the null pointer, the optimum value
- * is put into it.
+ * The result is put into \a ans. If \a cost is not the null pointer, the optimum
+ * value is stored in it.
+ * \note
+ * zQPSolve() does not check if \a q is positive-definite. If not, the solution
+ * does not make sense.
  * \return
- * zQPSolve() and zQPSolveLemke() returns the true value if
- * it succeeds to get the solution, or the the false value if
- * there are vector/matrix size mismatch, bad memory allocation,
- * non-feasible solution and infinite solution are found.
+ * zQPSolve() returns the true value if it succeeds to get the solution, or the
+ * false value in failure cases where there is a mismatch of vector and matrix,
+ * or it fails to allocate memory.
  * \sa
  * zLCPSolveLemke
  */
+#if 0
 __ZM_EXPORT bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost);
+#endif
+
+/*! \brief convex quadratic programming solver.
+ *
+ * zQPSolveLemke() and zQPSolveIP() solve a quadratic programming with inequality
+ * constraint conditions to find the vector x that minimizes 0.5 x^T \a q x + \a c^T x
+ * subject to \a a x >= \a b and x >= 0 based on the Lemke method and the interior
+ * point method, respectively.
+ * \a q must be positive definite.
+ *
+ * For the both functions, the result is put into \a ans. If \a cost is not the null
+ * pointer, the optimum value is stored in it.
+ * \note
+ * Neither zQPSolveLemke() nor zQPSolveIP() check if \a q is positive-definite.
+ * If not, the solution does not make sense.
+ * \return
+ * zQPSolveLemke() and zQPSolveIP() return the true value if they succeed to get the
+ * solution. If a vector/matrix size mismatch, bad memory allocation, non-feasible
+ * solution and infinite solution are found, the false value is returned.
+ * \sa
+ * zLCPSolveLemke, zLCPSolveIP
+ */
 __ZM_EXPORT bool zQPSolveLemke(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost);
 __ZM_EXPORT bool zQPSolveIP(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost);
 
-/*! \brief quadratic programming solver by active-set method
+/*! \brief convex quadratic programming solver by active set method.
  *
- * zQPSolveASM() solves a quadratic programming with inequality
- * constraint to find the vector x which minimizes 0.5 xT q x + cT x
- * subject to a x >= b and x >= 0 based on active-set method.
+ * zQPSolveASM() solves a quadratic programming with inequality constraint conditions
+ * to find the vector x that minimizes 0.5 x^T \a q x + \a c^T x subject to \a a x >= \a b
+ * based on the active set method.
+ * \a q must be positive definite.
+ *
+ * The result is put into \a ans. If \a cost is not the null pointer, the optimum value
+ * is stored in it.
+ * \note
+ * zQPSolveASM() does not check if \a q is positive-definite. If not, the solution does
+ * not make sense.
+ * \return
+ * zQPSolveASM() returns the true value if it succeeds to get the solution. If a
+ * vector/matrix size mismatch, bad memory allocation, non-feasible solution and infinite
+ * solution are found, it returns the false value.
  */
-__ZM_EXPORT bool zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost, zVec init(zMat,zVec,zVec,void*), void *util);
+__ZM_EXPORT bool zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost);
 
 /*! \brief quadratic programming solver by conjugate gradient method.
  *

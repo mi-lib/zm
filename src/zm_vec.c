@@ -242,11 +242,11 @@ static int _zVecSortCmp(void *p1, void *p2, void *priv)
 /* rearrange index so as to sort vector. */
 void zVecSort(zVec v, zIndex idx)
 {
-  if( zVecSizeNC(v) != zArraySize(idx) ){
+  if( zVecSizeNC(v) != zIndexSizeNC(idx) ){
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );
     return;
   }
-  zQuickSort( zVecBufNC(idx), zArraySize(idx), sizeof(int), _zVecSortCmp, zVecBufNC(v) );
+  zQuickSort( zIndexBufNC(idx), zIndexSizeNC(idx), sizeof(int), _zVecSortCmp, zVecBufNC(v) );
 }
 
 /* maximum of vector elements. */

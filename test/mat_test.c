@@ -344,6 +344,42 @@ void assert_quad(void)
   zVecFreeAO( 2, wv1, wv2 );
 }
 
+void assert_mulmatmatmatt(void)
+{
+  zMat a, q, m, qat, mtest;
+
+  a = zMatAlloc( MAT_ROW_SIZE, MAT_COL_SIZE );
+  q = zMatAllocSqr( MAT_COL_SIZE );
+  qat = zMatAlloc( MAT_COL_SIZE, MAT_ROW_SIZE );
+  m = zMatAllocSqr( MAT_ROW_SIZE );
+  mtest = zMatAllocSqr( MAT_ROW_SIZE );
+  zMatRandUniform( a, -10, 10 );
+  zMatRandUniform( q, -10, 10 );
+  zMulMatMatMatTNC( a, q, m );
+  zMulMatMatT( q, a, qat );
+  zMulMatMat( a, qat, mtest );
+  zAssert( zMulMatMatMatT, zMatIsEqual( m, mtest, zTOL ) );
+  zMatFreeAO( 5, a, q, m, qat, mtest );
+}
+
+void assert_mulmattmatmat(void)
+{
+  zMat a, q, m, qa, mtest;
+
+  a = zMatAlloc( MAT_ROW_SIZE, MAT_COL_SIZE );
+  q = zMatAllocSqr( MAT_ROW_SIZE );
+  qa = zMatAlloc( MAT_ROW_SIZE, MAT_COL_SIZE );
+  m = zMatAllocSqr( MAT_COL_SIZE );
+  mtest = zMatAllocSqr( MAT_COL_SIZE );
+  zMatRandUniform( a, -10, 10 );
+  zMatRandUniform( q, -10, 10 );
+  zMulMatTMatMatNC( a, q, m );
+  zMulMatMat( q, a, qa );
+  zMulMatTMat( a, qa, mtest );
+  zAssert( zMulMatMatMatT, zMatIsEqual( m, mtest, zTOL ) );
+  zMatFreeAO( 5, a, q, m, qa, mtest );
+}
+
 int main(void)
 {
   zRandInit();
@@ -353,6 +389,8 @@ int main(void)
   assert_mul_mat_vec();
   assert_dyad();
   assert_quad();
+  assert_mulmatmatmatt();
+  assert_mulmattmatmat();
 
   return EXIT_SUCCESS;
 }

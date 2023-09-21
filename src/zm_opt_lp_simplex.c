@@ -72,7 +72,7 @@ static void _zLPTableauSweepC1(zLPTableau *tab, int p)
   double cp;
 
   cp = zVecElemNC(tab->c,zIndexElemNC(tab->ib,p));
-  for( i=0; i<zArraySize(tab->in); i++ )
+  for( i=0; i<zIndexSizeNC(tab->in); i++ )
     zVecElemNC(tab->c,zIndexElemNC(tab->in,i))
       -= zMatElemNC(tab->a,zIndexElemNC(tab->ir,p),zIndexElemNC(tab->in,i)) * cp;
   tab->d += zVecElemNC(tab->b,zIndexElemNC(tab->ir,p)) * cp;
@@ -84,7 +84,7 @@ static void _zLPTableauSweepC(zLPTableau *tab)
 {
   int i;
 
-  for( i=0; i<zArraySize(tab->ib); i++ )
+  for( i=0; i<zIndexSizeNC(tab->ib); i++ )
     _zLPTableauSweepC1( tab, i );
 }
 
@@ -95,7 +95,7 @@ static int _zLPTableauFindNA(zLPTableau *tab)
   double c_min;
 
   c_min = zVecElemNC( tab->c, zIndexElemNC(tab->in,(na=0)) );
-  for( i=1; i<zArraySize(tab->in); i++ )
+  for( i=1; i<zIndexSizeNC(tab->in); i++ )
     if( zVecElemNC(tab->c,zIndexElemNC(tab->in,i)) < c_min )
       c_min = zVecElemNC( tab->c, zIndexElemNC(tab->in,(na=i)) );
   return c_min < -zTOL ? na : -1;
@@ -106,7 +106,7 @@ static int _zLPTableauFindNA_deg(zLPTableau *tab)
 { /* next axis for degenerated case */
   int i, na = -1, idx_min = INT_MAX;
 
-  for( i=0; i<zArraySize(tab->in); i++ )
+  for( i=0; i<zIndexSizeNC(tab->in); i++ )
     if( zVecElemNC(tab->c,zIndexElemNC(tab->in,i)) < -zTOL ){
       if( zIndexElemNC(tab->in,i) < idx_min ){
         idx_min = zIndexElemNC(tab->in,i);
@@ -124,7 +124,7 @@ static int _zLPTableauFindNP(zLPTableau *tab, int *na)
   bool f_try = true;
 
  RETRY:
-  for( p_min=HUGE_VAL, np=-1, i=0; i<zArraySize(tab->ir); i++ ){
+  for( p_min=HUGE_VAL, np=-1, i=0; i<zIndexSizeNC(tab->ir); i++ ){
     /* a should be comared with 0 in theory. But zTOL instead of 0 does work. */
     if( ( a = zMatElemNC(tab->a,zIndexElemNC(tab->ir,i),zIndexElemNC(tab->in,*na)) ) < zTOL )
       continue;
@@ -150,16 +150,16 @@ static void _zLPTableauSweepA(zLPTableau *tab, int np, int na)
 
   /* normalize pivot row */
   ap = zMatElemNC(tab->a,zIndexElemNC(tab->ir,np),zIndexElemNC(tab->in,na));
-  for( j=0; j<zArraySize(tab->in); j++ )
+  for( j=0; j<zIndexSizeNC(tab->in); j++ )
     zMatElemNC(tab->a,zIndexElemNC(tab->ir,np),zIndexElemNC(tab->in,j)) /= ap;
   zMatElemNC(tab->a,zIndexElemNC(tab->ir,np),zIndexElemNC(tab->ib,np)) /= ap;
   zVecElemNC(tab->b,zIndexElemNC(tab->ir,np)) /= ap;
   /* sweep-out rest row */
-  for( i=0; i<zArraySize(tab->ir); i++ ){
+  for( i=0; i<zIndexSizeNC(tab->ir); i++ ){
     if( i == np ) continue;
     r = zIndexElemNC(tab->ir,i);
     ap = zMatElemNC(tab->a,r,zIndexElemNC(tab->in,na));
-    for( j=0; j<zArraySize(tab->in); j++ )
+    for( j=0; j<zIndexSizeNC(tab->in); j++ )
       zMatElemNC(tab->a,r,zIndexElemNC(tab->in,j))
         -= zMatElemNC(tab->a,zIndexElemNC(tab->ir,np),zIndexElemNC(tab->in,j)) * ap;
     zMatElemNC(tab->a,r,zIndexElemNC(tab->ib,np))
@@ -212,9 +212,9 @@ bool zLPTableauFindBase(zLPTableau *tab)
 
   tab->d = 0; /* precautionary touch-up */
   n = zVecSizeNC(tab->c) - zVecSizeNC(tab->b);
-  for( i=0; i<zArraySize(tab->ib); i++ ){
+  for( i=0; i<zIndexSizeNC(tab->ib); i++ ){
     if( zIndexElemNC(tab->ib,i) < n ) continue;
-    for( j=0; j<zArraySize(tab->in); j++ ){
+    for( j=0; j<zIndexSizeNC(tab->in); j++ ){
       if( zIndexElemNC(tab->in,j) < n && !zIsTiny( zMatElemNC(tab->a,i,zIndexElemNC(tab->in,j)) ) ){
         _zLPTableauSweepA( tab, i, j );
         _zLPTableauSwapPivot( tab, i, j );
@@ -227,7 +227,7 @@ bool zLPTableauFindBase(zLPTableau *tab)
    NEXT: ;
   }
   /* rearrange nonfeasible bases */
-  for( i=0; i<zArraySize(tab->in); i++ )
+  for( i=0; i<zIndexSizeNC(tab->in); i++ )
     if( zIndexElemNC(tab->in,i) >= n ){
       zIndexRemove( tab->in, i );
       i--;
@@ -247,7 +247,7 @@ static void _zLPTableauAns(zLPTableau *tab, zVec ans)
   int i;
 
   zVecZero( ans );
-  for( i=0; i<zArraySize(tab->ib); i++ )
+  for( i=0; i<zIndexSizeNC(tab->ib); i++ )
     zVecSetElemNC( ans, zIndexElemNC(tab->ib,i), zVecElemNC(tab->b,i) );
 }
 

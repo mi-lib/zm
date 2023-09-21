@@ -142,7 +142,7 @@ static int _zDataSortIndexCmp(void *i1, void *i2, void *priv)
 /* sort an integer vector in the descent order of the corresponding samples. */
 zIndex zDataSortIndex(double data[], size_t n, zIndex index)
 {
-  zQuickSort( zArrayBuf(index), zArraySize(index), sizeof(int), _zDataSortIndexCmp, data );
+  zQuickSort( zArrayBuf(index), zIndexSizeNC(index), sizeof(int), _zDataSortIndexCmp, data );
   return index;
 }
 
@@ -161,6 +161,6 @@ static int _zDataSortAbsIndexCmp(void *i1, void *i2, void *priv)
 /* sort an integer vector in the descent order of absolute values of the corresponding samples. */
 zIndex zDataSortAbsIndex(double data[], size_t n, zIndex index)
 {
-  zQuickSort( zArrayBuf(index), zArraySize(index), sizeof(int), _zDataSortAbsIndexCmp, data );
+  zQuickSort( zArrayBuf(index), zIndexSizeNC(index), sizeof(int), _zDataSortAbsIndexCmp, data );
   return index;
 }

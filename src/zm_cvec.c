@@ -145,8 +145,8 @@ bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec, double tol)
       zIndexSetElemNC( iidx, isize++, i );
     }
   }
-  *rvec = rsize > 0 ? zVecAlloc( ( zArraySize(ridx) = rsize ) ) : NULL;
-  *ivec = isize > 0 ? zCVecAlloc( ( zArraySize(iidx) = isize ) ) : NULL;
+  *rvec = rsize > 0 ? zVecAlloc( ( zIndexSizeNC(ridx) = rsize ) ) : NULL;
+  *ivec = isize > 0 ? zCVecAlloc( ( zIndexSizeNC(iidx) = isize ) ) : NULL;
   if( !*rvec && !*ivec ){
     zVecFree( *rvec );
     zCVecFree( *ivec );

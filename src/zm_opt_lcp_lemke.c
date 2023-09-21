@@ -1,8 +1,7 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_opt_lcp_lemke - optimization tools:
- * Lemke's linear complementarity pivot method.
+ * zm_opt_lcp_lemke - optimization tools: Lemke's linear complementarity pivot method.
  */
 
 #include <zm/zm_opt.h>
@@ -71,7 +70,7 @@ static void _zLemkeSweep(_zLemke *tab, int p)
 
   /* normalize pivot row */
   ap = zMatElemNC( tab->m, p, tab->act );
-  for( j=0; j<zArraySize(tab->in); j++ )
+  for( j=0; j<zIndexSizeNC(tab->in); j++ )
     zMatElemNC( tab->m, p, zIndexElemNC(tab->in,j) ) /= ap;
   zMatElemNC( tab->m, p, zIndexElemNC(tab->ib,p) ) /= ap;
   zMatSetElemNC( tab->m, p, tab->act, 1.0 );
@@ -80,7 +79,7 @@ static void _zLemkeSweep(_zLemke *tab, int p)
   for( i=0; i<zVecSizeNC(tab->q); i++ ){
     if( i == p ) continue;
     ap = zMatElemNC( tab->m, i, tab->act );
-    for( j=0; j<zArraySize(tab->in); j++ )
+    for( j=0; j<zIndexSizeNC(tab->in); j++ )
       zMatElemNC( tab->m, i, zIndexElemNC(tab->in,j) )
         -= zMatElemNC( tab->m, p, zIndexElemNC(tab->in,j) ) * ap;
     zMatElemNC( tab->m, i, zIndexElemNC(tab->ib,p) )
@@ -98,8 +97,8 @@ static bool _zLemkeSwap(_zLemke *tab, int p)
   ib = zIndexElemNC(tab->ib,p);
   zIndexSetElemNC( tab->ib, p, tab->act );
   /* choose complementary pivot */
-  tab->act = ( ib + zArraySize(tab->ib) ) % ( 2*zArraySize(tab->ib) );
-  for( i=0; i<zArraySize(tab->in); i++ )
+  tab->act = ( ib + zIndexSizeNC(tab->ib) ) % ( 2*zIndexSizeNC(tab->ib) );
+  for( i=0; i<zIndexSizeNC(tab->in); i++ )
     if( zIndexElemNC(tab->in,i) == tab->act ){
       zIndexSetElemNC( tab->in, i, ib );
       break;
@@ -147,14 +146,14 @@ static void _zLemkeAnswer(_zLemke *tab, zVec w, zVec z)
 
   if( w ){
     zVecZero( w );
-    for( i=0; i<zArraySize(tab->ib); i++ ){
+    for( i=0; i<zIndexSizeNC(tab->ib); i++ ){
       idx = zIndexElemNC(tab->ib,i) - zVecSizeNC(w);
       if( idx >= 0 && idx < zVecSizeNC(w) )
         zVecSetElemNC( w, idx, zVecElemNC(tab->q,i) );
     }
   }
   zVecZero( z );
-  for( i=0; i<zArraySize(tab->ib); i++ )
+  for( i=0; i<zIndexSizeNC(tab->ib); i++ )
     if( zIndexElemNC(tab->ib,i) < zVecSizeNC(z) )
       zVecSetElemNC( z, zIndexElemNC(tab->ib,i), zVecElemNC(tab->q,i) );
 }

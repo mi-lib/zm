@@ -520,30 +520,49 @@ __ZM_EXPORT zMat zMulMatTMat(zMat m1, zMat m2, zMat m);
 __ZM_EXPORT zVec zMulMatVecDRC(zMat m, zVec v);
 __ZM_EXPORT zVec zMulMatTVecDRC(zMat m, zVec v);
 
-/*! \brief quadratic multiplication of matrices.
+/*! \brief quadratic multiplication of matrices and a weighting vector.
  *
- * zMatQuadNC() and zMatQuad() calculate a quadratic
- * multiplication of a matrix \a a amplified by a vector
- * \a w.
- * The resultant matrix \a q forms as \a q = \a a diag{\a w} \a a^T.
+ * zMatQuadNC() and zMatQuad() calculate a quadratic multiplication of
+ * a matrix \a a amplified by a matrix diagonalizing a vector \a w.
+ * The resulted matrix \a q forms as \a q = \a a diag{\a w} \a a^T.
  *
- * zMatTQuadNC() and zMatTQuad() calculate a quadratic
- * multiplication of the transpose of \a a amplified by
- * \a w.
- * The resultant matrix \a q forms as \a q = \a a^T diag{\a w} \a a.
+ * zMatTQuadNC() and zMatTQuad() calculate a quadratic multiplication of
+ * the transpose of \a a amplified by a matrix diagonalizing \a w.
+ * The resulted matrix \a q forms as \a q = \a a^T diag{\a w} \a a.
  *
- * zMatQuad() and zMatTQuad() check if the sizes of \a a, \a w
- * and \a q are consistent, while neither zMatQuadNC() nor
- * zMatTQuadNC() do.
+ * zMatQuad() and zMatTQuad() check if the sizes of \a a, \a w and \a q
+ * are consistent, while neither zMatQuadNC() nor zMatTQuadNC() do.
  * \return
- * zMatQuadNC() and zMatTQuadNC()return a pointer \a q.
- * zMatQuad() and zMatTQuad() also return a pointer \a q,
- * if succeeding. Otherwise, the null pointer is returned.
+ * zMatQuadNC() and zMatTQuadNC() return a pointer \a q.
+ * zMatQuad() and zMatTQuad() also return a pointer \a q, if succeeding.
+ * Otherwise, the null pointer is returned.
  */
 __ZM_EXPORT zMat zMatQuadNC(zMat a, zVec w, zMat q);
 __ZM_EXPORT zMat zMatQuad(zMat a, zVec w, zMat q);
 __ZM_EXPORT zMat zMatTQuadNC(zMat a, zVec w, zMat q);
 __ZM_EXPORT zMat zMatTQuad(zMat a, zVec w, zMat q);
+
+/*! \brief quadratic multiplication of matrices.
+ *
+ * zMulMatMatMatTNC and zMulMatMatMatT() calculate a quadratic multiplication
+ * of a matrix \a a amplified by another matrix \a q.
+ * The resulted matrix \a m forms as \a m = \a a \a q \a a^T.
+ *
+ * zMulMatTMatMatNC and zMulMatTMatMat() calculate a quadratic multiplication
+ * of a matrix \a a amplified by another matrix \a q.
+ * The resulted matrix \a m forms as \a m = \a a^T \a q \a a.
+ *
+ * zMulMatMatMatT() and zMulMatTMatMat() check if the sizes of \a a, \a q and
+ * \a m are consistent, while neither zMulMatMatMatTNC() nor zMulMatTMatMatNC() do.
+ * \return
+ * zMulMatMatMatTNC() and zMulMatTMatMatNC() return a pointer \a m.
+ * zMulMatMatMatT() and zMulMatTMatMat() also return a pointer \a m, if succeeding.
+ * Otherwise, the null pointer is returned.
+ */
+__ZM_EXPORT zMat zMulMatMatMatTNC(zMat a, zMat q, zMat m);
+__ZM_EXPORT zMat zMulMatMatMatT(zMat a, zMat q, zMat m);
+__ZM_EXPORT zMat zMulMatTMatMatNC(zMat a, zMat q, zMat m);
+__ZM_EXPORT zMat zMulMatTMatMat(zMat a, zMat q, zMat m);
 
 /*! \brief read a matrix from a ZTK format processor. */
 __ZM_EXPORT zMat zMatFromZTK(ZTK *ztk);

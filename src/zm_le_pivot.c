@@ -14,7 +14,7 @@ int zPivoting(zMat m, zIndex idx, int r, int c)
 
   pi = r;
   max = fabs( zMatElemNC( m, zIndexElemNC(idx,pi), c ) );
-  for( i=r+1; i<zArraySize(idx); i++ ){
+  for( i=r+1; i<zIndexSizeNC(idx); i++ ){
     tmp = fabs( zMatElemNC( m, zIndexElemNC(idx,i), c ) );
     if( tmp > max ){
       max = tmp;
@@ -32,7 +32,7 @@ int zPivotingDiag(zMat m, zIndex idx, int i)
 
   pi = i;
   max = fabs( zMatElemNC( m, zIndexElemNC(idx,i), zIndexElemNC(idx,i) ) );
-  for( j=i+1; j<zArraySize(idx); j++ ){
+  for( j=i+1; j<zIndexSizeNC(idx); j++ ){
     tmp = fabs( zMatElemNC( m, zIndexElemNC(idx,j), zIndexElemNC(idx,j) ) );
     if( tmp > max ){
       max = tmp;

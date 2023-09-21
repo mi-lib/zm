@@ -22,7 +22,7 @@ int zMatDecompLQDST(zMat m, zMat l, zMat q, zIndex idx)
       zMatElemNC(l,i,j) = r;
     }
     if( zIsTiny( r = zRawVecNorm(mp,zMatColSizeNC(m)) ) ){
-      zIndexMove( idx, rank, zArraySize(idx)-1 );
+      zIndexMove( idx, rank, zIndexSizeNC(idx)-1 );
       continue;
     }
     zRawVecDiv( mp, r, zMatRowBuf(q,rank), zMatColSizeNC(m) );

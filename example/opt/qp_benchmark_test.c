@@ -22,7 +22,6 @@ void gen_sample1(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
 
 void gen_sample2(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
 {
-  /* in this case, answer is [ 2/3  4/3 ] */
   double qarray[] = { 1, -1, -1, 2 };
   double aarray[] = { -1, -1, 1, -2, -2, -1 };
   double carray[] = { -2, -6 };
@@ -42,6 +41,7 @@ void gen_sample3(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
   double barray[] = { -350, -450, -240 };
   double ansarray[] = { 80, 0 };
   alloc_sample( 2, qarray, carray, 3, aarray, barray, ansarray, q, c, a, b, ans, x );
+  printf( "(non-convex case)\t" );
 }
 
 void gen_sample4(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
@@ -72,6 +72,7 @@ void gen_sample6(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
   double barray[] = { -20 };
   double ansarray[] = { 0, 2 };
   alloc_sample( 2, qarray, carray, 1, aarray, barray, ansarray, q, c, a, b, ans, x );
+  printf( "(degeneracy case)\t" );
 }
 
 void gen_sample7(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
@@ -102,7 +103,6 @@ void gen_sample8(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
 
 void gen_sample9(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
 {
-  /* in this case, answer is [1/2 1/2] */
   double qarray[] = { 1, 0, 0, 1 };
   double carray[] = { 0, 0 };
   double aarray[] = { 1, 1 };
@@ -110,6 +110,60 @@ void gen_sample9(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
   double ansarray[] = { 0.5, 0.5 };
   alloc_sample( 2, qarray, carray, 1, aarray, barray, ansarray, q, c, a, b, ans, x );
 }
+
+void gen_sample10(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
+{
+  double qarray[] = { 6, 3, 3, 4 };
+  double carray[] = { 2, 5 };
+  double aarray[] = { 1, -1 };
+  double barray[] = { 2 };
+  double ansarray[] = { 21.0/45.0, -1.6 };
+  alloc_sample( 2, qarray, carray, 1, aarray, barray, ansarray, q, c, a, b, ans, x );
+  printf( "(negative solution case)\t" );
+}
+
+void gen_sample11(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
+{
+  double qarray[] = { 2.0, 0.0, 0.0, 2.0 };
+  double carray[] = { -2.0, -3.0 };
+  double aarray[] = {
+   -1.0, -4.0,
+   -1.0, -1.0,
+  };
+  double barray[] = { -4.0, -2.0 };
+  double ansarray[] = { 14.0/17.0, 27.0/34.0 };
+  alloc_sample( 2, qarray, carray, 2, aarray, barray, ansarray, q, c, a, b, ans, x );
+}
+
+void gen_sample12(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
+{
+  double qarray[] = { 2.0, 0.0, 0.0, 2.0 };
+  double carray[] = { 4.0, -2.0 };
+  double aarray[] = {
+    1.0, 1.0,
+    1.0, 2.0,
+  };
+  double barray[] = { 4.0, 6.0 };
+  double ansarray[] = { 1.0/2.0, 7.0/2.0 };
+  alloc_sample( 2, qarray, carray, 2, aarray, barray, ansarray, q, c, a, b, ans, x );
+}
+
+void gen_sample13(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
+{
+  double qarray[] = { 2.0, 0.0, 0.0, 2.0 };
+  double carray[] = { -4.0, -2.0 };
+  double aarray[] = {
+    1.0, 1.0,
+    1.0, 2.0,
+  };
+  double barray[] = { 4.0, 6.0 };
+  double ansarray[] = { 12.0/5.0, 9.0/5.0 };
+  alloc_sample( 2, qarray, carray, 2, aarray, barray, ansarray, q, c, a, b, ans, x );
+}
+
+
+
+
 
 
 void (* gen_sample[])(zMat*,zVec*,zMat*,zVec*,zVec*,zVec*) = {
@@ -122,8 +176,27 @@ void (* gen_sample[])(zMat*,zVec*,zMat*,zVec*,zVec*,zVec*) = {
   gen_sample7,
   gen_sample8,
   gen_sample9,
+  gen_sample10,
+  gen_sample11,
+  gen_sample12,
+  gen_sample13,
   NULL,
 };
+
+void qpsolve_test(const char *name, bool (*solver)(zMat,zVec,zMat,zVec,zVec,double*), zMat q, zVec c, zMat a, zVec b, zVec x, zVec ans, double tol)
+{
+  double cost, err;
+
+  printf( "%s ... ", name );
+  if( !solver( q, c, a, b, x, &cost ) ){
+    printf( "unsolvable\t" );
+  } else{
+    if( zIsTol( ( err = cost - zQuadraticValue( q, c, ans ) ), tol ) )
+      printf( "OK\t" );
+    else
+      printf( "failed (%.10g)\t", err );
+  }
+}
 
 #define TOL (1.0e-7)
 
@@ -131,30 +204,16 @@ int main(void)
 {
   zMat q, a;
   zVec c, b, x, ans;
-  double cost, err;
   int i;
 
   for( i=0; gen_sample[i]; i++ ){
+    printf( "[sample #%d] ", i+1 );
     gen_sample[i]( &q, &c, &a, &b, &ans, &x );
-    printf( "[sample #%d] (cond.=%d, var.=%d)\t", i+1, zMatRowSize(a), zMatRowSize(q) );
-    printf( "Lemke ... " );
-    if( !zQPSolveLemke( q, c, a, b, x, &cost ) ){
-      printf( "unsolvable\t" );
-    } else{
-      if( zIsTol( ( err = cost - zQuadraticValue( q, c, x ) ), TOL ) )
-        printf( "OK\t" );
-      else
-        printf( "failed (%.10g)\t", err );
-    }
-    printf( "IP ... " );
-    if( !zQPSolveIP( q, c, a, b, x, &cost ) ){
-      printf( "unsolvable\n" );
-    } else{
-      if( zIsTol( ( err = cost - zQuadraticValue( q, c, x ) ), TOL ) )
-        printf( "OK\n" );
-      else
-        printf( "failed (%.10g)\n", err );
-    }
+    printf( "(cond.=%d, var.=%d)\t", zMatRowSize(a), zMatRowSize(q) );
+    qpsolve_test( "ASM", zQPSolveASM, q, c, a, b, x, ans, TOL );
+    qpsolve_test( "Lemke", zQPSolveLemke, q, c, a, b, x, ans, TOL );
+    qpsolve_test( "IP", zQPSolveIP, q, c, a, b, x, ans, TOL );
+    printf( "\n" );
     zMatFreeAO( 2, q, a );
     zVecFreeAO( 4, c, b, ans, x );
   }

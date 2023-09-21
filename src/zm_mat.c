@@ -881,6 +881,70 @@ zMat zMatTQuad(zMat a, zVec w, zMat q)
   return zMatTQuadNC( a, w, q );
 }
 
+/* quadratic multiplication of matrices ('m = a q a^T') without checking size consistency. */
+zMat zMulMatMatMatTNC(zMat a, zMat q, zMat m)
+{
+  int i, j, k;
+  double y;
+
+  zMatZero( m );
+  for( i=0; i<zMatRowSizeNC(q); i++ )
+    for( j=0; j<zMatRowSizeNC(a); j++ ){
+      y = 0;
+      for( k=0; k<zMatColSizeNC(q); k++ )
+        y += zMatElemNC(q,i,k) * zMatElemNC(a,j,k);
+      for( k=0; k<zMatRowSizeNC(a); k++ )
+        zMatElemNC(m,k,j) += zMatElemNC(a,k,i) * y;
+    }
+  return m;
+}
+
+/* quadratic multiplication of matrices ('m = a q a^T'). */
+zMat zMulMatMatMatT(zMat a, zMat q, zMat m)
+{
+  if( !zMatIsSqr( q ) || !zMatIsSqr( m ) ){
+    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    return NULL;
+  }
+  if( !zMatColRowSizeIsEqual( a, q ) ){
+    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    return NULL;
+  }
+  return zMulMatMatMatTNC( a, q, m );
+}
+
+/* quadratic multiplication of matrices ('m = a^T q a') without checking size consistency. */
+zMat zMulMatTMatMatNC(zMat a, zMat q, zMat m)
+{
+  int i, j, k;
+  double y;
+
+  zMatZero( m );
+  for( i=0; i<zMatRowSizeNC(q); i++ )
+    for( j=0; j<zMatColSizeNC(a); j++ ){
+      y = 0;
+      for( k=0; k<zMatColSizeNC(q); k++ )
+        y += zMatElemNC(q,i,k) * zMatElemNC(a,k,j);
+      for( k=0; k<zMatColSizeNC(a); k++ )
+        zMatElemNC(m,k,j) += zMatElemNC(a,i,k) * y;
+    }
+  return m;
+}
+
+/* quadratic multiplication of matrices ('m = a^T q a'). */
+zMat zMulMatTMatMat(zMat a, zMat q, zMat m)
+{
+  if( !zMatIsSqr( q ) || !zMatIsSqr( m ) ){
+    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    return NULL;
+  }
+  if( !zMatRowSizeIsEqual( a, q ) ){
+    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    return NULL;
+  }
+  return zMulMatTMatMatNC( a, q, m );
+}
+
 /* ********************************************************** */
 /* I/O
  * ********************************************************** */

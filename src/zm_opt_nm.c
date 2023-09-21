@@ -82,7 +82,7 @@ static void _zOptNMReord(zOptNM *opt)
 
   for( i=0; i<opt->num; i++ )
     if( zVecElemNC(opt->eval,zIndexElemNC(opt->index,i)) > zVecElemNC(opt->eval,zIndexHead(opt->index)) ){
-      zIndexMove( opt->index, zArraySize(opt->index)-1, i );
+      zIndexMove( opt->index, zIndexSizeNC(opt->index)-1, i );
       break;
     }
 }

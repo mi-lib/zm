@@ -1,3 +1,8 @@
+2023. 9.21. Abolished zQPSolve. [zm_opt_qp]
+2023. 9.21. Reimplemented zQPSolveASM. [zm_opt_qp, zm_opt_qp_asm, zm_errmsg]
+2023. 9.18. Reflected zIndexBufNC in zVecSort. [zm_vec]
+2023. 9.17. Reflected zIndexSizeNC. [zm_vec, zm_vec_array, zm_cvec, zm_data, zm_le, zm_le_pivot, zm_le_lu, zm_le_lq, zm_opt_lp_simplex, zm_opt_lcp_lemke, zm_opt_nm]
+2023. 9.14. Added zMulMatMatMatTNC, zMulMatMatMatT, zMulMatTMatMatNC, and zMulMatTMatMat. [zm_mat]
 2023. 8.18. Renamed zSeqCell and zSeqListCell to zSeqData and zSeqCell, respectively. [zm_seq, zm_ip, zm_ip_chebyshev, zm_nurbs, app]
 2023. 8.18. Implemented Growing Neural Gas. [zm_errmsg, zm_gng]
 2023. 8.18. Added zVecListSelectRand. [zm_vec_list]

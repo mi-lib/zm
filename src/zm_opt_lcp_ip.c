@@ -2,8 +2,7 @@
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
  * zm_opt_lcp_ip - optimization tools:
- * Potra's predictor-corrector algorithm on
- * infeasible-interior-point method.
+ * Potra's predictor-corrector algorithm on infeasible-interior-point method.
  */
 
 #include <zm/zm_opt.h>
