@@ -617,7 +617,7 @@ static bool _zClusterSilhouetteFPrint(FILE *fp, zCluster *c, int offset)
   int i;
 
   if( !c->_sil ){
-    ZRUNWARN( ZM_MCA_NOSILHOUETTE );
+    ZRUNWARN( ZM_WARN_MCA_NOSILHOUETTE );
     return false;
   }
   for( i=0; i<zListSize(zClusterSampleList(c)); i++ ){

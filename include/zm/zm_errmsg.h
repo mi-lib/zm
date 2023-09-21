@@ -41,27 +41,28 @@
 #define ZM_WARN_GRAPH_DUPSPC "duplicate specification of a node"
 #define ZM_WARN_GRAPH_DUPCON "duplicate node connection, overwritten"
 
-#define ZM_MCA_NOSILHOUETTE  "silhouette score not computed, need to call zMClusterSilhouetteScore()"
+#define ZM_WARN_MCA_NOSILHOUETTE  "silhouette score not computed, need to call zMClusterSilhouetteScore()"
 
 /* error messages */
 
-#define ZM_ERR_ZERODIV       "cannot devide by tiny value"
-#define ZM_ERR_OUTOFRANGE    "specified index out of range"
+#define ZM_ERR_ZERODIV          "cannot devide by tiny value"
+#define ZM_ERR_OUTOFRANGE       "specified index out of range"
 
-#define ZM_ERR_NULLVEC       "null vector assigned"
-#define ZM_ERR_SIZMIS_VEC    "size mismatch of vectors"
-#define ZM_ERR_SIZMIS_MAT    "size mismatch of matrices"
-#define ZM_ERR_SIZMIS_MATVEC "size mismatch of matrix and vector"
-#define ZM_ERR_NONSQR_MAT    "not a square matrix"
+#define ZM_ERR_NULLVEC          "null vector assigned"
+#define ZM_ERR_SIZMIS_VEC       "size mismatch of vectors"
+#define ZM_ERR_SIZMIS_MAT       "size mismatch of matrices"
+#define ZM_ERR_SIZMIS_MATVEC    "size mismatch of matrix and vector"
+#define ZM_ERR_NONSQR_MAT       "not a square matrix"
+#define ZM_ERR_NONSYMMETRIC_MAT "not a symmetric matrix"
 
-#define ZM_ERR_SIZUNFOUND_VEC "vector size not specified"
-#define ZM_ERR_SIZUNFOUND_MAT "matrix size not specified"
+#define ZM_ERR_SIZUNFOUND_VEC   "vector size not specified"
+#define ZM_ERR_SIZUNFOUND_MAT   "matrix size not specified"
 
-#define ZM_ERR_INV_ROW       "invalid row specified"
-#define ZM_ERR_INV_COL       "invalid column specified"
-#define ZM_ERR_INV_INDEX     "invalid index specified"
+#define ZM_ERR_INV_ROW          "invalid row specified"
+#define ZM_ERR_INV_COL          "invalid column specified"
+#define ZM_ERR_INV_INDEX        "invalid index specified"
 
-#define ZM_ERR_ZERONORM      "cannot normalize zero vector"
+#define ZM_ERR_ZERONORM         "cannot normalize zero vector"
 
 #define ZM_ERR_CVEC_CONJPAIR_UNABLE "unable to pair co-conjugate complex numbers."
 

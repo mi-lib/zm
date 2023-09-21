@@ -420,6 +420,18 @@ bool zMatIsTol(zMat m, double tol)
   return zRawMatIsTol( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), tol );
 }
 
+/* check if a matrix is square and symmetric. */
+bool zMatIsSymmetric(zMat m)
+{
+  int i, j;
+
+  if( !zMatIsSqr(m) ) return false;
+  for( i=0; i<zMatRowSizeNC(m); i++ )
+    for( j=i+1; j<zMatRowSizeNC(m); j++ )
+      if( zMatElemNC(m,i,j) != zMatElemNC(m,j,i) ) return false;
+  return true;
+}
+
 /* row regression of a matrix. */
 zMat zMatRowReg(zMat m, int rank)
 {

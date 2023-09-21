@@ -282,8 +282,8 @@ __ZM_EXPORT zMat zMatSwapCol(zMat m, int c1, int c2);
 
 /*! \brief shift diagonal values of a matrix.
  *
- * zMatShift() add the specified value \a shift to diagonal
- * elements of a matrix \a m as offsets.
+ * zMatShift() add the specified value \a shift to diagonal elements
+ * of a matrix \a m as offsets.
  * \return
  * zMatShift() returns no value.
  */
@@ -291,38 +291,42 @@ __ZM_EXPORT void zMatShift(zMat m, double shift);
 
 /*! \brief check if two matrices are equal.
  *
- * zMatIsEqual() checks if given two matrices \a m1 and \a m2
- * are equal. \a tol is the tolerance to regard two values as
- * the same.
+ * zMatIsEqual() checks if given two matrices \a m1 and \a m2 are equal.
+ * \a tol is the tolerance to regard two values as the same.
  * \return
- * zMatIsEqual() returns the true value if \a m1 and \a m2
- * are equal, or the false value otherwise.
+ * zMatIsEqual() returns the true value if \a m1 and \a m2 are equal, or
+ * the false value otherwise.
  */
 __ZM_EXPORT bool zMatIsEqual(zMat m1, zMat m2, double tol);
 
 /*! \brief check if a matrix is tiny.
  *
- * zMatIsTol() checks if all elements of a matrix \a m is
- * smaller than the tolerance \a tol.
+ * zMatIsTol() checks if all elements of a matrix \a m is smaller than
+ * the tolerance \a tol.
  *
- * zMatIsTiny() checks if all elements of \a m is smaller
- * than zTOL, which is defined in zm_misc.h.
+ * zMatIsTiny() checks if all elements of \a m is smaller than zTOL,
+ * which is defined in zm_misc.h.
  * \return
- * zMatIsTol() and zMatIsTiny() return the result as a
- * boolean value.
+ * zMatIsTol() and zMatIsTiny() return the result as a boolean value.
  */
 __ZM_EXPORT bool zMatIsTol(zMat m, double tol);
 #define zMatIsTiny(m) zMatIsTol( (m), zTOL )
 
+/*! \brief check if a matrix is square and symmetric.
+ *
+ * zMatIsSymmetric() checks if a matrix \a m is square and symmetric.
+ * \return
+ * zMatIsSymmetric() returns the result as a boolean value.
+ */
+__ZM_EXPORT bool zMatIsSymmetric(zMat m);
+
 /*! \brief matrix regression.
  *
- * zMatRowReg() regresses the row size of a matrix \a m,
- * namely, if \a rank is less than the row size of \a m,
- * it regresses \a m in row direction.
+ * zMatRowReg() regresses the row size of a matrix \a m, namely, if \a rank
+ * is less than the row size of \a m, it regresses \a m in row direction.
  *
- * zMatColReg() regresses the column size of \a m, namely,
- * if \a rank is less than the column size of \a m, it
- * regresses \a m in column direction.
+ * zMatColReg() regresses the column size of \a m, namely, if \a rank is
+ * less than the column size of \a m, it regresses \a m in column direction.
  *
  * Those functions directly modify \a m.
  * \return

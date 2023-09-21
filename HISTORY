@@ -1,3 +1,7 @@
+2023. 9.22. Renamed _zQPASMCheckQ to _zQPASMCheck, and modified it. [zm_errmsg, zm_opt_qp_asm]
+2023. 9.22. Separated _zQPASMInitBase from _zQPASMInit. [zm_opt_qp_asm]
+2023. 9.22. Renamed ZM_MCA_NOSILHOUETTE to ZM_WARN_MCA_NOSILHOUETTE. [zm_errmsg, zm_mca_cluster]
+2023. 9.22. Added zMatIsSymmetric. [zm_mat]
 2023. 9.22. Added zSmoothStep and zSmoothStepDif. [zm_misc]
 2023. 9.22. Renamed zFacto to zFactorial. [zm_misc, zm_stat, zm_parse]
 2023. 9.22. Modified error handling of zCombiSeries. [zm_errmsg, zm_misc]

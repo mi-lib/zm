@@ -3,6 +3,22 @@
 #define MAT_ROW_SIZE 12
 #define MAT_COL_SIZE 10
 
+void assert_is_symmetric(void)
+{
+  zMat m, mt;
+  bool result = true;
+
+  m  = zMatAllocSqr( MAT_ROW_SIZE );
+  mt = zMatAllocSqr( MAT_ROW_SIZE );
+  zMatRandUniform( m, -10, 10 );
+  zMatT( m, mt );
+  zMatAddDRC( m, mt );
+  result = zMatIsSymmetric( m ) && !zMatIsSymmetric( mt );
+  zMatFree( m );
+  zMatFree( mt );
+  zAssert( zMatIsSymmetric, result );
+}
+
 void assert_get_put(void)
 {
   const int rowsize = MAT_ROW_SIZE;
@@ -383,6 +399,7 @@ void assert_mulmattmatmat(void)
 int main(void)
 {
   zRandInit();
+  assert_is_symmetric();
   assert_get_put();
   assert_arith();
   assert_transpose();

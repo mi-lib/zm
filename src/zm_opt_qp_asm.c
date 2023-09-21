@@ -22,7 +22,52 @@ typedef struct{
   zVec _s; /* for balancing */
 } zQPASM;
 
-/* get initial feasible solution for active set method by simplex method. */
+/* initialize working space. */
+static bool _zQPASMInit(zQPASM *asm, zMat q, zVec c, zMat a, zVec b)
+{
+  asm->qinv = zMatAllocSqr( zVecSizeNC(c) );
+  asm->aqinvat = zMatAllocSqr( zMatRowSizeNC(a) );
+  asm->qinvc = zVecAlloc( zVecSizeNC(c) );
+  asm->aqinvc_plus_b = zVecAlloc( zVecSizeNC(b) );
+  asm->xtmp = zVecAlloc( zVecSizeNC(c) );
+  asm->ia = zIndexAlloc( zMatRowSizeNC(a) );
+  asm->in = zIndexAlloc( zMatRowSizeNC(a) );
+
+  asm->_m = zMatAllocSqr( zMatRowSizeNC(a) );
+  asm->_v = zVecAlloc( zMatRowSizeNC(a) );
+  asm->_lambda = zVecAlloc( zMatRowSizeNC(a) );
+  asm->_idx = zIndexAlloc( zMatRowSizeNC(a) );
+  asm->_s = zVecAlloc( zMatRowSizeNC(a) );
+  if( !asm->qinv || !asm->aqinvat || !asm->qinvc || !asm->aqinvc_plus_b ||
+      !asm->xtmp || !asm->ia || !asm->in ||
+      !asm->_m || !asm->_v || !asm->_lambda || !asm->_idx || !asm->_s ) return false;
+
+  zMatInv( q, asm->qinv );
+  zMulMatMatMatTNC( a, asm->qinv, asm->aqinvat );
+  zMulMatVecNC( asm->qinv, c, asm->qinvc );
+  zMulMatVecNC( a, asm->qinvc, asm->aqinvc_plus_b );
+  zVecAddNCDRC( asm->aqinvc_plus_b, b );
+  return true;
+}
+
+/* destroy working space. */
+static void _zQPASMDestroy(zQPASM *asm)
+{
+  zMatFree( asm->qinv );
+  zMatFree( asm->aqinvat );
+  zVecFree( asm->qinvc );
+  zVecFree( asm->aqinvc_plus_b );
+  zVecFree( asm->xtmp );
+  zIndexFree( asm->ia );
+  zIndexFree( asm->in );
+  zMatFree( asm->_m );
+  zVecFree( asm->_v );
+  zVecFree( asm->_lambda );
+  zIndexFree( asm->_idx );
+  zVecFree( asm->_s );
+}
+
+/* get initial feasible solution and active set by simplex method. */
 static bool _zQPASMInitBase(zQPASM *asm, zMat a, zVec b)
 {
   zLPTableau tab;
@@ -92,52 +137,7 @@ static bool _zQPASMInitBase(zQPASM *asm, zMat a, zVec b)
   return ret;
 }
 
-/* initialize working space for active set method. */
-static bool _zQPASMInit(zQPASM *asm, zMat q, zVec c, zMat a, zVec b)
-{
-  asm->qinv = zMatAllocSqr( zVecSizeNC(c) );
-  asm->aqinvat = zMatAllocSqr( zMatRowSizeNC(a) );
-  asm->qinvc = zVecAlloc( zVecSizeNC(c) );
-  asm->aqinvc_plus_b = zVecAlloc( zVecSizeNC(b) );
-  asm->xtmp = zVecAlloc( zVecSizeNC(c) );
-  asm->ia = zIndexAlloc( zMatRowSizeNC(a) );
-  asm->in = zIndexAlloc( zMatRowSizeNC(a) );
-
-  asm->_m = zMatAllocSqr( zMatRowSizeNC(a) );
-  asm->_v = zVecAlloc( zMatRowSizeNC(a) );
-  asm->_lambda = zVecAlloc( zMatRowSizeNC(a) );
-  asm->_idx = zIndexAlloc( zMatRowSizeNC(a) );
-  asm->_s = zVecAlloc( zMatRowSizeNC(a) );
-  if( !asm->qinv || !asm->aqinvat || !asm->qinvc || !asm->aqinvc_plus_b ||
-      !asm->xtmp || !asm->ia || !asm->in ||
-      !asm->_m || !asm->_v || !asm->_lambda || !asm->_idx || !asm->_s ) return false;
-
-  zMatInv( q, asm->qinv );
-  zMulMatMatMatT( a, asm->qinv, asm->aqinvat );
-  zMulMatVec( asm->qinv, c, asm->qinvc );
-  zMulMatVec( a, asm->qinvc, asm->aqinvc_plus_b );
-  zVecAddDRC( asm->aqinvc_plus_b, b );
-  return _zQPASMInitBase( asm, a, b );
-}
-
-/* destroy working space for active set method. */
-static void _zQPASMDestroy(zQPASM *asm)
-{
-  zMatFree( asm->qinv );
-  zMatFree( asm->aqinvat );
-  zVecFree( asm->qinvc );
-  zVecFree( asm->aqinvc_plus_b );
-  zVecFree( asm->xtmp );
-  zIndexFree( asm->ia );
-  zIndexFree( asm->in );
-  zMatFree( asm->_m );
-  zVecFree( asm->_v );
-  zVecFree( asm->_lambda );
-  zIndexFree( asm->_idx );
-  zVecFree( asm->_s );
-}
-
-/* solve an equation to find temporary solution and adjoint variables for active set method. */
+/* solve an equation to find temporary solution and adjoint variables. */
 static bool _zQPASMSolveEq(zQPASM *asm, zMat a, zVec b, zVec x)
 {
   int i, j;
@@ -161,8 +161,8 @@ static bool _zQPASMSolveEq(zQPASM *asm, zMat a, zVec b, zVec x)
     for( j=0; j<zIndexSizeNC(asm->ia); j++ )
       zVecElemNC(asm->_s,i) += zMatElemNC(a,zIndexElemNC(asm->ia,j),i) * zVecElemNC(asm->_lambda,j);
   }
-  zMulMatVec( asm->qinv, asm->_s, x );
-  zVecSubDRC( x, asm->qinvc );
+  zMulMatVecNC( asm->qinv, asm->_s, x );
+  zVecSubNCDRC( x, asm->qinvc );
   return true;
 }
 
@@ -208,13 +208,22 @@ static bool _zQPASMDelEq(zQPASM *asm, zMat a)
   return is_violated;
 }
 
-/* check if the quadratic term matrix is positive-definite for active set method. */
-static bool _zQPASMCheckQ(zMat q)
+/* check if vector/matrix sizes are consistent and the quadratic term matrix is positive-definite. */
+static bool _zQPASMCheck(zMat q, zVec c, zMat a, zVec b, zVec ans)
 {
   zMat l;
   zIndex ic;
   bool ret;
 
+  if( !zMatIsSymmetric( q ) ){
+    ZRUNERROR( ZM_ERR_NONSYMMETRIC_MAT );
+    return false;
+  }
+  if( !zMatRowVecSizeIsEqual( q, c ) || !zVecSizeIsEqual( c, ans ) ||
+      !zMatRowVecSizeIsEqual( a, b ) || !zMatColVecSizeIsEqual( a, ans ) ){
+    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    return false;
+  }
   if( !( ret = !( zMatDecompCholeskyAlloc( q, &l, &ic ) < zMatRowSizeNC(q) ) ) )
     ZRUNERROR( ZM_ERR_OPT_NONCONVEX );
   zMatFree( l );
@@ -226,17 +235,19 @@ static bool _zQPASMCheckQ(zMat q)
 bool zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
 {
   zQPASM asm;
-  bool ret;
+  bool ret = false;
 
-  if( !_zQPASMCheckQ( q ) ) return false;
-  if( ( ret = _zQPASMInit( &asm, q, c, a, b ) ) ){
+  if( !_zQPASMCheck( q, c, a, b, ans ) ) return false;
+  if( !_zQPASMInit( &asm, q, c, a, b ) ) goto TERMINATE;
+  if( !_zQPASMInitBase( &asm, a, b ) ) goto TERMINATE;
+  do{
     do{
-      do{
-        _zQPASMSolveEq( &asm, a, b, ans );
-      } while( _zQPASMAddEq( &asm, a, b, ans ) );
-    } while( _zQPASMDelEq( &asm, a ) );
-    if( cost ) *cost = zQuadraticValue( q, c, ans );
-  }
+      _zQPASMSolveEq( &asm, a, b, ans );
+    } while( _zQPASMAddEq( &asm, a, b, ans ) );
+  } while( _zQPASMDelEq( &asm, a ) );
+  if( cost ) *cost = zQuadraticValue( q, c, ans );
+  ret = true;
+ TERMINATE:
   _zQPASMDestroy( &asm );
   return ret;
 }
