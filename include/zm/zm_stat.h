@@ -17,39 +17,6 @@ __BEGIN_DECLS
 /*! \defgroup stat statistics.
  * \{ *//* ************************************************** */
 
-/*! \brief permutation.
- *
- * zPermut() computes \a n_P_\a i.
- * The result is returned as a double-precision floating-point value.
- */
-__ZM_EXPORT double zPermut(int n, int i);
-
-/*! \brief factorial.
- *
- * zFacto() computes \a n!.
- * The result is returned as a double-precision floating-point value.
- */
-__ZM_EXPORT double zFacto(int n);
-
-/*! \brief combination.
- *
- * zCombi() computes \a n_C_i.
- * The result is returned as a double-precision floating-point value.
- */
-__ZM_EXPORT double zCombi(int n, int i);
-
-/*! \brief series of combination.
- *
- * zCombiSeries() computes a series of combination \a n_C_i where
- * \a i is from 0 to \a n. The result is stored in the array of
- * double-precision floating-point values \a c. \a size is the size
- * of \a c.
- * If \a n is more than \a size, equal to \a size or less than 0,
- * it fails to compute the series and the null pointer is returned.
- * Otherwise, a pointer to \a c is returned.
- */
-__ZM_EXPORT double *zCombiSeries(uint n, size_t size, double c[]);
-
 /* basic distribution functions */
 
 /*! \brief constant coefficient for normal distribution.

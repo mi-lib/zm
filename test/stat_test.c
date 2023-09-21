@@ -2,21 +2,22 @@
 
 #define NUM 100
 
-bool assert_is_included(void)
+void assert_is_included(void)
 {
   double data[NUM];
-  register int i;
+  int i;
+  bool result = true;
 
   for( i=0; i<NUM; i++ )
     data[i] = zRandF(-10,10);
   for( i=0; i<NUM; i++ )
-    if( !zDataIsIncluded( data, NUM, data[i], zTOL ) ) return false;
-  return true;
+    if( !zDataIsIncluded( data, NUM, data[i], zTOL ) ) result = false;
+  zAssert( zDataIsIncluded, result );
 }
 
 int main(int argc, char *argv[])
 {
   zRandInit();
-  zAssert( zDataIsIncluded, assert_is_included() );
+  assert_is_included();
   return 0;
 }

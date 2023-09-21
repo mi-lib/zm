@@ -417,7 +417,7 @@ double _zmParseOpEval(zmParseOp *op, double arg1, double arg2)
     return zIsTiny( arg2 ) ? ( arg2 >= 0 ? HUGE_VAL : -HUGE_VAL ) : arg1 / arg2;
   case ZM_PARSE_OP_MOD: return (int)arg1 % (int)arg2;
   case ZM_PARSE_OP_POW: return pow( arg1, arg2 );
-  case ZM_PARSE_OP_FCT: return zFacto( arg1 );
+  case ZM_PARSE_OP_FCT: return zFactorial( arg1 );
   case ZM_PARSE_OP_COMMA: return arg1; /* dummy */
   case ZM_PARSE_OP_SEP:   return arg1; /* dummy */
   case ZM_PARSE_OP_LET:   return arg2; /* dummy */

@@ -46,8 +46,7 @@
 /* error messages */
 
 #define ZM_ERR_ZERODIV       "cannot devide by tiny value"
-
-#define ZM_ERR_STAT_ILLS     "illegal series assigned"
+#define ZM_ERR_OUTOFRANGE    "specified index out of range"
 
 #define ZM_ERR_NULLVEC       "null vector assigned"
 #define ZM_ERR_SIZMIS_VEC    "size mismatch of vectors"

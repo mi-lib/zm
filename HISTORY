@@ -1,3 +1,8 @@
+2023. 9.22. Added zSmoothStep and zSmoothStepDif. [zm_misc]
+2023. 9.22. Renamed zFacto to zFactorial. [zm_misc, zm_stat, zm_parse]
+2023. 9.22. Modified error handling of zCombiSeries. [zm_errmsg, zm_misc]
+2023. 9.22. Moved zPermut, zFacto, zCombi, and zCombiSeries from zm_stat to zm_misc. [zm_misc, zm_stat]
+2023. 9.22. Reimplemented zCombi. [zm_stat]
 2023. 9.21. Abolished zQPSolve. [zm_opt_qp]
 2023. 9.21. Reimplemented zQPSolveASM. [zm_opt_qp, zm_opt_qp_asm, zm_errmsg]
 2023. 9.18. Reflected zIndexBufNC in zVecSort. [zm_vec]

@@ -7,46 +7,6 @@
 #include <zm/zm_stat.h>
 #include <zm/zm_sf.h>
 
-/* permutation. */
-double zPermut(int n, int i)
-{
-  double result = 1.0;
-
-  if( i > n || i < 0 ) return 0;
-  for( ; i>0; i--, n-- ) result *= n;
-  return result;
-}
-
-/* factorial. */
-double zFacto(int n)
-{
-  return zPermut( n, n );
-}
-
-/* combination. */
-double zCombi(int n, int i)
-{
-  if( n-i < i ) i = n-i;
-  return zPermut( n, i ) / zFacto( i );
-}
-
-/* series of combination. */
-double *zCombiSeries(uint n, size_t size, double c[])
-{
-  uint i, j;
-
-  if( n < 0 || n >= size ){
-    ZRUNERROR( ZM_ERR_STAT_ILLS );
-    return NULL;
-  }
-  for( i=0; i<=n; i++ ){
-    c[0] = c[i] = 1.0;
-    for( j=i-1; j>0; j-- )
-      c[j] += c[j-1];
-  }
-  return c;
-}
-
 /* basic distribution functions */
 
 /* normal distribution. */
@@ -73,7 +33,7 @@ double zNormalCumDistrib(double x, double mu, double sigma)
 /* Poisson distribution. */
 double zPoissonDistrib(int x, double lambda)
 {
-  return exp( -lambda ) * pow( lambda, x ) / zFacto( x );
+  return exp( -lambda ) * pow( lambda, x ) / zFactorial( x );
 }
 
 /* binomial distribution. */

@@ -1,5 +1,37 @@
 #include <zm/zm.h>
 
+void assert_permut(void)
+{
+  zAssert( zPermut (zFactorial),
+    zFactorial( 3 ) == 6 &&
+    zFactorial( 4 ) == 24 &&
+    zFactorial( 5 ) == 120 &&
+    zFactorial( 6 ) == 720 );
+}
+
+void assert_combi(void)
+{
+  zAssert( zCombi,
+    zCombi( 2, 0 ) == 1 &&
+    zCombi( 2, 1 ) == 2 &&
+    zCombi( 2, 2 ) == 1 &&
+    zCombi( 3, 0 ) == 1 &&
+    zCombi( 3, 1 ) == 3 &&
+    zCombi( 3, 2 ) == 3 &&
+    zCombi( 3, 3 ) == 1 &&
+    zCombi( 4, 0 ) == 1 &&
+    zCombi( 4, 1 ) == 4 &&
+    zCombi( 4, 2 ) == 6 &&
+    zCombi( 4, 3 ) == 4 &&
+    zCombi( 4, 4 ) == 1 &&
+    zCombi( 5, 0 ) == 1 &&
+    zCombi( 5, 1 ) == 5 &&
+    zCombi( 5, 2 ) == 10 &&
+    zCombi( 5, 3 ) == 10 &&
+    zCombi( 5, 4 ) == 5 &&
+    zCombi( 5, 5 ) == 1 );
+}
+
 int main(void)
 {
   double val;
@@ -27,5 +59,8 @@ int main(void)
   val = zRandF( zTOL, 1.0e10 );
   zAssert( zLog, zIsTiny( zLog(2,val) - log2(val) ) &&
                  zIsTiny( zLog(10,val) - log10(val) ) );
+
+  assert_permut();
+  assert_combi();
   return EXIT_SUCCESS;
 }
