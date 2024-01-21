@@ -8,114 +8,113 @@
 
 /* Lemke tableau */
 typedef struct{
-  zMat m;
-  zVec q;
+  zMat tab;
+  zVec p;
   zIndex ib, in;
   int act;
 } _zLemke;
 
 #ifdef DEBUG
 /* print out tableau contents (for debug). */
-static void _zLemkePrint(_zLemke *tab)
+static void _zLemkePrint(_zLemke *lemke)
 { /* for debug. */
-  printf( "tableau: " ); zMatPrint( tab->m );
-  printf( "answer: " ); zVecPrint( tab->q );
-  printf( "base lex.: " ); zIndexPrint( tab->ib );
-  printf( "nonbase lex.: " ); zIndexPrint( tab->in );
-  printf( "active var.: %d\n", tab->act );
+  printf( "tableau: " ); zMatPrint( lemke->tab );
+  printf( "answer: " ); zVecPrint( lemke->p );
+  printf( "base lex.: " ); zIndexPrint( lemke->ib );
+  printf( "nonbase lex.: " ); zIndexPrint( lemke->in );
+  printf( "active var.: %d\n", lemke->act );
 }
 #endif /* DEBUG */
 
 /* destroy Lemke tableau and lexicon. */
-static void _zLemkeDestroy(_zLemke *tab)
+static void _zLemkeDestroy(_zLemke *lemke)
 {
-  zMatFree( tab->m );
-  zVecFree( tab->q );
-  zIndexFree( tab->ib );
-  zIndexFree( tab->in );
+  zMatFree( lemke->tab );
+  zVecFree( lemke->p );
+  zIndexFree( lemke->ib );
+  zIndexFree( lemke->in );
 }
 
 /* create Lemke tableau and lexicon. */
-static _zLemke *_zLemkeCreate(_zLemke *tab, zMat m, zVec q)
+static _zLemke *_zLemkeCreate(_zLemke *lemke, zMat m, zVec q)
 {
   int i, j, n;
 
   n = zMatRowSizeNC(m);
-  tab->m = zMatAlloc( n, 2*n+1 );
-  tab->q = zVecClone( q );
-  tab->ib = zIndexCreate( n );
-  tab->in = zIndexCreate( n );
-  if( !tab->m || !tab->q || !tab->ib || !tab->in ){
-    _zLemkeDestroy( tab );
+  lemke->tab = zMatAlloc( n, 2*n+1 );
+  lemke->p = zVecClone( q );
+  lemke->ib = zIndexCreate( n );
+  lemke->in = zIndexCreate( n );
+  if( !lemke->tab || !lemke->p || !lemke->ib || !lemke->in ){
+    _zLemkeDestroy( lemke );
     return NULL;
   }
-  tab->act = 2*n;
-  zIndexOrder( tab->ib, n );
-  zIndexOrder( tab->in, 0 );
+  lemke->act = 2*n;
+  zIndexOrder( lemke->ib, n );
+  zIndexOrder( lemke->in, 0 );
   for( i=0; i<n; i++ ){
-    zMatSetElemNC( tab->m, i, i+n, 1.0 );
-    zMatSetElemNC( tab->m, i, tab->act, -1.0 );
-  }
-  for( i=0; i<n; i++ )
     for( j=0; j<n; j++ )
-      zMatSetElemNC( tab->m, i, j, -zMatElemNC(m,i,j) );
-  return tab;
+      zMatSetElemNC( lemke->tab, i, j, -zMatElemNC(m,i,j) );
+    zMatSetElemNC( lemke->tab, i, i+n, 1.0 );
+    zMatSetElemNC( lemke->tab, i, lemke->act, -1.0 );
+  }
+  return lemke;
 }
 
 /* sweep-out the active column of Lemke tableau. */
-static void _zLemkeSweep(_zLemke *tab, int p)
+static void _zLemkeSweep(_zLemke *lemke, int p)
 {
   int i, j;
   double ap;
 
   /* normalize pivot row */
-  ap = zMatElemNC( tab->m, p, tab->act );
-  for( j=0; j<zIndexSizeNC(tab->in); j++ )
-    zMatElemNC( tab->m, p, zIndexElemNC(tab->in,j) ) /= ap;
-  zMatElemNC( tab->m, p, zIndexElemNC(tab->ib,p) ) /= ap;
-  zMatSetElemNC( tab->m, p, tab->act, 1.0 );
-  zVecElemNC(tab->q,p) /= ap;
+  ap = zMatElemNC( lemke->tab, p, lemke->act );
+  for( j=0; j<zIndexSizeNC(lemke->in); j++ )
+    zMatElemNC( lemke->tab, p, zIndexElemNC(lemke->in,j) ) /= ap;
+  zMatElemNC( lemke->tab, p, zIndexElemNC(lemke->ib,p) ) /= ap;
+  zMatSetElemNC( lemke->tab, p, lemke->act, 1.0 );
+  zVecElemNC(lemke->p,p) /= ap;
   /* sweep-out rest row */
-  for( i=0; i<zVecSizeNC(tab->q); i++ ){
+  for( i=0; i<zVecSizeNC(lemke->p); i++ ){
     if( i == p ) continue;
-    ap = zMatElemNC( tab->m, i, tab->act );
-    for( j=0; j<zIndexSizeNC(tab->in); j++ )
-      zMatElemNC( tab->m, i, zIndexElemNC(tab->in,j) )
-        -= zMatElemNC( tab->m, p, zIndexElemNC(tab->in,j) ) * ap;
-    zMatElemNC( tab->m, i, zIndexElemNC(tab->ib,p) )
-      =- zMatElemNC( tab->m, p, zIndexElemNC(tab->ib,p) ) * ap;
-    zMatSetElemNC( tab->m, i, tab->act, 0.0 );
-    zVecElemNC(tab->q,i) -= zVecElemNC(tab->q,p) * ap;
+    ap = zMatElemNC( lemke->tab, i, lemke->act );
+    for( j=0; j<zIndexSizeNC(lemke->in); j++ )
+      zMatElemNC( lemke->tab, i, zIndexElemNC(lemke->in,j) )
+        -= zMatElemNC( lemke->tab, p, zIndexElemNC(lemke->in,j) ) * ap;
+    zMatElemNC( lemke->tab, i, zIndexElemNC(lemke->ib,p) )
+      =- zMatElemNC( lemke->tab, p, zIndexElemNC(lemke->ib,p) ) * ap;
+    zMatSetElemNC( lemke->tab, i, lemke->act, 0.0 );
+    zVecElemNC(lemke->p,i) -= zVecElemNC(lemke->p,p) * ap;
   }
 }
 
 /* swap Lemke lexicon and active variable index. */
-static bool _zLemkeSwap(_zLemke *tab, int p)
+static bool _zLemkeSwap(_zLemke *lemke, int p)
 {
   int i, ib;
 
-  ib = zIndexElemNC(tab->ib,p);
-  zIndexSetElemNC( tab->ib, p, tab->act );
+  ib = zIndexElemNC(lemke->ib,p);
+  zIndexSetElemNC( lemke->ib, p, lemke->act );
   /* choose complementary pivot */
-  tab->act = ( ib + zIndexSizeNC(tab->ib) ) % ( 2*zIndexSizeNC(tab->ib) );
-  for( i=0; i<zIndexSizeNC(tab->in); i++ )
-    if( zIndexElemNC(tab->in,i) == tab->act ){
-      zIndexSetElemNC( tab->in, i, ib );
+  lemke->act = ( ib + zIndexSizeNC(lemke->ib) ) % ( 2*zIndexSizeNC(lemke->ib) );
+  for( i=0; i<zIndexSizeNC(lemke->in); i++ )
+    if( zIndexElemNC(lemke->in,i) == lemke->act ){
+      zIndexSetElemNC( lemke->in, i, ib );
       break;
     }
-  return ib == zMatColSizeNC(tab->m) - 1 ? true : false;
+  return ib == zMatColSizeNC(lemke->tab) - 1 ? true : false;
 }
 
 /* find next pivot in Lemke tableau. */
-static int _zLemkePivot(_zLemke *tab)
+static int _zLemkePivot(_zLemke *lemke)
 {
   int i, np;
   double a, p, p_min;
 
-  for( p_min=HUGE_VAL, np=-1, i=0; i<zVecSizeNC(tab->q); i++ ){
-    if( ( a = zMatElemNC(tab->m,i,tab->act) ) < zTOL )
+  for( p_min=HUGE_VAL, np=-1, i=0; i<zVecSizeNC(lemke->p); i++ ){
+    if( ( a = zMatElemNC(lemke->tab,i,lemke->act) ) < zTOL )
       continue;
-    p = zVecElemNC(tab->q,i) / a;
+    p = zVecElemNC(lemke->p,i) / a;
     if( p < p_min ){
       p_min = p;
       np = i;
@@ -125,75 +124,75 @@ static int _zLemkePivot(_zLemke *tab)
 }
 
 /* iterate Lemke's pivoting procedure. */
-static bool _zLemkeIter(_zLemke *tab)
+static bool _zLemkeIter(_zLemke *lemke)
 {
   int p;
 
   do{
-    if( ( p = _zLemkePivot( tab ) ) < 0 ){
+    if( ( p = _zLemkePivot( lemke ) ) < 0 ){
       ZRUNWARN( ZM_ERR_OPT_UNSOLVE );
       return false;
     }
-    _zLemkeSweep( tab, p );
-  } while( !_zLemkeSwap( tab, p ) );
+    _zLemkeSweep( lemke, p );
+  } while( !_zLemkeSwap( lemke, p ) );
   return true;
 }
 
 /* complementary vectors. */
-static void _zLemkeAnswer(_zLemke *tab, zVec w, zVec z)
+static void _zLemkeAnswer(_zLemke *lemke, zVec w, zVec z)
 {
   int i, idx;
 
   if( w ){
     zVecZero( w );
-    for( i=0; i<zIndexSizeNC(tab->ib); i++ ){
-      idx = zIndexElemNC(tab->ib,i) - zVecSizeNC(w);
+    for( i=0; i<zIndexSizeNC(lemke->ib); i++ ){
+      idx = zIndexElemNC(lemke->ib,i) - zVecSizeNC(w);
       if( idx >= 0 && idx < zVecSizeNC(w) )
-        zVecSetElemNC( w, idx, zVecElemNC(tab->q,i) );
+        zVecSetElemNC( w, idx, zVecElemNC(lemke->p,i) );
     }
   }
   zVecZero( z );
-  for( i=0; i<zIndexSizeNC(tab->ib); i++ )
-    if( zIndexElemNC(tab->ib,i) < zVecSizeNC(z) )
-      zVecSetElemNC( z, zIndexElemNC(tab->ib,i), zVecElemNC(tab->q,i) );
+  for( i=0; i<zIndexSizeNC(lemke->ib); i++ )
+    if( zIndexElemNC(lemke->ib,i) < zVecSizeNC(z) )
+      zVecSetElemNC( z, zIndexElemNC(lemke->ib,i), zVecElemNC(lemke->p,i) );
 }
 
 /* initialize Lemke tableau and lexicon. */
-static bool _zLemkeInit(_zLemke *tab)
+static bool _zLemkeInit(_zLemke *lemke)
 {
   int p;
   double qmin;
 
-  if( ( qmin = zVecMin( tab->q, &p ) ) >= 0 ) return true;
-  _zLemkeSweep( tab, p );
-  _zLemkeSwap( tab, p );
+  if( ( qmin = zVecMin( lemke->p, &p ) ) >= 0 ) return true;
+  _zLemkeSweep( lemke, p );
+  _zLemkeSwap( lemke, p );
   return false;
 }
 
 /* solve linear complementarity problem by Lemke's method. */
-bool zLCPSolveLemke(zMat m, zVec q, zVec w, zVec z)
+bool zLCPSolveLemke(zMat m, zVec p, zVec w, zVec z)
 {
-  _zLemke tab;
+  _zLemke lemke;
   bool ret = true;
 
   if( !zMatIsSqr(m) ){
     ZRUNERROR( ZM_ERR_NONSQR_MAT );
     return false;
   }
-  if( !zMatRowVecSizeIsEqual(m,q) ){
+  if( !zMatRowVecSizeIsEqual(m,p) ){
     ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
     return false;
   }
-  if( ( w && ( !zVecSizeIsEqual(w,q) || !zVecSizeIsEqual(w,z) ) ) ){
+  if( ( w && ( !zVecSizeIsEqual(w,p) || !zVecSizeIsEqual(w,z) ) ) ){
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );
     return false;
   }
-  if( !_zLemkeCreate( &tab, m, q ) ){
+  if( !_zLemkeCreate( &lemke, m, p ) ){
     ZALLOCERROR();
     return false;
   }
-  if( ( ret = ( _zLemkeInit( &tab ) || _zLemkeIter( &tab ) ) ) )
-    _zLemkeAnswer( &tab, w, z );
-  _zLemkeDestroy( &tab );
+  if( ( ret = ( _zLemkeInit( &lemke ) || _zLemkeIter( &lemke ) ) ) )
+    _zLemkeAnswer( &lemke, w, z );
+  _zLemkeDestroy( &lemke );
   return ret;
 }

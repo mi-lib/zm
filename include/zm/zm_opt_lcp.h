@@ -16,7 +16,7 @@ __BEGIN_DECLS
  * zLCPSolveLemke() solves a linear complementarity problem (LCP) by
  * Lemke's method (1965 C. E. Lemke) which finds a combination of two
  * vectors \a w and \a z that satisfies:
- *   \a w - \a m \a z = \a q, \a w >= 0 and \a z >= 0.
+ *   \a w = \a m \a z + \a p, \a w >= 0 and \a z >= 0.
  * where \a m is a square matrix.
  *
  * zLCPSolveIP() also solves LCP by Potra s predictor-corrector algorithm
@@ -30,8 +30,8 @@ __BEGIN_DECLS
  * Since \a w is often not required to be answered, it is allowed to give
  * the null pointer for \a w to skip the operation.
  */
-__ZM_EXPORT bool zLCPSolveLemke(zMat m, zVec q, zVec w, zVec z);
-__ZM_EXPORT bool zLCPSolveIP(zMat m, zVec q, zVec w, zVec z);
+__ZM_EXPORT bool zLCPSolveLemke(zMat m, zVec p, zVec w, zVec z);
+__ZM_EXPORT bool zLCPSolveIP(zMat m, zVec p, zVec w, zVec z);
 
 __END_DECLS
 

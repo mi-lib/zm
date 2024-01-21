@@ -116,6 +116,17 @@ void gen_sample9(zMat *m, zVec *q, zVec *ans, zVec *z, zVec *err)
   alloc_sample( 3, marray, qarray, ansarray, m, q, ans, z, err );
 }
 
+void gen_sample10(zMat *m, zVec *q, zVec *ans, zVec *z, zVec *err)
+{
+  double marray[] = {
+    2,-3, 1,
+   -1, 2, 5,
+    3, 0,-2, };
+  double qarray[] = { -4, -8, 1 };
+  double ansarray[] = { 32, 20, 0 };
+  alloc_sample( 3, marray, qarray, ansarray, m, q, ans, z, err );
+}
+
 
 void (* gen_sample[])(zMat*,zVec*,zVec*,zVec*,zVec*) = {
   gen_sample1,
@@ -127,6 +138,7 @@ void (* gen_sample[])(zMat*,zVec*,zVec*,zVec*,zVec*) = {
   gen_sample7,
   gen_sample8,
   gen_sample9,
+  gen_sample10,
   NULL,
 };
 
