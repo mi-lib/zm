@@ -23,52 +23,52 @@ typedef struct{
 } zQPASM;
 
 /* initialize working space. */
-static bool _zQPASMInit(zQPASM *asm, zMat q, zVec c, zMat a, zVec b)
+static bool _zQPASMInit(zQPASM *qpasm, zMat q, zVec c, zMat a, zVec b)
 {
-  asm->qinv = zMatAllocSqr( zVecSizeNC(c) );
-  asm->aqinvat = zMatAllocSqr( zMatRowSizeNC(a) );
-  asm->qinvc = zVecAlloc( zVecSizeNC(c) );
-  asm->aqinvc_plus_b = zVecAlloc( zVecSizeNC(b) );
-  asm->xtmp = zVecAlloc( zVecSizeNC(c) );
-  asm->ia = zIndexAlloc( zMatRowSizeNC(a) );
-  asm->in = zIndexAlloc( zMatRowSizeNC(a) );
+  qpasm->qinv = zMatAllocSqr( zVecSizeNC(c) );
+  qpasm->aqinvat = zMatAllocSqr( zMatRowSizeNC(a) );
+  qpasm->qinvc = zVecAlloc( zVecSizeNC(c) );
+  qpasm->aqinvc_plus_b = zVecAlloc( zVecSizeNC(b) );
+  qpasm->xtmp = zVecAlloc( zVecSizeNC(c) );
+  qpasm->ia = zIndexAlloc( zMatRowSizeNC(a) );
+  qpasm->in = zIndexAlloc( zMatRowSizeNC(a) );
 
-  asm->_m = zMatAllocSqr( zMatRowSizeNC(a) );
-  asm->_v = zVecAlloc( zMatRowSizeNC(a) );
-  asm->_lambda = zVecAlloc( zMatRowSizeNC(a) );
-  asm->_idx = zIndexAlloc( zMatRowSizeNC(a) );
-  asm->_s = zVecAlloc( zMatRowSizeNC(a) );
-  if( !asm->qinv || !asm->aqinvat || !asm->qinvc || !asm->aqinvc_plus_b ||
-      !asm->xtmp || !asm->ia || !asm->in ||
-      !asm->_m || !asm->_v || !asm->_lambda || !asm->_idx || !asm->_s ) return false;
+  qpasm->_m = zMatAllocSqr( zMatRowSizeNC(a) );
+  qpasm->_v = zVecAlloc( zMatRowSizeNC(a) );
+  qpasm->_lambda = zVecAlloc( zMatRowSizeNC(a) );
+  qpasm->_idx = zIndexAlloc( zMatRowSizeNC(a) );
+  qpasm->_s = zVecAlloc( zMatRowSizeNC(a) );
+  if( !qpasm->qinv || !qpasm->aqinvat || !qpasm->qinvc || !qpasm->aqinvc_plus_b ||
+      !qpasm->xtmp || !qpasm->ia || !qpasm->in ||
+      !qpasm->_m || !qpasm->_v || !qpasm->_lambda || !qpasm->_idx || !qpasm->_s ) return false;
 
-  zMatInv( q, asm->qinv );
-  zMulMatMatMatTNC( a, asm->qinv, asm->aqinvat );
-  zMulMatVecNC( asm->qinv, c, asm->qinvc );
-  zMulMatVecNC( a, asm->qinvc, asm->aqinvc_plus_b );
-  zVecAddNCDRC( asm->aqinvc_plus_b, b );
+  zMatInv( q, qpasm->qinv );
+  zMulMatMatMatTNC( a, qpasm->qinv, qpasm->aqinvat );
+  zMulMatVecNC( qpasm->qinv, c, qpasm->qinvc );
+  zMulMatVecNC( a, qpasm->qinvc, qpasm->aqinvc_plus_b );
+  zVecAddNCDRC( qpasm->aqinvc_plus_b, b );
   return true;
 }
 
 /* destroy working space. */
-static void _zQPASMDestroy(zQPASM *asm)
+static void _zQPASMDestroy(zQPASM *qpasm)
 {
-  zMatFree( asm->qinv );
-  zMatFree( asm->aqinvat );
-  zVecFree( asm->qinvc );
-  zVecFree( asm->aqinvc_plus_b );
-  zVecFree( asm->xtmp );
-  zIndexFree( asm->ia );
-  zIndexFree( asm->in );
-  zMatFree( asm->_m );
-  zVecFree( asm->_v );
-  zVecFree( asm->_lambda );
-  zIndexFree( asm->_idx );
-  zVecFree( asm->_s );
+  zMatFree( qpasm->qinv );
+  zMatFree( qpasm->aqinvat );
+  zVecFree( qpasm->qinvc );
+  zVecFree( qpasm->aqinvc_plus_b );
+  zVecFree( qpasm->xtmp );
+  zIndexFree( qpasm->ia );
+  zIndexFree( qpasm->in );
+  zMatFree( qpasm->_m );
+  zVecFree( qpasm->_v );
+  zVecFree( qpasm->_lambda );
+  zIndexFree( qpasm->_idx );
+  zVecFree( qpasm->_s );
 }
 
 /* get initial feasible solution and active set by simplex method. */
-static bool _zQPASMInitBase(zQPASM *asm, zMat a, zVec b)
+static bool _zQPASMInitBase(zQPASM *qpasm, zMat a, zVec b)
 {
   zLPTableau tab;
   int i, n;
@@ -112,20 +112,20 @@ static bool _zQPASMInitBase(zQPASM *asm, zMat a, zVec b)
   }
   zLPTableauFindBase( &tab ); /* remove artificial variables from the bases */
   /* rearrange initial feasible solution and active set */
-  zIndexSizeNC(asm->ia) = zIndexSizeNC(tab.ir);
-  zIndexCopyNC( tab.ir, asm->ia );
-  zIndexSizeNC(asm->in) = 0;
-  zVecZero( asm->xtmp );
+  zIndexSizeNC(qpasm->ia) = zIndexSizeNC(tab.ir);
+  zIndexCopyNC( tab.ir, qpasm->ia );
+  zIndexSizeNC(qpasm->in) = 0;
+  zVecZero( qpasm->xtmp );
   for( i=0; i<zArraySize(tab.ib); i++ ){
     if( zIndexElemNC(tab.ib,i) < zMatColSizeNC(a) ){
-      zVecSetElemNC( asm->xtmp, zIndexElemNC(tab.ib,i), zVecElemNC(tab.b,i) );
+      zVecSetElemNC( qpasm->xtmp, zIndexElemNC(tab.ib,i), zVecElemNC(tab.b,i) );
     } else
     if( zIndexElemNC(tab.ib,i) < n ){
-      zVecSetElemNC( asm->xtmp, zIndexElemNC(tab.ib,i)-zMatColSizeNC(a),-zVecElemNC(tab.b,i) );
+      zVecSetElemNC( qpasm->xtmp, zIndexElemNC(tab.ib,i)-zMatColSizeNC(a),-zVecElemNC(tab.b,i) );
     } else
     if( zIndexElemNC(tab.ib,i) < n + zMatRowSizeNC(a) ){
-      zIndexRemoveVal( asm->ia, zIndexElemNC(tab.ib,i)-n );
-      zIndexInsertVal( asm->in, zMatRowSizeNC(a), zIndexElemNC(tab.ib,i)-n );
+      zIndexRemoveVal( qpasm->ia, zIndexElemNC(tab.ib,i)-n );
+      zIndexInsertVal( qpasm->in, zMatRowSizeNC(a), zIndexElemNC(tab.ib,i)-n );
     } else{
       ZRUNERROR( ZM_ERR_FATAL );
       ret = false;
@@ -138,71 +138,71 @@ static bool _zQPASMInitBase(zQPASM *asm, zMat a, zVec b)
 }
 
 /* solve an equation to find temporary solution and adjoint variables. */
-static bool _zQPASMSolveEq(zQPASM *asm, zMat a, zVec b, zVec x)
+static bool _zQPASMSolveEq(zQPASM *qpasm, zMat a, zVec b, zVec x)
 {
   int i, j;
 
-  zMatSetSize( asm->_m, zIndexSizeNC(asm->ia), zIndexSizeNC(asm->ia) );
-  zVecSetSize( asm->_v, zIndexSizeNC(asm->ia) );
-  zVecSetSize( asm->_lambda, zIndexSizeNC(asm->ia) );
-  zArraySize( asm->_idx ) = zIndexSizeNC(asm->ia);
-  zVecSetSize( asm->_s, zIndexSizeNC(asm->ia) );
-  zIndexOrder( asm->_idx, 0 );
-  for( i=0; i<zIndexSizeNC(asm->ia); i++ ){
-    for( j=0; j<zIndexSizeNC(asm->ia); j++ ){
-      zMatElemNC(asm->_m,i,j) = zMatElemNC(asm->aqinvat,zIndexElemNC(asm->ia,i),zIndexElemNC(asm->ia,j));
+  zMatSetSize( qpasm->_m, zIndexSizeNC(qpasm->ia), zIndexSizeNC(qpasm->ia) );
+  zVecSetSize( qpasm->_v, zIndexSizeNC(qpasm->ia) );
+  zVecSetSize( qpasm->_lambda, zIndexSizeNC(qpasm->ia) );
+  zArraySize( qpasm->_idx ) = zIndexSizeNC(qpasm->ia);
+  zVecSetSize( qpasm->_s, zIndexSizeNC(qpasm->ia) );
+  zIndexOrder( qpasm->_idx, 0 );
+  for( i=0; i<zIndexSizeNC(qpasm->ia); i++ ){
+    for( j=0; j<zIndexSizeNC(qpasm->ia); j++ ){
+      zMatElemNC(qpasm->_m,i,j) = zMatElemNC(qpasm->aqinvat,zIndexElemNC(qpasm->ia,i),zIndexElemNC(qpasm->ia,j));
     }
-    zVecElemNC(asm->_v,i) = zVecElemNC(asm->aqinvc_plus_b,zIndexElemNC(asm->ia,i));
+    zVecElemNC(qpasm->_v,i) = zVecElemNC(qpasm->aqinvc_plus_b,zIndexElemNC(qpasm->ia,i));
   }
-  zLESolveGaussDST( asm->_m, asm->_v, asm->_lambda, asm->_idx, asm->_s );
-  zVecSetSize( asm->_s, zVecSizeNC(x) );
-  for( i=0; i<zVecSizeNC(asm->_s); i++ ){
-    zVecElemNC(asm->_s,i) = 0;
-    for( j=0; j<zIndexSizeNC(asm->ia); j++ )
-      zVecElemNC(asm->_s,i) += zMatElemNC(a,zIndexElemNC(asm->ia,j),i) * zVecElemNC(asm->_lambda,j);
+  zLESolveGaussDST( qpasm->_m, qpasm->_v, qpasm->_lambda, qpasm->_idx, qpasm->_s );
+  zVecSetSize( qpasm->_s, zVecSizeNC(x) );
+  for( i=0; i<zVecSizeNC(qpasm->_s); i++ ){
+    zVecElemNC(qpasm->_s,i) = 0;
+    for( j=0; j<zIndexSizeNC(qpasm->ia); j++ )
+      zVecElemNC(qpasm->_s,i) += zMatElemNC(a,zIndexElemNC(qpasm->ia,j),i) * zVecElemNC(qpasm->_lambda,j);
   }
-  zMulMatVecNC( asm->qinv, asm->_s, x );
-  zVecSubNCDRC( x, asm->qinvc );
+  zMulMatVecNC( qpasm->qinv, qpasm->_s, x );
+  zVecSubNCDRC( x, qpasm->qinvc );
   return true;
 }
 
 /* add an equality constraint to active set. */
-static bool _zQPASMAddEq(zQPASM *asm, zMat a, zVec b, zVec x)
+static bool _zQPASMAddEq(zQPASM *qpasm, zMat a, zVec b, zVec x)
 {
   int i, imin;
   double ax, axtmp, d, dmin;
   bool is_violated = false;
 
-  for( dmin=HUGE_VAL, imin=-1, i=0; i<zIndexSizeNC(asm->in); i++ ){
-    ax = zRawVecInnerProd( zMatRowBufNC(a,zIndexElemNC(asm->in,i)), zVecBufNC(x), zVecSizeNC(x) );
-    if( zVecElemNC(b,zIndexElemNC(asm->in,i)) <= ax ) continue;
-    ax -= ( axtmp = zRawVecInnerProd( zMatRowBufNC(a,zIndexElemNC(asm->in,i)), zVecBufNC(asm->xtmp), zVecSizeNC(asm->xtmp) ) );
+  for( dmin=HUGE_VAL, imin=-1, i=0; i<zIndexSizeNC(qpasm->in); i++ ){
+    ax = zRawVecInnerProd( zMatRowBufNC(a,zIndexElemNC(qpasm->in,i)), zVecBufNC(x), zVecSizeNC(x) );
+    if( zVecElemNC(b,zIndexElemNC(qpasm->in,i)) <= ax ) continue;
+    ax -= ( axtmp = zRawVecInnerProd( zMatRowBufNC(a,zIndexElemNC(qpasm->in,i)), zVecBufNC(qpasm->xtmp), zVecSizeNC(qpasm->xtmp) ) );
     if( zIsTiny( ax ) ) continue;
     is_violated = true;
-    if( ( d = ( zVecElemNC(b,zIndexElemNC(asm->in,i)) - axtmp ) / ax ) < dmin ){
+    if( ( d = ( zVecElemNC(b,zIndexElemNC(qpasm->in,i)) - axtmp ) / ax ) < dmin ){
       dmin = d;
-      imin = zIndexElemNC(asm->in,i);
+      imin = zIndexElemNC(qpasm->in,i);
     }
   }
   if( !is_violated ) return false;
-  zIndexRemoveVal( asm->in, imin );
-  zIndexInsertVal( asm->ia, zMatRowSizeNC(a), imin );
-  zVecInterDivDRC( asm->xtmp, x, dmin );
+  zIndexRemoveVal( qpasm->in, imin );
+  zIndexInsertVal( qpasm->ia, zMatRowSizeNC(a), imin );
+  zVecInterDivDRC( qpasm->xtmp, x, dmin );
   return true;
 }
 
 /* delete an equality constraint from active set. */
-static bool _zQPASMDelEq(zQPASM *asm, zMat a)
+static bool _zQPASMDelEq(zQPASM *qpasm, zMat a)
 {
   int i, ia;
   bool is_violated = false;
 
-  for( i=0; i<zVecSizeNC(asm->_lambda); i++ ){
-    if( zVecElemNC(asm->_lambda,i) < 0 ){
+  for( i=0; i<zVecSizeNC(qpasm->_lambda); i++ ){
+    if( zVecElemNC(qpasm->_lambda,i) < 0 ){
       is_violated = true;
-      ia = zIndexElemNC(asm->ia,i);
-      zIndexRemove( asm->ia, i );
-      zIndexInsertVal( asm->in, zMatRowSizeNC(a), ia );
+      ia = zIndexElemNC(qpasm->ia,i);
+      zIndexRemove( qpasm->ia, i );
+      zIndexInsertVal( qpasm->in, zMatRowSizeNC(a), ia );
     }
   }
   return is_violated;
@@ -234,20 +234,20 @@ static bool _zQPASMCheck(zMat q, zVec c, zMat a, zVec b, zVec ans)
 /* solve quadratic programming by active set method. */
 bool zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
 {
-  zQPASM asm;
+  zQPASM qpasm;
   bool ret = false;
 
   if( !_zQPASMCheck( q, c, a, b, ans ) ) return false;
-  if( !_zQPASMInit( &asm, q, c, a, b ) ) goto TERMINATE;
-  if( !_zQPASMInitBase( &asm, a, b ) ) goto TERMINATE;
+  if( !_zQPASMInit( &qpasm, q, c, a, b ) ) goto TERMINATE;
+  if( !_zQPASMInitBase( &qpasm, a, b ) ) goto TERMINATE;
   do{
     do{
-      _zQPASMSolveEq( &asm, a, b, ans );
-    } while( _zQPASMAddEq( &asm, a, b, ans ) );
-  } while( _zQPASMDelEq( &asm, a ) );
+      _zQPASMSolveEq( &qpasm, a, b, ans );
+    } while( _zQPASMAddEq( &qpasm, a, b, ans ) );
+  } while( _zQPASMDelEq( &qpasm, a ) );
   if( cost ) *cost = zQuadraticValue( q, c, ans );
   ret = true;
  TERMINATE:
-  _zQPASMDestroy( &asm );
+  _zQPASMDestroy( &qpasm );
   return ret;
 }

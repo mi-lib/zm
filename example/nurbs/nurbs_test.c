@@ -26,7 +26,7 @@ void test_weight(zNURBS *nurbs, int w)
 void output_src(zSeq *seq)
 {
   FILE *fp;
-  zSeqListCell *cp;
+  zSeqCell *cp;
 
   fp = fopen( "src", "w" );
   zListForEach( seq, cp )
