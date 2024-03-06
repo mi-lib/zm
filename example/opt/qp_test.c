@@ -24,7 +24,7 @@ int main(void)
   zMatPrint( q );
   zMatPrint( a );
   zVecPrint( b );
-  zQPSolve( q, z, a, b, x, &cost );
+  zQPSolveASM( q, z, a, b, x, &cost );
   zVecPrint( x );
 
   zMatFree( q );

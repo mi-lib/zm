@@ -34,7 +34,7 @@ void nn_test(zNURBS *nurbs)
 void output_src(zSeq *seq)
 {
   FILE *fp;
-  zSeqListCell *cp;
+  zSeqCell *cp;
 
   fp = fopen( "src", "w" );
   zListForEach( seq, cp )

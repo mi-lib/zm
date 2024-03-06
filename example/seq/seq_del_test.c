@@ -6,7 +6,7 @@ int main(void)
 {
   zSeq seq;
   zVec v;
-  zSeqListCell *cp;
+  zSeqCell *cp;
   double t = 0;
   int i;
 
@@ -20,7 +20,7 @@ int main(void)
     printf( "%g ", t );
     zVecPrint( cp->data.v );
     t += cp->data.dt;
-    zSeqListCellFree( cp );
+    zSeqCellFree( cp );
   }
   return 0;
 }

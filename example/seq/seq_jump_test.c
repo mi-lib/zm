@@ -3,7 +3,7 @@
 int main(void)
 {
   zSeq seq;
-  zSeqListCell *cp;
+  zSeqCell *cp;
   int i;
 
   zSeqScanFile( &seq, "test" );
