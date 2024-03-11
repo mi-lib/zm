@@ -18,23 +18,24 @@ __BEGIN_DECLS
  * \{ *//* ************************************************** */
 
 struct _zGNGUnit;
+typedef struct _zGNGUnit zGNGUnit;
 
 /*! \brief edge class */
-typedef struct _zGNGEdgeData{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGNGEdgeData ){
   int age;
-  struct _zGNGUnit *unit1;
-  struct _zGNGUnit *unit2;
-} zGNGEdgeData;
+  zGNGUnit *unit1;
+  zGNGUnit *unit2;
+};
 
 zListClass( zGNGEdgeList, zGNGEdge, zGNGEdgeData );
 zListClass( zGNGEdgePtrList, zGNGEdgePtr, zGNGEdgeData* );
 
 /*! \brief unit class */
-typedef struct _zGNGUnitData{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGNGUnitData ){
   zVec v;
   double error;
   zGNGEdgePtrList eplist;
-} zGNGUnitData;
+};
 
 zListClass( zGNGUnitList, zGNGUnit, zGNGUnitData );
 
@@ -51,7 +52,7 @@ zListClass( zGNGUnitList, zGNGUnit, zGNGUnitData );
  * Bernd Fritzke, A Growing Neural Gas Learns Topology, in Proceedings of the 7th
  * International Conference on Neural Information Processing Systems, pp. 625-632, 1994.
  */
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGNG ){
   zGNGUnitList unitlist;
   zGNGEdgeList edgelist;
   int batch_trial_size;
@@ -63,7 +64,7 @@ typedef struct{
   zVec (* sampler)(zVec,void*);
   zVec _v;
   zVec _vm;
-} zGNG;
+};
 
 #define zGNGSetBatchTrialSize(gng,s)         ( (gng)->batch_trial_size = (s) )
 #define zGNGSetLifetime(gng,lt)              ( (gng)->lifetime = (lt) )

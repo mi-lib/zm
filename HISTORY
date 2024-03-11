@@ -1,3 +1,4 @@
+2024. 3.11. Applied ZDEF_STRUCT to zGNGEdgeData, zGNGUnitData, and zGNG (thanks to Kenta Imanishi). [zm_gng]
 2024. 3. 7. Debugged functions for zQPASM (thanks to Daishi Kaneta). [zm_opt_qp_asm]
 2024. 1.24. Added a benchmark test of LCP in lcp_benchmark_test.c. [example]
 2024. 1.24. Modified _zLemkeCreate to slightly improve efficiency. [zm_opt_lcp_lemke]
