@@ -17,8 +17,7 @@ __BEGIN_DECLS
 /*! \defgroup GNG
  * \{ *//* ************************************************** */
 
-struct _zGNGUnit;
-typedef struct _zGNGUnit zGNGUnit;
+ZDECL_STRUCT( zGNGUnit );
 
 /*! \brief edge class */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGNGEdgeData ){

@@ -140,7 +140,7 @@ double *zCombiSeries(uint n, size_t size, double c[])
 /* smoothstep function. */
 double zSmoothStep(double x, uint order)
 {
-  int k;
+  uint k;
   double c, val;
 
   if( x <= 0 ) return 0;
@@ -155,7 +155,7 @@ double zSmoothStep(double x, uint order)
 /* derivative of smoothstep function. */
 double zSmoothStepDif(double x, uint order)
 {
-  int k;
+  uint k;
   double c, val;
 
   if( x <= 0 || x >= 1 ) return 0;
