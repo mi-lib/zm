@@ -45,7 +45,7 @@ zComplex *zComplexTouchup(zComplex *c)
 }
 
 /* read a complex number from a string. */
-zComplex *zComplexFromStr(zComplex *c, char *str)
+zComplex *zComplexFromStr(zComplex *c, const char *str)
 {
   double re, im;
   char buf[BUFSIZ], tkn[BUFSIZ];

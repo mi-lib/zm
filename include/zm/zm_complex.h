@@ -93,7 +93,7 @@ __ZM_EXPORT zComplex *zComplexTouchup(zComplex *c);
 #define zComplexIsConj(c1,c2,tol) ( zIsEqual( (c1)->re, (c2)->re, tol ) && zIsEqual( (c1)->im, -(c2)->im, tol ) )
 
 /*! \brief read a complex number from a string. */
-__ZM_EXPORT zComplex *zComplexFromStr(zComplex *c, char *str);
+__ZM_EXPORT zComplex *zComplexFromStr(zComplex *c, const char *str);
 
 /*! \brief read a complex number from a ZTK format processor. */
 __ZM_EXPORT zComplex *zComplexFromZTK(zComplex *c, ZTK *ztk);
