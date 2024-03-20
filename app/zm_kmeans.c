@@ -15,11 +15,11 @@ enum{
 zOption option[] = {
   { "h",    "help",    NULL, "display this messages", NULL, false },
   { "v", "verbose",    NULL, "display this messages", NULL, false },
-  { "kmin", "kmin",    "<integer value>", "minimum number of clusters to be tested", "2", false },
-  { "kmax", "kmax",    "<integer value>", "maximum number of clusters to be tested", "10", false },
-  { "n",     "try",    "<integer value>", "number of trials of clustering for each k", "3", false },
-  { "c", "cluster",    "<file name>", "common name for files of clusters", "", false },
-  { "s", "silhouette", "<file name>", "common name for silhouettes", "s", false },
+  { "kmin", "kmin",    "<integer value>", "minimum number of clusters to be tested", (char *)"2", false },
+  { "kmax", "kmax",    "<integer value>", "maximum number of clusters to be tested", (char *)"10", false },
+  { "n",     "try",    "<integer value>", "number of trials of clustering for each k", (char *)"3", false },
+  { "c", "cluster",    "<file name>", "common name for files of clusters", (char *)"", false },
+  { "s", "silhouette", "<file name>", "common name for silhouettes", (char *)"s", false },
   { NULL, NULL, NULL, NULL, NULL, false },
 };
 

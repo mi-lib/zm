@@ -1,3 +1,4 @@
+2024. 3.21. Modified cast of default values of option in zm_kmeans. [app]
 2024. 3.19. Modified specification of zComplexFromStr to accept a constant pointer. [zm_complex]
 2024. 3.15. Modified zm_gng to use ZDECL_STRUCT in order to resolve typedef collisions (thanks to Kenta Imanishi). [zm_gng]
 2024. 3.15. Debugged signedness of variables in zSmoothStep and zSmoothStepDif. [zm_misc]
