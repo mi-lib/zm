@@ -1,3 +1,4 @@
+2024. 5.13. Added STD option in config.org. [config]
 2024. 5.13. Put config.app in app. [app]
 2024. 3.21. Modified cast of default values of option in zm_kmeans. [app]
 2024. 3.19. Modified specification of zComplexFromStr to accept a constant pointer. [zm_complex]
