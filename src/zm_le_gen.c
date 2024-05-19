@@ -8,92 +8,110 @@
 #include <zm/zm_eig.h> /* for MP-inverse and SVD */
 
 /* initialize workspace for generalized linear equation solver. */
-void zLEInit(zLE *le)
+void zLEWorkspaceInit(zLEWorkspace *workspace)
 {
-  le->m = le->l = le->r = NULL;
-  le->b = le->c = le->v1 = le->v2 = le->s = NULL;
-  le->idx1 = le->idx2 = NULL;
+  workspace->m = workspace->l = workspace->r = NULL;
+  workspace->b = workspace->c = workspace->v1 = workspace->v2 = workspace->s = NULL;
+  workspace->idx1 = workspace->idx2 = NULL;
 }
 
 /* allocate workspace for generalized linear equation solvers. */
-bool zLEAlloc(zLE *le, zVec b, int size)
+bool zLEWorkspaceAlloc(zLEWorkspace *workspace, zVec b, int size)
 {
-  le->m = zMatAllocSqr( size );
-  le->b = b ? zVecClone( b ) : NULL;
-  le->v1 = zVecAlloc( size );
-  le->s = zVecAlloc( size );
-  le->idx1 = zIndexCreate( size );
-  return le->m && le->v1 && le->s && le->idx1;
+  workspace->m = zMatAllocSqr( size );
+  workspace->b = b ? zVecClone( b ) : NULL;
+  workspace->v1 = zVecAlloc( size );
+  workspace->s = zVecAlloc( size );
+  workspace->idx1 = zIndexCreate( size );
+  return workspace->m && workspace->v1 && workspace->s && workspace->idx1;
+}
+
+/* clone workspace for generalized linear equation solvers. */
+bool zLEWorkspaceClone(zLEWorkspace *src, zLEWorkspace *cln)
+{
+  bool ret = true;
+
+  if( src->m && !( cln->m = zMatClone( src->m ) ) ) ret = false;
+  if( src->l && !( cln->l = zMatClone( src->l ) ) ) ret = false;
+  if( src->r && !( cln->r = zMatClone( src->r ) ) ) ret = false;
+  if( src->b && !( cln->b = zVecClone( src->b ) ) ) ret = false;
+  if( src->c && !( cln->c = zVecClone( src->c ) ) ) ret = false;
+  if( src->v1 && !( cln->v1 = zVecClone( src->v1 ) ) ) ret = false;
+  if( src->v2 && !( cln->v2 = zVecClone( src->v2 ) ) ) ret = false;
+  if( src->s && !( cln->s = zVecClone( src->s ) ) ) ret = false;
+  if( src->idx1 && !( cln->idx1 = zIndexClone( src->idx1 ) ) ) ret = false;
+  if( src->idx2 && !( cln->idx2 = zIndexClone( src->idx2 ) ) ) ret = false;
+  if( !ret ) zLEWorkspaceFree( cln );
+  return ret;
 }
 
 /* free workspace for generalized linear equation solvers. */
-void zLEFree(zLE *le)
+void zLEWorkspaceFree(zLEWorkspace *workspace)
 {
-  zMatFree( le->m );
-  zVecFree( le->b );
-  zVecFree( le->v1 );
-  zVecFree( le->s );
-  zIndexFree( le->idx1 );
+  zMatFree( workspace->m );
+  zVecFree( workspace->b );
+  zVecFree( workspace->v1 );
+  zVecFree( workspace->s );
+  zIndexFree( workspace->idx1 );
 }
 
 /* allocate workspace for generalized linear equation solvers with reference. */
-static bool _zLEAllocRef(zLE *le, zVec b, int size)
+static bool _zLEWorkspaceAllocRef(zLEWorkspace *workspace, zVec b, int size)
 {
-  le->v2 = zVecAlloc( size );
-  return zLEAlloc( le, b, size ) && le->v2;
+  workspace->v2 = zVecAlloc( size );
+  return zLEWorkspaceAlloc( workspace, b, size ) && workspace->v2;
 }
 
 /* free workspace for generalized linear equation solvers with reference. */
-static void _zLEFreeRef(zLE *le)
+static void _zLEWorkspaceFreeRef(zLEWorkspace *workspace)
 {
-  zLEFree( le );
-  zVecFree( le->v2 );
+  zLEWorkspaceFree( workspace );
+  zVecFree( workspace->v2 );
 }
 
 /* allocate workspace for generalized linear equation solvers based on MP inverse. */
-static bool _zLEAllocMP(zLE *le, zVec b, int size)
+static bool _zLEWorkspaceAllocMP(zLEWorkspace *workspace, zVec b, int size)
 {
-  le->c = zVecAlloc( size );
-  return zLEAlloc( le, b, size ) && le->c;
+  workspace->c = zVecAlloc( size );
+  return zLEWorkspaceAlloc( workspace, b, size ) && workspace->c;
 }
 
 /* free workspace for generalized linear equation solvers based on MP inverse. */
-static void _zLEFreeMP(zLE *le)
+static void _zLEWorkspaceFreeMP(zLEWorkspace *workspace)
 {
-  zLEFree( le );
-  zVecFree( le->c );
+  zLEWorkspaceFree( workspace );
+  zVecFree( workspace->c );
 }
 
 /* allocate workspace for a lienar equation solver with matrix decomposition. */
-static bool _zLEAllocLR(zLE *le, zMat a)
+static bool _zLEWorkspaceAllocLR(zLEWorkspace *workspace, zMat a)
 {
-  le->l = zMatAllocSqr( zMatRowSizeNC(a) );
-  le->r = zMatAlloc( zMatRowSizeNC(a), zMatColSizeNC(a) );
-  le->idx2 = zIndexCreate( zMatRowSizeNC(a) );
-  return le->l && le->r && le->idx2;
+  workspace->l = zMatAllocSqr( zMatRowSizeNC(a) );
+  workspace->r = zMatAlloc( zMatRowSizeNC(a), zMatColSizeNC(a) );
+  workspace->idx2 = zIndexCreate( zMatRowSizeNC(a) );
+  return workspace->l && workspace->r && workspace->idx2;
 }
 
 /* free workspace for a lienar equation solver with matrix decomposition. */
-static void _zLEFreeLR(zLE *le)
+static void _zLEWorkspaceFreeLR(zLEWorkspace *workspace)
 {
-  zMatFreeAO( 2, le->l, le->r );
-  zIndexFree( le->idx2 );
+  zMatFreeAO( 2, workspace->l, workspace->r );
+  zIndexFree( workspace->idx2 );
 }
 
-/* weighted-norm-minimizing redundant linear equation solver
- * without checking size consistency. */
-zVec zLESolveNormMinDST(zMat a, zVec b, zVec w, zVec ans, zLE *le)
+/* weighted-norm-minimizing redundant linear equation solver without checking size consistency. */
+zVec zLESolveNormMinDST(zMat a, zVec b, zVec w, zVec ans, zLEWorkspace *workspace)
 {
-  w ? zMatQuadNC( a, w, le->m ) : zMulMatMatTNC( a, a, le->m );
-  if( !zLESolveGaussDST( le->m, b, le->v1, le->idx1, le->s ) ) return NULL;
-  zMulMatTVecNC( a, le->v1, ans );
+  w ? zMatQuadNC( a, w, workspace->m ) : zMulMatMatTNC( a, a, workspace->m );
+  if( !zLESolveGaussDST( workspace->m, b, workspace->v1, workspace->idx1, workspace->s ) ) return NULL;
+  zMulMatTVecNC( a, workspace->v1, ans );
   return w ? zVecAmpNCDRC( ans, w ) : ans;
 }
 
 /* norm-minimizing redundant linear equation solver. */
 zVec zLESolveNormMin(zMat a, zVec b, zVec w, zVec ans)
 {
-  zLE le;
+  zLEWorkspace workspace;
 
   if( !zMatRowVecSizeIsEqual( a, b ) ||
       !zMatColVecSizeIsEqual( a, ans ) ){
@@ -104,26 +122,25 @@ zVec zLESolveNormMin(zMat a, zVec b, zVec w, zVec ans)
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );
     return NULL;
   }
-  ans = zLEAlloc( &le, b, zMatRowSizeNC(a) ) ?
-    zLESolveNormMinDST( a, le.b, w, ans, &le ) : NULL;
-  zLEFree( &le );
+  ans = zLEWorkspaceAlloc( &workspace, b, zMatRowSizeNC(a) ) ?
+    zLESolveNormMinDST( a, workspace.b, w, ans, &workspace ) : NULL;
+  zLEWorkspaceFree( &workspace );
   return ans;
 }
 
-/* error-minimizing inferior linear equation solver
- * without checking size consistency. */
-zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLE *le)
+/* error-minimizing inferior linear equation solver without checking size consistency. */
+zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLEWorkspace *workspace)
 {
   if( w ) zVecAmpNCDRC( b, w );
-  zMulMatTVecNC( a, b, le->v1 );
-  zMatTQuadNC( a, w, le->m );
-  return zLESolveGaussDST( le->m, le->v1, ans, le->idx1, le->s );
+  zMulMatTVecNC( a, b, workspace->v1 );
+  zMatTQuadNC( a, w, workspace->m );
+  return zLESolveGaussDST( workspace->m, workspace->v1, ans, workspace->idx1, workspace->s );
 }
 
 /* error-minimizing inferior linear equation solver. */
 zVec zLESolveErrorMin(zMat a, zVec b, zVec w, zVec ans)
 {
-  zLE le;
+  zLEWorkspace workspace;
 
   if( !zMatRowVecSizeIsEqual( a, b ) ||
       !zMatColVecSizeIsEqual( a, ans ) ){
@@ -134,20 +151,20 @@ zVec zLESolveErrorMin(zMat a, zVec b, zVec w, zVec ans)
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );
     return NULL;
   }
-  ans = zLEAlloc( &le, b, zMatColSizeNC(a) ) ?
-    zLESolveErrorMinDST( a, le.b, w, ans, &le ) : NULL;
-  zLEFree( &le );
+  ans = zLEWorkspaceAlloc( &workspace, b, zMatColSizeNC(a) ) ?
+    zLESolveErrorMinDST( a, workspace.b, w, ans, &workspace ) : NULL;
+  zLEWorkspaceFree( &workspace );
   return ans;
 }
 
 /* weighted-referred-norm-minimizing redundant linear
  * equation solver without checking size consistency. */
-zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLE *le)
+zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLEWorkspace *workspace)
 {
-  w ? zMatQuadNC( a, w, le->m ) : zMulMatMatTNC( a, a, le->m );
-  zLEResidual( a, b, ref, le->v1 );
-  if( !zLESolveGaussDST( le->m, le->v1, le->v2, le->idx1, le->s ) ) return NULL;
-  zMulMatTVecNC( a, le->v2, ans );
+  w ? zMatQuadNC( a, w, workspace->m ) : zMulMatMatTNC( a, a, workspace->m );
+  zLEResidual( a, b, ref, workspace->v1 );
+  if( !zLESolveGaussDST( workspace->m, workspace->v1, workspace->v2, workspace->idx1, workspace->s ) ) return NULL;
+  zMulMatTVecNC( a, workspace->v2, ans );
   if( w ) zVecAmpNCDRC( ans, w );
   return zVecAddNCDRC( ans, ref );
 }
@@ -155,7 +172,7 @@ zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLE *le)
 /* referred-norm-minimizing redundant linear equation solver. */
 zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans)
 {
-  zLE le;
+  zLEWorkspace workspace;
 
   if( !zMatRowVecSizeIsEqual( a, b ) ||
       !zMatColVecSizeIsEqual( a, ans ) ){
@@ -167,21 +184,21 @@ zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans)
     ZRUNERROR( ZM_ERR_SIZMIS_VEC );
     return NULL;
   }
-  ans = _zLEAllocRef( &le, b, zMatRowSizeNC(a) ) ?
-    zLESolveRefMinDST( a, le.b, w, ref, ans, &le ) : NULL;
-  _zLEFreeRef( &le );
+  ans = _zLEWorkspaceAllocRef( &workspace, b, zMatRowSizeNC(a) ) ?
+    zLESolveRefMinDST( a, workspace.b, w, ref, ans, &workspace ) : NULL;
+  _zLEWorkspaceFreeRef( &workspace );
   return ans;
 }
 
 /* compute left-lower part of the linear equation. */
-static void _zLESolveMP1(zLE *le, zVec we, int rank)
+static void _zLESolveMP1(zLEWorkspace *workspace, zVec we, int rank)
 {
-  if( rank < (int)zMatColSizeNC(le->l) ){
-    zMatColReg( le->l, rank );
-    zMatRowReg( le->r, rank );
-    zLESolveErrorMinDST( le->l, le->b, we, le->c, le );
+  if( rank < (int)zMatColSizeNC(workspace->l) ){
+    zMatColReg( workspace->l, rank );
+    zMatRowReg( workspace->r, rank );
+    zLESolveErrorMinDST( workspace->l, workspace->b, we, workspace->c, workspace );
   } else
-    zLESolveL( le->l, le->b, le->c, le->idx2 );
+    zLESolveL( workspace->l, workspace->b, workspace->c, workspace->idx2 );
 }
 
 /* generalized linear equation solver using Moore-Penrose's
@@ -189,22 +206,22 @@ static void _zLESolveMP1(zLE *le, zVec we, int rank)
 zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 {
   int rank;
-  zLE le;
+  zLEWorkspace workspace;
 
-  if( !_zLEAllocLR( &le, a ) ) goto TERMINATE2;
-  if( ( rank = zMatDecompLQ( a, le.l, le.r, le.idx2 ) ) == 0 )
+  if( !_zLEWorkspaceAllocLR( &workspace, a ) ) goto TERMINATE2;
+  if( ( rank = zMatDecompLQ( a, workspace.l, workspace.r, workspace.idx2 ) ) == 0 )
     goto TERMINATE2; /* extremely irregular case */
-  if( !_zLEAllocMP( &le, b, rank ) ) goto TERMINATE1;
+  if( !_zLEWorkspaceAllocMP( &workspace, b, rank ) ) goto TERMINATE1;
 
-  _zLESolveMP1( &le, we, rank );
-  zMatIsSqr(le.r) ?
-    zMulMatTVec( le.r, le.c, ans ) :
-    zLESolveNormMinDST( le.r, le.c, wn, ans, &le );
+  _zLESolveMP1( &workspace, we, rank );
+  zMatIsSqr( workspace.r ) ?
+    zMulMatTVec( workspace.r, workspace.c, ans ) :
+    zLESolveNormMinDST( workspace.r, workspace.c, wn, ans, &workspace );
 
  TERMINATE1:
-  _zLEFreeMP( &le );
+  _zLEWorkspaceFreeMP( &workspace );
  TERMINATE2:
-  _zLEFreeLR( &le );
+  _zLEWorkspaceFreeLR( &workspace );
   return ans;
 }
 
@@ -213,22 +230,22 @@ zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 zVec zLESolveMPLU(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 {
   int rank;
-  zLE le;
+  zLEWorkspace workspace;
 
-  if( !_zLEAllocLR( &le, a ) ) goto TERMINATE2;
-  if( ( rank = zMatDecompLU( a, le.l, le.r, le.idx2 ) ) == 0 )
+  if( !_zLEWorkspaceAllocLR( &workspace, a ) ) goto TERMINATE2;
+  if( ( rank = zMatDecompLU( a, workspace.l, workspace.r, workspace.idx2 ) ) == 0 )
     goto TERMINATE2; /* extremely irregular case */
-  if( !_zLEAllocMP( &le, b, rank ) ) goto TERMINATE1;
+  if( !_zLEWorkspaceAllocMP( &workspace, b, rank ) ) goto TERMINATE1;
 
-  _zLESolveMP1( &le, we, rank );
-  zMatIsSqr(le.r) ?
-    zLESolveU( le.r, le.c, ans ) :
-    zLESolveNormMinDST( le.r, le.c, wn, ans, &le );
+  _zLESolveMP1( &workspace, we, rank );
+  zMatIsSqr( workspace.r ) ?
+    zLESolveU( workspace.r, workspace.c, ans ) :
+    zLESolveNormMinDST( workspace.r, workspace.c, wn, ans, &workspace );
 
  TERMINATE1:
-  _zLEFreeMP( &le );
+  _zLEWorkspaceFreeMP( &workspace );
  TERMINATE2:
-  _zLEFreeLR( &le );
+  _zLEWorkspaceFreeLR( &workspace );
   return ans;
 }
 
@@ -268,28 +285,28 @@ zVec zLESolveMPSVD(zMat a, zVec b, zVec ans)
 zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn)
 {
   int i, rank;
-  zLE le;
+  zLEWorkspace workspace;
 
-  if( !_zLEAllocLR( &le, a ) ) goto TERMINATE2;
-  if( ( rank = zMatDecompLQ( a, le.l, le.r, le.idx2 ) ) <= 0 )
+  if( !_zLEWorkspaceAllocLR( &workspace, a ) ) goto TERMINATE2;
+  if( ( rank = zMatDecompLQ( a, workspace.l, workspace.r, workspace.idx2 ) ) <= 0 )
     goto TERMINATE2; /* extremely irregular case */
-  if( !_zLEAllocMP( &le, b, rank ) ) goto TERMINATE1;
+  if( !_zLEWorkspaceAllocMP( &workspace, b, rank ) ) goto TERMINATE1;
 
-  _zLESolveMP1( &le, we, rank );
-  if( zMatIsSqr(le.r) ){
-    zMulMatTVec( le.r, le.c, ans );
+  _zLESolveMP1( &workspace, we, rank );
+  if( zMatIsSqr( workspace.r ) ){
+    zMulMatTVec( workspace.r, workspace.c, ans );
     zMatZero( mn );
   } else{
-    zLESolveNormMinDST( le.r, le.c, wn, ans, &le );
-    zMulMatTMat( le.r, le.r, mn );
+    zLESolveNormMinDST( workspace.r, workspace.c, wn, ans, &workspace );
+    zMulMatTMat( workspace.r, workspace.r, mn );
     for( i=0; i<zMatRowSizeNC(mn); i++ )
       zMatElemNC(mn,i,i) -= 1.0;
   }
 
  TERMINATE1:
-  _zLEFreeMP( &le );
+  _zLEWorkspaceFreeMP( &workspace );
  TERMINATE2:
-  _zLEFreeLR( &le );
+  _zLEWorkspaceFreeLR( &workspace );
   return ans;
 }
 
@@ -326,35 +343,35 @@ static bool _zLESolveSRSizeIsEqual(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 }
 
 /* linear equation solver using singularity-robust inverse matrix (destructive). */
-zVec zLESolveSRBiasDST(zMat a, zVec b, zVec wn, zVec we, double bias, zVec ans, zLE *le)
+zVec zLESolveSRBiasDST(zMat a, zVec b, zVec wn, zVec we, double bias, zVec ans, zLEWorkspace *workspace)
 {
   int i;
 
   if( we ) zVecAmpNCDRC( b, we );
-  zMulMatTVecNC( a, b, le->v1 );
-  zMatTQuadNC( a, we, le->m );
-  for( i=0; i<zMatRowSizeNC(le->m); i++ )
-    zMatElemNC(le->m,i,i) += zVecElemNC(wn,i) + bias;
-  return zLESolveGaussDST( le->m, le->v1, ans, le->idx1, le->s );
+  zMulMatTVecNC( a, b, workspace->v1 );
+  zMatTQuadNC( a, we, workspace->m );
+  for( i=0; i<zMatRowSizeNC(workspace->m); i++ )
+    zMatElemNC(workspace->m,i,i) += zVecElemNC(wn,i) + bias;
+  return zLESolveGaussDST( workspace->m, workspace->v1, ans, workspace->idx1, workspace->s );
 }
 
 /* linear equation solver using singularity-robust inverse matrix. */
 zVec zLESolveSRBias(zMat a, zVec b, zVec wn, zVec we, double bias, zVec ans)
 {
-  zLE le;
+  zLEWorkspace workspace;
 
   if( !_zLESolveSRSizeIsEqual( a, b, wn, we, ans ) ) return NULL;
-  ans = zLEAlloc( &le, b, zVecSizeNC(ans) ) ?
-    zLESolveSRBiasDST( a, le.b, wn, we, bias, ans, &le ) : NULL;
-  zLEFree( &le );
+  ans = zLEWorkspaceAlloc( &workspace, b, zVecSizeNC(ans) ) ?
+    zLESolveSRBiasDST( a, workspace.b, wn, we, bias, ans, &workspace ) : NULL;
+  zLEWorkspaceFree( &workspace );
   return ans;
 }
 
 /* generalized linear equation solver using SR-inverse biasing a vector in the null space (destructive). */
-zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zLE *le, zVec bb)
+zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zLEWorkspace *workspace, zVec bb)
 {
   zLEResidual( a, b, aux, bb );
-  zLESolveSRDST( a, bb, wn, we, ans, le );
+  zLESolveSRDST( a, bb, wn, we, ans, workspace );
   return zVecAddNCDRC( ans, aux );
 }
 
@@ -374,28 +391,28 @@ zVec zLESolveSRAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
 }
 
 /* linear equation solver using referred singularity-robust inverse matrix (destructive). */
-zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLE *le)
+zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLEWorkspace *workspace)
 {
   int i;
 
   if( we ) zVecAmpNCDRC( b, we );
-  zMulMatTVecNC( a, b, le->v1 );
+  zMulMatTVecNC( a, b, workspace->v1 );
   for( i=0; i<zVecSizeNC(ref); i++ )
-    zVecElemNC(le->v1,i) += zVecElemNC(wn,i) * zVecElemNC(ref,i);
-  zMatTQuadNC( a, we, le->m );
-  for( i=0; i<zMatRowSizeNC(le->m); i++ )
-    zMatElemNC(le->m,i,i) += zVecElemNC(wn,i);
-  return zLESolveGaussDST( le->m, le->v1, ans, le->idx1, le->s );
+    zVecElemNC(workspace->v1,i) += zVecElemNC(wn,i) * zVecElemNC(ref,i);
+  zMatTQuadNC( a, we, workspace->m );
+  for( i=0; i<zMatRowSizeNC(workspace->m); i++ )
+    zMatElemNC(workspace->m,i,i) += zVecElemNC(wn,i);
+  return zLESolveGaussDST( workspace->m, workspace->v1, ans, workspace->idx1, workspace->s );
 }
 
 /* linear equation solver using referred singularity robust inverse matrix. */
 zVec zLESolveRSR(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans)
 {
-  zLE le;
+  zLEWorkspace workspace;
 
   if( !_zLESolveSRSizeIsEqual( a, b, wn, we, ans ) ) return NULL;
-  ans = zLEAlloc( &le, b, zVecSizeNC(ans) ) ?
-    zLESolveRSRDST( a, le.b, wn, we, ref, ans, &le ) : NULL;
-  zLEFree( &le );
+  ans = zLEWorkspaceAlloc( &workspace, b, zVecSizeNC(ans) ) ?
+    zLESolveRSRDST( a, workspace.b, wn, we, ref, ans, &workspace ) : NULL;
+  zLEWorkspaceFree( &workspace );
   return ans;
 }

@@ -1,3 +1,6 @@
+2024. 5.19. Added zLEWorkspaceClone. [zm_le_gen]
+2024. 5.18. Debugged _zNLESolveNR to free zLEWorkspace at termination. [zm_nle_dm]
+2024. 5.18. Renamed zLE to zLEWorkspace. [zm_le_gen, zm_nle_dm]
 2024. 5.13. Added DEPENDENCY in config.app. [app]
 2024. 5.13. Added STD option in config.org. [config]
 2024. 5.13. Put config.app in app. [app]
