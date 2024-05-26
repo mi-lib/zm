@@ -16,13 +16,13 @@ void check(zMat a, zVec b, zVec ans, zVec e, const char *key)
 
 void test(zMat a, zVec b, zVec w, zVec w2, zVec e, zVec aux)
 {
-  zLE le;
+  zLEWorkspace le;
   zVec x1, x2, bb;
 
   x1 = zVecAlloc( N );
   x2 = zVecAlloc( N );
   bb = zVecAlloc( zVecSizeNC(b) );
-  zLEAlloc( &le, NULL, N );
+  zLEWorkspaceAlloc( &le, NULL, N );
   zVecRandUniform( aux, -10, 10 );
 
   zLESolveSRAux( a, b, w, w2, x1, aux );
@@ -32,7 +32,7 @@ void test(zMat a, zVec b, zVec w, zVec w2, zVec e, zVec aux)
   zVecSub( x1, x2, le.s );
   printf( "error = %.10g\n", zVecNorm(le.s) );
 
-  zLEFree( &le );
+  zLEWorkspaceFree( &le );
 }
 
 int main(int argc, char *argv[])
