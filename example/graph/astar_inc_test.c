@@ -81,9 +81,9 @@ void output_path(zGraph *graph, zGraphNodeList *path, double cost)
   zGraphNodeListCell *gc;
 
   zListForEach( path, gc ){
-    printf( " -> node" );
+    printf( " -> " );
     graph->fprint( stdout, gc->data->data );
-    printf( " ... %f\n", gc->data->val );
+    printf( " - " );
   }
   printf( "cost = %f\n", cost );
 }
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
   zGraphFPrint( stdout, &graph );
 
   printf( ">> start computing the shortest path...\n" );
-  cost = zGraphAStar( &graph, &s, &g, &graph, &path );
+  cost = zGraphSearchAStar( &graph, &s, &g, &graph, &path );
   printf( "   done.\n" );
   printf( ">> final graph\n" );
   zGraphFPrint( stdout, &graph );

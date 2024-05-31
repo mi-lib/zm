@@ -1,3 +1,5 @@
+2024. 5.31. Renamed zGraphAStar and zGraphDijkstra to zGraphSearchAStar and zGraphSearchDijkstra, respectively. [zm_graph_search]
+2024. 5.31. Changed the license from LGPL-3 to MIT license. [all]
 2024. 5.19. Added zLEWorkspaceClone. [zm_le_gen]
 2024. 5.18. Debugged _zNLESolveNR to free zLEWorkspace at termination. [zm_nle_dm]
 2024. 5.18. Renamed zLE to zLEWorkspace. [zm_le_gen, zm_nle_dm]

@@ -6,23 +6,11 @@
 
 #include <zm/zm_graph.h>
 
-/* graph node pool */
+/* zero cost function (for Dijkstra method). */
+static double _zGraphEvalHDummy(void *d1, void *d2, void *util){ return 0; }
 
-static double _zGraphEvalHDummy(void *d1, void *d2, void *util);
-
-/* (static)
- * _zGraphEvalHDummy
- * - zero cost function (for Dijkstra method).
- */
-double _zGraphEvalHDummy(void *d1, void *d2, void *util)
-{
-  return 0;
-}
-
-/* zGraphAStar
- * - find the shortest path of a graph by A* method.
- */
-double zGraphAStar(zGraph *graph, void *start, void *goal, void *util, zGraphNodeList *path)
+/* find the shortest path of a graph by A* method. */
+double zGraphSearchAStar(zGraph *graph, void *start, void *goal, void *util, zGraphNodeList *path)
 {
   zGraphNode *s=NULL, *g=NULL, *n;
   zGraphCell *gc;
@@ -80,11 +68,9 @@ double zGraphAStar(zGraph *graph, void *start, void *goal, void *util, zGraphNod
   return s->val;
 }
 
-/* zGraphDijkstra
- * - find the shortest path of a graph by Dijkstra's method.
- */
-double zGraphDijkstra(zGraph *graph, void *start, void *goal, zGraphNodeList *path)
+/* find the shortest path of a graph by Dijkstra's method. */
+double zGraphSearchDijkstra(zGraph *graph, void *start, void *goal, zGraphNodeList *path)
 {
   graph->h = NULL;
-  return zGraphAStar( graph, start, goal, NULL, path );
+  return zGraphSearchAStar( graph, start, goal, NULL, path );
 }

@@ -19,7 +19,7 @@ __BEGIN_DECLS
 
 /*! \brief find the shortest path of a graph by A* algorithm.
  *
- * zGraphAStar() finds the shortest path of a graph \a graph
+ * zGraphSearchAStar() finds the shortest path of a graph \a graph
  * from \a start to \a goal, where they are the node identifiers.
  * The resulted path is stored in \a path in the order from the
  * start to the goal.
@@ -27,17 +27,17 @@ __BEGIN_DECLS
  * \notes a heuristic function should be assigned in advance as
  * \a graph->h = h, for instance.
  */
-__ZM_EXPORT double zGraphAStar(zGraph *graph, void *start, void *goal, void *util, zGraphNodeList *path);
+__ZM_EXPORT double zGraphSearchAStar(zGraph *graph, void *start, void *goal, void *util, zGraphNodeList *path);
 
 /*! \brief find the shortest path of a graph by Dijkstra's method.
  *
- * zGraphDijkstra() finds the shortest path of a graph \a graph
+ * zGraphSearchDijkstra() finds the shortest path of a graph \a graph
  * from \a start to \a goal, where they are the node identifiers.
  * The resulted path is stored in \a path in the order from the
  * start to the goal.
  * \retval the minimum cost to get to the goal from the start.
  */
-__ZM_EXPORT double zGraphDijkstra(zGraph *graph, void *start, void *goal, zGraphNodeList *path);
+__ZM_EXPORT double zGraphSearchDijkstra(zGraph *graph, void *start, void *goal, zGraphNodeList *path);
 
 /*! \} */
 

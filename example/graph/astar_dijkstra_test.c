@@ -40,7 +40,7 @@ double test_h(void *d1, void *d2, void *dummy)
 
   v1 = d1;
   v2 = d2;
-  return fabs( v1->x - v2->x ) + fabs( v1->y - v2->y );
+  return fabs( v1->x - v2->x ) + fabs( v1->y - v2->y ); /* manhattan distance */
 }
 
 bool test_connect(zGraph *graph, int i1, int i2, double cost)
@@ -51,7 +51,6 @@ bool test_connect(zGraph *graph, int i1, int i2, double cost)
   n2.id = i2;
   return zGraphBiconnect( graph, &n1, &n2, cost );
 }
-
 
 #if TEST == 1
 /* TEST1 maze:
@@ -194,9 +193,9 @@ void output_path(zGraph *graph, zGraphNodeList *path, double cost)
   zGraphNodeListCell *gc;
 
   zListForEach( path, gc ){
-    printf( " -> node" );
+    printf( " -> " );
     graph->fprint( stdout, gc->data->data );
-    printf( " ... %f\n", gc->data->val );
+    printf( " - " );
   }
   printf( "cost = %f\n", cost );
 }
@@ -218,11 +217,11 @@ int main(int argc, char *argv[])
   zGraphFPrint( stdout, &graph );
 
   graph.h = test_h;
-  cost = zGraphAStar( &graph, &s, &g, NULL, &path );
+  cost = zGraphSearchAStar( &graph, &s, &g, NULL, &path );
   printf( ">> path (by A*)\n" );
   output_path( &graph, &path, cost );
 
-  cost = zGraphDijkstra( &graph, &s, &g, &path );
+  cost = zGraphSearchDijkstra( &graph, &s, &g, &path );
   printf( ">> path (by Dijkstra)\n" );
   output_path( &graph, &path, cost );
 
