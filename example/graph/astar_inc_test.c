@@ -47,22 +47,22 @@ double test_h(void *n1, void *n2, void *util)
   data_t *d1, *d2;
   double l;
 
-  d1 = (data_t*)n1;
-  d2 = (data_t*)n2;
+  d1 = (data_t *)n1;
+  d2 = (data_t *)n2;
   l = fabs( d1->x - d2->x ) + fabs( d1->y - d2->y );
   if( !d1->check ){
     d1->check = true;
     if( l < 1.0 ){
-      zGraphBiconnect( (zGraph*)util, n1, (void*)d2, l );
+      zGraphBiconnect( (zGraph *)util, n1, (void*)d2, l );
     } else{
-      test_add( (zGraph*)util, d1, 1.0, 0.0 );
-      test_add( (zGraph*)util, d1, 1.0, 1.0 );
-      test_add( (zGraph*)util, d1, 0.0, 1.0 );
-      test_add( (zGraph*)util, d1,-1.0, 1.0 );
-      test_add( (zGraph*)util, d1,-1.0, 0.0 );
-      test_add( (zGraph*)util, d1,-1.0,-1.0 );
-      test_add( (zGraph*)util, d1, 0.0,-1.0 );
-      test_add( (zGraph*)util, d1, 1.0,-1.0 );
+      test_add( (zGraph *)util, d1, 1.0, 0.0 );
+      test_add( (zGraph *)util, d1, 1.0, 1.0 );
+      test_add( (zGraph *)util, d1, 0.0, 1.0 );
+      test_add( (zGraph *)util, d1,-1.0, 1.0 );
+      test_add( (zGraph *)util, d1,-1.0, 0.0 );
+      test_add( (zGraph *)util, d1,-1.0,-1.0 );
+      test_add( (zGraph *)util, d1, 0.0,-1.0 );
+      test_add( (zGraph *)util, d1, 1.0,-1.0 );
     }
   }
   return l;

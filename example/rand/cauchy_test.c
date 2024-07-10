@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
   min = argc > 1 ? atof( argv[1] ) : -100000;
   max = argc > 2 ? atof( argv[2] ) :  100000;
   div = max - min + 1;
-  count = (int*)calloc( div, sizeof(int) );
+  count = (int *)calloc( div, sizeof(int) );
   fp = fopen( "cd", "w" );
   for( i=0; i<N; i++ ){
     x = zRandCauchy( NULL );

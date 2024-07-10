@@ -1,3 +1,4 @@
+2024. 7.10. Corrected graph/astar_dijkstra_test, graph/astar_inc_test, rand/cauchy_test, and rand/geo_test (thanks to Daishi Kaneta). [example]
 2024. 5.31. Removed test.sh. [test]
 2024. 5.31. Renamed zGraphAStar and zGraphDijkstra to zGraphSearchAStar and zGraphSearchDijkstra, respectively. [zm_graph_search]
 2024. 5.31. Changed the license from LGPL-3 to MIT license. [all]

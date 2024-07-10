@@ -38,8 +38,8 @@ double test_h(void *d1, void *d2, void *dummy)
 {
   data_t *v1, *v2;
 
-  v1 = (data_t*)d1;
-  v2 = (data_t*)d2;
+  v1 = (data_t *)d1;
+  v2 = (data_t *)d2;
   return fabs( v1->x - v2->x ) + fabs( v1->y - v2->y ); /* manhattan distance */
 }
 
