@@ -582,7 +582,7 @@ int main(int argc, char *argv[])
       }
     }
     zMatFree( a );
-    zVecFreeAO( 4, b, c, ans, x );
+    zVecFreeAtOnce( 4, b, c, ans, x );
   }
   return 0;
 }

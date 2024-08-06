@@ -95,7 +95,7 @@ static bool _zLEWorkspaceAllocLR(zLEWorkspace *workspace, zMat a)
 /* free workspace for a lienar equation solver with matrix decomposition. */
 static void _zLEWorkspaceFreeLR(zLEWorkspace *workspace)
 {
-  zMatFreeAO( 2, workspace->l, workspace->r );
+  zMatFreeAtOnce( 2, workspace->l, workspace->r );
   zIndexFree( workspace->idx2 );
 }
 

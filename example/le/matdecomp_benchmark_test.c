@@ -19,7 +19,7 @@ void test_lu(int r, int c, int n)
     if( !zMatIsTiny( m ) ) count_fail++;
   }
   printf( "failure rate (%d x %d): LU decomposition %d/%d\n", r, c, count_fail, n );
-  zMatFreeAO( 4, m, mc, l, u );
+  zMatFreeAtOnce( 4, m, mc, l, u );
   zIndexFree( index );
 }
 
@@ -44,7 +44,7 @@ void test_cholesky(int r, int c, int n)
     if( !zMatIsTiny( m ) ) count_fail++;
   }
   printf( "failure rate (%d x %d) (%d x %d): Cholesky decomposition %d/%d\n", r, c, c, r, count_fail, n );
-  zMatFreeAO( 4, m, mc, l, s );
+  zMatFreeAtOnce( 4, m, mc, l, s );
   zIndexFree( index );
 }
 
@@ -90,7 +90,7 @@ void test_lq(int r, int c, int n)
     if( !zMatIsTiny( m ) || !test_qqt( e ) ) count_fail++;
   }
   printf( "failure rate (%d x %d): LQ decomposition %d/%d\n", r, c, count_fail, n );
-  zMatFreeAO( 5, m, mc, l, q, e );
+  zMatFreeAtOnce( 5, m, mc, l, q, e );
   zIndexFree( index );
 }
 

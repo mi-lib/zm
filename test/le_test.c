@@ -53,8 +53,8 @@ void assert_mpinv(void)
   zAssert( zMPInv + zMulMPInvMatMat, result1 );
   zAssert( zLESolveMP, result2 );
 
-  zMatFreeAO( 5, m1, m2, ma, mb, mp );
-  zVecFreeAO( 3, v1, v2, v3 );
+  zMatFreeAtOnce( 5, m1, m2, ma, mb, mp );
+  zVecFreeAtOnce( 3, v1, v2, v3 );
 }
 
 void assert_mpnull(void)
@@ -76,8 +76,8 @@ void assert_mpnull(void)
   zMulMatVec( mn, v, u );
   zMulMatVec( a, u, e );
   zAssert( zMPInvNull, zVecIsTol(e,TOL) );
-  zMatFreeAO( 3, a, mp, mn );
-  zVecFreeAO( 3, v, u, e );
+  zMatFreeAtOnce( 3, a, mp, mn );
+  zVecFreeAtOnce( 3, v, u, e );
 }
 
 int main(void)

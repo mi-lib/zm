@@ -12,7 +12,7 @@ static int _zMPInvAllocWork1(zMat m, zMat *l, zMat *q, zIndex *idx)
   int rank;
 
   if( ( rank = zMatDecompLQAlloc( m, l, q, idx ) ) < 0 ){
-    zMatFreeAO( 2, *l, *q );
+    zMatFreeAtOnce( 2, *l, *q );
     zIndexFree( *idx );
     return -1;
   }
@@ -26,7 +26,7 @@ static int _zMPInvAllocWork2(int rank, int row, zMat *tmp1, zMat *tmp2, zMat *tm
   *tmp2 = zMatAllocSqr( rank );
   *tmp3 = zMatAlloc( rank, row );
   if( !*tmp1 || !*tmp2 || !*tmp3 ){
-    zMatFreeAO( 3, *tmp1, *tmp2, *tmp3 );
+    zMatFreeAtOnce( 3, *tmp1, *tmp2, *tmp3 );
     return -1;
   }
   return rank;
@@ -50,7 +50,7 @@ int zMPInv(zMat m, zMat mp)
   }
   zMulMatTMat( q, tmp3, mp );
 
-  zMatFreeAO( 5, l, q, tmp1, tmp2, tmp3 );
+  zMatFreeAtOnce( 5, l, q, tmp1, tmp2, tmp3 );
   zIndexFree( idx );
   return rank;
 }
@@ -76,7 +76,7 @@ int zMPInvNull(zMat m, zMat mp, zMat mn)
   zMulMatTMat( q, q, mn );
   for( i=0; i<zMatRowSizeNC(mn); i++ ) zMatElemNC(mn,i,i) -= 1.0;
 
-  zMatFreeAO( 5, l, q, tmp1, tmp2, tmp3 );
+  zMatFreeAtOnce( 5, l, q, tmp1, tmp2, tmp3 );
   zIndexFree( idx );
   return rank;
 }
@@ -99,7 +99,7 @@ zMat zMulMPInvMatMat(zMat m1, zMat m2, zMat m)
   }
   zMulMatTMat( q, tmp3, m );
 
-  zMatFreeAO( 5, l, q, tmp1, tmp2, tmp3 );
+  zMatFreeAtOnce( 5, l, q, tmp1, tmp2, tmp3 );
   zIndexFree( idx );
   return m;
 }
@@ -133,7 +133,7 @@ static int _zMPInvPenrose(zMat m, zMat mp)
   zMatMulNCDRC( c, --rank / trace );
   zMulMatMatTNC( c, m, mp );
  TERMINATE:
-  zMatFreeAO( 4, b, c, c2, cb );
+  zMatFreeAtOnce( 4, b, c, c2, cb );
   return rank;
 }
 

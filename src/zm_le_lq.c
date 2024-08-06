@@ -94,6 +94,6 @@ int zMatDecompQR(zMat m, zMat q, zMat r, zIndex idx)
   if( r ) zMatTNC( rcp, r );
 
  TERMINATE:
-  zMatFreeAO( 3, mcp, qcp, rcp );
+  zMatFreeAtOnce( 3, mcp, qcp, rcp );
   return rank;
 }

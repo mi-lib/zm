@@ -75,7 +75,7 @@ void zMatFree(zMat m)
 }
 
 /* free matrices at once. */
-void zMatFreeAO(int n, ...)
+void zMatFreeAtOnce(int n, ...)
 {
   va_list arg;
   zMat m;

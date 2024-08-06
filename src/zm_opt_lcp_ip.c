@@ -26,7 +26,7 @@ typedef struct{
 static void _zLCPIP_PCFree(_zLCPIP_PC *wm)
 {
   zMatFree( wm->g );
-  zVecFreeAO( 6, wm->r, wm->dz, wm->dw, wm->b, wm->c, wm->s );
+  zVecFreeAtOnce( 6, wm->r, wm->dz, wm->dw, wm->b, wm->c, wm->s );
   zIndexFree( wm->idx );
 }
 

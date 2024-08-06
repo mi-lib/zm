@@ -28,9 +28,8 @@ static void _zLP_PDIPFree(_zLP_PDIP *dat)
   dat->b = dat->c = dat->x = NULL;
   /* allocate working memory */
   zIndexFree( dat->idx );
-  zMatFreeAO( 3, dat->l, dat->u, dat->axza );
-  zVecFreeAO( 7,
-    dat->y, dat->z, dat->xz, dat->tmp, dat->v1, dat->v2, dat->v3 );
+  zMatFreeAtOnce( 3, dat->l, dat->u, dat->axza );
+  zVecFreeAtOnce( 7, dat->y, dat->z, dat->xz, dat->tmp, dat->v1, dat->v2, dat->v3 );
 }
 
 /* allocate working memory for PD-IP. */
@@ -141,7 +140,7 @@ typedef struct{
 /* free working memory for PD-IP-PC. */
 static void _zLP_PDIP_PCFree(_zLP_PDIP_PC *pc)
 {
-  zVecFreeAO( 6, pc->dx, pc->dy, pc->dz, pc->dx2, pc->dy2, pc->dz2 );
+  zVecFreeAtOnce( 6, pc->dx, pc->dy, pc->dz, pc->dx2, pc->dy2, pc->dz2 );
 }
 
 /* allocate working memory for PD-IP-PC. */

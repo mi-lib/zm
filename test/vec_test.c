@@ -20,7 +20,7 @@ void assert_get_put(void)
   zVecCopy( test_vec1, test_vec2 );
   zVecSwap( test_vec2, 3, 6 );
   zAssert( zVecSwap, zVecElemNC(test_vec1,3) == zVecElemNC(test_vec2,6) && zVecElemNC(test_vec1,6) == zVecElemNC(test_vec2,3) );
-  zVecFreeAO( 3, test_vec1, test_vec2, test_vec3 );
+  zVecFreeAtOnce( 3, test_vec1, test_vec2, test_vec3 );
 }
 
 void assert_misc(void)
@@ -49,7 +49,7 @@ void assert_misc(void)
   for( result=true, i=0; i<size; i++ )
     if( !zIsTiny( zVecElemNC(test_vec2,i) - zVecElemNC(test_vec1,i) - dval ) ) result = false;
   zAssert( zVecShift, result );
-  zVecFreeAO( 2, test_vec1, test_vec2 );
+  zVecFreeAtOnce( 2, test_vec1, test_vec2 );
 }
 
 void assert_arith(void)
@@ -99,7 +99,7 @@ void assert_arith(void)
   for( result=true, i=0; i<size; i++ )
     if( !zIsTiny( zVecElemNC(test_vec1,i)+k*zVecElemNC(test_vec2,i)-zVecElemNC(test_vec3,i) ) ) result = false;
   zAssert( zVecCat, result );
-  zVecFreeAO( 3, test_vec1, test_vec2, test_vec3 );
+  zVecFreeAtOnce( 3, test_vec1, test_vec2, test_vec3 );
 }
 
 void assert_normalize(void)
@@ -119,7 +119,7 @@ void assert_normalize(void)
   for( result=true, i=0; i<size; i++ )
     if( !zIsTiny( zVecElemNC(test_vec1,i)/zVecElemNC(test_vec2,i) - norm ) ) result = false;
   zAssert( zVecNorm, result );
-  zVecFreeAO( 2, test_vec1, test_vec2 );
+  zVecFreeAtOnce( 2, test_vec1, test_vec2 );
 }
 
 #define N_NODE 1000

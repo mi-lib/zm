@@ -22,7 +22,7 @@ typedef struct{
 /* free memory for a particle */
 void _zOptPSOParticleFree(zOptPSOParticle *p)
 {
-  zVecFreeAO( 5, p->x, p->v, p->mybest, p->dmybest, p->dbest );
+  zVecFreeAtOnce( 5, p->x, p->v, p->mybest, p->dmybest, p->dbest );
 }
 
 /* create a particle */

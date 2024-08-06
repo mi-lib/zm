@@ -79,8 +79,8 @@ void assert_get_put(void)
     if( zMatElemNC(mat_test1,i,3) != zMatElemNC(mat_test2,i,7) ||
         zMatElemNC(mat_test1,i,7) != zMatElemNC(mat_test2,i,3) ) result = false;
   zAssert( zMatSwapCol, result );
-  zMatFreeAO( 3, mat_test1, mat_test2, mat_test3 );
-  zVecFreeAO( 2, vec_test1, vec_test2 );
+  zMatFreeAtOnce( 3, mat_test1, mat_test2, mat_test3 );
+  zVecFreeAtOnce( 2, vec_test1, vec_test2 );
 }
 
 void assert_arith(void)
@@ -165,7 +165,7 @@ void assert_arith(void)
     for( j=0; j<colsize; j++ )
       if( !zIsTiny( zMatElemNC(mat_test1,i,j)+k*zMatElemNC(mat_test2,i,j)-zMatElemNC(mat_test3,i,j) ) ) result = false;
   zAssert( zMatCatDRC, result );
-  zMatFreeAO( 3, mat_test1, mat_test2, mat_test3 );
+  zMatFreeAtOnce( 3, mat_test1, mat_test2, mat_test3 );
 }
 
 void assert_transpose(void)
@@ -195,7 +195,7 @@ void assert_transpose(void)
   for( tr=0, i=0; i<zMin(rowsize,colsize); i++ )
     tr += zMatElem(mat_test2,i,i);
   zAssert( zMatTrNC, zIsTiny( tr - zMatTrNC( mat_test2 ) ) );
-  zMatFreeAO( 2, mat_test1, mat_test2 );
+  zMatFreeAtOnce( 2, mat_test1, mat_test2 );
 }
 
 void assert_mul_mat_vec(void)
@@ -238,7 +238,7 @@ void assert_mul_mat_vec(void)
   zMulMatVec( mat_test1, vec_test1, vec_test3 );
   zVecSub( vec_test3, ans1, vec_error );
   zAssert( zMulMatVec, zVecIsTiny( vec_error ) );
-  zVecFreeAO( 2, vec_test3, vec_error );
+  zVecFreeAtOnce( 2, vec_test3, vec_error );
   vec_test3 = zVecAlloc( 4 );
   vec_error = zVecAlloc( 4 );
   zMulMatTVec( mat_test1, vec_test2, vec_test3 );
@@ -253,14 +253,14 @@ void assert_mul_mat_vec(void)
   zMulMatMatT( mat_test1, mat_test2, mat_test3 );
   zMatSub( mat_test3, ans4, mat_error );
   zAssert( zMulMatMatT, zMatIsTiny( mat_error ) );
-  zMatFreeAO( 2, mat_test3, mat_error );
+  zMatFreeAtOnce( 2, mat_test3, mat_error );
   mat_test3 = zMatAllocSqr( 4 );
   mat_error = zMatAllocSqr( 4 );
   zMulMatTMat( mat_test1, mat_test2, mat_test3 );
   zMatSub( mat_test3, ans5, mat_error );
   zAssert( zMulMatTMat, zMatIsTiny( mat_error ) );
-  zMatFreeAO( 7, mat_test1, mat_test2, mat_test3, ans3, ans4, ans5, mat_error );
-  zVecFreeAO( 6, vec_test1, vec_test2, vec_test3, ans1, ans2, vec_error );
+  zMatFreeAtOnce( 7, mat_test1, mat_test2, mat_test3, ans3, ans4, ans5, mat_error );
+  zVecFreeAtOnce( 6, vec_test1, vec_test2, vec_test3, ans1, ans2, vec_error );
 }
 
 void assert_dyad(void)
@@ -313,8 +313,8 @@ void assert_dyad(void)
   zMatCatDyad( mat_test2,-2, vec_test1, vec_test2 );
   zMatSub( mat_test2, ans4, error );
   zAssert( zMatCatDyad, zMatIsTiny( error ) );
-  zVecFreeAO( 2, vec_test1, vec_test2 );
-  zMatFreeAO( 7, mat_test1, mat_test2, ans1, ans2, ans3, ans4, error );
+  zVecFreeAtOnce( 2, vec_test1, vec_test2 );
+  zMatFreeAtOnce( 7, mat_test1, mat_test2, ans1, ans2, ans3, ans4, error );
 }
 
 void assert_quad(void)
@@ -356,8 +356,8 @@ void assert_quad(void)
   zMatSub( q2, qt2, e2 );
   zAssert( zMatTQuad, zMatIsTiny( e2 ) );
 
-  zMatFreeAO( 11, a, w1, w2, tmp1, tmp2, q1, q2, qt1, qt2, e1, e2 );
-  zVecFreeAO( 2, wv1, wv2 );
+  zMatFreeAtOnce( 11, a, w1, w2, tmp1, tmp2, q1, q2, qt1, qt2, e1, e2 );
+  zVecFreeAtOnce( 2, wv1, wv2 );
 }
 
 void assert_mulmatmatmatt(void)
@@ -375,7 +375,7 @@ void assert_mulmatmatmatt(void)
   zMulMatMatT( q, a, qat );
   zMulMatMat( a, qat, mtest );
   zAssert( zMulMatMatMatT, zMatIsEqual( m, mtest, zTOL ) );
-  zMatFreeAO( 5, a, q, m, qat, mtest );
+  zMatFreeAtOnce( 5, a, q, m, qat, mtest );
 }
 
 void assert_mulmattmatmat(void)
@@ -393,7 +393,7 @@ void assert_mulmattmatmat(void)
   zMulMatMat( q, a, qa );
   zMulMatTMat( a, qa, mtest );
   zAssert( zMulMatMatMatT, zMatIsEqual( m, mtest, zTOL ) );
-  zMatFreeAO( 5, a, q, m, qa, mtest );
+  zMatFreeAtOnce( 5, a, q, m, qa, mtest );
 }
 
 int main(void)

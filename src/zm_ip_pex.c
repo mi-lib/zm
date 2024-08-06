@@ -100,7 +100,7 @@ bool zPexIPLSM(zPexIP *pc, zVec t, zVec x)
   zLESolveGauss( a, b, pc->c );
  TERMINATE:
   zMatFree( a );
-  zVecFreeAO( 2, b, v );
+  zVecFreeAtOnce( 2, b, v );
   return result;
 }
 

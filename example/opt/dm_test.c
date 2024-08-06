@@ -110,7 +110,7 @@ zVec grad(zVec var, zVec g, void *dummy)
 #elif TEST == 4 /* ( 0, -0.01, -0.02, ... ) */
 double eval(zVec var, void *dummy)
 {
-  register int i;
+  int i;
   double val;
 
   for( val=0, i=0; i<zVecSizeNC(var); i++ )
@@ -119,7 +119,7 @@ double eval(zVec var, void *dummy)
 }
 zVec grad(zVec var, zVec g, void *dummy)
 {
-  register int i;
+  int i;
   double e;
 
   for( i=0; i<zVecSizeNC(var); i++ ){
@@ -131,7 +131,7 @@ zVec grad(zVec var, zVec g, void *dummy)
 #elif TEST == 5 /* ( 1, 2, 3, ... ) */
 double eval(zVec var, void *dummy)
 {
-  register int i;
+  int i;
   double val;
 
   for( val=0, i=0; i<zVecSizeNC(var); i++ )
@@ -140,7 +140,7 @@ double eval(zVec var, void *dummy)
 }
 zVec grad(zVec var, zVec g, void *dummy)
 {
-  register int i;
+  int i;
 
   for( i=0; i<zVecSizeNC(var); i++ )
     zVecSetElem( g, i, 2*log(zVecElem(var,i)-i)/fabs(zVecElem(var,i)-i) );
@@ -149,7 +149,7 @@ zVec grad(zVec var, zVec g, void *dummy)
 #elif TEST == 6 /* (2,-1) */
 double eval(zVec var, void *dummy)
 {
-  register int i;
+  int i;
   double x, y, val;
 
   for( val=0, i=0; i<zVecSizeNC(var); i+=2 ){
@@ -161,7 +161,7 @@ double eval(zVec var, void *dummy)
 }
 zVec grad(zVec var, zVec g, void *dummy)
 {
-  register int i;
+  int i;
   double x, y, val;
 
   for( val=0, i=0; i<zVecSizeNC(var); i+=2 ){
@@ -175,7 +175,7 @@ zVec grad(zVec var, zVec g, void *dummy)
 #elif TEST == 7 /* from Mathematica tutorial (1.37638,1.67868) */
 double eval(zVec var, void *dummy)
 {
-  register int i;
+  int i;
   double x, y, val;
 
   for( val=0, i=0; i<zVecSizeNC(var); i+=2 ){
@@ -187,10 +187,10 @@ double eval(zVec var, void *dummy)
 }
 zVec grad(zVec var, zVec g, void *dummy)
 {
-  register int i;
-  double x, y, val;
+  int i;
+  double x, y;
 
-  for( val=0, i=0; i<zVecSizeNC(var); i+=2 ){
+  for( i=0; i<zVecSizeNC(var); i+=2 ){
     x = zVecElem(var,i);
     y = zVecElem(var,i+1);
     zVecSetElem( g, i,   6*pow(x-2,5)+2*(x-2)*y*y );
@@ -201,7 +201,7 @@ zVec grad(zVec var, zVec g, void *dummy)
 #else /* quadratic programming */
 double eval(zVec var, void *dummy)
 {
-  register int i;
+  int i;
   double val;
 
   for( val=0, i=0; i<zVecSizeNC(var); i++ )
@@ -210,7 +210,7 @@ double eval(zVec var, void *dummy)
 }
 zVec grad(zVec var, zVec g, void *dummy)
 {
-  register int i;
+  int i;
 
   for( i=0; i<zVecSizeNC(var); i++ )
     zVecSetElem( g, i, (i+1)*(zVecElem(var,i)-i) );

@@ -89,6 +89,6 @@ int main(int argc, char *argv[])
   fclose( fp );
 
   zRRTDestroy( &rrt );
-  zVecFreeAO( 4, min, max, start, goal );
+  zVecFreeAtOnce( 4, min, max, start, goal );
   return 0;
 }

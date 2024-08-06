@@ -58,7 +58,7 @@ bool zm_ave_mean_cov(zVecList *list)
   printf( "\n" );
 
  TERMINATE:
-  zVecFreeAO( 3, max, min, mean );
+  zVecFreeAtOnce( 3, max, min, mean );
   zMatFree( cov );
   return ret;
 }

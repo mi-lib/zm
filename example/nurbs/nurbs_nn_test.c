@@ -28,7 +28,7 @@ void nn_test(zNURBS *nurbs)
     fprintf( fp, "\n" );
   }
   fclose( fp );
-  zVecFreeAO( 3, v, n, nn );
+  zVecFreeAtOnce( 3, v, n, nn );
 }
 
 void output_src(zSeq *seq)

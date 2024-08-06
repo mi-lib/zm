@@ -72,7 +72,7 @@ void zVecFree(zVec v)
 }
 
 /* free memory for multiple vectors at once. */
-void zVecFreeAO(int n, ...)
+void zVecFreeAtOnce(int n, ...)
 {
   va_list arg;
   zVec v;

@@ -174,7 +174,7 @@ int main(void)
         printf( "failed (%.10g)\n", zVecNorm(err) );
     }
     zMatFree( m );
-    zVecFreeAO( 4, q, ans, z, err );
+    zVecFreeAtOnce( 4, q, ans, z, err );
   }
   return 0;
 }

@@ -105,7 +105,7 @@ zMat zHess(zMat m, zMat h, zMat p)
       if( !zIsTiny( zMatElemNC(h,i,n) ) ) goto RETRY;
   }
  TERMINATE:
-  zVecFreeAO( 3, u, v, w );
+  zVecFreeAtOnce( 3, u, v, w );
   return h;
 }
 

@@ -354,7 +354,7 @@ int main(int argc, char *argv[])
     clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &tp2 );
     output( "PSO", &tp1, &tp2, var, val );
 
-    zVecFreeAO( 3, min, max, ans );
+    zVecFreeAtOnce( 3, min, max, ans );
   }
   return 0;
 }

@@ -416,7 +416,7 @@ zOptDM *zOptDMAssignCG(zOptDM *opt)
 
 void zOptDMDestroy(zOptDM *opt)
 {
-  zVecFreeAO( 6, opt->_x, opt->_d, opt->_g, opt->_p, opt->_q, opt->_r );
+  zVecFreeAtOnce( 6, opt->_x, opt->_d, opt->_g, opt->_p, opt->_q, opt->_r );
   zMatFree( opt->_h );
   zIndexFree( opt->_idx );
   opt->eval = NULL;

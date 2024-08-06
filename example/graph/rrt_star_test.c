@@ -79,6 +79,6 @@ int main(int argc, char *argv[])
 
   zRRTDestroy( &rrt );
   zVecListDestroy( &path );
-  zVecFreeAO( 3, min, max, start );
+  zVecFreeAtOnce( 3, min, max, start );
   return 0;
 }

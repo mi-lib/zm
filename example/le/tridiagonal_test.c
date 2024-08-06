@@ -35,6 +35,6 @@ int main(void)
   zTridiagSolve( a, b, c, d, ans );
   check( a, b, c, d, ans );
 
-  zVecFreeAO( 5, a, b, c, d, ans );
+  zVecFreeAtOnce( 5, a, b, c, d, ans );
   return 0;
 }

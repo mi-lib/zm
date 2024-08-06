@@ -1,3 +1,5 @@
+2024. 8. 6. Modified makefile in example to enable batch compilation of all examples in the same directory. [example]
+2024. 8. 6. Renamed zVecFreeAO and zMatFreeAO to zVecFreeAtOnce and zMatFreeAtOnce, respectively. [zm_vec, zm_mat, zm_le_tridiag, zm_le_lq, zm_le_gen, zm_le_mpinv, zm_eig, zm_ip_spline, zm_ip_chebyshev, zm_ip_pex, zm_opt_lp_pdip, zm_opt_lcp_ip, zm_opt_qp, zm_opt_dm, zm_opt_nm, zm_opt_pso, zm_nle_dm, zm_ode2, zm_ode_heun, zm_ode_rk4, zm_ode_rkg, zm_ode_adams, zm_ode_gear, zm_ode_erk, zm_ode_beuler, zm_ode_bk4, app]
 2024. 7.10. Corrected graph/astar_dijkstra_test, graph/astar_inc_test, rand/cauchy_test, and rand/geo_test (thanks to Daishi Kaneta). [example]
 2024. 5.31. Removed test.sh. [test]
 2024. 5.31. Renamed zGraphAStar and zGraphDijkstra to zGraphSearchAStar and zGraphSearchDijkstra, respectively. [zm_graph_search]

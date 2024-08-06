@@ -143,6 +143,6 @@ bool zIPCreateChebyshev(zIP *ip, zSeq *seq)
 
   ip->com = &_zm_ip_com_chebyshev;
  TERMINATE:
-  zMatFreeAO( 3, r, p, v );
+  zMatFreeAtOnce( 3, r, p, v );
   return ret;
 }

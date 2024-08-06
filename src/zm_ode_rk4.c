@@ -36,7 +36,7 @@ void zODEDestroy_RK4(zODE *ode)
   _zODE_RK4 *ws;
 
   ws = (_zODE_RK4 *)ode->_ws;
-  zVecFreeAO( 5, ws->x, ws->k[0], ws->k[1], ws->k[2], ws->k[3] );
+  zVecFreeAtOnce( 5, ws->x, ws->k[0], ws->k[1], ws->k[2], ws->k[3] );
   zFree( ode->_ws );
   ode->f = NULL;
 }

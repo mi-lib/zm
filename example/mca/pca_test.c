@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
   fclose( fp );
 
   zVecListDestroy( &points );
-  zVecFreeAO( 3, p, mean, score );
+  zVecFreeAtOnce( 3, p, mean, score );
   zMatFree( loading );
   return 0;
 }

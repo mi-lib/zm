@@ -58,8 +58,8 @@ int main(void)
   }
   printf( "matrix size: %d x %d\n", SIZE, SIZE );
   printf( "failure rate: Cramel %d/%d, Gauss %d/%d, LU decomp %d/%d, Residual Iter. %d/%d, Gauss-Seidel %d/%d\n", count_cramel, N, count_gauss, N, count_lu, N, count_ri, N, count_gs, N );
-  zMatFreeAO( 4, a, l, u, aa );
-  zVecFreeAO( 3, b, x, ans );
+  zMatFreeAtOnce( 4, a, l, u, aa );
+  zVecFreeAtOnce( 3, b, x, ans );
   zIndexFree( index );
   return 0;
 }

@@ -92,7 +92,7 @@ void zODEDestroy_Adams(zODE *ode)
 
   ws = (_zODE_Adams *)ode->_ws;
   ws->step = 0;
-  zVecFreeAO( 5, ws->dx, ws->wb, ws->wm, ws->x1, ws->x2 );
+  zVecFreeAtOnce( 5, ws->dx, ws->wb, ws->wm, ws->x1, ws->x2 );
   zVecRingFree( &ws->hist );
   ode->f = NULL;
   zFree( ode->_ws );

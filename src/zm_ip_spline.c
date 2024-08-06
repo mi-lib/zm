@@ -168,6 +168,6 @@ bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v
   ip->com = &_zm_ip_com_spline;
 
  TERMINATE:
-  zVecFreeAO( 5, a, b, c, d, v );
+  zVecFreeAtOnce( 5, a, b, c, d, v );
   return result;
 }

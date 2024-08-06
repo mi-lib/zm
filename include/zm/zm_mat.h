@@ -100,7 +100,7 @@ __ZM_EXPORT zMat zMatSetElemList(zMat m, ... );
  *
  * zMatFree() frees the matrix \a m.
  *
- * zMatFreeAO() frees multiple matrices given by the argument
+ * zMatFreeAtOnce() frees multiple matrices given by the argument
  * list at once. \a n is the number of matrices to be freed.
  *
  * zMatZero() sets all components of a matrix \a m for zeros.
@@ -111,7 +111,7 @@ __ZM_EXPORT zMat zMatSetElemList(zMat m, ... );
  * zMatAlloc() and zMatAllocSqr() return a pointer to the newly
  * allocated memory.
  *
- * zMatFree() and zMatFreeAO() return no values.
+ * zMatFree() and zMatFreeAtOnce() return no values.
  *
  * zMatZero() and zMatTouchup() return a pointer \a m.
  * \notes
@@ -125,7 +125,7 @@ __ZM_EXPORT zMat zMatAlloc(int row, int col);
 #define zMatAllocSqr(s) zMatAlloc( (s), (s) )
 __ZM_EXPORT zMat zMatCreateList(int row, int col, ...);
 __ZM_EXPORT void zMatFree(zMat m);
-__ZM_EXPORT void zMatFreeAO(int n, ...);
+__ZM_EXPORT void zMatFreeAtOnce(int n, ...);
 __ZM_EXPORT zMat zMatZero(zMat m);
 __ZM_EXPORT zMat zMatTouchup(zMat m);
 

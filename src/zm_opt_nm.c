@@ -49,7 +49,7 @@ static void _zOptNMDestroy(zOptNM *opt)
       zVecFree( opt->e[i] );
     zFree( opt->e );
   }
-  zVecFreeAO( 3, opt->eval, opt->pin, opt->test );
+  zVecFreeAtOnce( 3, opt->eval, opt->pin, opt->test );
   zIndexFree( opt->index );
 }
 

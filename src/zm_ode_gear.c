@@ -82,7 +82,7 @@ void zODEDestroy_Gear(zODE *ode)
 
   ws = (_zODE_Gear *)ode->_ws;
   zNLEDestroy( &ws->nle );
-  zVecFreeAO( 2, ws->v, ws->a );
+  zVecFreeAtOnce( 2, ws->v, ws->a );
   zVecRingFree( &ws->hist );
   ode->f = NULL;
   zFree( ode->_ws );

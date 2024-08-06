@@ -214,8 +214,8 @@ int main(void)
     qpsolve_test( "Lemke", zQPSolveLemke, q, c, a, b, x, ans, TOL );
     qpsolve_test( "IP", zQPSolveIP, q, c, a, b, x, ans, TOL );
     printf( "\n" );
-    zMatFreeAO( 2, q, a );
-    zVecFreeAO( 4, c, b, ans, x );
+    zMatFreeAtOnce( 2, q, a );
+    zVecFreeAtOnce( 4, c, b, ans, x );
   }
   return 0;
 }

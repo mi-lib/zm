@@ -61,7 +61,7 @@ void test2(void)
   printf( "+++ error +++\n" );
   zMatPrint( m2 );
 
-  zMatFreeAO( 4, m, m1, m2, m3 );
+  zMatFreeAtOnce( 4, m, m1, m2, m3 );
 }
 
 int main(void)

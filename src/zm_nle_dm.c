@@ -185,8 +185,7 @@ void zNLEDestroy(zNLE *nle)
   nle->f = NULL;
   nle->jac = NULL;
   nle->util = NULL;
-  zVecFreeAO( 7,
-    nle->wn, nle->we, nle->_f, nle->_fw, nle->_fp, nle->_adg, nle->_prg );
+  zVecFreeAtOnce( 7, nle->wn, nle->we, nle->_f, nle->_fw, nle->_fp, nle->_adg, nle->_prg );
   zMatFree( nle->_j );
   zOptDMDestroy( &nle->_opt );
 }

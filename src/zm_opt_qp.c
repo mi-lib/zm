@@ -80,7 +80,7 @@ bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
     zVecSetElemNC( ans, i, zVecElemNC( y, i ) );
 
   zMatFree( d );
-  zVecFreeAO( 2, f, y );
+  zVecFreeAtOnce( 2, f, y );
   if( cost ) *cost = zQuadraticValue( q, c, ans );
   return true;
 }
@@ -170,6 +170,6 @@ double zCGSolve(zMat q, zVec c, zVec ans, int iter)
 
  TERMINATE:
   result = zQuadraticValue( q, c, ans );
-  zVecFreeAO( 3, d, g, qd );
+  zVecFreeAtOnce( 3, d, g, qd );
   return result;
 }

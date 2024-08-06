@@ -55,7 +55,7 @@ void zODEDestroy_BEuler(zODE *ode)
 
   ws = (_zODE_BEuler *)ode->_ws;
   zNLEDestroy( &ws->nle );
-  zVecFreeAO( 2, ws->v, ws->x );
+  zVecFreeAtOnce( 2, ws->v, ws->x );
   zFree( ws );
   ode->f = NULL;
 }

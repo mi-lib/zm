@@ -44,6 +44,6 @@ zVec zTridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans)
   dcp = zVecClone( d );
   if( acp && bcp && dcp )
     ans = zTridiagSolveDST( acp, bcp, c, dcp, ans );
-  zVecFreeAO( 3, acp, bcp, dcp );
+  zVecFreeAtOnce( 3, acp, bcp, dcp );
   return ans;
 }

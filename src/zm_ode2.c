@@ -158,7 +158,7 @@ void zODE2InitHistLeapfrog(zODE2 *ode, zVec x, zVec v, double dt)
 void zODE2DestroyLeapfrog(zODE2 *ode)
 {
   ode->f = NULL;
-  zVecFreeAO( 3, ode->_x, ode->_v, ode->_a );
+  zVecFreeAtOnce( 3, ode->_x, ode->_v, ode->_a );
 }
 
 /* update state destructively */

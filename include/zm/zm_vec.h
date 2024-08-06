@@ -73,7 +73,7 @@ __ZM_EXPORT zVec zVecSetElemList(zVec v, ...);
  *
  * zVecFree() frees the memory allocated for a vector \a v.
  *
- * zVecFreeAO() frees multiple vectors lasted as ... at once.
+ * zVecFreeAtOnce() frees multiple vectors lasted as ... at once.
  * \a n is the number of vectors to be freed.
  *
  * zVecZero() sets all components of a vector \a v for zero.
@@ -97,7 +97,7 @@ __ZM_EXPORT zVec zVecSetElemList(zVec v, ...);
  * zVecAlloc(), zVecCreateList(), zVecClone() and zVecCloneArray()
  * return a pointer to the newly created vector.
  *
- * zVecFree() and zVecFreeAO() return no values.
+ * zVecFree() and zVecFreeAtOnce() return no values.
  *
  * zVecZero() and zVecTouchup() return a pointer \a v.
  *
@@ -123,7 +123,7 @@ __ZM_EXPORT zVec zVecSetElemList(zVec v, ...);
 __ZM_EXPORT zVec zVecAlloc(int s);
 __ZM_EXPORT zVec zVecCreateList(int size, ...);
 __ZM_EXPORT void zVecFree(zVec v);
-__ZM_EXPORT void zVecFreeAO(int, ...);
+__ZM_EXPORT void zVecFreeAtOnce(int, ...);
 __ZM_EXPORT zVec zVecZero(zVec v);
 __ZM_EXPORT zVec zVecTouchup(zVec v);
 __ZM_EXPORT zVec zVecCopyNC(zVec src, zVec dest);

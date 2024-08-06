@@ -78,7 +78,7 @@ void zODEDestroy_BK4(zODE *ode)
 
   ws = (_zODE_BK4 *)ode->_ws;
   zNLEDestroy( &ws->nle );
-  zVecFreeAO( 4, ws->v, ws->x, ws->xt, ws->k );
+  zVecFreeAtOnce( 4, ws->v, ws->x, ws->xt, ws->k );
   zFree( ws );
   ode->f = NULL;
 }

@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
   zMulMatVec( a, ans, bn );
   printf( "%g %g\n", zVecNorm( yn ), zVecDist( b, bn ) );
 
-  zMatFreeAO( 2, a, mn );
-  zVecFreeAO( 5, b, bn, y, yn, ans );
+  zMatFreeAtOnce( 2, a, mn );
+  zVecFreeAtOnce( 5, b, bn, y, yn, ans );
   return 0;
 }

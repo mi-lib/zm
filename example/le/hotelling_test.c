@@ -18,6 +18,6 @@ int main(void)
   zMulMatMat( a, b, m );
   zMatPrint( m );
 
-  zMatFreeAO( 3, a, b, m );
+  zMatFreeAtOnce( 3, a, b, m );
   return 0;
 }

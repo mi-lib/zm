@@ -63,6 +63,6 @@ int main(int argc, char *argv[])
   while( turn-- > 0 ) test( a, b, w, w2, e, aux );
 
   zMatFree( a );
-  zVecFreeAO( 5, b, e, w, w2, aux );
+  zVecFreeAtOnce( 5, b, e, w, w2, aux );
   return 0;
 }

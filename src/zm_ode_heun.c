@@ -35,7 +35,7 @@ void zODEDestroy_Heun(zODE *ode)
   _zODE_Heun *ws;
 
   ws = (_zODE_Heun *)ode->_ws;
-  zVecFreeAO( 4, ws->x, ws->k[0], ws->k[1], ws->k[2] );
+  zVecFreeAtOnce( 4, ws->x, ws->k[0], ws->k[1], ws->k[2] );
   zFree( ode->_ws );
   ode->f = NULL;
 }

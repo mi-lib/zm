@@ -34,7 +34,7 @@ void zODEDestroy_RKG(zODE *ode)
   _zODE_RKG *ws;
 
   ws = (_zODE_RKG *)ode->_ws;
-  zVecFreeAO( 2, ws->u, ws->v );
+  zVecFreeAtOnce( 2, ws->u, ws->v );
   zFree( ode->_ws );
   ode->f = NULL;
 }
