@@ -17,6 +17,11 @@ int main(void)
                    zIsNan( log( -1 ) ) &&
                    !zIsNan( HUGE_VAL ) &&
                    !zIsNan( 0 ) );
+  zAssert( zIsFinite, zIsFinite( 1.0 ) &&
+                      zIsFinite(-1.0 ) &&
+                      !zIsFinite( HUGE_VAL ) &&
+                      !zIsFinite(-HUGE_VAL ) &&
+                      !zIsFinite( sqrt( -1 ) ) );
 #endif /* __WINDOWS__ */
   return EXIT_SUCCESS;
 }
