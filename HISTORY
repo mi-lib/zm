@@ -1,3 +1,4 @@
+2024.11.12. Modified .gitignore. [all]
 2024.10.29. Modified makefile for examples. [example]
 2024.10.29. Added zIsFinite. [zm_ieee]
 2024.10.29. Modified __huge_val and __nan_val to be constant variables. [zm_ieee]
