@@ -6,21 +6,109 @@
 
 #include <zm/zm_nurbs.h>
 
-/* set knots & assign control points & initialize weight uniformly. */
-static void _zNURBSKnotInit(zNURBS *nurbs)
-{
-  int j;
+/* B-spline parameter */
 
-  for( j=0; j<=nurbs->order; j++ )
-    zNURBSSetKnot( nurbs, j, 0 );
-  for( ; j<=zNURBSCPNum(nurbs); j++ )
-    zNURBSSetKnot( nurbs, j, zNURBSKnot(nurbs,j-1) + 1 );
-  for( ; j<zNURBSKnotNum(nurbs); j++ )
-    zNURBSSetKnot( nurbs, j, zNURBSKnot(nurbs,j-1) );
+/* allocate B-spline parameter. */
+zBSplineParam *zBSplineParamAlloc(zBSplineParam *param, int order, int nc, int slice)
+{
+  param->order = order;
+  zBSplineParamSetSlice( param, slice != 0 ? slice : ZM_BSPLINE_DEFAULT_SLICE_NUM );
+  return ( param->knot = zVecAlloc( nc + order + 1 ) ) ? param : NULL;
 }
 
+/* free B-spline parameters. */
+void zBSplineParamFree(zBSplineParam *param)
+{
+  param->order = 0;
+  zBSplineParamSetSlice( param, 0 );
+  zVecFree( param->knot );
+  param->knot = NULL;
+}
+
+/* initialize knots of a B-spline parameter. */
+void zBSplineParamKnotInit(zBSplineParam *param)
+{
+  int j, nc;
+
+  nc = zBSplineParamCPNum( param );
+  for( j=0; j<=param->order; j++ )
+    zBSplineParamSetKnot( param, j, 0 );
+  for( ; j<=nc; j++ )
+    zBSplineParamSetKnot( param, j, zBSplineParamKnot(param,j-1) + 1 );
+  for( ; j<zBSplineParamKnotNum(param); j++ )
+    zBSplineParamSetKnot( param, j, zBSplineParamKnot(param,j-1) );
+}
+
+/* normalize knot vector of a NURBS curve. */
+void zBSplineParamKnotNormalize(zBSplineParam *param)
+{
+  zVecShift( param->knot, -zVecElemNC(param->knot,0) );
+  zVecDivDRC( param->knot, zVecElemNC(param->knot,zVecSizeNC(param->knot)-1) );
+}
+
+/* find a knot segment that includes the given parameter. */
+int zBSplineParamSeg(zBSplineParam *param, double t)
+{
+  int i, j, k, nc;
+
+  nc = zBSplineParamCPNum( param );
+  for( i=param->order, j=nc; ; ){
+    while( zBSplineParamKnot(param,i+1) == zBSplineParamKnot(param,i) ) i++;
+    while( zBSplineParamKnot(param,j-1) == zBSplineParamKnot(param,j) ) j--;
+    if( j <= i + 1 ) break;
+    k = ( i + j ) / 2;
+    if( zBSplineParamKnot(param,k) > t )
+      j = k;
+    else
+      i = k;
+  }
+  return i;
+}
+
+/* basis function of B-spline family. */
+double zBSplineParamBasis(zBSplineParam *param, double t, int i, int r, int seg)
+{
+  double t1, tr1, b = 0;
+
+  if( r == 0 )
+    return i == seg ? 1 : 0;
+  if( i + r >= seg ){
+    t1  = zBSplineParamKnot(param,i);
+    tr1 = zBSplineParamKnot(param,i+r);
+    if( tr1 != t1 )
+      b += ( t - t1 ) / ( tr1 - t1 ) * zBSplineParamBasis(param,t,i,r-1,seg);
+  }
+  if( i <= seg ){
+    t1  = zBSplineParamKnot(param,i+1);
+    tr1 = zBSplineParamKnot(param,i+r+1);
+    if( tr1 != t1 )
+      b += ( tr1 - t ) / ( tr1 - t1 ) * zBSplineParamBasis(param,t,i+1,r-1,seg);
+  }
+  return b;
+}
+
+/* derivative of the basis function of B-spline family. */
+double zBSplineParamBasisDiff(zBSplineParam *param, double t, int i, int r, int seg, int diff)
+{
+  double dt, b = 0;
+
+  if( diff == 0 )
+    return zBSplineParamBasis( param, t, i, r, seg );
+  if( diff > param->order + 1 || diff < 0 ){
+    ZRUNERROR( ZM_ERR_NURBS_INVDIFFORDER );
+    return NAN;
+  }
+  if( i >= seg - r && ( dt = zBSplineParamKnot(param,i+r) - zBSplineParamKnot(param,i) ) != 0 )
+    b += zBSplineParamBasisDiff(param,t,i,r-1,seg,diff-1) / dt;
+  if( i <= seg && ( dt = zBSplineParamKnot(param,i+r+1) - zBSplineParamKnot(param,i+1) ) != 0 )
+    b -= zBSplineParamBasisDiff(param,t,i+1,r-1,seg,diff-1) / dt;
+  return b * r;
+}
+
+/* NURBS */
+
 /* create a NURBS curve. */
-bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order)
+bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order, int slice)
 {
   int i;
   zSeqCell *cp;
@@ -30,19 +118,18 @@ bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order)
     ZRUNERROR( ZM_ERR_NURBS_INVORDER );
     return false;
   }
-  nurbs->order = order;
-  nurbs->knot = zVecAlloc( zListSize(seq)+order+1 );
-
+  if( !zBSplineParamAlloc( &nurbs->param, order, zListSize(seq), slice ) )
+    return false;
   zArrayAlloc( &nurbs->cparray, zNURBSCPCell, zListSize(seq) );
-  if( !nurbs->knot || zNURBSCPNum(nurbs) == 0 ){
+  if( zNURBSCPNum(nurbs) == 0 ){
     ZALLOCERROR();
     zNURBSDestroy( nurbs );
     return false;
   }
-  _zNURBSKnotInit( nurbs );
+  zBSplineParamKnotInit( &nurbs->param );
   i = 0;
   zListForEachRew( seq, cp ){
-    zNURBSSetWeight( nurbs, i, 1.0 );
+    zNURBSSetWeight( nurbs, i, ZM_NURBS_DEFAULT_CP_WEIGHT );
     if( !( zNURBSCP(nurbs,i) = zVecClone( cp->data.v ) ) )
       ret = false;
     i++;
@@ -57,59 +144,11 @@ void zNURBSDestroy(zNURBS *nurbs)
 {
   int i;
 
-  nurbs->order = 0;
-  zVecFree( nurbs->knot );
-  nurbs->knot = NULL;
-  for( i=0; i<zNURBSCPNum(nurbs); i++ )
+  zBSplineParamFree( &nurbs->param );
+  for( i=0; i<zNURBSCPNum(nurbs); i++ ){
     zVecFree( zNURBSCP(nurbs,i) );
+  }
   zArrayFree( &nurbs->cparray );
-}
-
-/* normalize knot vector of a NURBS curve. */
-void zNURBSKnotNormalize(zNURBS *nurbs)
-{
-  zVecShift( nurbs->knot, -zVecElemNC(nurbs->knot,0) );
-  zVecDivDRC( nurbs->knot, zVecElemNC(nurbs->knot,zVecSizeNC(nurbs->knot)-1) );
-}
-
-/* find a knot segment that includes the given parameter. */
-static int _zNURBSSeg(zNURBS *nurbs, double t)
-{
-  int i, j, k;
-
-  for( i=nurbs->order, j=zNURBSCPNum(nurbs); ; ){
-    while( zNURBSKnot(nurbs,i+1) == zNURBSKnot(nurbs,i) ) i++;
-    while( zNURBSKnot(nurbs,j-1) == zNURBSKnot(nurbs,j) ) j--;
-    if( j <= i + 1 ) break;
-    k = ( i + j ) / 2;
-    if( zNURBSKnot(nurbs,k) > t )
-      j = k;
-    else
-      i = k;
-  }
-  return i;
-}
-
-/* basis function of NURBS. */
-static double _zNURBSBasis(zNURBS *nurbs, double t, int i, int r, int seg)
-{
-  double t1, tr1, b = 0;
-
-  if( r == 0 )
-    return i == seg ? 1 : 0;
-  if( i + r >= seg ){
-    t1  = zNURBSKnot(nurbs,i);
-    tr1 = zNURBSKnot(nurbs,i+r);
-    if( tr1 != t1 )
-      b += ( t - t1 ) / ( tr1 - t1 ) * _zNURBSBasis(nurbs,t,i,r-1,seg);
-  }
-  if( i <= seg ){
-    t1  = zNURBSKnot(nurbs,i+1);
-    tr1 = zNURBSKnot(nurbs,i+r+1);
-    if( tr1 != t1 )
-      b += ( tr1 - t ) / ( tr1 - t1 ) * _zNURBSBasis(nurbs,t,i+1,r-1,seg);
-  }
-  return b;
 }
 
 /* compute a vector on a NURBS curve. */
@@ -118,33 +157,15 @@ zVec zNURBSVec(zNURBS *nurbs, double t, zVec v)
   int s, i;
   double b, den;
 
-  s = _zNURBSSeg( nurbs, t );
+  s = zBSplineParamSeg( &nurbs->param, t );
   zVecZero( v );
-  for( den=0, i=s-nurbs->order; i<=s; i++ ){
-    b = zNURBSWeight(nurbs,i) * _zNURBSBasis(nurbs,t,i,nurbs->order,s);
+  for( den=0, i=s-nurbs->param.order; i<=s; i++ ){
+    b = zNURBSWeight(nurbs,i) * zBSplineParamBasis(&nurbs->param,t,i,nurbs->param.order,s);
     den += b;
     zVecCatNCDRC( v, b, zNURBSCP(nurbs,i) );
   }
   return zIsTiny(den) ?
     zVecCopy( zNURBSCP(nurbs,0), v ) : zVecDivDRC( v, den );
-}
-
-/* derivative of the basis function of NURBS. */
-static double _zNURBSBasisDiff(zNURBS *nurbs, double t, int i, int r, int seg, int diff)
-{
-  double dt, b = 0;
-
-  if( diff == 0 )
-    return _zNURBSBasis( nurbs, t, i, r, seg );
-  if( diff > nurbs->order + 1 || diff < 0 ){
-    ZRUNERROR( ZM_ERR_NURBS_INVDIFFORDER );
-    return NAN;
-  }
-  if( i >= seg - r && ( dt = zNURBSKnot(nurbs,i+r) - zNURBSKnot(nurbs,i) ) != 0 )
-    b += _zNURBSBasisDiff(nurbs,t,i,r-1,seg,diff-1) / dt;
-  if( i <= seg && ( dt = zNURBSKnot(nurbs,i+r+1) - zNURBSKnot(nurbs,i+1) ) != 0 )
-    b -= _zNURBSBasisDiff(nurbs,t,i+1,r-1,seg,diff-1) / dt;
-  return b * r;
 }
 
 /* derivative of the denominator of NURBS. */
@@ -153,8 +174,8 @@ static double _zNURBSDenDiff(zNURBS *nurbs, double t, int s, int diff)
   int i;
   double den;
 
-  for( den=0, i=s-nurbs->order; i<=s; i++ )
-    den += zNURBSWeight(nurbs,i) * _zNURBSBasisDiff(nurbs,t,i,nurbs->order,s,diff);
+  for( den=0, i=s-nurbs->param.order; i<=s; i++ )
+    den += zNURBSWeight(nurbs,i) * zBSplineParamBasisDiff(&nurbs->param,t,i,nurbs->param.order,s,diff);
   return den;
 }
 
@@ -167,7 +188,7 @@ zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v)
 
   if( diff == 0 )
     return zNURBSVec( nurbs, t, v );
-  if( diff > nurbs->order + 1 || diff < 0 ){
+  if( diff > nurbs->param.order + 1 || diff < 0 ){
     ZRUNERROR( ZM_ERR_NURBS_INVDIFFORDER );
     return NULL;
   }
@@ -176,10 +197,11 @@ zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v)
     return NULL;
   }
   zVecZero( v );
-  s = _zNURBSSeg( nurbs, t );
-  for( den=0, i=s-nurbs->order; i<=s; i++ ){
-    b = zNURBSWeight(nurbs,i) * _zNURBSBasisDiff(nurbs,t,i,nurbs->order,s,diff);
-    den += zNURBSWeight(nurbs,i) * _zNURBSBasis(nurbs,t,i,nurbs->order,s);
+  s = zBSplineParamSeg( &nurbs->param, t );
+
+  for( den=0, i=s-nurbs->param.order; i<=s; i++ ){
+    b = zNURBSWeight(nurbs,i) * zBSplineParamBasisDiff(&nurbs->param,t,i,nurbs->param.order,s,diff);
+    den += zNURBSWeight(nurbs,i) * zBSplineParamBasis(&nurbs->param,t,i,nurbs->param.order,s);
     zVecCatNCDRC( v, b, zNURBSCP(nurbs,i) );
   }
   for( i=1; i<diff+1; i++ ){
@@ -201,9 +223,10 @@ double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn)
   int i, j, iter = 0;
 
   if( !( vs = zVecAlloc( zVecSizeNC(v) ) ) )
-    return zNURBSKnotS(nurbs); /* dummy */
-  s1 = zNURBSKnotS(nurbs);
-  s2 = zNURBSKnotE(nurbs);
+    return zBSplineParamKnotS(&nurbs->param); /* dummy */
+  s1 = zBSplineParamKnotS(&nurbs->param);
+  s2 = zBSplineParamKnotE(&nurbs->param);
+
   dmin1 = dmin2 = HUGE_VAL;
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){

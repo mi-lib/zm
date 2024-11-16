@@ -1,3 +1,7 @@
+2024.11.16. Defined ZM_NURBS_DEFAULT_CP_WEIGHT. [zm_nurbs]
+2024.11.16. Reimplemented zNURBSKnotNormalize as a macro. [zm_nurbs]
+2024.11.16. Modified specification of zNURBSCreate to specify the number of slices. [zm_nurbs]
+2024.11.16. Added zBSplineParam class, and modified zNURBS class. [zm_nurbs]
 2024.11.12. Modified .gitignore. [all]
 2024.10.29. Modified makefile for examples. [example]
 2024.10.29. Added zIsFinite. [zm_ieee]

@@ -12,6 +12,51 @@
 __BEGIN_DECLS
 
 /* ********************************************************** */
+/*! \struct zBSplineParam
+ * \brief B-spline parameter
+ *
+ * zBSplineParam defines the parameter space of B-spline.
+ * It consists of the order of the curve and knots.
+ *//* ******************************************************* */
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zBSplineParam ){
+  int order; /*!< \brief order of a curve */
+  zVec knot; /*!< \brief knot vector */
+  int slice; /*!< \brief number of slices */
+};
+
+#define ZM_BSPLINE_DEFAULT_SLICE_NUM 20
+
+#define zBSplineParamKnotNum(param)       zVecSizeNC((param)->knot)
+#define zBSplineParamKnot(param,i)        zVecElemNC((param)->knot,i)
+#define zBSplineParamSetKnot(param,i,v)   ( zBSplineParamKnot(param,i) = (v) )
+#define zBSplineParamCPNum(param)         ( zBSplineParamKnotNum(param) - (param)->order - 1 )
+#define zBSplineParamKnotS(param)         zBSplineParamKnot( param, (param)->order )
+#define zBSplineParamKnotE(param)         zBSplineParamKnot( param, zBSplineParamCPNum(param) )
+#define zBSplineParamKnotSlice(param,k)   ( ( zBSplineParamKnotE(param) - zBSplineParamKnotS(param) ) * (k) / ((param)->slice) + zBSplineParamKnotS(param) )
+#define zBSplineParamSetSlice(param,s)    ( (param)->slice = (s) )
+
+/*! \brief allocate B-spline parameter. */
+__ZM_EXPORT zBSplineParam *zBSplineParamAlloc(zBSplineParam *param, int order, int nc, int slice);
+
+/*! \brief free B-spline parameters. */
+__ZM_EXPORT void zBSplineParamFree(zBSplineParam *param);
+
+/*! \brief initialize knots of a B-spline parameter. */
+__ZM_EXPORT void zBSplineParamKnotInit(zBSplineParam *param);
+
+/*! \brief normalize knot vector of a NURBS curve. */
+__ZM_EXPORT void zBSplineParamKnotNormalize(zBSplineParam *param);
+
+/*! \brief find a knot segment that includes the given parameter. */
+__ZM_EXPORT int zBSplineParamSeg(zBSplineParam *param, double t);
+
+/*! \brief basis function of B-spline family. */
+__ZM_EXPORT double zBSplineParamBasis(zBSplineParam *param, double t, int i, int r, int seg);
+
+/*! \brief derivative of the basis function of B-spline family. */
+__ZM_EXPORT double zBSplineParamBasisDiff(zBSplineParam *param, double t, int i, int r, int seg, int diff);
+
+/* ********************************************************** */
 /*! \struct zNURBSCPCell
  * \brief cell of NURBS containing a control point and weight.
  *
@@ -41,42 +86,43 @@ zArrayClass( zNURBSCPArray, zNURBSCPCell );
  * points in n-dimensional space.
  *//* ******************************************************* */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBS ){
-  int order; /*!< \brief order of a curve */
-  /*! \cond */
-  zVec knot; /* knot vector */
-  zNURBSCPArray cparray; /* an array of control points */
-  /*! \endcond */
+  zBSplineParam param;   /*!< \brief B-spline parameter */
+  zNURBSCPArray cparray; /*!< \brief an array of control points */
 };
 
-#define zNURBSKnotNum(n)       zVecSizeNC((n)->knot)
-#define zNURBSKnot(n,i)        zVecElemNC((n)->knot,i)
-#define zNURBSSetKnot(n,i,v)   ( zNURBSKnot(n,i) = (v) )
-#define zNURBSKnotS(n)         zNURBSKnot(n,(n)->order)
-#define zNURBSKnotE(n)         zNURBSKnot(n,zNURBSCPNum(n))
-#define zNURBSKnotSlice(n,k,s) ( ( zNURBSKnotE(n) - zNURBSKnotS(n) ) * k / s + zNURBSKnotS(n) )
+#define zNURBSKnotNum(nurbs)       zBSplineParamKnotNum( &(nurbs)->param )
+#define zNURBSKnot(nurbs,i)        zBSplineParamKnot( &(nurbs)->param, i )
+#define zNURBSSetKnot(nurbs,i,v)   zBSplineParamSetKnot( &(nurbs)->param, i, v )
+#define zNURBSKnotS(nurbs)         zBSplineParamKnotS( &(nurbs)->param )
+#define zNURBSKnotE(nurbs)         zBSplineParamKnotE( &(nurbs)->param )
+#define zNURBSKnotSlice(nurbs,k)   zBSplineParamKnotSlice( &(nurbs)->param, k )
+#define zNURBSSetSlice(nurbs,s)    zBSplineParamSetSlice( &(nurbs)->param, s )
 
-#define zNURBSCPNum(n)         zArraySize( &(n)->cparray )
-#define zNURBSWeight(n,i)      ( zArrayElemNC(&(n)->cparray,i)->w )
-#define zNURBSSetWeight(n,i,v) ( zNURBSWeight(n,i) = (v) )
-#define zNURBSCP(n,i)          ( zArrayElemNC(&(n)->cparray,i)->cp )
-#define zNURBSSetCP(n,i,v)     zVecCopy( v, zNURBSCP(n,i) )
+#define zNURBSCPNum(nurbs)         zArraySize( &(nurbs)->cparray )
+#define zNURBSWeight(nurbs,i)      ( zArrayElemNC(&(nurbs)->cparray,i)->w )
+#define zNURBSSetWeight(nurbs,i,v) ( zNURBSWeight(nurbs,i) = (v) )
+#define zNURBSCP(nurbs,i)          ( zArrayElemNC(&(nurbs)->cparray,i)->cp )
+#define zNURBSSetCP(nurbs,i,v)     zVecCopy( v, zNURBSCP(nurbs,i) )
+
+#define ZM_NURBS_DEFAULT_CP_WEIGHT 1.0
 
 /*! \brief create a NURBS curve.
  *
- * zNURBSCreate() creates a NURBS curve \a nurbs from a given
- * sequence of control points. \a seq provides the control points.
- * \a order is the order of the curve, which has to be less than
- * the size of \a seq.
- * It is initialized as a uniform Bezier spline curve with fixed
- * boundary points. The weights on each control point and the knot
- * vector can be modified later.
+ * zNURBSCreate() creates a NURBS curve \a nurbs from a given sequence of control points.
+ * \a seq provides the control points.
+ * \a order is the order of the curve, which has to be less than the size of \a seq.
+ * \a slice is the number of slices to be used for discretization. If 0 is given,
+ * ZM_BSPLINE_DEFAULT_SLICE_NUM, which is defined in zm_nurbs.h, is assigned. \a slice
+ * can be replaced later by zNURBSSetSlice().
+ *
+ * The knots are initialized as to be a uniform B-spline curve with fixed boundary points.
+ * The weights on each control point and the knot vector can be modified later.
  * \return
- * zNURBSCreate() returns the true value if it succeeds to create
- * the NURBS curve. If \a order is larger than the size of \a seq
- * plus one or it fails to allocate internal workspace, the false
- * value is returned.
+ * zNURBSCreate() returns the true value if it succeeds to create the NURBS curve. If
+ * \a order is larger than the size of \a seq plus one or it fails to allocate internal
+ * workspace, the false value is returned.
  */
-__ZM_EXPORT bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order);
+__ZM_EXPORT bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order, int slice);
 
 /*! \brief destroy a NURBS curve.
  *
@@ -89,7 +135,7 @@ __ZM_EXPORT void zNURBSDestroy(zNURBS *nurbs);
  * zNURBSKnotNormalize() normalizes the knot vector of a
  * NURBS curve \a nurbs so that it starts from 0 and ends at 1.
  */
-__ZM_EXPORT void zNURBSKnotNormalize(zNURBS *nurbs);
+#define zNURBSKnotNormalize(nurbs) zBSplineParamKnotNormalize( &(nurbs)->param )
 
 /*! \brief compute a vector on NURBS curve.
  *
@@ -127,7 +173,7 @@ __ZM_EXPORT double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn);
 
 /* for debug */
 
-#define zNURBSKnotFPrint(fp,n) zVecFPrint( fp, (n)->knot )
+#define zNURBSKnotFPrint(fp,nurbs) zVecFPrint( fp, (nurbs)->knot )
 
 __ZM_EXPORT void zNURBSCPFPrint(FILE *fp, zNURBS *nurbs);
 

@@ -4,6 +4,17 @@
 #define STEP 100
 #define DIM  3
 
+void output_src(zSeq *seq)
+{
+  FILE *fp;
+  zSeqCell *cp;
+
+  fp = fopen( "src", "w" );
+  zListForEach( seq, cp )
+    fprintf( fp, "%f %f\n", zVecElemNC(cp->data.v,0), zVecElemNC(cp->data.v,1) );
+  fclose( fp );
+}
+
 int main(int argc, char *argv[])
 {
   zNURBS nurbs;
@@ -11,7 +22,7 @@ int main(int argc, char *argv[])
   double xp[] = { 0.0, 2.0,-2.0, 0.0, 2.0,-2.0, 0.0 };
   double yp[] = { 0.0, 2.0, 3.0, 6.0, 7.5, 9.0,10.0 };
   double weight[] = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
-  double knot[] = { 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2 };
+  double knot[] = { 0, 0, 0, 0, 1, 2, 3, 4, 4, 4, 4 };
   zVec v;
   double t;
   int num, i;
@@ -22,16 +33,17 @@ int main(int argc, char *argv[])
     v = zVecCreateList( 2, xp[i], yp[i] );
     zSeqEnqueue( &seq, v, 1.0 );
   }
-  zNURBSCreate( &nurbs, &seq, DIM );
+  output_src( &seq );
+  zNURBSCreate( &nurbs, &seq, DIM, STEP );
   zSeqFree( &seq );
   for( i=0; i<num ; i++ )
     zNURBSSetWeight( &nurbs, i, weight[i] );
-  for( i=0; i<=zNURBSKnotNum(&nurbs); i++ )
+  for( i=0; i<zNURBSKnotNum(&nurbs); i++ )
     zNURBSSetKnot( &nurbs, i, knot[i] );
 
   v = zVecAlloc( 2 );
   for( i=0; i<=STEP; i++ ){
-    t = zNURBSKnotSlice( &nurbs, i, STEP );
+    t = zNURBSKnotSlice( &nurbs, i );
     printf( "%1.2f ", t );
     zNURBSVec( &nurbs, t, v );
     printf( "%g %g ", zVecElemNC(v,0), zVecElemNC(v,1) );

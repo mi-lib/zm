@@ -8,18 +8,17 @@ int main(int argc, char *argv[])
   zSeq seq;
   zVec v;
   int num, i;
-  /* example data array */
   double xp[] = { 1.0, 1.0, 0.0, -1.0, -1.0, -1.0,  0.0,  1.0, 1.0 };
   double yp[] = { 0.0, 1.0, 1.0,  1.0,  0.0, -1.0, -1.0, -1.0, 0.0 };
 
-  /* creation of x-values and y-values vector */
+  /* create xy-values */
   num = sizeof(xp) / sizeof(double);
   zListInit( &seq );
   for( i=0; i<num; i++ ){
     v = zVecCreateList( 2, xp[i], yp[i] );
     zSeqEnqueue( &seq, v, 1.0 /* dummy */ );
   }
-  zNURBSCreate( &nurbs, &seq, 2 );
+  zNURBSCreate( &nurbs, &seq, 2, 0 );
   zSeqFree( &seq );
 
   zNURBSSetKnot( &nurbs, 0, 0.0 );
@@ -45,7 +44,7 @@ int main(int argc, char *argv[])
   zNURBSSetWeight( &nurbs, 7, sqrt(2) * 0.5 );
   zNURBSSetWeight( &nurbs, 8, 1.0 );
 
-  /* creation of spline interpolator */
+  /* create a spline interpolator */
   v = zVecAlloc( 2 );
   for( i=0; i<STEP; i++ ){
     zNURBSVec( &nurbs, zPIx2 * i / STEP, v );
