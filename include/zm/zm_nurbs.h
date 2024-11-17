@@ -35,6 +35,13 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zBSplineParam ){
 #define zBSplineParamKnotSlice(param,k)   ( ( zBSplineParamKnotE(param) - zBSplineParamKnotS(param) ) * (k) / ((param)->slice) + zBSplineParamKnotS(param) )
 #define zBSplineParamSetSlice(param,s)    ( (param)->slice = (s) )
 
+/*! \brief initialize B-spline parameter. */
+#define zBSplineParamInit(param) do{\
+  (param)->order = 0;\
+  (param)->knot = NULL;\
+  (param)->slice = 0;\
+} while(0)
+
 /*! \brief allocate B-spline parameter. */
 __ZM_EXPORT zBSplineParam *zBSplineParamAlloc(zBSplineParam *param, int order, int nc, int slice);
 

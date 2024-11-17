@@ -11,18 +11,18 @@
 /* allocate B-spline parameter. */
 zBSplineParam *zBSplineParamAlloc(zBSplineParam *param, int order, int nc, int slice)
 {
+  zBSplineParamInit( param );
+  if( !( param->knot = zVecAlloc( nc + order + 1 ) ) ) return NULL;
   param->order = order;
   zBSplineParamSetSlice( param, slice != 0 ? slice : ZM_BSPLINE_DEFAULT_SLICE_NUM );
-  return ( param->knot = zVecAlloc( nc + order + 1 ) ) ? param : NULL;
+  return param;
 }
 
 /* free B-spline parameters. */
 void zBSplineParamFree(zBSplineParam *param)
 {
-  param->order = 0;
-  zBSplineParamSetSlice( param, 0 );
   zVecFree( param->knot );
-  param->knot = NULL;
+  zBSplineParamInit( param );
 }
 
 /* initialize knots of a B-spline parameter. */

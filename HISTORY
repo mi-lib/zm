@@ -1,3 +1,4 @@
+2024.11.17. Added zBSplineParamInit, and modified zBSplineParamAlloc and zBSplineParamFree. [zm_nurbs]
 2024.11.17. Added zNURBSSlice. [zm_nurbs]
 2024.11.17. Remodified specification of zNURBSCreate not to specify the number of slices. [zm_nurbs]
 2024.11.16. Defined ZM_NURBS_DEFAULT_CP_WEIGHT. [zm_nurbs]
