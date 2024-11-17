@@ -185,6 +185,30 @@ __ZM_EXPORT double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn);
 
 __ZM_EXPORT void zNURBSCPFPrint(FILE *fp, zNURBS *nurbs);
 
+/* ********************************************************** */
+/*! \struct zBSpline
+ * \brief B-spline curve.
+ *
+ * zB-spline is a B-spline curve made from a sequence of control
+ * points in n-dimensional space.
+ *//* ******************************************************* */
+typedef zNURBS zBSpline;
+
+#define zBSplineCreate(bspline,seq,order) zNURBSCreate( bspline, seq, order )
+#define zBSplineDestroy(bspline)          zNURBSDestroy( bspline )
+
+#define zBSplineKnotNum(bspline)          zNURBSKnotNum( bspline )
+#define zBSplineSetKnot(bspline,i,knot)   zNURBSSetKnot( bspline, i, knot )
+#define zBSplineSlice(bspline)            zNURBSSlice( bspline )
+#define zBSplineSetSlice(bspline,s)       zNURBSSetSlice( bspline, s )
+#define zBSplineKnotSlice(bspline,t)      zNURBSKnotSlice( bspline, t )
+#define zBSplineCP(bspline,i)             zNURBSCP( bspline, i )
+
+/* compute a vector on a B-spline curve. */
+__ZM_EXPORT zVec zBSplineVec(zBSpline *bspline, double t, zVec v);
+/* compute the derivative a B-spline curve. */
+__ZM_EXPORT zVec zBSplineVecDiff(zBSpline *bspline, double t, int diff, zVec v);
+
 __END_DECLS
 
 #endif /* __ZM_NURBS_H__ */

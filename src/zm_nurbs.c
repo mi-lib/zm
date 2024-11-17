@@ -280,3 +280,42 @@ void zNURBSCPFPrint(FILE *fp, zNURBS *nurbs)
     zVecFPrint( fp, zNURBSCP(nurbs,i) );
   }
 }
+
+/* B-spline */
+
+/* compute a vector on a B-spline curve. */
+zVec zBSplineVec(zBSpline *bspline, double t, zVec v)
+{
+  int s, i;
+  double b;
+
+  s = zBSplineParamSeg( &bspline->param, t );
+  zVecZero( v );
+  for( i=s-bspline->param.order; i<=s; i++ ){
+    b = zBSplineParamBasis(&bspline->param,t,i,bspline->param.order,s);
+    zVecCatNCDRC( v, b, zBSplineCP(bspline,i) );
+  }
+  return v;
+}
+
+/* compute the derivative a B-spline curve. */
+zVec zBSplineVecDiff(zBSpline *bspline, double t, int diff, zVec v)
+{
+  int s, i;
+  double b;
+
+  if( diff == 0 )
+    return zBSplineVec( bspline, t, v );
+  if( diff > bspline->param.order + 1 || diff < 0 ){
+    ZRUNERROR( ZM_ERR_NURBS_INVALID_DIFFORDER );
+    return NULL;
+  }
+  zVecZero( v );
+  s = zBSplineParamSeg( &bspline->param, t );
+
+  for( i=s-bspline->param.order; i<=s; i++ ){
+    b = zBSplineParamBasisDiff( &bspline->param, t, i, bspline->param.order, s, diff );
+    zVecCatNCDRC( v, b, zBSplineCP(bspline,i) );
+  }
+  return v;
+}
