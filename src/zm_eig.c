@@ -73,13 +73,13 @@ zMat zHess(zMat m, zMat h, zMat p)
   zVec u, v, w;
 
   if( !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   /* target hessian matrix */
   if( h ){
     if( !zMatSizeIsEqual( m, h ) ){
-      ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+      ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
       return NULL;
     }
     zMatCopyNC( m, h );
@@ -87,7 +87,7 @@ zMat zHess(zMat m, zMat h, zMat p)
     h = m;
   /* transformation matrix */
   if( p && !zMatSizeIsEqual( h, p ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
 
@@ -148,7 +148,7 @@ bool zEigDQR(zMat m, zComplex z[], int iter)
   zMat a;
 
   if( !zMatIsSqr(m) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return false;
   }
   if( !( a = zMatClone(m) ) ){
@@ -229,7 +229,7 @@ double zEigPowerInv(zMat a, zVec evec, int iter)
   double eig = 0;
 
   if( !zMatIsSqr(a) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return 0;
   }
   if( !( ai = zMatAlloc( zMatRowSizeNC(a), zMatColSizeNC(a) ) ) )
@@ -237,7 +237,7 @@ double zEigPowerInv(zMat a, zVec evec, int iter)
   if( zMatInv( a, ai ) )
     eig = zEigPower( ai, evec, iter );
   else
-    ZRUNERROR( ZM_ERR_LE_SINGULAR );
+    ZRUNERROR( ZM_ERR_MAT_SINGULAR );
 
   zMatFree( ai );
   return 1.0 / eig;
@@ -329,7 +329,7 @@ int zEigSystem(zMat m, zComplex eig[], zCVec eigv[], int iter)
   int i;
 
   if( !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return -1;
   }
   /* eigen values by double QR method */
@@ -462,15 +462,15 @@ zVec zEigSymBisec(zMat m, zVec eig, zMat r)
   int nmin, nmax;
 
   if( !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( !r || !zMatSizeIsEqual( m, r ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   if( !eig || !zMatRowVecSizeIsEqual( m, eig ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   /* eigenvalues */
@@ -549,16 +549,16 @@ zVec zEigSymJacobi(zMat m, zVec eig, zMat r)
   zMat d;
 
   if( !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   /* transformation matrix */
   if( !r || !zMatSizeIsEqual( m, r ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   if( !eig || !zMatRowVecSizeIsEqual( m, eig ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( !( d = zMatClone( m ) ) ){ /* diagonal matrix */

@@ -34,11 +34,11 @@ zPex zPexAddDRC(zPex p1, zPex p2)
   int i, dim;
 
   if( ( dim = zPexDim(p2) ) < 0 ){
-    ZRUNERROR( ZM_ERR_PEX_INVDIM );
+    ZRUNERROR( ZM_ERR_PEX_INVALID_DIM );
     return NULL;
   }
   if( zPexDim(p1) < dim ){
-    ZRUNERROR( ZM_ERR_PEX_DIMMIS );
+    ZRUNERROR( ZM_ERR_PEX_DIMMISMATCH );
     return NULL;
   }
   for( i=0; i<=dim; i++ )
@@ -52,11 +52,11 @@ zPex zPexSubDRC(zPex p1, zPex p2)
   int i, dim;
 
   if( ( dim = zPexDim(p2) ) < 0 ){
-    ZRUNERROR( ZM_ERR_PEX_INVDIM );
+    ZRUNERROR( ZM_ERR_PEX_INVALID_DIM );
     return NULL;
   }
   if( zPexDim(p1) < dim ){
-    ZRUNERROR( ZM_ERR_PEX_DIMMIS );
+    ZRUNERROR( ZM_ERR_PEX_DIMMISMATCH );
     return NULL;
   }
   for( i=0; i<=dim; i++ )
@@ -250,7 +250,7 @@ zPex zPexModulo(zPex p1, double a, zPex p2)
   int i, j;
 
   if( !zPexCopy( p1, p2 ) ){
-    ZRUNERROR( ZM_ERR_PEX_DIMMIS );
+    ZRUNERROR( ZM_ERR_PEX_DIMMISMATCH );
     return NULL;
   }
   for( i=zPexDim(p2)-1; i>=0; i-- )
@@ -345,12 +345,12 @@ zPex zPexFScan(FILE *fp)
   zPex p;
 
   if( !zFInt( fp, &dim ) ){
-    ZRUNERROR( ZM_ERR_PEX_DIMUNFOUND );
+    ZRUNERROR( ZM_ERR_PEX_DIMNOTFOUND );
   }
   if( !( p = zPexAlloc( dim ) ) ) return NULL;
   for( i=0; i<=dim; i++ )
     if( !zFDouble( fp, &zPexCoeff(p,i) ) ){
-      ZRUNWARN( ZM_WARN_PEX_SIZMIS, i, dim+1 );
+      ZRUNWARN( ZM_WARN_PEX_SIZEMISMATCH, i, dim+1 );
       break;
     }
   return p;

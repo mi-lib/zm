@@ -115,11 +115,11 @@ zVec zLESolveNormMin(zMat a, zVec b, zVec w, zVec ans)
 
   if( !zMatRowVecSizeIsEqual( a, b ) ||
       !zMatColVecSizeIsEqual( a, ans ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( w && !zVecSizeIsEqual( ans, w ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
   ans = zLEWorkspaceAlloc( &workspace, b, zMatRowSizeNC(a) ) ?
@@ -144,11 +144,11 @@ zVec zLESolveErrorMin(zMat a, zVec b, zVec w, zVec ans)
 
   if( !zMatRowVecSizeIsEqual( a, b ) ||
       !zMatColVecSizeIsEqual( a, ans ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( w && !zVecSizeIsEqual( b, w ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
   ans = zLEWorkspaceAlloc( &workspace, b, zMatColSizeNC(a) ) ?
@@ -176,12 +176,12 @@ zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans)
 
   if( !zMatRowVecSizeIsEqual( a, b ) ||
       !zMatColVecSizeIsEqual( a, ans ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( !zVecSizeIsEqual( ref, ans ) ||
       ( w && !zVecSizeIsEqual( ans, w ) ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
   ans = _zLEWorkspaceAllocRef( &workspace, b, zMatRowSizeNC(a) ) ?
@@ -331,12 +331,12 @@ static bool _zLESolveSRSizeIsEqual(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 {
   if( !zMatRowVecSizeIsEqual( a, b ) ||
       !zMatColVecSizeIsEqual( a, ans ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }
   if( !zVecSizeIsEqual( we, b ) ||
       !zVecSizeIsEqual( wn, ans ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return false;
   }
   return true;

@@ -15,7 +15,7 @@ bool zVecListMinMax(zVecList *list, zVec min, zVec max)
 
   if( !zVecSizeIsEqual( zListHead(list)->data, min ) ||
       !zVecSizeIsEqual( zListHead(list)->data, max ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return false;
   }
   zVecSetAll( min, HUGE_VAL );
@@ -56,7 +56,7 @@ double zVecListVar(zVecList *list, zVec mean)
   double var = 0;
 
   if( !zVecSizeIsEqual( mean, zListHead(list)->data ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return HUGE_VAL;
   }
   zListForEach( list, vc )
@@ -80,11 +80,11 @@ zMat zVecListCov(zVecList *list, zVec mean, zMat cov)
 
   s = zVecSizeNC( zListHead(list)->data );
   if( zVecSizeNC(mean) != s ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( !zMatIsSqr(cov) || zMatRowSizeNC(cov) != s ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   if( ( v = zVecAlloc( s ) ) == NULL ){
@@ -146,11 +146,11 @@ int zVecListGenRandND(zVecList *vl, int n, zVec mean, zMat cov)
   zIndex idx = NULL;
 
   if( !zMatIsSqr( cov ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return 0;
   }
   if( !zMatColVecSizeIsEqual( cov, mean ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return 0;
   }
   vo = zVecAlloc( zVecSizeNC(mean) );

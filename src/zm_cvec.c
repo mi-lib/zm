@@ -264,12 +264,12 @@ zCVec zCVecCatNC(zCVec v1, zComplex *z, zCVec v2, zCVec v)
 
 #define __z_cvec_size_check_2(v1,v2) \
   if( !zCVecSizeIsEqual(v1,v2) ){\
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );\
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );\
     return NULL;\
   }
 #define __z_cvec_size_check_3(v1,v2,v) \
   if( !zCVecSizeIsEqual(v1,v2) || !zCVecSizeIsEqual(v1,v) ){\
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );\
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );\
     return NULL;\
   }
 
@@ -337,7 +337,7 @@ zComplex *zCVecInnerProdNC(zCVec v1, zCVec v2, zComplex *z)
 zComplex *zCVecInnerProd(zCVec v1, zCVec v2, zComplex *z)
 {
   if( !zCVecSizeIsEqual(v1,v2) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
   return zCVecInnerProdNC( v1, v2, z );
@@ -358,7 +358,7 @@ zCVec zCVecNormalize(zCVec src, zCVec dest)
   double r;
 
   if( zIsTiny( ( r = zCVecNorm( src ) ) ) ){
-    ZRUNWARN( ZM_ERR_ZERONORM );
+    ZRUNWARN( ZM_ERR_VEC_ZERONORM );
     return NULL;
   }
   for( i=0; i<zCVecSizeNC(dest); i++ )

@@ -36,7 +36,7 @@ zSeqCell *zSeqEnqueue(zSeq *seq, zVec v, double dt)
   zSeqCell *cp;
 
   if( !v ){
-    ZRUNERROR( ZM_ERR_NULLVEC );
+    ZRUNERROR( ZM_ERR_VEC_NULL );
     return NULL;
   }
   if( !( cp = zAlloc( zSeqCell, 1 ) ) ){
@@ -102,7 +102,7 @@ zSeq *zSeqFScan(FILE *fp, zSeq *seq)
       break;
     }
     if( !zFDouble( fp, &cp->data.dt ) ){
-      ZRUNERROR( ZM_ERR_SEQ_DT_UNFOUND );
+      ZRUNERROR( ZM_ERR_SEQ_DT_NOTFOUND );
       break;
     }
     if( !( cp->data.v = zVecFScan( fp ) ) ){

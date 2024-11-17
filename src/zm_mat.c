@@ -121,7 +121,7 @@ zMat zMatDiagNC(zMat m, zVec d)
 zMat zMatIdent(zMat m)
 {
   if( !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   return zMatIdentNC( m );
@@ -131,11 +131,11 @@ zMat zMatIdent(zMat m)
 zMat zMatDiag(zMat m, zVec d)
 {
   if( !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( !zMatColVecSizeIsEqual( m, d ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   return zMatDiagNC( m, d );
@@ -166,7 +166,7 @@ zMat zMatCopyNC(zMat src, zMat dest)
 zMat zMatCopy(zMat src, zMat dest)
 {
   if( !zMatSizeIsEqual( src, dest ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMatCopyNC( src, dest );
@@ -176,7 +176,7 @@ zMat zMatCopy(zMat src, zMat dest)
 zMat zMatCopyArray(double array[], int r, int c, zMat m)
 {
   if( zMatRowSizeNC(m) != r || zMatColSizeNC(m) != c ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   zRawMatCopy( array, zMatBufNC(m), r, c );
@@ -215,7 +215,7 @@ zMat zMatGet(zMat src, int pr, int pc, zMat dest)
 {
   if( pr + zMatRowSizeNC(dest) > zMatRowSizeNC(src) ||
       pc + zMatColSizeNC(dest) > zMatColSizeNC(src) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMatGetNC( src, pr, pc, dest );
@@ -233,7 +233,7 @@ zMat zMatTGet(zMat src, int pr, int pc, zMat dest)
 {
   if( pr + zMatColSizeNC(dest) > zMatRowSizeNC(src) ||
       pc + zMatRowSizeNC(dest) > zMatColSizeNC(src) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMatTGetNC( src, pr, pc, dest );
@@ -251,7 +251,7 @@ zMat zMatPut(zMat dest, int pr, int pc, zMat src)
 {
   if( pr + zMatRowSizeNC(src) > zMatRowSizeNC(dest) ||
       pc + zMatColSizeNC(src) > zMatColSizeNC(dest) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMatPutNC( dest, pr, pc, src );
@@ -269,7 +269,7 @@ zMat zMatTPut(zMat dest, int pr, int pc, zMat src)
 {
   if( pr + zMatColSizeNC(src) > zMatRowSizeNC(dest) ||
       pc + zMatRowSizeNC(src) > zMatColSizeNC(dest) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMatTPutNC( dest, pr, pc, src );
@@ -293,11 +293,11 @@ zVec zMatGetColNC(zMat m, int col, zVec v)
 zVec zMatGetRow(zMat m, int row, zVec v)
 {
   if( !zMatColVecSizeIsEqual( m, v ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( row >= zMatRowSizeNC(m) ){
-    ZRUNERROR( ZM_ERR_INV_ROW );
+    ZRUNERROR( ZM_ERR_INVALID_ROW );
     return NULL;
   }
   return zMatGetRowNC( m, row, v );
@@ -307,11 +307,11 @@ zVec zMatGetRow(zMat m, int row, zVec v)
 zVec zMatGetCol(zMat m, int col, zVec v)
 {
   if( !zMatRowVecSizeIsEqual( m, v ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( col >= zMatColSizeNC(m) ){
-    ZRUNERROR( ZM_ERR_INV_COL );
+    ZRUNERROR( ZM_ERR_INVALID_COL );
     return NULL;
   }
   return zMatGetColNC( m, col, v );
@@ -335,11 +335,11 @@ zMat zMatPutColNC(zMat m, int col, zVec v)
 zMat zMatPutRow(zMat m, int row, zVec v)
 {
   if( !zMatColVecSizeIsEqual( m, v ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( row >= zMatRowSizeNC(m) ){
-    ZRUNERROR( ZM_ERR_INV_ROW );
+    ZRUNERROR( ZM_ERR_INVALID_ROW );
     return NULL;
   }
   return zMatPutRowNC( m, row, v );
@@ -349,11 +349,11 @@ zMat zMatPutRow(zMat m, int row, zVec v)
 zMat zMatPutCol(zMat m, int col, zVec v)
 {
   if( !zMatRowVecSizeIsEqual( m, v ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( col >= zMatColSizeNC(m) ){
-    ZRUNERROR( ZM_ERR_INV_COL );
+    ZRUNERROR( ZM_ERR_INVALID_COL );
     return NULL;
   }
   return zMatPutColNC( m, col, v );
@@ -370,7 +370,7 @@ zMat zMatSwapRowNC(zMat m, int r1, int r2)
 zMat zMatSwapRow(zMat m, int r1, int r2)
 {
   if( r1 >= zMatRowSizeNC(m) || r2 >= zMatRowSizeNC(m) ){
-    ZRUNERROR( ZM_ERR_INV_ROW );
+    ZRUNERROR( ZM_ERR_INVALID_ROW );
     return NULL;
   }
   return zMatSwapRowNC( m, r1, r2 );
@@ -387,7 +387,7 @@ zMat zMatSwapColNC(zMat m, int c1, int c2)
 zMat zMatSwapCol(zMat m, int c1, int c2)
 {
   if( c1 >= zMatColSizeNC(m) || c2 >= zMatColSizeNC(m) ){
-    ZRUNERROR( ZM_ERR_INV_COL );
+    ZRUNERROR( ZM_ERR_INVALID_COL );
     return NULL;
   }
   return zMatSwapColNC( m, c1, c2 );
@@ -499,7 +499,7 @@ zMat zMatCatNC(zMat m1, double k, zMat m2, zMat m)
 zMat zMatAdd(zMat m1, zMat m2, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m2) || !zMatSizeIsEqual(m1,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMatAddNC( m1, m2, m );
@@ -509,7 +509,7 @@ zMat zMatAdd(zMat m1, zMat m2, zMat m)
 zMat zMatSub(zMat m1, zMat m2, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m2) || !zMatSizeIsEqual(m1,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMatSubNC( m1, m2, m );
@@ -519,7 +519,7 @@ zMat zMatSub(zMat m1, zMat m2, zMat m)
 zMat zMatRev(zMat m1, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMatRevNC( m1, m );
@@ -529,7 +529,7 @@ zMat zMatRev(zMat m1, zMat m)
 zMat zMatMul(zMat m1, double k, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMatMulNC( m1, k, m );
@@ -539,7 +539,7 @@ zMat zMatMul(zMat m1, double k, zMat m)
 zMat zMatDiv(zMat m1, double k, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   if( zIsTiny( k ) ){
@@ -553,7 +553,7 @@ zMat zMatDiv(zMat m1, double k, zMat m)
 zMat zMatCat(zMat m1, double k, zMat m2, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m2) || !zMatSizeIsEqual(m1,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMatCatNC( m1, k, m2, m );
@@ -591,7 +591,7 @@ zMat zMatTNC(zMat m, zMat tm)
 zMat zMatT(zMat m, zMat tm)
 {
   if( !zMatColRowSizeIsEqual( tm, m ) || !zMatColRowSizeIsEqual( m, tm ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMatTNC( m, tm );
@@ -630,7 +630,7 @@ zMat zVecDyadNC(zVec v1, zVec v2, zMat dyad)
 zMat zVecDyad(zVec v1, zVec v2, zMat dyad)
 {
   if( zVecSizeNC(v1) != zMatRowSizeNC(dyad) || zVecSizeNC(v2) != zMatColSizeNC(dyad) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   return zVecDyadNC( v1, v2, dyad );
@@ -647,7 +647,7 @@ zMat zMatAddDyadNC(zMat m, zVec v1, zVec v2)
 zMat zMatAddDyad(zMat m, zVec v1, zVec v2)
 {
   if( zVecSizeNC(v1) != zMatRowSizeNC(m) || zVecSizeNC(v2) != zMatColSizeNC(m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   return zMatAddDyadNC( m, v1, v2 );
@@ -664,7 +664,7 @@ zMat zMatSubDyadNC(zMat m, zVec v1, zVec v2)
 zMat zMatSubDyad(zMat m, zVec v1, zVec v2)
 {
   if( zVecSizeNC(v1) != zMatRowSizeNC(m) || zVecSizeNC(v2) != zMatColSizeNC(m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   return zMatSubDyadNC( m, v1, v2 );
@@ -681,7 +681,7 @@ zMat zMatCatDyadNC(zMat m, double k, zVec v1, zVec v2)
 zMat zMatCatDyad(zMat m, double k, zVec v1, zVec v2)
 {
   if( zVecSizeNC(v1) != zMatRowSizeNC(m) || zVecSizeNC(v2) != zMatColSizeNC(m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   return zMatCatDyadNC( m, k, v1, v2 );
@@ -697,7 +697,7 @@ double zMatTrNC(zMat m)
 double zMatTr(zMat m)
 {
   if( !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return 0;
   }
   return zMatTrNC( m );
@@ -745,7 +745,7 @@ zMat zMulMatTMatNC(zMat m1, zMat m2, zMat m)
 zVec zMulMatVec(zMat m, zVec v1, zVec v)
 {
   if( !zMatColVecSizeIsEqual( m, v1 ) || !zMatRowVecSizeIsEqual( m, v ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   return zMulMatVecNC( m, v1, v );
@@ -755,7 +755,7 @@ zVec zMulMatVec(zMat m, zVec v1, zVec v)
 zVec zMulMatTVec(zMat m, zVec v1, zVec v)
 {
   if( !zMatRowVecSizeIsEqual( m, v1 ) || !zMatColVecSizeIsEqual( m, v ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   return zMulMatTVecNC( m, v1, v );
@@ -766,7 +766,7 @@ zMat zMulMatMat(zMat m1, zMat m2, zMat m)
 {
   if( !zMatColRowSizeIsEqual( m1, m2 ) ||
       !zMatRowSizeIsEqual( m1, m ) || !zMatColSizeIsEqual( m2, m ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMulMatMatNC( m1, m2, m );
@@ -777,7 +777,7 @@ zMat zMulMatMatT(zMat m1, zMat m2, zMat m)
 {
   if( !zMatColSizeIsEqual( m1, m2 ) || !zMatRowSizeIsEqual( m1, m ) ||
       !zMatRowColSizeIsEqual( m2, m ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMulMatMatTNC( m1, m2, m );
@@ -788,7 +788,7 @@ zMat zMulMatTMat(zMat m1, zMat m2, zMat m)
 {
   if( !zMatRowSizeIsEqual( m1, m2 ) ||
       !zMatColRowSizeIsEqual( m1, m ) || !zMatColSizeIsEqual( m2, m ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMulMatTMatNC( m1, m2, m );
@@ -842,15 +842,15 @@ zMat zMatQuadNC(zMat a, zVec w, zMat q)
 zMat zMatQuad(zMat a, zVec w, zMat q)
 {
   if( w && !zMatColVecSizeIsEqual( a, w ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( !zMatRowSizeIsEqual( a, q ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   if( !zMatIsSqr( q ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   return zMatQuadNC( a, w, q );
@@ -879,15 +879,15 @@ zMat zMatTQuadNC(zMat a, zVec w, zMat q)
 zMat zMatTQuad(zMat a, zVec w, zMat q)
 {
   if( w && !zMatRowVecSizeIsEqual( a, w ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( !zMatColRowSizeIsEqual( a, q ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   if( !zMatIsSqr( q ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   return zMatTQuadNC( a, w, q );
@@ -915,11 +915,11 @@ zMat zMulMatMatMatTNC(zMat a, zMat q, zMat m)
 zMat zMulMatMatMatT(zMat a, zMat q, zMat m)
 {
   if( !zMatIsSqr( q ) || !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( !zMatColRowSizeIsEqual( a, q ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMulMatMatMatTNC( a, q, m );
@@ -947,11 +947,11 @@ zMat zMulMatTMatMatNC(zMat a, zMat q, zMat m)
 zMat zMulMatTMatMat(zMat a, zMat q, zMat m)
 {
   if( !zMatIsSqr( q ) || !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( !zMatRowSizeIsEqual( a, q ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zMulMatTMatMatNC( a, q, m );
@@ -984,18 +984,18 @@ zMat zMatFScan(FILE *fp)
   zMat m;
 
   if( !zFInt( fp, &row ) ){
-    ZRUNERROR( ZM_ERR_SIZUNFOUND_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZENOTFOUND );
     return NULL;
   }
   if( !zFInt( fp, &col ) ){
-    ZRUNERROR( ZM_ERR_SIZUNFOUND_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZENOTFOUND );
     return NULL;
   }
   if( !( m = zMatAlloc( row, col ) ) ) return NULL;
   for( i=0; i<row; i++ )
     for( j=0; j<col; j++ )
       if( !zFDouble( fp, &zMatElemNC(m,i,j) ) ){
-        ZRUNERROR( ZM_WARN_MAT_SIZMIS, i*row+j, row*col );
+        ZRUNERROR( ZM_WARN_MAT_SIZEMISMATCH, i*row+j, row*col );
         break;
       }
   return m;

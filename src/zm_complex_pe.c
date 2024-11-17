@@ -12,7 +12,7 @@ zComplex *zQESolve(double a, double b, double c, zComplex ans[])
   double d, q;
 
   if( a == 0 ){
-    ZRUNERROR( ZM_ERR_PE_DEFL );
+    ZRUNERROR( ZM_ERR_PE_DEFLATED );
     return NULL;
   }
   d = b*b - 4*a*c;
@@ -37,7 +37,7 @@ zComplex *zCESolve(double a, double b, double c, double d, zComplex ans[])
   double g, p, q, w, z1, z2;
 
   if( a == 0 ){
-    ZRUNERROR( ZM_ERR_PE_DEFL );
+    ZRUNERROR( ZM_ERR_PE_DEFLATED );
     return NULL;
   }
   b /= 3 * a;

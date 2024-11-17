@@ -43,15 +43,15 @@ int zMatDecompLU(zMat m, zMat l, zMat u, zIndex idx)
   zMat mc;
 
   if( !zMatIsSqr(l) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return -1;
   }
   if( !zMatRowSizeIsEqual(m,l) || !zMatSizeIsEqual(m,u) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return -1;
   }
   if( zMatRowSize(m) != zIndexSizeNC(idx) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return -1;
   }
   zIndexOrder( idx, 0 );
@@ -101,11 +101,11 @@ int zMatDecompCholeskyDST(zMat m, zMat l, zIndex idx)
   for( rank=0, i=0; i<n; i++ ){
     p = zPivotingDiag( m, idx, i );
     if( zIsTiny( ( a = zMatElemNC(m,p,p) ) ) ){
-      ZRUNWARN( ZM_ERR_LE_SINGULAR );
+      ZRUNWARN( ZM_ERR_MAT_SINGULAR );
       a = 0;
     } else
     if( a < 0 ){
-      ZRUNERROR( ZM_ERR_LE_CHOLESKY );
+      ZRUNERROR( ZM_ERR_MAT_NOTPOSITIVESEMIDEFINITE );
       return -1;
     } else{
       zMatSetElemNC( m, p, p, ( a = sqrt( a ) ) );
@@ -137,12 +137,12 @@ int zMatDecompCholesky(zMat m, zMat l, zIndex idx)
   zMat mc;
 
   if( !zMatIsSqr(m) || !zMatIsSqr(l) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return -1;
   }
   if( zMatRowSize(m) != zIndexSizeNC(idx) ||
       zMatRowSize(l) != zIndexSizeNC(idx) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return -1;
   }
   zIndexOrder( idx, 0 );

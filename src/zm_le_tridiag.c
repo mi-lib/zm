@@ -15,7 +15,7 @@ zVec zTridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans)
   n = zVecSize( a );
   for( i=1; i<n; i++ ){
     if( zVecElemNC(b,i-1) == 0 ){
-      ZRUNERROR( ZM_ERR_LE_SINGULAR );
+      ZRUNERROR( ZM_ERR_MAT_SINGULAR );
       return NULL;
     }
     zVecElemNC(b,i) -= zVecElemNC(c,i-1) / zVecElemNC(b,i-1) * zVecElemNC(a,i);
@@ -36,7 +36,7 @@ zVec zTridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans)
 
   if( !zVecSizeIsEqual(a,b) || !zVecSizeIsEqual(b,c) ||
       !zVecSizeIsEqual(c,d) || !zVecSizeIsEqual(d,ans) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
   acp = zVecClone( a );

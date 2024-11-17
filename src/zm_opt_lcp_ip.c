@@ -142,15 +142,15 @@ bool zLCPSolveIP(zMat m, zVec q, zVec w, zVec z)
   int i;
 
   if( !zMatIsSqr(m) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return false;
   }
   if( !zMatRowVecSizeIsEqual(m,q) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }
   if( ( w && ( !zVecSizeIsEqual(w,q) || !zVecSizeIsEqual(w,z) ) ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return false;
   }
   if( !_zLCPIP_PCAlloc( &wm, zVecSizeNC(q) ) )
@@ -167,13 +167,13 @@ bool zLCPSolveIP(zMat m, zVec q, zVec w, zVec z)
     if( zVecIsTiny( wm.r ) && zIsTiny( wm.e ) ) break;
     if( !_zLCPIP_PCPred( &wm, m, w, z ) ||
         !_zLCPIP_PCStep( &wm, w, z, &a ) ){
-      ZRUNWARN( ZM_ERR_OPT_UNSOLVE );
+      ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
       goto TERMINATE;
     }
     zVecCatNCDRC( w, a, wm.dw );
     zVecCatNCDRC( z, a, wm.dz );
     if( !_zLCPIP_PCCorr( &wm, m, w, z ) ){
-      ZRUNWARN( ZM_ERR_OPT_UNSOLVE );
+      ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
       goto TERMINATE;
     }
     zVecAddNCDRC( w, wm.dw );

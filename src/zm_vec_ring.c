@@ -38,7 +38,7 @@ zVec zVecRingFill(zVecRing *ring, zVec v)
   int i;
 
   if( !zVecSizeIsEqual(*zRingHead(ring),v) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
   for( i=0; i<zRingSize(ring); i++ )
@@ -52,7 +52,7 @@ zVec zVecRingCat(zVec v, zVec c, zVecRing *ring)
   int i;
 
   if( !zVecSizeIsEqual(*zRingHead(ring),v) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
   for( i=0; i<zVecSizeNC(c); i++ )

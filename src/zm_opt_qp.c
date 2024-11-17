@@ -14,15 +14,15 @@ double zQuadraticValue(zMat q, zVec c, zVec x)
 
   n = zVecSize( x );
   if( !zMatIsSqr(q) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return 0;
   }
   if( zMatRowSize(q) != n ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return 0;
   }
   if( zVecSize(c) != n ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return 0;
   }
   for( val=0, i=0; i<n; i++ ){
@@ -45,17 +45,17 @@ bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
   n = zVecSize( ans );
   m = b ?  zVecSize( b ) : 0;
   if( !zMatIsSqr(q) || zMatRowSize(q)!=n ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return false;
   }
   if( c && zVecSize(c)!=n ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return false;
   }
   if( a && zMatColSize(a) == 0 )
     a = NULL;
   if( a && ( zMatColSize(a)!=n || zMatRowSize(a)!=m ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }
 

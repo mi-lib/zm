@@ -337,7 +337,7 @@ static zVec _zOptDMVecCG(zOptDM *opt, zVec var, zVec d, void *util)
 zOptDM *zOptDMCreate(zOptDM *opt, int dim, double scale, double (*eval)(zVec,void*), zVec (*grad)(zVec,zVec,void*), zMat (*hess)(zVec,zMat,void*))
 {
   if( !( opt->eval = eval ) ){
-    ZRUNERROR( ZM_ERR_OPT_NOEVAL );
+    ZRUNERROR( ZM_ERR_OPT_NOEVALUATOR );
     return NULL;
   }
   opt->_grad = ( opt->grad = grad ) ? _zOptDMGrad : _zOptDMGradNG;

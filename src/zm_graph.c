@@ -26,7 +26,7 @@ bool zGraphNodeConnect(zGraphNode *from, zGraphNode *to, double cost)
 
   zListForEach( &from->arc, ac ){
     if( ac->data.node == to ){
-      ZRUNWARN( ZM_WARN_GRAPH_DUPCON );
+      ZRUNWARN( ZM_WARN_GRAPH_DUPCONNECTION );
       ac->data.cost = cost;
       return true;
     }
@@ -97,7 +97,7 @@ bool zGraphAddNode(zGraph *graph, void *data)
   if( !zListIsEmpty( &graph->list ) )
     zListForEach( &graph->list, gc )
       if( graph->equal( gc->data.data, data ) ){
-        ZRUNWARN( ZM_WARN_GRAPH_DUPSPC );
+        ZRUNWARN( ZM_WARN_GRAPH_DUPNODE );
         return true;
       }
   if( !( gc = zAlloc( zGraphCell, 1 ) ) ){

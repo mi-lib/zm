@@ -16,11 +16,11 @@ zMat zLyapnovSolve(zMat a, zMat b, zMat ans)
   int n, nn, i, j, k;
 
   if( !zMatIsSqr(a) || !zMatIsSqr(b) || !zMatIsSqr(ans) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( !zMatSizeIsEqual(a,ans) || !zMatSizeIsEqual(b,ans) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   n = zMatRowSizeNC(ans);
@@ -45,7 +45,7 @@ zMat zLyapnovSolve(zMat a, zMat b, zMat ans)
         zMatElemNC(aw,n*k+i,n*j+k) += zMatElemNC(a,j,i);
       }
   if( !zLESolveGaussDST( aw, &bvec, &ansvec, idx, s ) ){
-    ZRUNERROR( ZM_ERR_LE_SINGULAR );
+    ZRUNERROR( ZM_ERR_MAT_SINGULAR );
     ans = NULL;
   }
  TERMINATE:

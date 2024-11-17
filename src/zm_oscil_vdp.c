@@ -51,7 +51,7 @@ zOsc *zOscCreateVDP(zOsc *osc, double t, double damp, double amp)
   zOscVDP *vdp;
 
   if( zIsTiny(t) ){
-    ZRUNERROR( ZM_ERR_OSCIL_INVTERM );
+    ZRUNERROR( ZM_ERR_OSCIL_INVALID_TERM );
     return NULL;
   }
   if( !( vdp = zAlloc( zOscVDP, 1 ) ) ){

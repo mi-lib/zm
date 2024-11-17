@@ -147,7 +147,7 @@ void zClusterMethodInit(zClusterMethod *method)
 zClusterMethod *zClusterMethodSetCoreFunc(zClusterMethod *method, int size, zVec (* fp)(zClusterMethod*,zVecAddrList*,void*,zVec), void *util)
 {
   if( size <= 0 ){
-    ZRUNERROR( ZM_ERR_MCA_INVSIZ, size );
+    ZRUNERROR( ZM_ERR_MCA_INVALID_SIZE, size );
     return NULL;
   }
   method->core_size = size;
@@ -161,7 +161,7 @@ zClusterMethod *zClusterMethodSetErrorFunc(zClusterMethod *method, int size, zVe
 {
   if( method->error ) zVecFree( method->error );
   if( size <= 0 ){
-    ZRUNERROR( ZM_ERR_MCA_INVSIZ, size );
+    ZRUNERROR( ZM_ERR_MCA_INVALID_SIZE, size );
     return NULL;
   }
   method->error_fp = fp ? fp : _zClusterErrorDefault;
@@ -427,7 +427,7 @@ static bool _zMClusterKMeansInitKKZ(zMCluster *mc, zVecAddrList *points)
   double d, dmax, dmin;
 
   if( zListIsEmpty( points ) ){
-    ZRUNERROR( ZM_ERR_MCA_EMPTY );
+    ZRUNERROR( ZM_ERR_MCA_EMPTYSET );
     return false;
   }
   mean = zVecAlloc( zVecSizeNC( zListHead(points)->data ) );
@@ -473,7 +473,7 @@ static bool _zMClusterKMeansInitPP(zMCluster *mc, zVecAddrList *points)
   bool ret = false;
 
   if( zListIsEmpty( points ) ){
-    ZRUNERROR( ZM_ERR_MCA_EMPTY );
+    ZRUNERROR( ZM_ERR_MCA_EMPTYSET );
     return false;
   }
   if( !( score = zVecAlloc( zListSize(points)) ) ) return false;

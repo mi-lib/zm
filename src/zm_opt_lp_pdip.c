@@ -182,7 +182,7 @@ static double _zLP_PDIP_PCStep(zVec x, zVec dx)
   for( max=min=0, i=0; i<zVecSizeNC(dx); i++ ){
     d = zVecElem(dx,i);
     if( zIsTiny(d) && zVecElem(x,i) < -zTOL ){
-      ZRUNWARN( ZM_ERR_OPT_UNSOLVE );
+      ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
       return 0;
     }
     val = -zVecElem(x,i)/d;
@@ -200,7 +200,7 @@ static double _zLP_PDIP_PCStep(zVec x, zVec dx)
     }
   }
   if( min > max ){
-    ZRUNWARN( ZM_ERR_OPT_UNSOLVE );
+    ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
     return 0;
   }
   return max;

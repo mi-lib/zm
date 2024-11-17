@@ -153,7 +153,7 @@ zVec zVecGetNC(zVec src, int pos, zVec dest)
 zVec zVecGet(zVec src, int pos, zVec dest)
 {
   if( pos + zVecSizeNC(dest) > zVecSizeNC(src) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
   return zVecGetNC( src, pos, dest );
@@ -170,7 +170,7 @@ zVec zVecPutNC(zVec dest, int pos, zVec src)
 zVec zVecPut(zVec dest, int pos, zVec src)
 {
   if( pos + zVecSizeNC(src) > zVecSizeNC(dest) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
   return zVecPutNC( dest, pos, src );
@@ -222,7 +222,7 @@ zVec zVecSwapNC(zVec v, int i1, int i2)
 zVec zVecSwap(zVec v, int i1, int i2)
 {
   if( i1 > zVecSizeNC(v) || i2 > zVecSizeNC(v) ){
-    ZRUNWARN( ZM_ERR_INV_INDEX );
+    ZRUNWARN( ZM_ERR_INVALID_INDEX );
     return NULL;
   }
   return zVecSwapNC( v, i1, i2 );
@@ -243,7 +243,7 @@ static int _zVecSortCmp(void *p1, void *p2, void *priv)
 void zVecSort(zVec v, zIndex idx)
 {
   if( zVecSizeNC(v) != zIndexSizeNC(idx) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return;
   }
   zQuickSort( zIndexBufNC(idx), zIndexSizeNC(idx), sizeof(int), _zVecSortCmp, zVecBufNC(v) );
@@ -347,13 +347,13 @@ zVec zVecCatNC(zVec v1, double k, zVec v2, zVec v)
 
 #define __z_vec_size_check_2(v1,v2) \
   if( !zVecSizeIsEqual(v1,v2) ){\
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );\
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );\
     return NULL;\
   }
 
 #define __z_vec_size_check_3(v1,v2,v) \
   if( !zVecSizeIsEqual(v1,v2) || !zVecSizeIsEqual(v1,v) ){\
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );\
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );\
     return NULL;\
   }
 
@@ -430,7 +430,7 @@ static void _zVecCats(zVec v, int n, va_list args)
     k = (double)va_arg( args, double );
     vec = (zVec)va_arg( args, zVec );
     if( !zVecSizeIsEqual( v, vec ) )
-      ZRUNWARN( ZM_ERR_SIZMIS_VEC );
+      ZRUNWARN( ZM_ERR_VEC_SIZEMISMATCH );
     zVecCatDRC( v, k, vec );
   }
 }
@@ -496,7 +496,7 @@ double zVecInnerProdNC(zVec v1, zVec v2)
 double zVecInnerProd(zVec v1, zVec v2)
 {
   if( !zVecSizeIsEqual(v1,v2) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return 0;
   }
   return zVecInnerProdNC( v1, v2 );
@@ -518,7 +518,7 @@ double zVecWSqrNormNC(zVec v, zVec w)
 double zVecWSqrNorm(zVec v, zVec w)
 {
   if( !zVecSizeIsEqual(v,w) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return 0;
   }
   return zVecWSqrNormNC( v, w );
@@ -561,13 +561,13 @@ zVec zVecFScan(FILE *fp)
   zVec v;
 
   if( !zFInt( fp, &size ) ){
-    ZRUNERROR( ZM_ERR_SIZUNFOUND_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZENOTFOUND );
     return NULL;
   }
   if( !( v = zVecAlloc( size ) ) ) return NULL;
   for( i=0; i<size; i++ ){
     if( !zFDouble( fp, &zVecElemNC(v,i) ) ){
-      ZRUNERROR( ZM_WARN_VEC_SIZMIS, i, size );
+      ZRUNERROR( ZM_WARN_VEC_SIZEMISMATCH, i, size );
       break;
     }
   }

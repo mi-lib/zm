@@ -25,6 +25,22 @@ void zBSplineParamFree(zBSplineParam *param)
   zBSplineParamInit( param );
 }
 
+/* copy B-spline parameters. */
+bool zBSplineParamCopy(zBSplineParam *src, zBSplineParam *dest)
+{
+  if( src->order != dest->order ){
+    ZRUNERROR( ZM_ERR_NURBS_ORDERMISMATCH, src->order, dest->order );
+    return false;
+  }
+  if( !zVecSizeIsEqual( src->knot, dest->knot ) ){
+    ZRUNERROR( ZM_ERR_NURBS_KNOTNUMMISMATCH, zVecSize(src->knot), zVecSize(dest->knot) );
+    return false;
+  }
+  zBSplineParamSetSlice( dest, src->slice );
+  zVecCopyNC( src->knot, dest->knot );
+  return true;
+}
+
 /* initialize knots of a B-spline parameter. */
 void zBSplineParamKnotInit(zBSplineParam *param)
 {
@@ -95,7 +111,7 @@ double zBSplineParamBasisDiff(zBSplineParam *param, double t, int i, int r, int 
   if( diff == 0 )
     return zBSplineParamBasis( param, t, i, r, seg );
   if( diff > param->order + 1 || diff < 0 ){
-    ZRUNERROR( ZM_ERR_NURBS_INVDIFFORDER );
+    ZRUNERROR( ZM_ERR_NURBS_INVALID_DIFFORDER );
     return NAN;
   }
   if( i >= seg - r && ( dt = zBSplineParamKnot(param,i+r) - zBSplineParamKnot(param,i) ) != 0 )
@@ -115,7 +131,7 @@ bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order)
   bool ret = true;
 
   if( zListSize(seq) <= order ){
-    ZRUNERROR( ZM_ERR_NURBS_INVORDER );
+    ZRUNERROR( ZM_ERR_NURBS_INVALID_ORDER );
     return false;
   }
   if( !zBSplineParamAlloc( &nurbs->param, order, zListSize(seq), 0 ) )
@@ -189,7 +205,7 @@ zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v)
   if( diff == 0 )
     return zNURBSVec( nurbs, t, v );
   if( diff > nurbs->param.order + 1 || diff < 0 ){
-    ZRUNERROR( ZM_ERR_NURBS_INVDIFFORDER );
+    ZRUNERROR( ZM_ERR_NURBS_INVALID_DIFFORDER );
     return NULL;
   }
   if( ( tmp = zVecAlloc( zVecSize(zNURBSCP(nurbs,0)) ) ) == NULL ){

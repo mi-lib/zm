@@ -38,7 +38,7 @@ double zMatDet(zMat m)
   zIndex idx;
 
   if( !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return 0;
   }
   mcp = zMatClone( m );
@@ -59,11 +59,11 @@ zMat zMatAdj(zMat m, zMat adj)
   zIndex idx;
 
   if( !zMatIsSqr(m) || !zMatIsSqr(adj) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( !zMatSizeIsEqual(m,adj) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   smat = zMatAllocSqr( zMatRowSizeNC(m)-1 );
@@ -137,7 +137,7 @@ static zMat _zMulInvMat(zMat m1, zMat m2, zMat m, zIndex idx, zVec s)
   for( i=0; i<n; i++ ){
     p = zPivoting( m1, idx, i, i );
     if( ( head = zMatElemNC(m1,p,i) ) == 0 ){
-      ZRUNERROR( ZM_ERR_LE_SINGULAR );
+      ZRUNERROR( ZM_ERR_MAT_SINGULAR );
       return NULL;
     }
     head = 1.0 / head;
@@ -200,11 +200,11 @@ zMat zMulInvMatMat(zMat m1, zMat m2, zMat m)
 /* m = m1^-1 m2 */
 {
   if( !zMatIsSqr(m1) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( zMatColSize(m1) != zMatRowSize(m2) || !zMatSizeIsEqual(m2,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return _zMulInvMatMatNC( m1, m2, m );
@@ -219,11 +219,11 @@ zMat zMulMatInvMat(zMat m1, zMat m2, zMat m)
   zIndex idx;
 
   if( !zMatIsSqr(m2) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( zMatRowSize(m1) != zMatColSize(m2) || !zMatSizeIsEqual(m1,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   mcp1 = zMatAlloc( zMatColSizeNC(m1), zMatRowSizeNC(m1) );
@@ -252,11 +252,11 @@ zMat zMulMatInvMat(zMat m1, zMat m2, zMat m)
 zMat zMatInv(zMat m, zMat im)
 {
   if( !zMatIsSqr(m) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( zMatColSize(m) != zMatRowSize(im) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   if( zMatColSize(m) == 1 ){ /* scalar case */
@@ -275,11 +275,11 @@ zMat zMatInvHotelling(zMat m, zMat im, double tol, int iter)
   zMat im2, tmp, mc, mn;
 
   if( !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( !zMatSizeIsEqual( m, im ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   im2 = zMatAllocSqr( zMatRowSizeNC(m) );

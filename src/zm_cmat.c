@@ -65,7 +65,7 @@ zCMat zCMatCopyNC(zCMat src, zCMat dest)
 zCMat zCMatCopy(zCMat src, zCMat dest)
 {
   if( !zCMatSizeIsEqual( src, dest ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zCMatCopyNC( src, dest );
@@ -167,7 +167,7 @@ zCMat zCMatDivNC(zCMat m1, zComplex *z, zCMat m)
 zCMat zCMatAdd(zCMat m1, zCMat m2, zCMat m)
 {
   if( !zCMatSizeIsEqual(m1,m2) || !zCMatSizeIsEqual(m1,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zCMatAddNC( m1, m2, m );
@@ -177,7 +177,7 @@ zCMat zCMatAdd(zCMat m1, zCMat m2, zCMat m)
 zCMat zCMatSub(zCMat m1, zCMat m2, zCMat m)
 {
   if( !zCMatSizeIsEqual(m1,m2) || !zCMatSizeIsEqual(m1,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zCMatSubNC( m1, m2, m );
@@ -187,7 +187,7 @@ zCMat zCMatSub(zCMat m1, zCMat m2, zCMat m)
 zCMat zCMatRev(zCMat m1, zCMat m)
 {
   if( !zCMatSizeIsEqual(m1,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zCMatRevNC( m1, m );
@@ -197,7 +197,7 @@ zCMat zCMatRev(zCMat m1, zCMat m)
 zCMat zCMatMul(zCMat m1, zComplex *z, zCMat m)
 {
   if( !zCMatSizeIsEqual(m1,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zCMatMulNC( m1, z, m );
@@ -207,7 +207,7 @@ zCMat zCMatMul(zCMat m1, zComplex *z, zCMat m)
 zCMat zCMatDiv(zCMat m1, zComplex *z, zCMat m)
 {
   if( !zCMatSizeIsEqual(m1,m) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   if( zComplexIsTiny( z ) ){
@@ -239,7 +239,7 @@ zCVec zCMulMatVec(zCMat m, zCVec v1, zCVec v)
 {
   if( zCMatColSizeNC(m) != zCVecSizeNC(v1) ||
       zCMatRowSizeNC(m) != zCVecSizeNC(v) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   return zCMulMatVecNC( m, v1, v );

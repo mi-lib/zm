@@ -48,6 +48,9 @@ __ZM_EXPORT zBSplineParam *zBSplineParamAlloc(zBSplineParam *param, int order, i
 /*! \brief free B-spline parameters. */
 __ZM_EXPORT void zBSplineParamFree(zBSplineParam *param);
 
+/*! \brief copy B-spline parameters. */
+__ZM_EXPORT bool zBSplineParamCopy(zBSplineParam *src, zBSplineParam *dest);
+
 /*! \brief initialize knots of a B-spline parameter. */
 __ZM_EXPORT void zBSplineParamKnotInit(zBSplineParam *param);
 

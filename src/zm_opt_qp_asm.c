@@ -106,7 +106,7 @@ static bool _zQPASMInitBase(zQPASM *qpasm, zMat a, zVec b)
   zIndexOrder( tab.in, 0 );
   zIndexOrder( tab.ir, 0 );
   if( !zLPTableauSimplex( &tab ) || !zIsTiny(tab.d) ){
-    ZRUNWARN( ZM_ERR_OPT_UNSOLVE );
+    ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
     ret = false;
     goto TERMINATE;
   }
@@ -216,12 +216,12 @@ static bool _zQPASMCheck(zMat q, zVec c, zMat a, zVec b, zVec ans)
   bool ret;
 
   if( !zMatIsSymmetric( q ) ){
-    ZRUNERROR( ZM_ERR_NONSYMMETRIC_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSYMMETRIC );
     return false;
   }
   if( !zMatRowVecSizeIsEqual( q, c ) || !zVecSizeIsEqual( c, ans ) ||
       !zMatRowVecSizeIsEqual( a, b ) || !zMatColVecSizeIsEqual( a, ans ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }
   if( !( ret = !( zMatDecompCholeskyAlloc( q, &l, &ic ) < zMatRowSizeNC(q) ) ) )

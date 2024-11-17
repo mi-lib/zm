@@ -15,7 +15,7 @@
 bool zPexIPAlloc(zPexIP *pc, double term, int dim)
 {
   if( term == 0 ){
-    ZRUNERROR( ZM_ERR_IP_INVTERM );
+    ZRUNERROR( ZM_ERR_IP_INVALID_TERM );
     return false;
   }
   if( !( pc->c = zPexAlloc( dim ) ) ) return false;
@@ -76,7 +76,7 @@ bool zPexIPLSM(zPexIP *pc, zVec t, zVec x)
   bool result = true;
 
   if( !zVecSizeIsEqual( t, x ) ){
-    ZRUNERROR( ZM_ERR_IP_SIZMIS );
+    ZRUNERROR( ZM_ERR_IP_SIZEMISMATCH );
     return false;
   }
   n = zVecSizeNC( t );
@@ -120,7 +120,7 @@ bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, doub
   bool result = true;
 
   if( !zVecSizeIsEqual( t, x ) ){
-    ZRUNERROR( ZM_ERR_IP_SIZMIS );
+    ZRUNERROR( ZM_ERR_IP_SIZEMISMATCH );
     return false;
   }
 

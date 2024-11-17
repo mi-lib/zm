@@ -46,16 +46,16 @@ void zBalancingDST(zMat m, zVec v, zVec s)
 bool zBalancing(zMat morg, zVec vorg, zMat m, zVec v, zVec s)
 {
   if( !zMatSizeIsEqual( morg, m ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MAT );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return false;
   }
   if( !zVecSizeIsEqual( vorg, v ) ||
       ( s && !zVecSizeIsEqual( vorg, s ) ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return false;
   }
   if( zMatRowSizeNC(m) != zVecSizeNC(v) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }
   zMatCopyNC( morg, m );
@@ -84,7 +84,7 @@ zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
   for( i=0; i<n; i++ ){
     p = zPivoting( a, idx, i, i );
     if( ( ahead = zMatElemNC(a,p,i) ) == 0 ){
-      ZRUNERROR( ZM_ERR_LE_SINGULAR );
+      ZRUNERROR( ZM_ERR_MAT_SINGULAR );
       return NULL;
     }
     ahead = 1.0 / ahead;
@@ -120,11 +120,11 @@ zVec zLESolveGauss(zMat a, zVec b, zVec ans)
   zIndex idx;
 
   if( !zMatIsSqr( a ) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( !zMatColVecSizeIsEqual( a, b ) || !zVecSizeIsEqual( ans, b ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   acp = zMatClone( a );
@@ -178,14 +178,14 @@ zVec zLESolveLU(zMat l, zMat u, zVec b, zVec ans, zIndex idx)
   zVec c;
 
   if( !zMatIsSqr(l) || !zMatIsSqr(u) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( zMatRowSize(l) != zIndexSizeNC(idx) ||
       zMatRowSize(u) != zIndexSizeNC(idx) ||
       zVecSize(b) != zIndexSizeNC(idx) ||
       zVecSize(ans) != zIndexSizeNC(idx) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( !( c = zVecAlloc( zIndexSizeNC(idx) ) ) ) return NULL;
@@ -212,7 +212,7 @@ zVec zLESolveRI(zMat a, zVec b, zVec ans)
   if( !l || !u || !res || !err || !idx ) goto TERMINATE;
 
   if( zMatDecompLU( a, l, u, idx ) < (int)zMatRowSizeNC(a) ){
-    ZRUNERROR( ZM_ERR_LE_SINGULAR );
+    ZRUNERROR( ZM_ERR_MAT_SINGULAR );
     ans = NULL;
     goto TERMINATE;
   }
@@ -244,12 +244,12 @@ zVec zLESolveGS(zMat a, zVec b, zVec ans)
   zIndex idx;
 
   if( !zMatIsSqr(a) ){
-    ZRUNERROR( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
   if( !zMatColVecSizeIsEqual(a,ans) ||
       !zMatRowVecSizeIsEqual(a,b) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_MATVEC );
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
   if( !( idx = zIndexCreate(zVecSizeNC(ans)) ) ) return NULL;

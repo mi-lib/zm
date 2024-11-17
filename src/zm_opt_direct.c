@@ -425,7 +425,7 @@ int zOptSolveDIRECT(double (* f)(zVec,void*), void *util, zVec min, zVec max, in
   int i = 0;
 
   if( !zVecSizeIsEqual( min, ans ) || !zVecSizeIsEqual( max, ans ) ){
-    ZRUNERROR( ZM_ERR_SIZMIS_VEC );
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return -1;
   }
   level_max = floor( -zLog( 3, tol ) );

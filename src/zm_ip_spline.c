@@ -148,7 +148,7 @@ bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v
     case ZSPLINE_FIX_EDGE:  _zIPFixEdgeSpline( ip, b, d, 0, i, v1 );    break;
     case ZSPLINE_FREE_EDGE: _zIPFreeEdgeSpline( ip, b, c, d, 0, 1, i ); break;
     default:
-      ZRUNERROR( ZM_ERR_IP_INVTYPE );
+      ZRUNERROR( ZM_ERR_IP_INVALID_EDGETYPE );
       goto TERMINATE;
     }
     /* setting of the edge type at the termination point */
@@ -156,7 +156,7 @@ bool zIPCreateSpline(zIP *ip, zSeq *seq, int etype1, zVec v1, int etype2, zVec v
     case ZSPLINE_FIX_EDGE:  _zIPFixEdgeSpline( ip, b, d, n-1, i, v2 );      break;
     case ZSPLINE_FREE_EDGE: _zIPFreeEdgeSpline( ip, a, b, d, n-1, n-1, i ); break;
     default:
-      ZRUNERROR( ZM_ERR_IP_INVTYPE );
+      ZRUNERROR( ZM_ERR_IP_INVALID_EDGETYPE );
       goto TERMINATE;
     }
     /* solving tridiagonal equation */

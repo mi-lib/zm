@@ -178,7 +178,7 @@ zComplex *zComplexLog(zComplex *c, double base, zComplex *lc)
   double r, theta, d;
 
   if( base <= 0 || base == 1.0 ){
-    ZRUNERROR( ZM_ERR_LOG_INVALID );
+    ZRUNERROR( ZM_ERR_INVALID_LOGBASE );
     return NULL;
   }
   r = _zComplexAbs( c );
@@ -196,12 +196,12 @@ zComplex *zComplexCLog(zComplex *c, zComplex *base, zComplex *lc)
   rb = _zComplexAbs( base );
   thetab = _zComplexArg( base );
   if( rb == 0 ){
-    ZRUNERROR( ZM_ERR_LOG_INVALID );
+    ZRUNERROR( ZM_ERR_INVALID_LOGBASE );
     return NULL;
   }
   lrb = log( rb );
   if( ( d = lrb*lrb + thetab*thetab ) == 0 ){
-    ZRUNERROR( ZM_ERR_LOG_INVALID );
+    ZRUNERROR( ZM_ERR_INVALID_LOGBASE );
     return NULL;
   }
   rc = _zComplexAbs( c );

@@ -90,7 +90,7 @@ zCVec zPexBH(zPex a, zCVec ans, double tol, int iter)
   char buf[BUFSIZ];
 
   if( zPexDim(a) > (int)zCVecSizeNC(ans) ){
-    ZRUNERROR( ZM_ERR_PEX_EQ_SIZMIS, zCVecSizeNC(ans), zI2AOrdinal(zPexDim(a),buf,BUFSIZ) );
+    ZRUNERROR( ZM_ERR_PEX_EQ_SIZEMISMATCH, zCVecSizeNC(ans), zI2AOrdinal(zPexDim(a),buf,BUFSIZ) );
     return NULL;
   }
   if( !( ac = zPexClone( a ) ) ) return NULL;
@@ -113,7 +113,7 @@ zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter)
   zPex b;
 
   if( zPexDim(a) > (int)zCVecSizeNC(ans) ){
-    ZRUNERROR( ZM_ERR_PEX_EQ_SIZMIS, zCVecSizeNC(ans), zI2AOrdinal(zPexDim(a),buf,BUFSIZ) );
+    ZRUNERROR( ZM_ERR_PEX_EQ_SIZEMISMATCH, zCVecSizeNC(ans), zI2AOrdinal(zPexDim(a),buf,BUFSIZ) );
     return NULL;
   }
   n = zPexDim(a);
