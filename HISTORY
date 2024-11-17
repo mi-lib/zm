@@ -1,3 +1,5 @@
+2024.11.17. Added zNURBSSlice. [zm_nurbs]
+2024.11.17. Remodified specification of zNURBSCreate not to specify the number of slices. [zm_nurbs]
 2024.11.16. Defined ZM_NURBS_DEFAULT_CP_WEIGHT. [zm_nurbs]
 2024.11.16. Reimplemented zNURBSKnotNormalize as a macro. [zm_nurbs]
 2024.11.16. Modified specification of zNURBSCreate to specify the number of slices. [zm_nurbs]

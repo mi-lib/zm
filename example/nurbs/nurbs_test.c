@@ -14,7 +14,8 @@ void test_weight(zNURBS *nurbs, int w)
   fp = fopen( filename, "w" );
   zNURBSSetWeight( nurbs, 4, (double)w );
   v = zVecAlloc( zVecSizeNC( zNURBSCP(nurbs,0) ) );
-  for( i=0; i<=STEP; i++ ){
+  zNURBSSetSlice( nurbs, STEP );
+  for( i=0; i<=zNURBSSlice(nurbs); i++ ){
     t = zNURBSKnotSlice( nurbs, i );
     if( zNURBSVec( nurbs, t, v ) )
       zVecDataFPrint( fp, v );
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
   output_src( &seq );
 
   /* creation of spline interpolator */
-  if( zNURBSCreate( &nurbs, &seq, order, STEP ) ){
+  if( zNURBSCreate( &nurbs, &seq, order ) ){
     for( i=0; i<5; i++ )
       test_weight( &nurbs, i );
     zNURBSDestroy( &nurbs );

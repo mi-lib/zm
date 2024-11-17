@@ -108,7 +108,7 @@ double zBSplineParamBasisDiff(zBSplineParam *param, double t, int i, int r, int 
 /* NURBS */
 
 /* create a NURBS curve. */
-bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order, int slice)
+bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order)
 {
   int i;
   zSeqCell *cp;
@@ -118,7 +118,7 @@ bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order, int slice)
     ZRUNERROR( ZM_ERR_NURBS_INVORDER );
     return false;
   }
-  if( !zBSplineParamAlloc( &nurbs->param, order, zListSize(seq), slice ) )
+  if( !zBSplineParamAlloc( &nurbs->param, order, zListSize(seq), 0 ) )
     return false;
   zArrayAlloc( &nurbs->cparray, zNURBSCPCell, zListSize(seq) );
   if( zNURBSCPNum(nurbs) == 0 ){

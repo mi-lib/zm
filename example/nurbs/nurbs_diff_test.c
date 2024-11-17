@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     zSeqEnqueue( &seq, v, 1.0 );
   }
   output_src( &seq );
-  zNURBSCreate( &nurbs, &seq, DIM, STEP );
+  zNURBSCreate( &nurbs, &seq, DIM );
   zSeqFree( &seq );
   for( i=0; i<num ; i++ )
     zNURBSSetWeight( &nurbs, i, weight[i] );
@@ -42,7 +42,8 @@ int main(int argc, char *argv[])
     zNURBSSetKnot( &nurbs, i, knot[i] );
 
   v = zVecAlloc( 2 );
-  for( i=0; i<=STEP; i++ ){
+  zNURBSSetSlice( &nurbs, STEP );
+  for( i=0; i<=zNURBSSlice(&nurbs); i++ ){
     t = zNURBSKnotSlice( &nurbs, i );
     printf( "%1.2f ", t );
     zNURBSVec( &nurbs, t, v );

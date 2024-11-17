@@ -96,6 +96,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBS ){
 #define zNURBSKnotS(nurbs)         zBSplineParamKnotS( &(nurbs)->param )
 #define zNURBSKnotE(nurbs)         zBSplineParamKnotE( &(nurbs)->param )
 #define zNURBSKnotSlice(nurbs,k)   zBSplineParamKnotSlice( &(nurbs)->param, k )
+#define zNURBSSlice(nurbs)         (nurbs)->param.slice
 #define zNURBSSetSlice(nurbs,s)    zBSplineParamSetSlice( &(nurbs)->param, s )
 
 #define zNURBSCPNum(nurbs)         zArraySize( &(nurbs)->cparray )
@@ -111,9 +112,6 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBS ){
  * zNURBSCreate() creates a NURBS curve \a nurbs from a given sequence of control points.
  * \a seq provides the control points.
  * \a order is the order of the curve, which has to be less than the size of \a seq.
- * \a slice is the number of slices to be used for discretization. If 0 is given,
- * ZM_BSPLINE_DEFAULT_SLICE_NUM, which is defined in zm_nurbs.h, is assigned. \a slice
- * can be replaced later by zNURBSSetSlice().
  *
  * The knots are initialized as to be a uniform B-spline curve with fixed boundary points.
  * The weights on each control point and the knot vector can be modified later.
@@ -122,7 +120,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBS ){
  * \a order is larger than the size of \a seq plus one or it fails to allocate internal
  * workspace, the false value is returned.
  */
-__ZM_EXPORT bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order, int slice);
+__ZM_EXPORT bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order);
 
 /*! \brief destroy a NURBS curve.
  *
