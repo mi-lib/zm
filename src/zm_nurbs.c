@@ -14,7 +14,7 @@ zBSplineParam *zBSplineParamAlloc(zBSplineParam *param, int order, int nc, int s
   zBSplineParamInit( param );
   if( !( param->knot = zVecAlloc( nc + order + 1 ) ) ) return NULL;
   param->order = order;
-  zBSplineParamSetSlice( param, slice != 0 ? slice : ZM_BSPLINE_DEFAULT_SLICE_NUM );
+  zBSplineParamSetSlice( param, slice != 0 ? slice : ZM_BSPLINE_DEFAULT_SLICE );
   return param;
 }
 

@@ -24,7 +24,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zBSplineParam ){
   int slice; /*!< \brief number of slices */
 };
 
-#define ZM_BSPLINE_DEFAULT_SLICE_NUM 20
+#define ZM_BSPLINE_DEFAULT_SLICE 32
 
 #define zBSplineParamKnotNum(param)       zVecSizeNC((param)->knot)
 #define zBSplineParamKnot(param,i)        zVecElemNC((param)->knot,i)
