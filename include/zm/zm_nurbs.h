@@ -49,7 +49,7 @@ __ZM_EXPORT zBSplineParam *zBSplineParamAlloc(zBSplineParam *param, int order, i
 __ZM_EXPORT void zBSplineParamFree(zBSplineParam *param);
 
 /*! \brief copy B-spline parameters. */
-__ZM_EXPORT bool zBSplineParamCopy(zBSplineParam *src, zBSplineParam *dest);
+__ZM_EXPORT bool zBSplineParamCopy(const zBSplineParam *src, zBSplineParam *dest);
 
 /*! \brief initialize knots of a B-spline parameter. */
 __ZM_EXPORT void zBSplineParamKnotInit(zBSplineParam *param);
@@ -58,13 +58,13 @@ __ZM_EXPORT void zBSplineParamKnotInit(zBSplineParam *param);
 __ZM_EXPORT void zBSplineParamKnotNormalize(zBSplineParam *param);
 
 /*! \brief find a knot segment that includes the given parameter. */
-__ZM_EXPORT int zBSplineParamSeg(zBSplineParam *param, double t);
+__ZM_EXPORT int zBSplineParamSeg(const zBSplineParam *param, double t);
 
 /*! \brief basis function of B-spline family. */
-__ZM_EXPORT double zBSplineParamBasis(zBSplineParam *param, double t, int i, int r, int seg);
+__ZM_EXPORT double zBSplineParamBasis(const zBSplineParam *param, double t, int i, int r, int seg);
 
 /*! \brief derivative of the basis function of B-spline family. */
-__ZM_EXPORT double zBSplineParamBasisDiff(zBSplineParam *param, double t, int i, int r, int seg, int diff);
+__ZM_EXPORT double zBSplineParamBasisDiff(const zBSplineParam *param, double t, int i, int r, int seg, int diff);
 
 /* ********************************************************** */
 /*! \struct zNURBSCPCell
@@ -130,7 +130,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBS ){
  * \a order is larger than the size of \a seq plus one or it fails to allocate internal
  * workspace, the false value is returned.
  */
-__ZM_EXPORT bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order);
+__ZM_EXPORT bool zNURBSCreate(zNURBS *nurbs, const zSeq *seq, int order);
 
 /*! \brief destroy a NURBS curve.
  *
@@ -154,7 +154,7 @@ __ZM_EXPORT void zNURBSDestroy(zNURBS *nurbs);
  * zNURBSVec() returns a pointer \a v if \a t is valid. Otherwise,
  * the null vector is returned.
  */
-__ZM_EXPORT zVec zNURBSVec(zNURBS *nurbs, double t, zVec v);
+__ZM_EXPORT zVec zNURBSVec(const zNURBS *nurbs, double t, zVec v);
 
 /*! \brief find the derivative of a NURBS curve.
  *
@@ -166,7 +166,7 @@ __ZM_EXPORT zVec zNURBSVec(zNURBS *nurbs, double t, zVec v);
  * the derivative. If \a diff is invalid or it fails to allocate the
  * internal workspace, the false value is returned.
  */
-__ZM_EXPORT zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v);
+__ZM_EXPORT zVec zNURBSVecDiff(const zNURBS *nurbs, double t, int diff, zVec v);
 
 /*! \brief nearest neighbor on a NURBS curve.
  *
@@ -177,13 +177,13 @@ __ZM_EXPORT zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v);
  * zNURBSVecNN() returns the parameter corresponding to the nearest-
  * neighbor vector found by this function.
  */
-__ZM_EXPORT double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn);
+__ZM_EXPORT double zNURBSVecNN(const zNURBS *nurbs, const zVec v, zVec nn);
 
 /* for debug */
 
 #define zNURBSKnotFPrint(fp,nurbs) zVecFPrint( fp, (nurbs)->knot )
 
-__ZM_EXPORT void zNURBSCPFPrint(FILE *fp, zNURBS *nurbs);
+__ZM_EXPORT void zNURBSCPFPrint(FILE *fp, const zNURBS *nurbs);
 
 /* ********************************************************** */
 /*! \struct zBSpline
@@ -205,9 +205,9 @@ typedef zNURBS zBSpline;
 #define zBSplineCP(bspline,i)             zNURBSCP( bspline, i )
 
 /* compute a vector on a B-spline curve. */
-__ZM_EXPORT zVec zBSplineVec(zBSpline *bspline, double t, zVec v);
+__ZM_EXPORT zVec zBSplineVec(const zBSpline *bspline, double t, zVec v);
 /* compute the derivative a B-spline curve. */
-__ZM_EXPORT zVec zBSplineVecDiff(zBSpline *bspline, double t, int diff, zVec v);
+__ZM_EXPORT zVec zBSplineVecDiff(const zBSpline *bspline, double t, int diff, zVec v);
 
 __END_DECLS
 

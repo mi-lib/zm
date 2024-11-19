@@ -26,7 +26,7 @@ void zBSplineParamFree(zBSplineParam *param)
 }
 
 /* copy B-spline parameters. */
-bool zBSplineParamCopy(zBSplineParam *src, zBSplineParam *dest)
+bool zBSplineParamCopy(const zBSplineParam *src, zBSplineParam *dest)
 {
   if( src->order != dest->order ){
     ZRUNERROR( ZM_ERR_NURBS_ORDERMISMATCH, src->order, dest->order );
@@ -63,7 +63,7 @@ void zBSplineParamKnotNormalize(zBSplineParam *param)
 }
 
 /* find a knot segment that includes the given parameter. */
-int zBSplineParamSeg(zBSplineParam *param, double t)
+int zBSplineParamSeg(const zBSplineParam *param, double t)
 {
   int i, j, k, nc;
 
@@ -82,7 +82,7 @@ int zBSplineParamSeg(zBSplineParam *param, double t)
 }
 
 /* basis function of B-spline family. */
-double zBSplineParamBasis(zBSplineParam *param, double t, int i, int r, int seg)
+double zBSplineParamBasis(const zBSplineParam *param, double t, int i, int r, int seg)
 {
   double t1, tr1, b = 0;
 
@@ -104,7 +104,7 @@ double zBSplineParamBasis(zBSplineParam *param, double t, int i, int r, int seg)
 }
 
 /* derivative of the basis function of B-spline family. */
-double zBSplineParamBasisDiff(zBSplineParam *param, double t, int i, int r, int seg, int diff)
+double zBSplineParamBasisDiff(const zBSplineParam *param, double t, int i, int r, int seg, int diff)
 {
   double dt, b = 0;
 
@@ -124,7 +124,7 @@ double zBSplineParamBasisDiff(zBSplineParam *param, double t, int i, int r, int 
 /* NURBS */
 
 /* create a NURBS curve. */
-bool zNURBSCreate(zNURBS *nurbs, zSeq *seq, int order)
+bool zNURBSCreate(zNURBS *nurbs, const zSeq *seq, int order)
 {
   int i;
   zSeqCell *cp;
@@ -168,7 +168,7 @@ void zNURBSDestroy(zNURBS *nurbs)
 }
 
 /* compute a vector on a NURBS curve. */
-zVec zNURBSVec(zNURBS *nurbs, double t, zVec v)
+zVec zNURBSVec(const zNURBS *nurbs, double t, zVec v)
 {
   int s, i;
   double b, den;
@@ -185,7 +185,7 @@ zVec zNURBSVec(zNURBS *nurbs, double t, zVec v)
 }
 
 /* derivative of the denominator of NURBS. */
-static double _zNURBSDenDiff(zNURBS *nurbs, double t, int s, int diff)
+static double _zNURBSDenDiff(const zNURBS *nurbs, double t, int s, int diff)
 {
   int i;
   double den;
@@ -196,7 +196,7 @@ static double _zNURBSDenDiff(zNURBS *nurbs, double t, int s, int diff)
 }
 
 /* compute the derivative a NURBS curve. */
-zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v)
+zVec zNURBSVecDiff(const zNURBS *nurbs, double t, int diff, zVec v)
 {
   int s, i;
   double den, b;
@@ -231,7 +231,7 @@ zVec zNURBSVecDiff(zNURBS *nurbs, double t, int diff, zVec v)
 
 /* nearest neighbor on a NURBS curve. */
 #define ZNURBS_NN_DIV 30
-double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn)
+double zNURBSVecNN(const zNURBS *nurbs, const zVec v, zVec nn)
 {
   double s1, s2, s1old, s2old, sj;
   double d, dmin1, dmin2;
@@ -271,7 +271,7 @@ double zNURBSVecNN(zNURBS *nurbs, zVec v, zVec nn)
 /* for debug */
 
 /* print control points of a NURBS curve out to a file. */
-void zNURBSCPFPrint(FILE *fp, zNURBS *nurbs)
+void zNURBSCPFPrint(FILE *fp, const zNURBS *nurbs)
 {
   int i;
 
@@ -284,7 +284,7 @@ void zNURBSCPFPrint(FILE *fp, zNURBS *nurbs)
 /* B-spline */
 
 /* compute a vector on a B-spline curve. */
-zVec zBSplineVec(zBSpline *bspline, double t, zVec v)
+zVec zBSplineVec(const zBSpline *bspline, double t, zVec v)
 {
   int s, i;
   double b;
@@ -299,7 +299,7 @@ zVec zBSplineVec(zBSpline *bspline, double t, zVec v)
 }
 
 /* compute the derivative a B-spline curve. */
-zVec zBSplineVecDiff(zBSpline *bspline, double t, int diff, zVec v)
+zVec zBSplineVecDiff(const zBSpline *bspline, double t, int diff, zVec v)
 {
   int s, i;
   double b;

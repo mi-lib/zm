@@ -1,3 +1,4 @@
+2024.11.19. Added const qualifiers to functions in zm_nurbs. [zm_nurbs]
 2024.11.19. Renamed ZM_BSPLINE_DEFAULT_SLICE_NUM to ZM_BSPLINE_DEFAULT_SLICE, and redefined it as 32. [zm_nurbs]
 2024.11.18. Added zBSplineVec and zBSplineVecDiff. [zm_nurbs]
 2024.11.18. Added zBSpline class as an alias of zNURBS. [zm_nurbs]
