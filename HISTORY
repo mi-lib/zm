@@ -1,3 +1,4 @@
+2024.11.20. Renamed __huge_val and __nan_val to zm_huge_val and zm_nan_val, respectively, and define them regardless of definitions of HUGE_VAL and NAN. [zm_ieee]
 2024.11.19. Added const qualifiers to functions in zm_nurbs. [zm_nurbs]
 2024.11.19. Renamed ZM_BSPLINE_DEFAULT_SLICE_NUM to ZM_BSPLINE_DEFAULT_SLICE, and redefined it as 32. [zm_nurbs]
 2024.11.18. Added zBSplineVec and zBSplineVecDiff. [zm_nurbs]

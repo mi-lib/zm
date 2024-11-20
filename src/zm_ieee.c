@@ -6,9 +6,8 @@
 
 #include <zm/zm_misc.h>
 
-/* define HUGE_VAL, if not. conforming to C99. */
-#ifdef __ZM_NEED_HUGE_VAL
-const __ieee_fp_t __huge_val = {
+/* HUGE_VAL conforming to IEEE 754 floating point. */
+const __ieee_fp_t zm_huge_val = {
 # if __BYTE_ORDER == __BIG_ENDIAN
   { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 }
 # endif
@@ -16,7 +15,6 @@ const __ieee_fp_t __huge_val = {
   { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f }
 # endif
 };
-#endif /* __ZM_NEED_HUGE_VAL */
 
 /* check if the value is infinity. */
 int zIsInf(double x)
@@ -30,9 +28,8 @@ int zIsInf(double x)
   return val.c[7] == 0x7f ? 1 : ( val.c[7] == 0xff ? -1 : 0 );
 }
 
-/* define NAN, if not. conforming to C99. */
-#ifdef __ZM_NEED_NAN
-const __ieee_fp_t __nan_val = {
+/* Not-a-number conforming to IEEE 754 floating point. */
+const __ieee_fp_t zm_nan_val = {
 # if __BYTE_ORDER == __BIG_ENDIAN
   { 0x7f, 0xf8, 0, 0, 0, 0, 0, 0 }
 # endif
@@ -40,7 +37,6 @@ const __ieee_fp_t __nan_val = {
   { 0, 0, 0, 0, 0, 0, 0xf8, 0x7f }
 # endif
 };
-#endif /* __ZM_NEED_NAN */
 
 /* check if the value is not-a-number. */
 int zIsNan(double x)

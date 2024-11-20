@@ -14,28 +14,22 @@
 __BEGIN_DECLS
 
 /*! \cond __ieee_fp_t only required for my HUGE_VAL and NAN */
-typedef union{ unsigned char c[8]; double d; } __ieee_fp_t;
+typedef union{ ubyte c[8]; double d; } __ieee_fp_t;
 /*! \endcond */
 
-/*! \brief HUGE_VAL, if not conforming to C99. */
+/*! \brief HUGE_VAL conforming to IEEE 754 floating point. */
+__ZM_EXPORT const __ieee_fp_t zm_huge_val;
 #ifndef HUGE_VAL
-/*! \cond __huge_val only required for my HUGE_VAL */
-__ZM_EXPORT const __ieee_fp_t __huge_val;
-/*! \endcond */
-#define __ZM_NEED_HUGE_VAL
-#define HUGE_VAL ( __huge_val.d )
+#define HUGE_VAL ( zm_huge_val.d )
 #endif /* HUGE_VAL */
 
 /*! \brief check if the value \a x is infinity. */
 __ZM_EXPORT int zIsInf(double x);
 
-/* define NAN, if not conforming to C99. */
+/*! \brief Not-a-number conforming to IEEE 754 floating point. */
+__ZM_EXPORT const __ieee_fp_t zm_nan_val;
 #ifndef NAN
-/*! \cond __nan_val only required for my NAN */
-__ZM_EXPORT const __ieee_fp_t __nan_val;
-/*! \endcond */
-#define __ZM_NEED_NAN
-#define NAN ( __nan_val.d )
+#define NAN ( zm_nan_val.d )
 #endif /* NAN */
 
 /*! \brief check if the value \a x is not-a-number. */
