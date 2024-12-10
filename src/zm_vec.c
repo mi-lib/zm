@@ -589,8 +589,8 @@ void zVecFPrint(FILE *fp, zVec v)
   }
 }
 
-/* scan a vector from a file. */
-zVec zVecDataFScan(FILE *fp)
+/* scan a vector from a line of a file. */
+zVec zVecValueFScan(FILE *fp)
 {
   char buf[BUFSIZ], valstr[BUFSIZ];
   int size, dim, i;
@@ -610,7 +610,7 @@ zVec zVecDataFScan(FILE *fp)
 }
 
 /* print a vector out to a file. */
-void zVecDataFPrint(FILE *fp, zVec v)
+void zVecValueFPrint(FILE *fp, zVec v)
 {
   int i;
 

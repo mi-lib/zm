@@ -496,29 +496,25 @@ __ZM_EXPORT void zVecFPrint(FILE *fp, zVec v);
 
 /*! \brief scan and print only components of a vector.
  *
- * zVecDataFScan() scans a sequence of double-precision floating-point
- * values from the current position of a file \a fp, and creates a new
- * vector. The accepted format is only a sequence of values without any
- * parentheses and braces as
+ * zVecValueFScan() scans a sequence of double-precision floating-point values from the current
+ * position of a file \a fp, and creates a new vector. The accepted format is only a sequence
+ * of values without any parentheses and braces as
  *  \a x1 \a x2 \a x3 ... \a xn
- * zVecDataScan() scans the standard input in the same format and creates
- * a vector.
+ * zVecValueScan() scans the standard input in the same format and creates a vector.
  *
- * zVecDataFPrint() prints only components of a vector \a v out to the
- * current position of a file \a fp in the following format:
+ * zVecValueFPrint() prints only components of a vector \a v out to the current position of a
+ * file \a fp in the following format:
  *  \a x1 \a x2 \a x3 ... \a xn
- * zVecDataPrint() prints components of \a v out to
- * the standard output.
+ * zVecValuePrint() prints components of \a v out to the standard output.
  * \return
- * zVecDataFScan() and zVecDataScan() return the pointer to the newly
- * created vector.
+ * zVecValueFScan() and zVecValueScan() return the pointer to the newly created vector.
  *
- * zVecDataFPrint() and zVecDataPrint() return no values.
+ * zVecValueFPrint() and zVecValuePrint() return no values.
  */
-__ZM_EXPORT zVec zVecDataFScan(FILE *fp);
-#define zVecDataScan(v) zVecDataFScan( stdin, v )
-__ZM_EXPORT void zVecDataFPrint(FILE *fp, zVec v);
-#define zVecDataPrint(v) zVecDataFPrint( stdout, v )
+__ZM_EXPORT zVec zVecValueFScan(FILE *fp);
+#define zVecValueScan(v) zVecValueFScan( stdin, v )
+__ZM_EXPORT void zVecValueFPrint(FILE *fp, zVec v);
+#define zVecValuePrint(v) zVecValueFPrint( stdout, v )
 
 __END_DECLS
 

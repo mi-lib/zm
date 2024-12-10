@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
   zMClusterInit( &mc, 2 );
   printf( "K-medoids completed in %d times of iteration.\n", zMClusterKMedoids( &mc, &points, nc ) );
-  zMClusterDataPrintFile( &mc, "" );
+  zMClusterValuePrintFile( &mc, "" );
   zMClusterDestroy( &mc );
   zVecListDestroy( &points );
   return 0;

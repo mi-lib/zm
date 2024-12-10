@@ -18,7 +18,7 @@ void test_weight(zNURBS *nurbs, int w)
   for( i=0; i<=zNURBSSlice(nurbs); i++ ){
     t = zNURBSKnotSlice( nurbs, i );
     if( zNURBSVec( nurbs, t, v ) )
-      zVecDataFPrint( fp, v );
+      zVecValueFPrint( fp, v );
   }
   zVecFree( v );
   fclose( fp );

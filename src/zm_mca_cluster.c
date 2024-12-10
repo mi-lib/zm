@@ -53,7 +53,7 @@ void zClusterFPrint(FILE *fp, zCluster *c)
 }
 
 /* print data of vectors of a vector cluster to a file. */
-void zClusterDataFPrint(FILE *fp, zCluster *c)
+void zClusterValueFPrint(FILE *fp, zCluster *c)
 {
   zVecListFPrint( fp, zClusterSampleList(c) );
 }
@@ -316,13 +316,13 @@ void zMClusterFPrint(FILE *fp, zMCluster *mc)
 }
 
 /* print data of multiple vector clusters to files. */
-void zMClusterDataFPrint(FILE *fp[], zMCluster *mc)
+void zMClusterValueFPrint(FILE *fp[], zMCluster *mc)
 {
   zClusterListCell *cc;
   int i = 0;
 
   zListForEach( zMClusterClusterList(mc), cc )
-    zClusterDataFPrint( fp[i++], &cc->data );
+    zClusterValueFPrint( fp[i++], &cc->data );
 }
 
 /* print cores of each cluster of multiple vector clusters to files. */
@@ -332,11 +332,11 @@ void zMClusterCoreFPrint(FILE *fp[], zMCluster *mc)
   int i = 0;
 
   zListForEach( zMClusterClusterList(mc), cc )
-    zVecDataFPrint( fp[i++], cc->data.core );
+    zVecValueFPrint( fp[i++], cc->data.core );
 }
 
 /* print vectors in a set of clusters to files with a common basename. */
-bool zMClusterDataPrintFile(zMCluster *mc, const char *basename)
+bool zMClusterValuePrintFile(zMCluster *mc, const char *basename)
 {
   zClusterListCell *cp;
   char filename[BUFSIZ];
@@ -349,7 +349,7 @@ bool zMClusterDataPrintFile(zMCluster *mc, const char *basename)
       ZOPENERROR( filename );
       return false;
     }
-    zClusterDataFPrint( fp, &cp->data );
+    zClusterValueFPrint( fp, &cp->data );
     fclose( fp );
   }
   return true;
@@ -361,7 +361,7 @@ bool zMClusterDataPrintFile(zMCluster *mc, const char *basename)
 
 #if DEBUG
 /* for debug */
-static void _zMClusterKMeansDataPrintFile(zMCluster *mc, int step)
+static void _zMClusterKMeansValuePrintFile(zMCluster *mc, int step)
 {
   FILE *fp;
   char filename[BUFSIZ];
@@ -372,11 +372,11 @@ static void _zMClusterKMeansDataPrintFile(zMCluster *mc, int step)
   zListForEach( zMClusterClusterList(mc), cc ){
     sprintf( filename, "%d_%d", step, i );
     fp = fopen( filename, "w" );
-    zClusterDataFPrint( fp, &cc->data );
+    zClusterValueFPrint( fp, &cc->data );
     fclose( fp );
     sprintf( filename, "%d_%dm", step, i );
     fp = fopen( filename, "w" );
-    zVecDataFPrint( fp, cc->data.core );
+    zVecValueFPrint( fp, cc->data.core );
     fclose( fp );
   }
 }

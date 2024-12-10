@@ -155,7 +155,7 @@ void zOptPSOSwarmFPrint(FILE *fp, zOptPSOSwarm *swarm)
 
   for( i=0; i<swarm->num; i++ ){
     fprintf( fp, "%.10g ", swarm->particle[i].eval );
-    zVecDataFPrint( fp, swarm->particle[i].x );
+    zVecValueFPrint( fp, swarm->particle[i].x );
   }
 }
 #endif

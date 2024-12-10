@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
   k = kmeans_try( &mc, &sample, kmin, kmax, n );
   if( option[ZM_KMEANS_VERBOSE].flag )
     printf( "determined number of clusters = %d\n", k );
-  zMClusterDataPrintFile( &mc, option[ZM_KMEANS_CLUSTER_FILENAME].arg );
+  zMClusterValuePrintFile( &mc, option[ZM_KMEANS_CLUSTER_FILENAME].arg );
   zMClusterSilhouettePrintFile( &mc, option[ZM_KMEANS_SILHOUETTE_FILENAME].arg );
   zMClusterDestroy( &mc );
   zVecListDestroy( &sample );

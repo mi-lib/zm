@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
   zListForEach( zMClusterClusterList(&mc), vcc ){
     sprintf( filename, "%d", i++ );
     fp = fopen( filename, "w" );
-    zClusterDataFPrint( fp, &vcc->data );
+    zClusterValueFPrint( fp, &vcc->data );
     fclose( fp );
   }
   zMClusterDestroy( &mc );

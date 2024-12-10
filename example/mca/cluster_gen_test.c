@@ -30,7 +30,7 @@ bool gen_vec(double (* gen_func)(double), int dim, int np, int nc, double rate_o
       zVecNormalizeDRC( v );
       zVecMulDRC( v, r );
       zVecAddDRC( v, vc );
-      zVecDataPrint( v );
+      zVecValuePrint( v );
     }
   }
   /* outliers */
@@ -38,7 +38,7 @@ bool gen_vec(double (* gen_func)(double), int dim, int np, int nc, double rate_o
   for( j=0; j<np; j++ ){
     for( k=0; k<dim; k++ )
       zVecSetElem( v, k, zRandF(min,max) );
-    zVecDataPrint( v );
+    zVecValuePrint( v );
   }
  TERMINATE:
   zVecFree( vc );

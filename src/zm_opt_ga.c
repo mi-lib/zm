@@ -260,6 +260,6 @@ void zOptGAFPrint(FILE *fp, zOptGA *ga)
 
   for( i=0; i<ga->population; i++ ){
     fprintf( fp, "%g ",-ga->individual[i].fitness );
-    zVecDataFPrint( fp, ga->individual[i].gene );
+    zVecValueFPrint( fp, ga->individual[i].gene );
   }
 }

@@ -332,8 +332,8 @@ void zGNGFWrite(FILE *fp, zGNG *gng)
   zGNGEdge *ec;
 
   zListForEach( &gng->edgelist, ec ){
-    zVecDataFPrint( fp, ec->data.unit1->data.v );
-    zVecDataFPrint( fp, ec->data.unit2->data.v );
+    zVecValueFPrint( fp, ec->data.unit1->data.v );
+    zVecValueFPrint( fp, ec->data.unit2->data.v );
     fprintf( fp, "\n" );
   }
 }

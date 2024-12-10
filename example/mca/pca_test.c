@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
   zListForEach( &points, pc ){
     zVecSub( pc->data, mean, p );
     zMulMatTVec( loading, p, score );
-    zVecDataFPrint( fp, score );
+    zVecValueFPrint( fp, score );
   }
   fclose( fp );
 

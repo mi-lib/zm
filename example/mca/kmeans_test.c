@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
   zMClusterInit( &mc, 2 );
   printf( "K-means completed in %d times of iteration.\n", zMClusterKMeans( &mc, &points, nc ) );
-  zMClusterDataPrintFile( &mc, "" );
+  zMClusterValuePrintFile( &mc, "" );
   score = zMClusterMeanSilhouette( &mc );
   zMClusterSilhouettePrintFile( &mc, "s" );
   printf( "mean silhouette = %.10g\n", score );

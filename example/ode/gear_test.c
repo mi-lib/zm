@@ -21,10 +21,10 @@ int main(int argc, char *argv[])
   zODEInit( &ode, 2, argc > 1 ? atoi(argv[1]) : 4, dp );
   x = zVecCreateList( 2, 1.0, 0.0 );
   zODEInitHist_Gear( &ode, x ); /* special for Gear method */
-  zVecDataPrint( x );
+  zVecValuePrint( x );
   for( t=0; t<T; t+=DT ){
     zODEUpdate( &ode, t, x, DT, NULL );
-    zVecDataPrint( x );
+    zVecValuePrint( x );
   }
   zVecFree( x );
   zODEDestroy( &ode );

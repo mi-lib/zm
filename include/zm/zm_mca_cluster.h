@@ -40,7 +40,7 @@ __ZM_EXPORT double zClusterMaxSilhouette(zCluster *c);
 
 /*! \brief print a vector cluster to a file */
 __ZM_EXPORT void zClusterFPrint(FILE *fp, zCluster *c);
-__ZM_EXPORT void zClusterDataFPrint(FILE *fp, zCluster *c);
+__ZM_EXPORT void zClusterValueFPrint(FILE *fp, zCluster *c);
 
 /* ********************************************************** */
 /*! \brief methods for core and error computation
@@ -153,11 +153,11 @@ __ZM_EXPORT double zMClusterEvenness(zMCluster *mc);
 
 /*! \brief print vectors in a set of vector clusters */
 __ZM_EXPORT void zMClusterFPrint(FILE *fp, zMCluster *mc);
-__ZM_EXPORT void zMClusterDataFPrint(FILE *fp[], zMCluster *mc);
+__ZM_EXPORT void zMClusterValueFPrint(FILE *fp[], zMCluster *mc);
 __ZM_EXPORT void zMClusterCoreFPrint(FILE *fp[], zMCluster *mc);
 
 /*! \brief print vectors in a set of clusters to files with a common basename. */
-__ZM_EXPORT bool zMClusterDataPrintFile(zMCluster *mc, const char *basename);
+__ZM_EXPORT bool zMClusterValuePrintFile(zMCluster *mc, const char *basename);
 
 /* ********************************************************** */
 /*! \brief clustering based on K-means

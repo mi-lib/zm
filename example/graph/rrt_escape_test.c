@@ -79,8 +79,8 @@ int main(int argc, char *argv[])
   fp = fopen( "p", "w" );
   zListForEach( &rrt.slist, rc ){
     if( !rc->data.parent ) continue;
-    zVecDataFPrint( fp, rc->data.parent->v );
-    zVecDataFPrint( fp, rc->data.v );
+    zVecValueFPrint( fp, rc->data.parent->v );
+    zVecValueFPrint( fp, rc->data.v );
     fprintf( fp, "\n" );
   }
   fclose( fp );

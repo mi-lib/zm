@@ -1,3 +1,5 @@
+2024.12. 9. Renamed zClusterDataFPrint, zMClusterDataFPrint, zMClusterDataPrintFile, and _zMClusterKMeansDataPrintFile to zClusterValueFPrint, zMClusterValueFPrint, zMClusterValuePrintFile, and _zMClusterKMeansValuePrintFile, respectively. [zm_mca_cluster]
+2024.12. 9. Renamed zVecDataFScan, zVecDataScan, zVecDataFPrint, and zVecDataPrint to zVecValueFScan, zVecValueScan, zVecValueFPrint, and zVecValuePrint, respectively. [zm_vec, zm_vec_list, zm_mca_cluster, zm_opt_ga, zm_opt_pso, zm_gng, example, app]
 2024.11.20. Renamed __huge_val and __nan_val to zm_huge_val and zm_nan_val, respectively, and define them regardless of definitions of HUGE_VAL and NAN. [zm_ieee]
 2024.11.19. Added const qualifiers to functions in zm_nurbs. [zm_nurbs]
 2024.11.19. Renamed ZM_BSPLINE_DEFAULT_SLICE_NUM to ZM_BSPLINE_DEFAULT_SLICE, and redefined it as 32. [zm_nurbs]

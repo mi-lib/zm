@@ -49,9 +49,9 @@ bool zm_ave_mean_cov(zVecList *list)
   zVecListMinMax( list, min, max );
   zVecListMeanCov( list, mean, cov );
 
-  eprintf( "min :" ); zVecDataPrint( min );
-  eprintf( "max :" ); zVecDataPrint( max );
-  eprintf( "mean:" ); zVecDataPrint( mean );
+  eprintf( "min :" ); zVecValuePrint( min );
+  eprintf( "max :" ); zVecValuePrint( max );
+  eprintf( "mean:" ); zVecValuePrint( mean );
   eprintf( "var :" );
   for( i=0; i<zMatRowSizeNC(cov); i++ )
     printf( " %.10g", sqrt( zMatElemNC(cov,i,i) ) );

@@ -80,7 +80,7 @@ void vec_output(zVecList *points)
 
   fp = fopen( "src", "w" );
   zListForEach( points, vp )
-    zVecDataFPrint( fp, vp->data );
+    zVecValueFPrint( fp, vp->data );
   fclose( fp );
 }
 

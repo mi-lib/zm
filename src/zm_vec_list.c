@@ -107,7 +107,7 @@ zVecList *zVecListFScan(FILE *fp, zVecList *list)
   zVec v;
 
   zListInit( list );
-  while( ( v = zVecDataFScan( fp ) ) )
+  while( ( v = zVecValueFScan( fp ) ) )
     zVecListInsertHead( list, v );
   if( zListIsEmpty( list ) )
     ZRUNWARN( ZM_WARN_VECLIST_EMPTY );
@@ -120,7 +120,7 @@ void zVecListFPrint(FILE *fp, zVecList *list)
   zVecListCell *cp;
 
   zListForEach( list, cp )
-    zVecDataFPrint( fp, cp->data );
+    zVecValueFPrint( fp, cp->data );
 }
 
 /* ********************************************************** */

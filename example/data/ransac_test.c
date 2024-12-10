@@ -117,7 +117,7 @@ void sample_list(zVecList *sample, int n, double r, double nl)
     /* an outlier model with a probability of r */
     if( zRandF(0,1) < r ) y += zRandF(-50,50);
     zVecSetElemList( v, x, y );
-    zVecDataFPrint( fp, v );
+    zVecValueFPrint( fp, v );
     zVecListInsertHead( sample, v );
   }
   fclose( fp );
