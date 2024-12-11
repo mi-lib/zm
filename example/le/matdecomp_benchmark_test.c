@@ -53,7 +53,7 @@ bool test_qqt(zMat m)
   register int i, j;
 
   if( !zMatIsSqr( m ) ){
-    ZRUNWARN( ZM_ERR_NONSQR_MAT );
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return false;
   }
   for( i=0; i<zMatRowSizeNC(m); i++ )
