@@ -84,6 +84,12 @@
 #define ZM_ERR_IP_SIZEMISMATCH             "size mismatch of sample point vector"
 #define ZM_ERR_IP_INVALID_EDGETYPE         "unknown edge type"
 
+#define ZM_ERR_IP_TRVELPROF_NEGATIVEDISTANCE   "cannot travel negative distance %g"
+#define ZM_ERR_IP_TRVELPROF_NONPOSITIVEMAXVEL  "not positive maximum velocity %g"
+#define ZM_ERR_IP_TRVELPROF_INVALID_INITIALVEL "initial velocity %g larger than the maximum velocity %g"
+#define ZM_ERR_IP_TRVELPROF_INVALID_TERMVEL    "terminal velocity %g larger than the maximum velocity %g"
+#define ZM_ERR_IP_TRVELPROF_NONPOSITIVEACC     "not positive acceleration %g"
+
 #define ZM_ERR_NURBS_INVALID_ORDER         "invalid order for NURBS"
 #define ZM_ERR_NURBS_INVALID_DIFFORDER     "invalid order of differentiation"
 #define ZM_ERR_NURBS_ORDERMISMATCH         "size mismatch of B-spline orders (%d - %d)"

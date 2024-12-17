@@ -105,5 +105,6 @@ __END_DECLS
 
 #include <zm/zm_ip_pex.h>       /* polynomial curve */
 #include <zm/zm_ip_clothoid.h>  /* clothoid curve interpolation */
+#include <zm/zm_ip_trvelprof.h> /* trapezoidal velocity profiler */
 
 #endif /* __ZM_IP_H__ */

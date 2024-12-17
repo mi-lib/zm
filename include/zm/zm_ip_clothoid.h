@@ -13,18 +13,14 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
-/* CLASS: zClothoid
- * clothoid curve interpolator class
- * ********************************************************** */
-
-typedef struct{
+/*! \struct clothoid curve interpolator. */
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zClothoid ){
   double x0, y0; /*!< \brief initial point */
   double f0, f1; /*!< \brief initial and terminal angle */
   double fc;     /*!< \brief curvature */
   double fs;     /*!< \brief shrinkage */
   double _h;     /*!< \brief length of segment */
-} zClothoid;
+};
 
 /*! \brief create a segment of clothoid curve.
  *
