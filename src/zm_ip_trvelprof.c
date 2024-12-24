@@ -7,12 +7,12 @@
 #include <zm/zm_ip.h>
 
 /* create a trapezoidal velocity profiler. */
-zTRVelProf *zTRVelProfCreate(zTRVelProf *trvelprof, double v0, double vT, double vmax, double acc, double distance)
+zTRVelProf *zTRVelProfCreate(zTRVelProf *trvelprof, double v0, double vT, double vmax, double acc, double dist)
 {
   double d1, d3, dt3, vm;
 
-  if( distance < 0 ){
-    ZRUNERROR( ZM_ERR_IP_TRVELPROF_NEGATIVEDISTANCE, distance );
+  if( dist < 0 ){
+    ZRUNERROR( ZM_ERR_IP_TRVELPROF_NEGATIVEDISTANCE, dist );
     return NULL;
   }
   if( vmax <= 0 ){
@@ -34,18 +34,18 @@ zTRVelProf *zTRVelProfCreate(zTRVelProf *trvelprof, double v0, double vT, double
   trvelprof->v0 = v0;
   trvelprof->vT = vT;
   trvelprof->vmax = vmax;
-  trvelprof->acc = acc;
-  trvelprof->distance = distance;
+  trvelprof->acc_max = acc;
 
+  trvelprof->_distance = dist;
   trvelprof->_t1 = ( vmax - v0 ) / acc;
   dt3 = ( vmax - vT ) / acc; /* delta time */
   d1 = ( v0 + 0.5 * acc * trvelprof->_t1 ) * trvelprof->_t1;
   d3 = ( vT + 0.5 * acc * dt3 ) * dt3;
-  if( d1 + d3 < distance ){
-    trvelprof->_t2 = trvelprof->_t1 + ( distance - d1 - d3 ) / vmax;
+  if( d1 + d3 < dist ){
+    trvelprof->_t2 = trvelprof->_t1 + ( dist - d1 - d3 ) / vmax;
     trvelprof->_t = trvelprof->_t2 + dt3;
   } else{
-    vm = sqrt( 0.5 * ( v0*v0 + vT*vT+ 2*acc*distance ) );
+    vm = sqrt( 0.5 * ( v0*v0 + vT*vT+ 2*acc*dist ) );
     trvelprof->_t1 = trvelprof->_t2 = ( vm - v0 ) / acc;
     trvelprof->_t = trvelprof->_t1 + ( vm - vT ) / acc;
   }
@@ -57,25 +57,25 @@ double zTRVelProfDist(zTRVelProf *trvelprof, double t)
 {
   double d, dt;
 
-  if( t < trvelprof->_t1 ) return ( trvelprof->v0 + 0.5 * trvelprof->acc * t ) * t;
-  d = ( trvelprof->v0 + 0.5 * trvelprof->acc * trvelprof->_t1 ) * trvelprof->_t1;
+  if( t < trvelprof->_t1 ) return ( trvelprof->v0 + 0.5 * trvelprof->acc_max * t ) * t;
+  d = ( trvelprof->v0 + 0.5 * trvelprof->acc_max * trvelprof->_t1 ) * trvelprof->_t1;
   if( t < trvelprof->_t2 ) return d + trvelprof->vmax * ( t - trvelprof->_t1 );
   dt = trvelprof->_t - t;
-  return trvelprof->distance - ( trvelprof->vT + 0.5 * trvelprof->acc * dt ) * dt;
+  return trvelprof->_distance - ( trvelprof->vT + 0.5 * trvelprof->acc_max * dt ) * dt;
 }
 
 /* velocity of a trapezoidal velocity profiler. */
 double zTRVelProfVel(zTRVelProf *trvelprof, double t)
 {
-  if( t < trvelprof->_t1 ) return trvelprof->v0 + trvelprof->acc * t;
+  if( t < trvelprof->_t1 ) return trvelprof->v0 + trvelprof->acc_max * t;
   if( t < trvelprof->_t2 ) return trvelprof->vmax;
-  return trvelprof->vT + trvelprof->acc * ( trvelprof->_t - t );
+  return trvelprof->vT + trvelprof->acc_max * ( trvelprof->_t - t );
 }
 
 /* acceleration of a trapezoidal velocity profiler. */
 double zTRVelProfAcc(zTRVelProf *trvelprof, double t)
 {
-  if( t < trvelprof->_t1 ) return trvelprof->acc;
+  if( t < trvelprof->_t1 ) return trvelprof->acc_max;
   if( t < trvelprof->_t2 ) return 0;
-  return -trvelprof->acc;
+  return -trvelprof->acc_max;
 }

@@ -1,3 +1,5 @@
+2024.12.24. Renamed methods dist, vel, and acc of zTRVelProf to distance, velocity, and acceleration, respectively, to avoid conflicts of names with member variables. [zm_ip_trvelprof]
+2024.12.24. Renamed members acc and distance of zTRVelProf to acc_max and _distance, respectively. [zm_ip_trvelprof]
 2024.12.18. Added zTRVelProf for trapezoidal velocity profiler. [zm_errmsg, zm_ip, zm_ip_trvelprof]
 2024.12.12. Corrected an example program to conform to new error macros (thanks to Daishi Kaneta). [example]
 2024.12. 9. Renamed zClusterDataFPrint, zMClusterDataFPrint, zMClusterDataPrintFile, and _zMClusterKMeansDataPrintFile to zClusterValueFPrint, zMClusterValueFPrint, zMClusterValuePrintFile, and _zMClusterKMeansValuePrintFile, respectively. [zm_mca_cluster]
