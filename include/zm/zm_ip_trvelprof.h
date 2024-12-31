@@ -39,13 +39,13 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zTRVelProf ){
 #define zTRVelProfTerm(trvelprof) (trvelprof)->_t
 
 /* create a trapezoidal velocity profiler. */
-zTRVelProf *zTRVelProfCreate(zTRVelProf *trvelprof, double v0, double vT, double vmax, double acc, double dist);
+__ZM_EXPORT zTRVelProf *zTRVelProfCreate(zTRVelProf *trvelprof, double v0, double vT, double vmax, double acc, double dist);
 /* travel distance of a trapezoidal velocity profiler. */
-double zTRVelProfDist(zTRVelProf *trvelprof, double t);
+__ZM_EXPORT double zTRVelProfDist(zTRVelProf *trvelprof, double t);
 /* velocity of a trapezoidal velocity profiler. */
-double zTRVelProfVel(zTRVelProf *trvelprof, double t);
+__ZM_EXPORT double zTRVelProfVel(zTRVelProf *trvelprof, double t);
 /* acceleration of a trapezoidal velocity profiler. */
-double zTRVelProfAcc(zTRVelProf *trvelprof, double t);
+__ZM_EXPORT double zTRVelProfAcc(zTRVelProf *trvelprof, double t);
 
 __END_DECLS
 

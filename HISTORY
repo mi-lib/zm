@@ -1,3 +1,4 @@
+2024.12.31. Added __ZM_EXPORT at the heads of prototypes of functions. [zm_ip_trvelprof]
 2024.12.24. Renamed methods dist, vel, and acc of zTRVelProf to distance, velocity, and acceleration, respectively, to avoid conflicts of names with member variables. [zm_ip_trvelprof]
 2024.12.24. Renamed members acc and distance of zTRVelProf to acc_max and _distance, respectively. [zm_ip_trvelprof]
 2024.12.18. Added zTRVelProf for trapezoidal velocity profiler. [zm_errmsg, zm_ip, zm_ip_trvelprof]
