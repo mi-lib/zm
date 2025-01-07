@@ -1,17 +1,12 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_ip_pex - interpolation: polynomial curve.
+ * zm_ip_pex - interpolation: polynomial function.
  */
 
 #include <zm/zm_ip.h>
 
-/* ********************************************************** */
-/* CLASS: zPexIP
- * polynomial curve class with designable coefficients.
- * ********************************************************** */
-
-/* allocate a polynomial curve. */
+/* allocate a polynomial function. */
 bool zPexIPAlloc(zPexIP *pc, double term, int dim)
 {
   if( term == 0 ){
@@ -23,20 +18,20 @@ bool zPexIPAlloc(zPexIP *pc, double term, int dim)
   return true;
 }
 
-/* free a polynomial curve. */
+/* free a polynomial function. */
 void zPexIPFree(zPexIP *pc)
 {
   zPexFree( pc->c );
   zPexIPSetTerm( pc, 1 ); /* dummy */
 }
 
-/* set the boundary condition of a polynomial curve. */
-bool zPexIPBoundary(zPexIP *pc, double x1, double v1, double a1, double x2, double v2, double a2, zVec v)
+/* allocate a polynomial function from the boundary condition. */
+bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, zVec v)
 {
   double k1, k2, k3; /* internal working variables */
   int i, n1, n2, n3, n;
 
-  if( ( n = zPexIPDim(pc) ) != zVecSize(v) + 5 ) return false;
+  if( !zPexIPAlloc( pc, term, ( n = zVecSize(v) + 5 ) ) ) return false;
   n1 = n - 1;
   n2 = n - 2;
   n3 = n - 3;
@@ -60,15 +55,8 @@ bool zPexIPBoundary(zPexIP *pc, double x1, double v1, double a1, double x2, doub
   return true;
 }
 
-/* allocate a polynomial curve from the boundary condition. */
-bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, zVec v)
-{
-  if( !zPexIPAlloc( pc, term, zVecSize(v) + 5 ) ) return false;
-  return zPexIPBoundary( pc, x1, v1, a1, x2, v2, a2, v );
-}
-
-/* fit a polynomial curve to a sequence of points based on the least square method. */
-bool zPexIPLSM(zPexIP *pc, zVec t, zVec x)
+/* create a polynomial function that fits a sequence of points based on the least square method. */
+bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, zVec t, zVec x)
 {
   int i, j, k, n, m;
   zMat a;
@@ -79,6 +67,7 @@ bool zPexIPLSM(zPexIP *pc, zVec t, zVec x)
     ZRUNERROR( ZM_ERR_IP_SIZEMISMATCH );
     return false;
   }
+  if( !zPexIPAlloc( pc, term, dim ) ) return false;
   n = zVecSizeNC( t );
   m = zPexIPDim(pc) + 1;
   a = zMatAllocSqr( m );
@@ -104,14 +93,7 @@ bool zPexIPLSM(zPexIP *pc, zVec t, zVec x)
   return result;
 }
 
-/* create a polynomial curve that fits a sequence of points based on the least square method. */
-bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, zVec t, zVec x)
-{
-  if( !zPexIPAlloc( pc, term, dim ) ) return false;
-  return zPexIPLSM( pc, t, x );
-}
-
-/* create a polynomial curve from the boundary condition and a sequence of points to fit. */
+/* create a polynomial function from the boundary condition and a sequence of points to fit. */
 bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, zVec t, zVec x)
 {
   int i, j, k, n, m;
@@ -169,25 +151,25 @@ bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, doub
   return result;
 }
 
-/* value of a polynomial curve. */
+/* value of a polynomial function. */
 double zPexIPVal(zPexIP *pc, double t)
 {
   return zPexVal( pc->c, t/zPexIPTerm(pc) );
 }
 
-/* velocity of a polynomial curve. */
+/* velocity of a polynomial function. */
 double zPexIPVel(zPexIP *pc, double t)
 {
   return zPexDifVal( pc->c, 1, t/zPexIPTerm(pc) ) / zPexIPTerm(pc);
 }
 
-/* acceleration of a polynomial curve. */
+/* acceleration of a polynomial function. */
 double zPexIPAcc(zPexIP *pc, double t)
 {
   return zPexDifVal( pc->c, 2, t/zPexIPTerm(pc) ) / zSqr( zPexIPTerm(pc) );
 }
 
-/* print expression of a polynomial curve. */
+/* print expression of a polynomial function. */
 void zPexIPFPrint(FILE *fp, zPexIP *pc)
 {
   int i;

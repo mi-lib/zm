@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
   zIPData dat;
   int point_num;
   double t, tmax;
-  register int i;
+  int i;
   /* example data array */
   double tp[] = { 0, 1, 3, 6 };
 

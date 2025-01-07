@@ -7,7 +7,7 @@ int enqueue(zSeq *seq, int point_num, double tp[], double vp[])
 {
   zVec v;
   double t;
-  register int i;
+  int i;
   FILE *fp;
 
   fp = fopen( "ip.dat", "w" );
@@ -26,7 +26,7 @@ void output(zIP *ip, int point_num, double tp[], double dt, const char *filename
 {
   double t, tmax;
   zVec v;
-  register int i;
+  int i;
   FILE *fp;
 
   fp = fopen( filename, "w" );

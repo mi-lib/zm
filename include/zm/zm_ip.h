@@ -13,25 +13,20 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
-/* CLASS: zIP
- * interpolation curve class
- * ********************************************************** */
-
-typedef struct{
-  double t;         /*!< time stamp */
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPKnotCell ){
+  double t;     /*!< time stamp */
   zSeqCell *cp; /*!< a pointer to the corresponding sequence cell */
-} zIPKnotCell;
+};
 
 zArrayClass( zIPKnotArray, zIPKnotCell );
 
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPData ){
   zSeq *seq;         /*!< sequence to be interpolated */
   /*! \cond */
   zIPKnotArray knot; /* an array of time stamps and sequence cells */
   zVecArray va;      /* workspace */
   /*! \endcond */
-} zIPData;
+};
 
 #define zIPSize(dat)       zListSize((dat)->seq)
 #define zIPKnot(dat,i)     zArrayElemNC(&(dat)->knot,i)
@@ -53,37 +48,33 @@ __ZM_EXPORT void zIPDataFree(zIPData *dat);
  */
 __ZM_EXPORT int zIPSeg(zIPData *dat, double t);
 
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPCom ){
   zVec (*vec)(zIPData*,double,zVec);
   zVec (*vel)(zIPData*,double,zVec);
   zVec (*acc)(zIPData*,double,zVec);
   zVec (*sec_vel)(zIPData*,int,zVec);
   zVec (*sec_acc)(zIPData*,int,zVec);
-} zIPCom;
+};
 
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIP ){
   zIPData dat;
   zIPCom *com;
-} zIP;
+};
 
-/* interpolation values.
+/*! \brief interpolation values.
  *
- * zIPVal() returns a value interpolated at \a x by an
- * interpolator \a ip and a set of control points \a dat.
- *
- * zIPVel() and zIPAcc() return velocity and acceleration,
- * namely, the first and second order derivative,
- * respectively, of the interpolation curve at \a x.
- *
- * zIPSecVal() returns the \a i th section value of the
- * interpolation data \a dat with the interpolator \a ip.
- *
- * zIPSecVel() and zIPSecAcc() return velocity and
- * acceleration at the \a i th section of \a dat with \a ip.
  * \return
- * All these functions utilize each method assigned in
- * advance. When no interpolator is assigned, it causes
- * segmentation faults.
+ * zIPVal() returns the value at time \a t by an interpolator \a ip.
+ *
+ * zIPVel() and zIPAcc() return velocity and acceleration, i.e., the first and second order derivatives,
+ * respectively, of the interpolator \a ip at time \a t.
+ *
+ * zIPSecVal() returns the \a i th section value of the interpolator \a ip.
+ *
+ * zIPSecVel() and zIPSecAcc() return velocity and acceleration at the \a i th section of \a ip.
+ * \notes
+ * An interpolation method and a series of points to be interpolated have to be assigned to \a ip
+ * in advance. If not, anything might happen.
  */
 #define zIPVec(ip,t,v)    (ip)->com->vec( &(ip)->dat, (t), (v) )
 #define zIPVel(ip,t,v)    (ip)->com->vel( &(ip)->dat, (t), (v) )

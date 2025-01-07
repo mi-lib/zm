@@ -4,7 +4,7 @@
 
 void plot(zClothoid *cl)
 {
-  register int i;
+  int i;
   double s, x, y;
 
   for( i=0; i<=N; i++ ){
