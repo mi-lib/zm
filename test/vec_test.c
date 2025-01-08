@@ -1,6 +1,8 @@
 #include <zm/zm.h>
 
 #define TEST_VEC_SIZE 10
+#define N 1000
+#define TOL  (1.0e-10)
 
 void assert_get_put(void)
 {
@@ -45,11 +47,33 @@ void assert_misc(void)
     if( !zIsTiny( zVecElemNC(test_vec1,i) - zVecElemNC(test_vec1,i-1) - dval ) ) result = false;
   zAssert( zVecLinSpace, result );
   zVecCopy( test_vec1, test_vec2 );
-  zVecShift( test_vec2, dval );
-  for( result=true, i=0; i<size; i++ )
-    if( !zIsTiny( zVecElemNC(test_vec2,i) - zVecElemNC(test_vec1,i) - dval ) ) result = false;
-  zAssert( zVecShift, result );
   zVecFreeAtOnce( 2, test_vec1, test_vec2 );
+}
+
+void assert_shift(void)
+{
+  const int size = TEST_VEC_SIZE;
+  zVec src, dest, error;
+  double shift;
+  int i, j;
+  bool result1, result2;
+
+  src = zVecAlloc( size );
+  dest = zVecAlloc( size );
+  error = zVecAlloc( size );
+  for( result1=result2=true, i=0; i<N; i++ ){
+    shift = zRandF( -10, 10 );
+    zVecRandUniform( src, -10, 10 );
+    zVecShift( src, shift, dest );
+    zVecSub( dest, src, error );
+    for( j=0; j<zVecSizeNC(error); j++ )
+      if( !zIsEqual( zVecElemNC(error,j), shift, zTOL ) ) result1 = false;
+    zVecShiftDRC( dest, -shift );
+    if( !zVecIsEqual( src, dest, zTOL ) ) result2 = false;
+  }
+  zVecFreeAtOnce( 3, src, dest, error );
+  zAssert( zVecShift, result1 );
+  zAssert( zVecShiftDRC, result2 );
 }
 
 void assert_arith(void)
@@ -100,6 +124,53 @@ void assert_arith(void)
     if( !zIsTiny( zVecElemNC(test_vec1,i)+k*zVecElemNC(test_vec2,i)-zVecElemNC(test_vec3,i) ) ) result = false;
   zAssert( zVecCat, result );
   zVecFreeAtOnce( 3, test_vec1, test_vec2, test_vec3 );
+}
+
+void assert_scale(void)
+{
+  const int size = TEST_VEC_SIZE;
+  zVec min, max, src, dest;
+  double elem_min, elem_max;
+  int i, j;
+  bool result1, result2;
+
+  min = zVecAlloc( size );
+  max = zVecAlloc( size );
+  src = zVecAlloc( size );
+  dest = zVecAlloc( size );
+  for( result1=true, i=0; i<N; i++ ){
+    zVecRandUniform( min, -10, 10 );
+    zVecRandUniform( max, -10, 10 );
+    for( j=0; j<zVecSizeNC(min); j++ )
+      if( zVecElemNC(min,j) > zVecElemNC(max,j) )
+        zSwap( double, zVecElemNC(min,j), zVecElemNC(max,j) );
+    zVecRandUniform( src, 0, 1 );
+    zVecScale( src, min, max, dest );
+    zVecSubDRC( dest, min );
+    zVecSubDRC( max, min );
+    zVecDemDRC( dest, max );
+    if( !zVecIsEqual( src, dest, TOL ) ){
+      zVecSubDRC( src, dest );
+      zVecPrint( src );
+      result1 = false;
+    }
+  }
+  for( result2=true, i=0; i<N; i++ ){
+    elem_min = zRandF( -10,  0 );
+    elem_max = zRandF(   0, 10 );
+    zVecRandUniform( src, 0, 1 );
+    zVecScaleUniform( src, elem_min, elem_max, dest );
+    zVecShiftDRC( dest, -elem_min );
+    zVecDivDRC( dest, ( elem_max - elem_min ) );
+    if( !zVecIsEqual( src, dest, TOL ) ){
+      zVecSubDRC( src, dest );
+      zVecPrint( src );
+      result2 = false;
+    }
+  }
+  zVecFreeAtOnce( 4, min, max, src, dest );
+  zAssert( zVecScale, result1 );
+  zAssert( zVecScaleUniform, result2 );
 }
 
 void assert_normalize(void)
@@ -159,7 +230,9 @@ int main(void)
   zRandInit();
   assert_get_put();
   assert_misc();
+  assert_shift();
   assert_arith();
+  assert_scale();
   assert_normalize();
 
   assert_nearest_neighbor();

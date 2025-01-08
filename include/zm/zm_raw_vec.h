@@ -75,13 +75,17 @@ __ZM_EXPORT void zRawVecRand(double *v, double *min, double *max, int size);
 
 /*! \brief shift a raw vector by a scalar value.
  *
- * zRawVecShift() shifts all elements of a raw vector \a v
- * by a constant scalar value \a shift.
+ * zRawVecShift() shifts all components of a raw vector \a src by a constant scalar value \a shift.
  * \a size is the size of the raw vector.
+ * The result is put into \a dest.
+ *
+ * zRawVecShiftDRC() directly shifts all components of a raw vector \a vec by a constant scalar
+ * value \a shift.
  * \return
- * zRawVecShift() returns no value.
+ * zRawVecShift() and zRawVecShiftDRC() return no value.
  */
-__ZM_EXPORT void zRawVecShift(double *v, int size, double shift);
+__ZM_EXPORT void zRawVecShift(double *src, int size, double shift, double *dest);
+#define zRawVecShiftDRC(vec,size,shift) zRawVecShift( vec, size, shift, vec )
 
 /*! \brief swap raw vector components.
  *
@@ -206,16 +210,20 @@ __ZM_EXPORT void zRawVecMid(double *v1, double *v2, double *v, int size);
 
 /*! \brief scale a raw vector with two boundary vectors.
  *
- * zRawVecScale() scales a raw vector \a x with the minimum and maximum
- * boundary vectors \a min and \a max, respectively and puts it into
- * \a v. Namely, each component of \a v is the corresponding component
- * of \a x multipied by the corresponding components of \a max - \a min
- * and offset by that of \a min.
- * \a size is the size of the vectors.
+ * zRawVecScale() scales a raw vector \a src with the minimum and maximum boundary vectors \a min
+ * and \a max, respectively, and puts the result into \a dest. Namely, each component of \a dest
+ * is the corresponding component of \a src multipied by the corresponding components of
+ * \a max - \a min and offset by that of \a min.
+ *
+ * zRawVecScaleUniform() uniformly scales a raw vector \a src with the minimum and maximum boundary
+ * values \a min and \a max, respectively, and puts the result into \a dest.
+ *
+ * For both functions, \a size is the size of the vectors.
  * \return
- * zRawVecScale() does not return any value.
+ * zRawVecScale() and zRawVecScaleUniform() do not return any value.
  */
-__ZM_EXPORT void zRawVecScale(double *x, double *min, double *max, double *v, int size);
+__ZM_EXPORT void zRawVecScale(double *src, double *min, double *max, double *dest, int size);
+__ZM_EXPORT void zRawVecScaleUniform(double *src, double min, double max, double *dest, int size);
 
 /*! \brief inner product of raw vector.
  *

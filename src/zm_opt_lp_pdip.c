@@ -76,9 +76,9 @@ static bool _zLP_PDIPInit(_zLP_PDIP *dat)
   zMulMatTVecNC( dat->a, dat->y, dat->z );
   zVecSubNC( dat->c, dat->z, dat->z );
   if( ( m = zVecMin(dat->x,NULL) ) <= zTOL )
-    zVecShift( dat->x, -m+zTOL );
+    zVecShiftDRC( dat->x, -m+zTOL );
   if( ( m = zVecMin(dat->z,NULL) ) <= zTOL )
-    zVecShift( dat->z, -m+zTOL );
+    zVecShiftDRC( dat->z, -m+zTOL );
   return true;
 }
 
@@ -215,7 +215,7 @@ static void _zLP_PDIP_PCCorrect(_zLP_PDIP *dat, _zLP_PDIP_PC *pc, double ap, dou
   zVecCatNC( dat->x, ap, pc->dx, pc->dx2 );
   zVecCatNC( dat->z, ad, pc->dz, pc->dz2 );
   g = zVecInnerProd(pc->dx2,pc->dz2) / e;
-  zVecShift( dat->v3, -zCube(g) * e / zVecSizeNC(dat->x) );
+  zVecShiftDRC( dat->v3, -zCube(g) * e / zVecSizeNC(dat->x) );
 }
 
 /* linear programming solver based on primal-dual interior-point method

@@ -39,11 +39,15 @@ void assert_misc(void)
   for( result=true, i=1; i<TEST_VEC_SIZE; i++ )
     if( !zIsTiny( test_vec1[i] - test_vec1[i-1] - dval ) ) result = false;
   zAssert( zRawVecLinSpace, result );
-  zRawVecCopy( test_vec1, test_vec2, TEST_VEC_SIZE );
-  zRawVecShift( test_vec2, TEST_VEC_SIZE, dval );
+  zRawVecShift( test_vec1, TEST_VEC_SIZE, dval, test_vec2 );
   for( result=true, i=0; i<TEST_VEC_SIZE; i++ )
     if( !zIsTiny( test_vec2[i] - test_vec1[i] - dval ) ) result = false;
   zAssert( zRawVecShift, result );
+  zRawVecCopy( test_vec1, test_vec2, TEST_VEC_SIZE );
+  zRawVecShiftDRC( test_vec2, TEST_VEC_SIZE, dval );
+  for( result=true, i=0; i<TEST_VEC_SIZE; i++ )
+    if( !zIsTiny( test_vec2[i] - test_vec1[i] - dval ) ) result = false;
+  zAssert( zRawVecShiftDRC, result );
 }
 
 void assert_arith(void)

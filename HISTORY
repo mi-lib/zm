@@ -1,3 +1,8 @@
+2025. 1. 9. Added zBSplineParamKnotScale and zNURBSKnotScale. [zm_nurbs]
+2025. 1. 9. Added zVecScaleUniform. [zm_vec]
+2025. 1. 9. Added zRawVecScaleUniform. [zm_raw_vec]
+2025. 1. 9. Modified specification of zVecShift to put the result to another vector, and defined zVecShiftDRC. [zm_vec, zm_nurbs, zm_opt_lp_pdip]
+2025. 1. 9. Modified specification of zRawVecShift to put the result to another vector, and defined zRawVecShiftDRC. [zm_raw_vec]
 2025. 1. 2. Redefined zIPKnotCell, zIPData, zIPCom, and zIP by using ZDEF_STRUCT. [zm_ip]
 2025. 1. 2. Abolished zPexIPBoundary and zPexIPLSM. [zm_ip_pex]
 2025. 1. 2. Redefined zPexIP by using ZDEF_STRUCT. [zm_ip_pex]

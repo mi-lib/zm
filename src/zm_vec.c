@@ -205,10 +205,10 @@ zVec zVecRand(zVec v, zVec min, zVec max)
 }
 
 /* shift vector by a constant scalar value. */
-zVec zVecShift(zVec v, double shift)
+zVec zVecShift(zVec src, double shift, zVec dest)
 {
-  zRawVecShift( zVecBufNC(v), zVecSizeNC(v), shift );
-  return v;
+  zRawVecShift( zVecBufNC(src), zVecSizeNC(src), shift, zVecBufNC(dest) );
+  return dest;
 }
 
 /* swap vector components without checking size. */
@@ -480,10 +480,17 @@ zVec zVecMid(zVec v1, zVec v2, zVec v)
 }
 
 /* scale a raw vector with two boundary vectors. */
-zVec zVecScale(zVec x, zVec min, zVec max, zVec v)
+zVec zVecScale(zVec src, zVec min, zVec max, zVec dest)
 {
-  zRawVecScale( zVecBuf(x), zVecBuf(min), zVecBuf(max), zVecBuf(v), zVecSizeNC(x) );
-  return v;
+  zRawVecScale( zVecBufNC(src), zVecBufNC(min), zVecBufNC(max), zVecBufNC(dest), zVecSizeNC(src) );
+  return dest;
+}
+
+/* uniformly scale a vector with two boundary values. */
+zVec zVecScaleUniform(zVec src, double min, double max, zVec dest)
+{
+  zRawVecScaleUniform( zVecBufNC(src), min, max, zVecBufNC(dest), zVecSizeNC(src) );
+  return dest;
 }
 
 /* inner product of two vectors without checking size consistency. */

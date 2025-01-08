@@ -55,11 +55,18 @@ void zBSplineParamKnotInit(zBSplineParam *param)
     zBSplineParamSetKnot( param, j, zBSplineParamKnot(param,j-1) );
 }
 
-/* normalize knot vector of a NURBS curve. */
+/* normalize knot vector of a B-spline parameter. */
 void zBSplineParamKnotNormalize(zBSplineParam *param)
 {
-  zVecShift( param->knot, -zVecElemNC(param->knot,0) );
+  zVecShiftDRC( param->knot, -zVecElemNC(param->knot,0) );
   zVecDivDRC( param->knot, zVecElemNC(param->knot,zVecSizeNC(param->knot)-1) );
+}
+
+/*! \brief scale knot vector of a B-spline parameter. */
+void zBSplineParamKnotScale(zBSplineParam *param, double knot_s, double knot_e)
+{
+  zBSplineParamKnotNormalize( param );
+  zVecScaleUniform( param->knot, knot_s, knot_e, param->knot );
 }
 
 /* find a knot segment that includes the given parameter. */

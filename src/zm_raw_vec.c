@@ -44,9 +44,9 @@ __EXPORT void zRawVecRand(double *v, double *min, double *max, int size)
 }
 
 /* shift a raw vector by a scalar constant. */
-void zRawVecShift(double *v, int size, double shift)
+void zRawVecShift(double *src, int size, double shift, double *dest)
 {
-  while( size-- > 0 ) *v++ += shift;
+  while( size-- > 0 ) *dest++ = *src++ + shift;
 }
 
 /* swap components of a raw vector. */
@@ -231,13 +231,20 @@ void zRawVecMid(double *v1, double *v2, double *v, int size)
 }
 
 /* scale a raw vector with two boundary vectors. */
-void zRawVecScale(double *x, double *min, double *max, double *v, int size)
+void zRawVecScale(double *src, double *min, double *max, double *dest, int size)
 {
   while( size-- > 0 ){
-    *v++ = *min + *x++ * ( *max - *min );
+    *dest++ = *min + *src++ * ( *max - *min );
     min++;
     max++;
   }
+}
+
+/* uniformly scale a raw vector with two boundary values. */
+void zRawVecScaleUniform(double *src, double min, double max, double *dest, int size)
+{
+  while( size-- > 0 )
+    *dest++ = min + *src++ * ( max - min );
 }
 
 /* inner product of two raw vectors. */

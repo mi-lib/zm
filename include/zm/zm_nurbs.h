@@ -54,8 +54,11 @@ __ZM_EXPORT bool zBSplineParamCopy(const zBSplineParam *src, zBSplineParam *dest
 /*! \brief initialize knots of a B-spline parameter. */
 __ZM_EXPORT void zBSplineParamKnotInit(zBSplineParam *param);
 
-/*! \brief normalize knot vector of a NURBS curve. */
+/*! \brief normalize knot vector of a B-spline parameter. */
 __ZM_EXPORT void zBSplineParamKnotNormalize(zBSplineParam *param);
+
+/*! \brief scale knot vector of a B-spline parameter. */
+__ZM_EXPORT void zBSplineParamKnotScale(zBSplineParam *param, double knot_s, double knot_e);
 
 /*! \brief find a knot segment that includes the given parameter. */
 __ZM_EXPORT int zBSplineParamSeg(const zBSplineParam *param, double t);
@@ -144,6 +147,13 @@ __ZM_EXPORT void zNURBSDestroy(zNURBS *nurbs);
  * NURBS curve \a nurbs so that it starts from 0 and ends at 1.
  */
 #define zNURBSKnotNormalize(nurbs) zBSplineParamKnotNormalize( &(nurbs)->param )
+
+/*! \brief scale the knot vector of a NURBS curve.
+ *
+ * zNURBSKnotScale() scales the knot vector of a NURBS curve \a nurbs so that it starts
+ * from \a knot_s and ends at \a knot_e.
+ */
+#define zNURBSKnotScale(nurbs,knot_s,knot_e) zBSplineParamKnotScale( &(nurbs)->param, knot_s, knot_e )
 
 /*! \brief compute a vector on NURBS curve.
  *

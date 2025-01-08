@@ -161,27 +161,27 @@ __ZM_EXPORT zVec zVecPut(zVec dest, int pos, zVec src);
 
 /*! \brief create a uniform vector, a linear space vector and a random vector.
  *
- * zVecSetAll() sets all the elements of a vector \a v for \a val.
+ * zVecSetAll() sets all components of a vector \a v for \a val.
  *
- * zVecLinSpace() divides the range \a from - \a to into
- * the values (the number of values is the same with the size
- * of \a v), and set them as elements of the vector \a v.
- * Each space between the elements are the same.
+ * zVecLinSpace() divides the range \a from - \a to into the values (the number of values is the
+ * same with the size of \a v), and set them as components of the vector \a v.
+ * Each space between the components are the same.
  *
- * zVecRand() sets all the elements of \a v randomly within
- * the range from \a min to \a max.
+ * zVecRand() sets all the components of \a v randomly within the range from \a min to \a max.
  *
- * zVecShift() shifts \a v by a scalar constant \a shift, namely,
- * \a shift is added to all the elements of \a v.
+ * zVecShift() shifts all components of a vector \a src by a scalar constant \a shift.
+ * The result is put into \a dest.
+ * zVecShiftDRC() directly shifts all components of a vector \a v by a scalar constant \a shift.
  * \return
- * zVecSetAll(), zVecLinSpace(), zVecRand() and zVecShift()
- * return a pointer \a v.
+ * zVecSetAll(), zVecLinSpace(), zVecRand(), and zVecShiftDRC() return a pointer \a v.
+ * zVecShift() returns a pointer \a dest.
  */
 __ZM_EXPORT zVec zVecSetAll(zVec v, double val);
 __ZM_EXPORT zVec zVecLinSpace(zVec v, double from, double to);
 __ZM_EXPORT zVec zVecRandUniform(zVec v, double min, double max);
 __ZM_EXPORT zVec zVecRand(zVec v, zVec min, zVec max);
-__ZM_EXPORT zVec zVecShift(zVec v, double shift);
+__ZM_EXPORT zVec zVecShift(zVec src, double shift, zVec dest);
+#define zVecShiftDRC(vec,shift) zVecShift( vec, shift, vec )
 
 /*! \brief - swap vector elements.
  *
@@ -409,15 +409,18 @@ __ZM_EXPORT zVec zVecMid(zVec v1, zVec v2, zVec v);
 
 /*! \brief scale a vector with two boundary vectors.
  *
- * zVecScale() scales a vector \a x with the minimum and maximum boundary
- * vectors \a min and \a max, respectively and puts it into \a v. Namely,
- * each component of \a v is the corresponding component of \a x multipied
- * by the corresponding components of \a max - \a min and offset by that
- * of \a min.
+ * zVecScale() scales a vector \a src with the minimum and maximum boundary vectors \a min and \a max,
+ * respectively, and puts it into \a dest. Namely, each component of \a dest is the corresponding
+ * component of \a src multiplied by the corresponding components of \a max - \a min and offset by
+ * that of \a min.
+ *
+ * zVecScaleUniform() uniformly scales \a src with the minimum and maximum boundary values \a min
+ * and \a max, and puts it into \a dest.
  * \return
- * zVecScale() returns a pointer \a v.
+ * zVecScale() and zVecScaleUniform() return a pointer \a dest.
  */
-__ZM_EXPORT zVec zVecScale(zVec x, zVec min, zVec max, zVec v);
+__ZM_EXPORT zVec zVecScale(zVec src, zVec min, zVec max, zVec dest);
+__ZM_EXPORT zVec zVecScaleUniform(zVec src, double min, double max, zVec dest);
 
 /*! \brief inner product of vector.
  *
