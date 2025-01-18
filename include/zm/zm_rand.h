@@ -4,11 +4,10 @@
 /*! \file zm_rand.h
  * \brief random number generator.
  *
- * The implementation of Mersenne twister proposed by
- * M. Matsumoto and T. Nishimura (1995) is a simple
- * rearrangement of the code written by Mr. Isaku Wada.
- * The original sources zmtrand.{h,c} are available at:
- *  http://www001.upp.so-net.ne.jp/isaku/index.html
+ * The implementation of Mersenne twister proposed by M. Matsumoto and T. Nishimura (1995)
+ * is a simple rearrangement of the code written by Mr. Isaku Wada. The original sources
+ * zmtrand.{h,c} are available at:
+ *  http://isaku-wada.my.coocan.jp/rand/rand2.html
  * \author Zhidao
  */
 

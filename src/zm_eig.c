@@ -265,7 +265,7 @@ static int _zEigVecReal(zMat m, double eig, zCVec eigv, int iter)
   while( !zMatInv( ms, b ) )
     zMatShift( ms, -( shift*=10 ) );
   zEigPower( b, eigv_r, iter );
-  zVec2CVec( eigv_r, eigv );
+  zVecToCVec( eigv_r, eigv );
 
  TERMINATE:
   zMatFree( ms );

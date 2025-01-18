@@ -74,7 +74,7 @@ double zChi2CumDistrib(double x, int k)
 /* basic statistics computation */
 
 /* maximum component of data. */
-double zDataMax(double *data, int size, int *im)
+double zDataMax(const double *data, int size, int *im)
 {
   int i, __im;
   double max;
@@ -89,7 +89,7 @@ double zDataMax(double *data, int size, int *im)
 }
 
 /* minimum component of data. */
-double zDataMin(double *data, int size, int *im)
+double zDataMin(const double *data, int size, int *im)
 {
   int i, __im;
   double min;
@@ -104,7 +104,7 @@ double zDataMin(double *data, int size, int *im)
 }
 
 /* maximum absolute component of data. */
-double zDataAbsMax(double *data, int size, int *im)
+double zDataAbsMax(const double *data, int size, int *im)
 {
   int i, __im;
   double val, max;
@@ -119,7 +119,7 @@ double zDataAbsMax(double *data, int size, int *im)
 }
 
 /* minimum absolute component of data. */
-double zDataAbsMin(double *data, int size, int *im)
+double zDataAbsMin(const double *data, int size, int *im)
 {
   int i, __im;
   double val, min;
@@ -134,7 +134,7 @@ double zDataAbsMin(double *data, int size, int *im)
 }
 
 /* sum up all values of data. */
-double zDataSum(double *data, int size)
+double zDataSum(const double *data, int size)
 {
   double s=0, s_prev=0, q=0, r;
   int i;
@@ -149,13 +149,13 @@ double zDataSum(double *data, int size)
 }
 
 /* mean of all values of data. */
-double zDataMean(double *data, int size)
+double zDataMean(const double *data, int size)
 {
   return zDataSum( data, size ) / size;
 }
 
 /* calculate the variance of data. */
-double zDataVar(double *data, int size)
+double zDataVar(const double *data, int size)
 {
   int i;
   double mean, result;
@@ -167,13 +167,13 @@ double zDataVar(double *data, int size)
 }
 
 /* calculate the standard deviation of data. */
-double zDataSD(double *data, int size)
+double zDataStandardDeviation(const double *data, int size)
 {
   return sqrt( zDataVar( data, size ) );
 }
 
 /* check if a value is a member of data. */
-bool zDataIsIncluded(double *data, int size, double val, double tol)
+bool zDataIsIncluded(const double *data, int size, double val, double tol)
 {
   int i;
 

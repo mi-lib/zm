@@ -6,12 +6,6 @@
 
 #include <zm/zm_mat.h>
 
-/* ********************************************************** */
-/* CLASS: zMat
- * double precision floating point value matrix class
- * NOTES: each element of matrix(size=r*c) is at (0 - r-1,0 - c-1).
- * ********************************************************** */
-
 /* set matrix components from value list. */
 static zMat _zMatSetElemList(zMat m, va_list args)
 {
@@ -156,14 +150,14 @@ zMat zMatRand(zMat m, zMat min, zMat max)
 }
 
 /* copy a matrix without checking size consistency. */
-zMat zMatCopyNC(zMat src, zMat dest)
+zMat zMatCopyNC(const zMat src, zMat dest)
 {
   zRawMatCopy( zMatBufNC(src), zMatBufNC(dest), zMatRowSizeNC(dest), zMatColSizeNC(dest) );
   return dest;
 }
 
 /* copy a matrix. */
-zMat zMatCopy(zMat src, zMat dest)
+zMat zMatCopy(const zMat src, zMat dest)
 {
   if( !zMatSizeIsEqual( src, dest ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -173,7 +167,7 @@ zMat zMatCopy(zMat src, zMat dest)
 }
 
 /* copy matrix from 2-dim array of double precision floating point values. */
-zMat zMatCopyArray(double array[], int r, int c, zMat m)
+zMat zMatCopyArray(const double array[], int r, int c, zMat m)
 {
   if( zMatRowSizeNC(m) != r || zMatColSizeNC(m) != c ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -184,7 +178,7 @@ zMat zMatCopyArray(double array[], int r, int c, zMat m)
 }
 
 /* clone a matrix. */
-zMat zMatClone(zMat src)
+zMat zMatClone(const zMat src)
 {
   zMat dest;
 
@@ -194,7 +188,7 @@ zMat zMatClone(zMat src)
 }
 
 /* create a matrix from an array of double precision floating point values. */
-zMat zMatCloneArray(double array[], int r, int c)
+zMat zMatCloneArray(const double array[], int r, int c)
 {
   zMat m;
 
@@ -204,14 +198,14 @@ zMat zMatCloneArray(double array[], int r, int c)
 }
 
 /* get submatrix without checking validity of size. */
-zMat zMatGetNC(zMat src, int pr, int pc, zMat dest)
+zMat zMatGetNC(const zMat src, int pr, int pc, zMat dest)
 {
   zRawMatGet( zMatBufNC(src), zMatRowSizeNC(src), zMatColSizeNC(src), pr, pc, zMatBufNC(dest), zMatRowSizeNC(dest), zMatColSizeNC(dest) );
   return dest;
 }
 
 /* get submatrix. */
-zMat zMatGet(zMat src, int pr, int pc, zMat dest)
+zMat zMatGet(const zMat src, int pr, int pc, zMat dest)
 {
   if( pr + zMatRowSizeNC(dest) > zMatRowSizeNC(src) ||
       pc + zMatColSizeNC(dest) > zMatColSizeNC(src) ){
@@ -222,14 +216,14 @@ zMat zMatGet(zMat src, int pr, int pc, zMat dest)
 }
 
 /* get transpose of a submatrix without checking validity of size. */
-zMat zMatTGetNC(zMat src, int pr, int pc, zMat dest)
+zMat zMatTGetNC(const zMat src, int pr, int pc, zMat dest)
 {
   zRawMatTGet( zMatBufNC(src), zMatRowSizeNC(src), zMatColSizeNC(src), pr, pc, zMatBufNC(dest), zMatRowSizeNC(dest), zMatColSizeNC(dest) );
   return dest;
 }
 
 /* get transpose of a submatrix. */
-zMat zMatTGet(zMat src, int pr, int pc, zMat dest)
+zMat zMatTGet(const zMat src, int pr, int pc, zMat dest)
 {
   if( pr + zMatColSizeNC(dest) > zMatRowSizeNC(src) ||
       pc + zMatRowSizeNC(dest) > zMatColSizeNC(src) ){
@@ -240,14 +234,14 @@ zMat zMatTGet(zMat src, int pr, int pc, zMat dest)
 }
 
 /* put submatrix without checking the size validity. */
-zMat zMatPutNC(zMat dest, int pr, int pc, zMat src)
+zMat zMatPutNC(zMat dest, int pr, int pc, const zMat src)
 {
   zRawMatPut( zMatBufNC(dest), zMatRowSizeNC(dest), zMatColSizeNC(dest), pr, pc, zMatBufNC(src), zMatRowSizeNC(src), zMatColSizeNC(src) );
   return dest;
 }
 
 /* put submatrix. */
-zMat zMatPut(zMat dest, int pr, int pc, zMat src)
+zMat zMatPut(zMat dest, int pr, int pc, const zMat src)
 {
   if( pr + zMatRowSizeNC(src) > zMatRowSizeNC(dest) ||
       pc + zMatColSizeNC(src) > zMatColSizeNC(dest) ){
@@ -258,14 +252,14 @@ zMat zMatPut(zMat dest, int pr, int pc, zMat src)
 }
 
 /* put transpose of a submatrix without checking validity of size. */
-zMat zMatTPutNC(zMat dest, int pr, int pc, zMat src)
+zMat zMatTPutNC(zMat dest, int pr, int pc, const zMat src)
 {
   zRawMatTPut( zMatBufNC(dest), zMatRowSizeNC(dest), zMatColSizeNC(dest), pr, pc, zMatBufNC(src), zMatRowSizeNC(src), zMatColSizeNC(src) );
   return dest;
 }
 
 /* put transpose of a submatrix. */
-zMat zMatTPut(zMat dest, int pr, int pc, zMat src)
+zMat zMatTPut(zMat dest, int pr, int pc, const zMat src)
 {
   if( pr + zMatColSizeNC(src) > zMatRowSizeNC(dest) ||
       pc + zMatRowSizeNC(src) > zMatColSizeNC(dest) ){
@@ -276,21 +270,21 @@ zMat zMatTPut(zMat dest, int pr, int pc, zMat src)
 }
 
 /* abstract row vector of matrix without checking size consistency. */
-zVec zMatGetRowNC(zMat m, int row, zVec v)
+zVec zMatGetRowNC(const zMat m, int row, zVec v)
 {
   zRawMatGetRow( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), row, zVecBufNC(v) );
   return v;
 }
 
 /* abstract column vector of matrix without checking size consistency. */
-zVec zMatGetColNC(zMat m, int col, zVec v)
+zVec zMatGetColNC(const zMat m, int col, zVec v)
 {
   zRawMatGetCol( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), col, zVecBufNC(v) );
   return v;
 }
 
 /* abstract row vector of matrix. */
-zVec zMatGetRow(zMat m, int row, zVec v)
+zVec zMatGetRow(const zMat m, int row, zVec v)
 {
   if( !zMatColVecSizeIsEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
@@ -304,7 +298,7 @@ zVec zMatGetRow(zMat m, int row, zVec v)
 }
 
 /* abstract column vector of matrix. */
-zVec zMatGetCol(zMat m, int col, zVec v)
+zVec zMatGetCol(const zMat m, int col, zVec v)
 {
   if( !zMatRowVecSizeIsEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
@@ -318,21 +312,21 @@ zVec zMatGetCol(zMat m, int col, zVec v)
 }
 
 /* put a row vector to matrix without checking size consistency. */
-zMat zMatPutRowNC(zMat m, int row, zVec v)
+zMat zMatPutRowNC(zMat m, int row, const zVec v)
 {
   zRawMatPutRow( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), row, zVecBufNC(v) );
   return m;
 }
 
 /* put a column vector to matrix without checking size consistency. */
-zMat zMatPutColNC(zMat m, int col, zVec v)
+zMat zMatPutColNC(zMat m, int col, const zVec v)
 {
   zRawMatPutCol( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), col, zVecBufNC(v) );
   return m;
 }
 
 /* put a row vector to matrix. */
-zMat zMatPutRow(zMat m, int row, zVec v)
+zMat zMatPutRow(zMat m, int row, const zVec v)
 {
   if( !zMatColVecSizeIsEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
@@ -346,7 +340,7 @@ zMat zMatPutRow(zMat m, int row, zVec v)
 }
 
 /* put a column vector to matrix. */
-zMat zMatPutCol(zMat m, int col, zVec v)
+zMat zMatPutCol(zMat m, int col, const zVec v)
 {
   if( !zMatRowVecSizeIsEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
@@ -403,7 +397,7 @@ void zMatShift(zMat m, double shift)
 }
 
 /* see if two matrices are equal. */
-bool zMatIsEqual(zMat m1, zMat m2, double tol)
+bool zMatIsEqual(const zMat m1, const zMat m2, double tol)
 {
   int i, j;
 
@@ -415,13 +409,13 @@ bool zMatIsEqual(zMat m1, zMat m2, double tol)
 }
 
 /* test if a matrix is tiny. */
-bool zMatIsTol(zMat m, double tol)
+bool zMatIsTol(const zMat m, double tol)
 {
   return zRawMatIsTol( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), tol );
 }
 
 /* check if a matrix is square and symmetric. */
-bool zMatIsSymmetric(zMat m)
+bool zMatIsSymmetric(const zMat m)
 {
   int i, j;
 
@@ -454,49 +448,49 @@ zMat zMatColReg(zMat m, int rank)
 }
 
 /* add matrices without checking size consistency. */
-zMat zMatAddNC(zMat m1, zMat m2, zMat m)
+zMat zMatAddNC(const zMat m1, const zMat m2, zMat m)
 {
   zRawMatAdd( zMatBufNC(m1), zMatBufNC(m2), zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;
 }
 
 /* subtract a matrix from nother without checking size consistency. */
-zMat zMatSubNC(zMat m1, zMat m2, zMat m)
+zMat zMatSubNC(const zMat m1, const zMat m2, zMat m)
 {
   zRawMatSub( zMatBufNC(m1), zMatBufNC(m2), zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;
 }
 
 /* reverse a matrix without checking size consistency. */
-zMat zMatRevNC(zMat m1, zMat m)
+zMat zMatRevNC(const zMat m1, zMat m)
 {
   zRawMatRev( zMatBufNC(m1), zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;
 }
 
 /* multiply a matrix by a scalar value without checking size consistency. */
-zMat zMatMulNC(zMat m1, double k, zMat m)
+zMat zMatMulNC(const zMat m1, double k, zMat m)
 {
   zRawMatMul( zMatBufNC(m1), k, zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;
 }
 
 /* divide a matrix by a scalar value rwithout checking size consistency. */
-zMat zMatDivNC(zMat m1, double k, zMat m)
+zMat zMatDivNC(const zMat m1, double k, zMat m)
 {
   zRawMatDiv( zMatBufNC(m1), k, zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;
 }
 
 /* concatenate a matrix with another without checking size consistency. */
-zMat zMatCatNC(zMat m1, double k, zMat m2, zMat m)
+zMat zMatCatNC(const zMat m1, double k, const zMat m2, zMat m)
 {
   zRawMatCat( zMatBufNC(m1), k, zMatBufNC(m2), zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;
 }
 
 /* add matrices. */
-zMat zMatAdd(zMat m1, zMat m2, zMat m)
+zMat zMatAdd(const zMat m1, const zMat m2, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m2) || !zMatSizeIsEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -506,7 +500,7 @@ zMat zMatAdd(zMat m1, zMat m2, zMat m)
 }
 
 /* substract a matrix from another. */
-zMat zMatSub(zMat m1, zMat m2, zMat m)
+zMat zMatSub(const zMat m1, const zMat m2, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m2) || !zMatSizeIsEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -516,7 +510,7 @@ zMat zMatSub(zMat m1, zMat m2, zMat m)
 }
 
 /* reverse a matrix. */
-zMat zMatRev(zMat m1, zMat m)
+zMat zMatRev(const zMat m1, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -526,7 +520,7 @@ zMat zMatRev(zMat m1, zMat m)
 }
 
 /* multiply a matrix by a scalar value. */
-zMat zMatMul(zMat m1, double k, zMat m)
+zMat zMatMul(const zMat m1, double k, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -536,7 +530,7 @@ zMat zMatMul(zMat m1, double k, zMat m)
 }
 
 /* divide a matrix by a scalar value. */
-zMat zMatDiv(zMat m1, double k, zMat m)
+zMat zMatDiv(const zMat m1, double k, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -550,7 +544,7 @@ zMat zMatDiv(zMat m1, double k, zMat m)
 }
 
 /* concatenate a matrix with another. */
-zMat zMatCat(zMat m1, double k, zMat m2, zMat m)
+zMat zMatCat(const zMat m1, double k, const zMat m2, zMat m)
 {
   if( !zMatSizeIsEqual(m1,m2) || !zMatSizeIsEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -560,13 +554,13 @@ zMat zMatCat(zMat m1, double k, zMat m2, zMat m)
 }
 
 /* squared norm of a matrix. */
-double zMatSqrNorm(zMat m)
+double zMatSqrNorm(const zMat m)
 {
   return zRawMatSqrNorm( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
 }
 
 /* infinity norm of a matrix. */
-double zMatInfNorm(zMat m)
+double zMatInfNorm(const zMat m)
 {
   double *mp, rs, rsmax = 0;
   int i, j;
@@ -581,14 +575,14 @@ double zMatInfNorm(zMat m)
 }
 
 /* transpose a matrix without checking size consistency. */
-zMat zMatTNC(zMat m, zMat tm)
+zMat zMatTNC(const zMat m, zMat tm)
 {
   zRawMatT( zMatBufNC(m), zMatBufNC(tm), zMatRowSizeNC(tm), zMatColSizeNC(tm) );
   return tm;
 }
 
 /* transpose a matrix. */
-zMat zMatT(zMat m, zMat tm)
+zMat zMatT(const zMat m, zMat tm)
 {
   if( !zMatColRowSizeIsEqual( tm, m ) || !zMatColRowSizeIsEqual( m, tm ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -610,7 +604,7 @@ zMat zMatTDRC(zMat m)
 }
 
 /* clone transpose of a matrix. */
-zMat zMatTClone(zMat src)
+zMat zMatTClone(const zMat src)
 {
   zMat dest;
 
@@ -620,14 +614,14 @@ zMat zMatTClone(zMat src)
 }
 
 /* dyadic product of vectors without checking size consistency. */
-zMat zVecDyadNC(zVec v1, zVec v2, zMat dyad)
+zMat zVecDyadNC(const zVec v1, const zVec v2, zMat dyad)
 {
   zRawVecDyad( zVecBufNC(v1), zVecSizeNC(v1), zVecBufNC(v2), zVecSizeNC(v2), zMatBufNC(dyad) );
   return dyad;
 }
 
 /* dyadic product of vectors. */
-zMat zVecDyad(zVec v1, zVec v2, zMat dyad)
+zMat zVecDyad(const zVec v1, const zVec v2, zMat dyad)
 {
   if( zVecSizeNC(v1) != zMatRowSizeNC(dyad) || zVecSizeNC(v2) != zMatColSizeNC(dyad) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
@@ -637,14 +631,14 @@ zMat zVecDyad(zVec v1, zVec v2, zMat dyad)
 }
 
 /* add dyadic product of vectors to a matrix without checking size consistency. */
-zMat zMatAddDyadNC(zMat m, zVec v1, zVec v2)
+zMat zMatAddDyadNC(zMat m, const zVec v1, const zVec v2)
 {
   zRawMatAddDyad( zMatBufNC(m), zVecBufNC(v1), zVecSizeNC(v1), zVecBufNC(v2), zVecSizeNC(v2) );
   return m;
 }
 
 /* add dyadic product of vectors to a matrix. */
-zMat zMatAddDyad(zMat m, zVec v1, zVec v2)
+zMat zMatAddDyad(zMat m, const zVec v1, const zVec v2)
 {
   if( zVecSizeNC(v1) != zMatRowSizeNC(m) || zVecSizeNC(v2) != zMatColSizeNC(m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
@@ -654,14 +648,14 @@ zMat zMatAddDyad(zMat m, zVec v1, zVec v2)
 }
 
 /* subtract dyadic product of vectors from a matrix without checking size consistency. */
-zMat zMatSubDyadNC(zMat m, zVec v1, zVec v2)
+zMat zMatSubDyadNC(zMat m, const zVec v1, const zVec v2)
 {
   zRawMatSubDyad( zMatBufNC(m), zVecBufNC(v1), zVecSizeNC(v1), zVecBufNC(v2), zVecSizeNC(v2) );
   return m;
 }
 
 /* subtract dyadic product of vectors from a matrix. */
-zMat zMatSubDyad(zMat m, zVec v1, zVec v2)
+zMat zMatSubDyad(zMat m, const zVec v1, const zVec v2)
 {
   if( zVecSizeNC(v1) != zMatRowSizeNC(m) || zVecSizeNC(v2) != zMatColSizeNC(m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
@@ -671,14 +665,14 @@ zMat zMatSubDyad(zMat m, zVec v1, zVec v2)
 }
 
 /* add dyadic product of vectors multiplied by a scalar value to a matrix without checking size consistency. */
-zMat zMatCatDyadNC(zMat m, double k, zVec v1, zVec v2)
+zMat zMatCatDyadNC(zMat m, double k, const zVec v1, const zVec v2)
 {
   zRawMatCatDyad( zMatBufNC(m), k, zVecBufNC(v1), zVecSizeNC(v1), zVecBufNC(v2), zVecSizeNC(v2) );
   return m;
 }
 
 /* add dyadic product of vectors multiplied by a scalar to a matrix. */
-zMat zMatCatDyad(zMat m, double k, zVec v1, zVec v2)
+zMat zMatCatDyad(zMat m, double k, const zVec v1, const zVec v2)
 {
   if( zVecSizeNC(v1) != zMatRowSizeNC(m) || zVecSizeNC(v2) != zMatColSizeNC(m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
@@ -688,13 +682,13 @@ zMat zMatCatDyad(zMat m, double k, zVec v1, zVec v2)
 }
 
 /* trace of a matrix without checking size consistency. */
-double zMatTrNC(zMat m)
+double zMatTrNC(const zMat m)
 {
   return zRawMatTr( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
 }
 
 /* trace of a matrix. */
-double zMatTr(zMat m)
+double zMatTr(const zMat m)
 {
   if( !zMatIsSqr( m ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
@@ -704,21 +698,21 @@ double zMatTr(zMat m)
 }
 
 /* multiply a vector by a matrix from the left side without checking size consistency. */
-zVec zMulMatVecNC(zMat m, zVec v1, zVec v)
+zVec zMulMatVecNC(const zMat m, const zVec v1, zVec v)
 {
   zRawMulMatVec( zMatBufNC(m), zVecBufNC(v1), zMatRowSizeNC(m), zMatColSizeNC(m), zVecBufNC(v) );
   return v;
 }
 
 /* multiply a vector by transpose of a matrix from the left side without checking size consistency. */
-zVec zMulMatTVecNC(zMat m, zVec v1, zVec v)
+zVec zMulMatTVecNC(const zMat m, const zVec v1, zVec v)
 {
   zRawMulMatTVec( zMatBufNC(m), zVecBufNC(v1), zMatRowSizeNC(m), zMatColSizeNC(m), zVecBufNC(v) );
   return v;
 }
 
 /* multiply two matrices without checking size consistency. */
-zMat zMulMatMatNC(zMat m1, zMat m2, zMat m)
+zMat zMulMatMatNC(const zMat m1, const zMat m2, zMat m)
 {
   zRawMulMatMat( zMatBufNC(m1),zMatRowSizeNC(m1), zMatColSizeNC(m1),
     zMatBufNC(m2), zMatRowSizeNC(m2), zMatColSizeNC(m2), zMatBufNC(m) );
@@ -726,7 +720,7 @@ zMat zMulMatMatNC(zMat m1, zMat m2, zMat m)
 }
 
 /* multiply a matrix and transpose of a matrix ('m = m1 m2^T') without checking size consistency. */
-zMat zMulMatMatTNC(zMat m1, zMat m2, zMat m)
+zMat zMulMatMatTNC(const zMat m1, const zMat m2, zMat m)
 {
   zRawMulMatMatT( zMatBufNC(m1), zMatRowSizeNC(m1), zMatColSizeNC(m1),
     zMatBufNC(m2), zMatRowSizeNC(m2), zMatColSizeNC(m2), zMatBufNC(m) );
@@ -734,7 +728,7 @@ zMat zMulMatMatTNC(zMat m1, zMat m2, zMat m)
 }
 
 /* multiply transpose of a matrix and a matrix 'm = m1^T m2' without checking size consistency. */
-zMat zMulMatTMatNC(zMat m1, zMat m2, zMat m)
+zMat zMulMatTMatNC(const zMat m1, const zMat m2, zMat m)
 {
   zRawMulMatTMat( zMatBufNC(m1), zMatRowSizeNC(m1), zMatColSizeNC(m1),
     zMatBufNC(m2), zMatRowSizeNC(m2), zMatColSizeNC(m2), zMatBufNC(m) );
@@ -742,7 +736,7 @@ zMat zMulMatTMatNC(zMat m1, zMat m2, zMat m)
 }
 
 /* multiply a vector by a matrix from the left side. */
-zVec zMulMatVec(zMat m, zVec v1, zVec v)
+zVec zMulMatVec(const zMat m, const zVec v1, zVec v)
 {
   if( !zMatColVecSizeIsEqual( m, v1 ) || !zMatRowVecSizeIsEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
@@ -752,7 +746,7 @@ zVec zMulMatVec(zMat m, zVec v1, zVec v)
 }
 
 /* multiply a vector by transpose of a matrix from the left side. */
-zVec zMulMatTVec(zMat m, zVec v1, zVec v)
+zVec zMulMatTVec(const zMat m, const zVec v1, zVec v)
 {
   if( !zMatRowVecSizeIsEqual( m, v1 ) || !zMatColVecSizeIsEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
@@ -762,7 +756,7 @@ zVec zMulMatTVec(zMat m, zVec v1, zVec v)
 }
 
 /* multiply two matrices. */
-zMat zMulMatMat(zMat m1, zMat m2, zMat m)
+zMat zMulMatMat(const zMat m1, const zMat m2, zMat m)
 {
   if( !zMatColRowSizeIsEqual( m1, m2 ) ||
       !zMatRowSizeIsEqual( m1, m ) || !zMatColSizeIsEqual( m2, m ) ){
@@ -773,7 +767,7 @@ zMat zMulMatMat(zMat m1, zMat m2, zMat m)
 }
 
 /* multiply a matrix by transpose of another matrix from the right side. */
-zMat zMulMatMatT(zMat m1, zMat m2, zMat m)
+zMat zMulMatMatT(const zMat m1, const zMat m2, zMat m)
 {
   if( !zMatColSizeIsEqual( m1, m2 ) || !zMatRowSizeIsEqual( m1, m ) ||
       !zMatRowColSizeIsEqual( m2, m ) ){
@@ -784,7 +778,7 @@ zMat zMulMatMatT(zMat m1, zMat m2, zMat m)
 }
 
 /* multiply a matrix by transpose of another matrix from the left side. */
-zMat zMulMatTMat(zMat m1, zMat m2, zMat m)
+zMat zMulMatTMat(const zMat m1, const zMat m2, zMat m)
 {
   if( !zMatRowSizeIsEqual( m1, m2 ) ||
       !zMatColRowSizeIsEqual( m1, m ) || !zMatColSizeIsEqual( m2, m ) ){
@@ -796,7 +790,7 @@ zMat zMulMatTMat(zMat m1, zMat m2, zMat m)
 
 /* multiply a vector by a matrix directly.
  */
-zVec zMulMatVecDRC(zMat m, zVec v)
+zVec zMulMatVecDRC(const zMat m, zVec v)
 {
   zVec tmp;
 
@@ -808,7 +802,7 @@ zVec zMulMatVecDRC(zMat m, zVec v)
 }
 
 /* multiply a vector by transpose of a matrix directly. */
-zVec zMulMatTVecDRC(zMat m, zVec v)
+zVec zMulMatTVecDRC(const zMat m, zVec v)
 {
   zVec tmp;
 
@@ -820,7 +814,7 @@ zVec zMulMatTVecDRC(zMat m, zVec v)
 }
 
 /* quadratic multiplication of matrices ('q = a diag{w} a^T') without checking size consistency. */
-zMat zMatQuadNC(zMat a, zVec w, zMat q)
+zMat zMatQuadNC(const zMat a, const zVec w, zMat q)
 {
   int i, j, k;
   double wa;
@@ -839,7 +833,7 @@ zMat zMatQuadNC(zMat a, zVec w, zMat q)
 }
 
 /* quadratic multiplication of matrices ('q = a diag{w} a^T'). */
-zMat zMatQuad(zMat a, zVec w, zMat q)
+zMat zMatQuad(const zMat a, const zVec w, zMat q)
 {
   if( w && !zMatColVecSizeIsEqual( a, w ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
@@ -857,7 +851,7 @@ zMat zMatQuad(zMat a, zVec w, zMat q)
 }
 
 /* quadratic multiplication of matrices ('q = a^T diag{w} a') without checking size consistency. */
-zMat zMatTQuadNC(zMat a, zVec w, zMat q)
+zMat zMatTQuadNC(const zMat a, const zVec w, zMat q)
 {
   int i, j, k;
   double wa;
@@ -876,7 +870,7 @@ zMat zMatTQuadNC(zMat a, zVec w, zMat q)
 }
 
 /* quadratic multiplication of matrices ('q = a^T diag{w} a'). */
-zMat zMatTQuad(zMat a, zVec w, zMat q)
+zMat zMatTQuad(const zMat a, const zVec w, zMat q)
 {
   if( w && !zMatRowVecSizeIsEqual( a, w ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
@@ -894,7 +888,7 @@ zMat zMatTQuad(zMat a, zVec w, zMat q)
 }
 
 /* quadratic multiplication of matrices ('m = a q a^T') without checking size consistency. */
-zMat zMulMatMatMatTNC(zMat a, zMat q, zMat m)
+zMat zMulMatMatMatTNC(const zMat a, const zMat q, zMat m)
 {
   int i, j, k;
   double y;
@@ -912,7 +906,7 @@ zMat zMulMatMatMatTNC(zMat a, zMat q, zMat m)
 }
 
 /* quadratic multiplication of matrices ('m = a q a^T'). */
-zMat zMulMatMatMatT(zMat a, zMat q, zMat m)
+zMat zMulMatMatMatT(const zMat a, const zMat q, zMat m)
 {
   if( !zMatIsSqr( q ) || !zMatIsSqr( m ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
@@ -926,7 +920,7 @@ zMat zMulMatMatMatT(zMat a, zMat q, zMat m)
 }
 
 /* quadratic multiplication of matrices ('m = a^T q a') without checking size consistency. */
-zMat zMulMatTMatMatNC(zMat a, zMat q, zMat m)
+zMat zMulMatTMatMatNC(const zMat a, const zMat q, zMat m)
 {
   int i, j, k;
   double y;
@@ -944,7 +938,7 @@ zMat zMulMatTMatMatNC(zMat a, zMat q, zMat m)
 }
 
 /* quadratic multiplication of matrices ('m = a^T q a'). */
-zMat zMulMatTMatMat(zMat a, zMat q, zMat m)
+zMat zMulMatTMatMat(const zMat a, const zMat q, zMat m)
 {
   if( !zMatIsSqr( q ) || !zMatIsSqr( m ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
@@ -1002,7 +996,7 @@ zMat zMatFScan(FILE *fp)
 }
 
 /* print information of a matrix to file. */
-void zMatFPrint(FILE *fp, zMat m)
+void zMatFPrint(FILE *fp, const zMat m)
 {
   int i, j;
 
@@ -1021,7 +1015,7 @@ void zMatFPrint(FILE *fp, zMat m)
 }
 
 /* visualize a matrix using one-charactor collage for debug. */
-void zMatImg(zMat m)
+void zMatImg(const zMat m)
 {
   double max, min, d;
   const char pat_pos[] = ",x*M";

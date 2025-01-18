@@ -58,7 +58,7 @@ zCVec zCVecTouchup(zCVec v)
 }
 
 /* copy a complex vector without checking size consistency. */
-zCVec zCVecCopyNC(zCVec src, zCVec dest)
+zCVec zCVecCopyNC(const zCVec src, zCVec dest)
 {
   int i;
 
@@ -68,14 +68,13 @@ zCVec zCVecCopyNC(zCVec src, zCVec dest)
 }
 
 /* copy a complex vector. */
-zCVec zCVecCopy(zCVec src, zCVec dest)
+zCVec zCVecCopy(const zCVec src, zCVec dest)
 {
-  return zCVecSizeIsEqual( src, dest ) ?
-    zCVecCopyNC( src, dest ) : NULL;
+  return zCVecSizeIsEqual( src, dest ) ? zCVecCopyNC( src, dest ) : NULL;
 }
 
 /* clone a complex vector. */
-zCVec zCVecClone(zCVec src)
+zCVec zCVecClone(const zCVec src)
 {
   zCVec dest;
 
@@ -85,7 +84,7 @@ zCVec zCVecClone(zCVec src)
 }
 
 /* convert a real vector to a complex vector. */
-zCVec zVec2CVec(zVec v, zCVec cv)
+zCVec zVecToCVec(const zVec v, zCVec cv)
 {
   int i;
 
@@ -105,7 +104,7 @@ zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rmax, double im
 }
 
 /* check if two complex vectors are equal. */
-bool zCVecIsEqual(zCVec v1, zCVec v2, double tol)
+bool zCVecIsEqual(const zCVec v1, const zCVec v2, double tol)
 {
   int i;
 
@@ -116,7 +115,7 @@ bool zCVecIsEqual(zCVec v1, zCVec v2, double tol)
 }
 
 /* check if a complex vector is tiny. */
-bool zCVecIsTol(zCVec v, double tol)
+bool zCVecIsTol(const zCVec v, double tol)
 {
   int i;
 
@@ -126,7 +125,7 @@ bool zCVecIsTol(zCVec v, double tol)
 }
 
 /* split a complex vector to a real vector and an imaginary vector. */
-bool zCVecToReIm(zCVec cvec, zVec *rvec, zCVec *ivec, double tol)
+bool zCVecToReIm(const zCVec cvec, zVec *rvec, zCVec *ivec, double tol)
 {
   zIndex ridx, iidx;
   int i, rsize, isize;
@@ -192,7 +191,7 @@ zCVec zCVecConjPair(zCVec v, double tol)
 /* basic arithmetics for the complex vector. */
 
 /* add two complex vectors without checking size consistency. */
-zCVec zCVecAddNC(zCVec v1, zCVec v2, zCVec v)
+zCVec zCVecAddNC(const zCVec v1, const zCVec v2, zCVec v)
 {
   int i;
 
@@ -202,7 +201,7 @@ zCVec zCVecAddNC(zCVec v1, zCVec v2, zCVec v)
 }
 
 /* subtract a complex vector from another without checking size consistency. */
-zCVec zCVecSubNC(zCVec v1, zCVec v2, zCVec v)
+zCVec zCVecSubNC(const zCVec v1, const zCVec v2, zCVec v)
 {
   int i;
 
@@ -212,7 +211,7 @@ zCVec zCVecSubNC(zCVec v1, zCVec v2, zCVec v)
 }
 
 /* reverse a complex vector without checking size consistency. */
-zCVec zCVecRevNC(zCVec v1, zCVec v)
+zCVec zCVecRevNC(const zCVec v1, zCVec v)
 {
   int i;
 
@@ -223,7 +222,7 @@ zCVec zCVecRevNC(zCVec v1, zCVec v)
 
 /* multiply a complex vector by a complex scalar value
  * without checking size consistency. */
-zCVec zCVecMulNC(zCVec v1, zComplex *z, zCVec v)
+zCVec zCVecMulNC(const zCVec v1, const zComplex *z, zCVec v)
 {
   int i;
 
@@ -234,7 +233,7 @@ zCVec zCVecMulNC(zCVec v1, zComplex *z, zCVec v)
 
 /* divide a complex vector by a complex scalar value
  * without checking size consistency. */
-zCVec zCVecDivNC(zCVec v1, zComplex *z, zCVec v)
+zCVec zCVecDivNC(const zCVec v1, const zComplex *z, zCVec v)
 {
   int i;
   double r;
@@ -250,7 +249,7 @@ zCVec zCVecDivNC(zCVec v1, zComplex *z, zCVec v)
 
 /* concatenate a complex vector with another multiplied by a
  * complex scalar value without checking size consistency. */
-zCVec zCVecCatNC(zCVec v1, zComplex *z, zCVec v2, zCVec v)
+zCVec zCVecCatNC(const zCVec v1, const zComplex *z, const zCVec v2, zCVec v)
 {
   int i;
   zComplex dz;
@@ -274,35 +273,35 @@ zCVec zCVecCatNC(zCVec v1, zComplex *z, zCVec v2, zCVec v)
   }
 
 /* add two complex vectors. */
-zCVec zCVecAdd(zCVec v1, zCVec v2, zCVec v)
+zCVec zCVecAdd(const zCVec v1, const zCVec v2, zCVec v)
 {
   __z_cvec_size_check_3( v1, v2, v );
   return zCVecAddNC( v1, v2, v );
 }
 
 /* subtract a complex vector from another. */
-zCVec zCVecSub(zCVec v1, zCVec v2, zCVec v)
+zCVec zCVecSub(const zCVec v1, const zCVec v2, zCVec v)
 {
   __z_cvec_size_check_3( v1, v2, v );
   return zCVecSubNC( v1, v2, v );
 }
 
 /* reverse a complex vector. */
-zCVec zCVecRev(zCVec v1, zCVec v)
+zCVec zCVecRev(const zCVec v1, zCVec v)
 {
   __z_cvec_size_check_2( v1, v );
   return zCVecRevNC( v1, v );
 }
 
 /* multiply a complex vector by a complex scalar value. */
-zCVec zCVecMul(zCVec v1, zComplex *z, zCVec v)
+zCVec zCVecMul(const zCVec v1, const zComplex *z, zCVec v)
 {
   __z_cvec_size_check_2( v1, v );
   return zCVecMulNC( v1, z, v );
 }
 
 /* divide a complex vector by a complex scalar value. */
-zCVec zCVecDiv(zCVec v1, zComplex *z, zCVec v)
+zCVec zCVecDiv(const zCVec v1, const zComplex *z, zCVec v)
 {
   __z_cvec_size_check_2( v1, v );
   if( zComplexIsTiny( z ) ){
@@ -313,14 +312,14 @@ zCVec zCVecDiv(zCVec v1, zComplex *z, zCVec v)
 }
 
 /* concatenate a complex vector with another multiplied by a complex scalar value. */
-zCVec zCVecCat(zCVec v1, zComplex *z, zCVec v2, zCVec v)
+zCVec zCVecCat(const zCVec v1, const zComplex *z, const zCVec v2, zCVec v)
 {
   __z_cvec_size_check_3( v1, v2, v );
   return zCVecCatNC( v1, z, v2, v );
 }
 
 /* inner product of two complex vectors without checking size consistency. */
-zComplex *zCVecInnerProdNC(zCVec v1, zCVec v2, zComplex *z)
+zComplex *zCVecInnerProdNC(const zCVec v1, const zCVec v2, zComplex *z)
 {
   int i;
   zComplex c;
@@ -334,7 +333,7 @@ zComplex *zCVecInnerProdNC(zCVec v1, zCVec v2, zComplex *z)
 }
 
 /* inner product of two complex vector. */
-zComplex *zCVecInnerProd(zCVec v1, zCVec v2, zComplex *z)
+zComplex *zCVecInnerProd(const zCVec v1, const zCVec v2, zComplex *z)
 {
   if( !zCVecSizeIsEqual(v1,v2) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
@@ -344,7 +343,7 @@ zComplex *zCVecInnerProd(zCVec v1, zCVec v2, zComplex *z)
 }
 
 /* squared norm of a complex vector. */
-double zCVecSqrNorm(zCVec v)
+double zCVecSqrNorm(const zCVec v)
 {
   zComplex z;
 
@@ -352,7 +351,7 @@ double zCVecSqrNorm(zCVec v)
 }
 
 /* normalize a complex vector. */
-zCVec zCVecNormalize(zCVec src, zCVec dest)
+zCVec zCVecNormalize(const zCVec src, zCVec dest)
 {
   int i;
   double r;
@@ -367,7 +366,7 @@ zCVec zCVecNormalize(zCVec src, zCVec dest)
 }
 
 /* print a complex vector to a file. */
-void zCVecFPrint(FILE *fp, zCVec v)
+void zCVecFPrint(FILE *fp, const zCVec v)
 {
   int i;
 

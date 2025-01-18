@@ -6,11 +6,6 @@
 
 #include <zm/zm_complex.h>
 
-/* ********************************************************** */
-/* CLASS: zComplex
- * complex number class
- * ********************************************************** */
-
 /* create a complex number. */
 zComplex *zComplexCreate(zComplex *c, double r, double i)
 {
@@ -26,7 +21,7 @@ zComplex *zComplexCreatePolar(zComplex *c, double r, double t)
 }
 
 /* copy a complex number to another. */
-zComplex *zComplexCopy(zComplex *src, zComplex *dest)
+zComplex *zComplexCopy(const zComplex *src, zComplex *dest)
 {
   _zComplexCopy( src, dest );
   return dest;
@@ -73,7 +68,7 @@ zComplex *zComplexFromZTK(zComplex *c, ZTK *ztk)
 }
 
 /* print imaginary part of a complex number to a file. */
-static void _zComplexImFPrint(FILE *fp, zComplex *c, char ps)
+static void _zComplexImFPrint(FILE *fp, const zComplex *c, char ps)
 {
   double im;
 
@@ -84,7 +79,7 @@ static void _zComplexImFPrint(FILE *fp, zComplex *c, char ps)
 }
 
 /* print a complex number to a file. */
-void zComplexFPrint(FILE *fp, zComplex *c)
+void zComplexFPrint(FILE *fp, const zComplex *c)
 {
   if( c->re == 0 ){
     if( c->im == 0 )
@@ -100,13 +95,13 @@ void zComplexFPrint(FILE *fp, zComplex *c)
 
 /* print the coordinates of a complex number on the
  * Gaussian plane to a file. */
-void zComplexCoordFPrint(FILE *fp, zComplex *c)
+void zComplexCoordFPrint(FILE *fp, const zComplex *c)
 {
   fprintf( fp, "%.10g %.10g", c->re, c->im );
 }
 
 /* check if a complex number is a member of an array. */
-bool zComplexValIsIncluded(zComplex *array, int size, zComplex *c, double tol)
+bool zComplexValIsIncluded(const zComplex *array, int size, const zComplex *c, double tol)
 {
   int i;
 
@@ -116,7 +111,7 @@ bool zComplexValIsIncluded(zComplex *array, int size, zComplex *c, double tol)
 }
 
 /* check if conjugate of a complex number is a member of an array. */
-bool zComplexValConjIsIncluded(zComplex *array, int size, zComplex *c, double tol)
+bool zComplexValConjIsIncluded(const zComplex *array, int size, const zComplex *c, double tol)
 {
   int i;
 

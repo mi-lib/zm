@@ -51,7 +51,7 @@ __ZM_EXPORT zComplex *zComplexCreatePolar(zComplex *c, double r, double t);
  *
  * zComplexCopy() copies a complex number \a src to another \a dest. */
 #define _zComplexCopy(src,dest) ( *(dest) = *(src) )
-__ZM_EXPORT zComplex *zComplexCopy(zComplex *src, zComplex *dest);
+__ZM_EXPORT zComplex *zComplexCopy(const zComplex *src, zComplex *dest);
 
 /*! \brief create a zero complex number.
  *
@@ -104,7 +104,7 @@ __ZM_EXPORT zComplex *zComplexFromZTK(zComplex *c, ZTK *ztk);
  * current position of a file \a fp in the following style:
  *  x + y i
  */
-__ZM_EXPORT void zComplexFPrint(FILE *fp, zComplex *c);
+__ZM_EXPORT void zComplexFPrint(FILE *fp, const zComplex *c);
 /*! \brief print a complex number to the standard output. */
 #define zComplexPrint(c) zComplexFPrint( stdout, (c) )
 
@@ -115,7 +115,7 @@ __ZM_EXPORT void zComplexFPrint(FILE *fp, zComplex *c);
  * position of \a file \a fp in the following style.
  *  x y
  */
-__ZM_EXPORT void zComplexCoordFPrint(FILE *fp, zComplex *c);
+__ZM_EXPORT void zComplexCoordFPrint(FILE *fp, const zComplex *c);
 /*! \brief prints the coordinates of a complex number
  * to the standard output. */
 #define zComplexCoordPrint(c) zComplexCoordFPrint( stdout, (c) )
@@ -135,8 +135,8 @@ __ZM_EXPORT void zComplexCoordFPrint(FILE *fp, zComplex *c);
  * of \a c is included in \a \array. Otherwise, the false value
  * is returned.
  */
-__ZM_EXPORT bool zComplexValIsIncluded(zComplex *array, int size, zComplex *c, double tol);
-__ZM_EXPORT bool zComplexValConjIsIncluded(zComplex *array, int size, zComplex *c, double tol);
+__ZM_EXPORT bool zComplexValIsIncluded(const zComplex *array, int size, const zComplex *c, double tol);
+__ZM_EXPORT bool zComplexValConjIsIncluded(const zComplex *array, int size, const zComplex *c, double tol);
 
 /*! \} */
 

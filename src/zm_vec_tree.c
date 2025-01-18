@@ -60,7 +60,7 @@ static zVecTree *_zVecTreeCreateLeaf(int split, zVec v)
 }
 
 /* return an index of a node which contains a given 3D vector. */
-static int _zVecTreeChooseBranch(zVecTree *node, zVec v)
+static int _zVecTreeChooseBranch(const zVecTree *node, zVec v)
 {
   return zVecElemNC(v,node->split) >= zVecElemNC(node->v,node->split) ? 0 : 1;
 }
@@ -104,7 +104,7 @@ zVecTree *zVecTreeAdd(zVecTree *tree, zVec v)
 /* nearest neighbor search */
 
 /* check if a sphere is overlapped with a bounding box of a node. */
-static bool _zVecTreeIsOverlap(zVecTree *node, zVec c, double r)
+static bool _zVecTreeIsOverlap(const zVecTree *node, const zVec c, double r)
 {
   int i;
   double d, vd;
@@ -120,12 +120,12 @@ static bool _zVecTreeIsOverlap(zVecTree *node, zVec c, double r)
 }
 
 /* test if a node is the current nearest neighbor to a 3D vector. */
-static void _zVecTreeNNTest(zVecTree *node, zVec v, zVecTree **nn, double *dmin)
+static void _zVecTreeNNTest(const zVecTree *node, const zVec v, zVecTree **nn, double *dmin)
 {
   double d;
 
   if( ( d = zVecDist( node->v, v ) ) < *dmin ){
-    *nn = node;
+    *nn = (zVecTree *)node;
     *dmin = d;
   }
 }
@@ -133,7 +133,7 @@ static void _zVecTreeNNTest(zVecTree *node, zVec v, zVecTree **nn, double *dmin)
 /* an internal recursive call of the nearest neighbor search;
  * check the opposite side of branch.
  */
-static double _zVecTreeNNOpp(zVecTree *node, zVec v, zVecTree **nn, double *dmin)
+static double _zVecTreeNNOpp(const zVecTree *node, const zVec v, zVecTree **nn, double *dmin)
 {
   _zVecTreeNNTest( node, v, nn, dmin );
   if( node->s[0] && _zVecTreeIsOverlap( node->s[0], v, *dmin ) )
@@ -144,7 +144,7 @@ static double _zVecTreeNNOpp(zVecTree *node, zVec v, zVecTree **nn, double *dmin
 }
 
 /* an internal recursive call of the nearest neighbor search. */
-static double _zVecTreeNN(zVecTree *node, zVec v, zVecTree **nn, double *dmin)
+static double _zVecTreeNN(const zVecTree *node, const zVec v, zVecTree **nn, double *dmin)
 {
   int b;
   zVecTree *ob;
@@ -158,7 +158,7 @@ static double _zVecTreeNN(zVecTree *node, zVec v, zVecTree **nn, double *dmin)
 }
 
 /* find the nearest neighbor to a 3D vector in a tree. */
-double zVecTreeNN(zVecTree *tree, zVec v, zVecTree **nn)
+double zVecTreeNN(const zVecTree *tree, const zVec v, zVecTree **nn)
 {
   double dmin = HUGE_VAL;
 

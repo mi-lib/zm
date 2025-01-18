@@ -67,7 +67,7 @@ static zVec _zODEUpdate_Adams(zODE *ode, double t, zVec x, zVec xorg, zVec xnew,
 
   ws = (_zODE_Adams *)ode->_ws;
   ode->f( t, xorg, util, *zRingHead(&ws->hist) );
-  zVecRingLS( ws->dx, w, &ws->hist );
+  zVecRingLinearSum( ws->dx, w, &ws->hist );
   return ode->cat( x, dt, ws->dx, xnew, util );
 }
 

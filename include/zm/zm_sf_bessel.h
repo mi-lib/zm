@@ -15,8 +15,6 @@
 #ifndef __ZM_SF_BESSEL_H__
 #define __ZM_SF_BESSEL_H__
 
-#include <zm/zm_misc.h>
-
 /* NOTE: never include this header file in user programs. */
 
 __BEGIN_DECLS

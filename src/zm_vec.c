@@ -6,11 +6,6 @@
 
 #include <zm/zm_vec.h>
 
-/* ********************************************************** */
-/* CLASS: zVec
- * double precision floating point value vector class
- * ********************************************************** */
-
 /* set vector components from variable argument list. */
 zVec zVecSetElemVList(zVec v, va_list args)
 {
@@ -101,21 +96,21 @@ zVec zVecTouchup(zVec v)
 }
 
 /* copy a vector without checking size consistency. */
-zVec zVecCopyNC(zVec src, zVec dest)
+zVec zVecCopyNC(const zVec src, zVec dest)
 {
   zRawVecCopy( zVecBufNC(src), zVecBufNC(dest), zVecSizeNC(dest) );
   return dest;
 }
 
 /* copy a vector. */
-zVec zVecCopy(zVec src, zVec dest)
+zVec zVecCopy(const zVec src, zVec dest)
 {
   return zVecSizeIsEqual( src, dest ) ?
     zVecCopyNC( src, dest ) : NULL;
 }
 
 /* copy a vector from an array of double-precision floating-point values. */
-zVec zVecCopyArray(double array[], int s, zVec v)
+zVec zVecCopyArray(const double array[], int s, zVec v)
 {
   if( zVecSizeNC(v) != s ) return NULL;
   zRawVecCopy( array, zVecBufNC(v), s );
@@ -123,7 +118,7 @@ zVec zVecCopyArray(double array[], int s, zVec v)
 }
 
 /* clone a vector. */
-zVec zVecClone(zVec src)
+zVec zVecClone(const zVec src)
 {
   zVec dest;
 
@@ -133,7 +128,7 @@ zVec zVecClone(zVec src)
 }
 
 /* create a vector from an array of double-precision floating-point values. */
-zVec zVecCloneArray(double array[], int s)
+zVec zVecCloneArray(const double array[], int s)
 {
   zVec v;
 
@@ -143,14 +138,14 @@ zVec zVecCloneArray(double array[], int s)
 }
 
 /* get a partial vector without checking the size validity. */
-zVec zVecGetNC(zVec src, int pos, zVec dest)
+zVec zVecGetNC(const zVec src, int pos, zVec dest)
 {
   zRawVecGet( zVecBufNC(src), pos, zVecBufNC(dest), zVecSizeNC(dest) );
   return dest;
 }
 
 /* get a parttial vector. */
-zVec zVecGet(zVec src, int pos, zVec dest)
+zVec zVecGet(const zVec src, int pos, zVec dest)
 {
   if( pos + zVecSizeNC(dest) > zVecSizeNC(src) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
@@ -160,14 +155,14 @@ zVec zVecGet(zVec src, int pos, zVec dest)
 }
 
 /* put a partial vector without checking the size validity. */
-zVec zVecPutNC(zVec dest, int pos, zVec src)
+zVec zVecPutNC(zVec dest, int pos, const zVec src)
 {
   zRawVecPut( zVecBufNC(dest), pos, zVecBufNC(src), zVecSizeNC(src) );
   return dest;
 }
 
 /* put a partial vector. */
-zVec zVecPut(zVec dest, int pos, zVec src)
+zVec zVecPut(zVec dest, int pos, const zVec src)
 {
   if( pos + zVecSizeNC(src) > zVecSizeNC(dest) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
@@ -205,7 +200,7 @@ zVec zVecRand(zVec v, zVec min, zVec max)
 }
 
 /* shift vector by a constant scalar value. */
-zVec zVecShift(zVec src, double shift, zVec dest)
+zVec zVecShift(const zVec src, double shift, zVec dest)
 {
   zRawVecShift( zVecBufNC(src), zVecSizeNC(src), shift, zVecBufNC(dest) );
   return dest;
@@ -250,22 +245,22 @@ void zVecSort(zVec v, zIndex idx)
 }
 
 /* maximum of vector elements. */
-double zVecMax(zVec v, int *im){ return _zVecMax( v, im ); }
+double zVecMax(const zVec v, int *im){ return _zVecMax( v, im ); }
 /* minimum of vector elements. */
-double zVecMin(zVec v, int *im){ return _zVecMin( v, im ); }
+double zVecMin(const zVec v, int *im){ return _zVecMin( v, im ); }
 /* absolute maximum of vector elements. */
-double zVecAbsMax(zVec v, int *im){ return _zVecAbsMax( v, im ); }
+double zVecAbsMax(const zVec v, int *im){ return _zVecAbsMax( v, im ); }
 /* absolute minimum of vector elements. */
-double zVecAbsMin(zVec v, int *im){ return _zVecAbsMin( v, im ); }
+double zVecAbsMin(const zVec v, int *im){ return _zVecAbsMin( v, im ); }
 /* summation of vector elements. */
-double zVecSum(zVec v){ return _zVecSum( v ); }
+double zVecSum(const zVec v){ return _zVecSum( v ); }
 /* mean of vector elements. */
-double zVecMean(zVec v){ return _zVecMean( v ); }
+double zVecMean(const zVec v){ return _zVecMean( v ); }
 /* variance of vector elements. */
-double zVecVar(zVec v){ return _zVecVar( v ); }
+double zVecVar(const zVec v){ return _zVecVar( v ); }
 
 /* check if two vectors are equal. */
-bool zVecIsEqual(zVec v1, zVec v2, double tol)
+bool zVecIsEqual(const zVec v1, const zVec v2, double tol)
 {
   int i;
 
@@ -276,47 +271,47 @@ bool zVecIsEqual(zVec v1, zVec v2, double tol)
 }
 
 /* check if a vector is tiny. */
-bool zVecIsTol(zVec v, double tol)
+bool zVecIsTol(const zVec v, double tol)
 {
   return zRawVecIsTol( zVecBufNC(v), zVecSizeNC(v), tol );
 }
 
 /* check if a vector includes NaN. */
-bool zVecIsNan(zVec v)
+bool zVecIsNan(const zVec v)
 {
   return zRawVecIsNan( zVecBufNC(v), zVecSizeNC(v) );
 }
 
 /* add two vectors without checking size consistency. */
-zVec zVecAddNC(zVec v1, zVec v2, zVec v)
+zVec zVecAddNC(const zVec v1, const zVec v2, zVec v)
 {
   zRawVecAdd( zVecBufNC(v1), zVecBufNC(v2), zVecBufNC(v), zVecSizeNC(v) );
   return v;
 }
 
 /* subtract a vector from another without checking size consistency. */
-zVec zVecSubNC(zVec v1, zVec v2, zVec v)
+zVec zVecSubNC(const zVec v1, const zVec v2, zVec v)
 {
   zRawVecSub( zVecBufNC(v1), zVecBufNC(v2), zVecBufNC(v), zVecSizeNC(v) );
   return v;
 }
 
 /* reverse a vector without checking size consistency. */
-zVec zVecRevNC(zVec v1, zVec v)
+zVec zVecRevNC(const zVec v1, zVec v)
 {
   zRawVecRev( zVecBufNC(v1), zVecBufNC(v), zVecSizeNC(v) );
   return v;
 }
 
 /* multiply a vector by a scalar value without checking size consistency. */
-zVec zVecMulNC(zVec v1, double k, zVec v)
+zVec zVecMulNC(const zVec v1, double k, zVec v)
 {
   zRawVecMul( zVecBufNC(v1), k, zVecBufNC(v), zVecSizeNC(v) );
   return v;
 }
 
 /* divide a vector by a scalar value without checking size consistency. */
-zVec zVecDivNC(zVec v1, double k, zVec v)
+zVec zVecDivNC(const zVec v1, double k, zVec v)
 {
   zRawVecDiv( zVecBufNC(v1), k, zVecBufNC(v), zVecSizeNC(v) );
   return v;
@@ -324,7 +319,7 @@ zVec zVecDivNC(zVec v1, double k, zVec v)
 
 /* amplify each component of a vector by the corresponding component of
  * another vector without checking size consistency. */
-zVec zVecAmpNC(zVec v1, zVec amp, zVec v)
+zVec zVecAmpNC(const zVec v1, const zVec amp, zVec v)
 {
   zRawVecAmp( zVecBufNC(v1), zVecBufNC(amp), zVecBufNC(v), zVecSizeNC(v) );
   return v;
@@ -332,14 +327,14 @@ zVec zVecAmpNC(zVec v1, zVec amp, zVec v)
 
 /* demagnify each component of a vector by the corresponding component of
  * another vector without checking size consistency. */
-zVec zVecDemNC(zVec v1, zVec dem, zVec v)
+zVec zVecDemNC(const zVec v1, const zVec dem, zVec v)
 {
   zRawVecDem( zVecBufNC(v1), zVecBufNC(dem), zVecBufNC(v), zVecSizeNC(v) );
   return v;
 }
 
 /* concatenate a vector with another vector multiplied by a scalar value without checking size consistency. */
-zVec zVecCatNC(zVec v1, double k, zVec v2, zVec v)
+zVec zVecCatNC(const zVec v1, double k, const zVec v2, zVec v)
 {
   zRawVecCat( zVecBufNC(v1), k, zVecBufNC(v2), zVecBufNC(v), zVecSizeNC(v) );
   return v;
@@ -358,35 +353,35 @@ zVec zVecCatNC(zVec v1, double k, zVec v2, zVec v)
   }
 
 /* add two vectors. */
-zVec zVecAdd(zVec v1, zVec v2, zVec v)
+zVec zVecAdd(const zVec v1, const zVec v2, zVec v)
 {
   __z_vec_size_check_3( v1, v2, v );
   return zVecAddNC( v1, v2, v );
 }
 
 /* subtract a vector from another. */
-zVec zVecSub(zVec v1, zVec v2, zVec v)
+zVec zVecSub(const zVec v1, const zVec v2, zVec v)
 {
   __z_vec_size_check_3( v1, v2, v );
   return zVecSubNC( v1, v2, v );
 }
 
 /* reverse a vector. */
-zVec zVecRev(zVec v1, zVec v)
+zVec zVecRev(const zVec v1, zVec v)
 {
   __z_vec_size_check_2( v1, v );
   return zVecRevNC( v1, v );
 }
 
 /* multiply a vector by a scalar value. */
-zVec zVecMul(zVec v1, double k, zVec v)
+zVec zVecMul(const zVec v1, double k, zVec v)
 {
   __z_vec_size_check_2( v1, v );
   return zVecMulNC( v1, k, v );
 }
 
 /* divide a vector by a scalar value. */
-zVec zVecDiv(zVec v1, double k, zVec v)
+zVec zVecDiv(const zVec v1, double k, zVec v)
 {
   __z_vec_size_check_2( v1, v );
   if( zIsTiny( k ) ){
@@ -397,21 +392,21 @@ zVec zVecDiv(zVec v1, double k, zVec v)
 }
 
 /* amplify each component of a vector by the corresponding component of another vector. */
-zVec zVecAmp(zVec v1, zVec amp, zVec v)
+zVec zVecAmp(const zVec v1, const zVec amp, zVec v)
 {
   __z_vec_size_check_3( v1, amp, v );
   return zVecAmpNC( v1, amp, v );
 }
 
 /* demagnify each component of a vector by the corresponding component of another vector. */
-zVec zVecDem(zVec v1, zVec dem, zVec v)
+zVec zVecDem(const zVec v1, const zVec dem, zVec v)
 {
   __z_vec_size_check_3( v1, dem, v );
   return zVecDemNC( v1, dem, v );
 }
 
 /* concatenate a vector with another vector multiplied by a scalar value. */
-zVec zVecCat(zVec v1, double k, zVec v2, zVec v)
+zVec zVecCat(const zVec v1, double k, const zVec v2, zVec v)
 {
   __z_vec_size_check_3( v1, v2, v );
   return zVecCatNC( v1, k, v2, v );
@@ -447,7 +442,7 @@ zVec zVecCats(zVec v, int n, ...)
 }
 
 /* linear sum of multiple vectors multiplied by scalar values. */
-zVec zVecLS(zVec v, int n, ...)
+zVec zVecLinearSum(zVec v, int n, ...)
 {
   va_list args;
 
@@ -459,48 +454,48 @@ zVec zVecLS(zVec v, int n, ...)
 }
 
 /* interior division of two vectors. */
-zVec zVecInterDiv(zVec v1, zVec v2, double ratio, zVec v)
+zVec zVecInterDiv(const zVec v1, const zVec v2, double ratio, zVec v)
 {
   zRawVecInterDiv( zVecBufNC(v1), zVecBufNC(v2), ratio, zVecBufNC(v), zVecSizeNC(v) );
   return v;
 }
 
 /* replace a vector with the interior division with another. */
-zVec zVecInterDivDRC(zVec v, zVec v2, double ratio)
+zVec zVecInterDivDRC(zVec v, const zVec v2, double ratio)
 {
   zRawVecInterDivDRC( zVecBuf(v), zVecBuf(v2), ratio, zVecSizeNC(v) );
   return v;
 }
 
 /* midpoint of two vectors. */
-zVec zVecMid(zVec v1, zVec v2, zVec v)
+zVec zVecMid(const zVec v1, const zVec v2, zVec v)
 {
   zRawVecMid( zVecBufNC(v1), zVecBufNC(v2), zVecBufNC(v), zVecSizeNC(v) );
   return v;
 }
 
 /* scale a raw vector with two boundary vectors. */
-zVec zVecScale(zVec src, zVec min, zVec max, zVec dest)
+zVec zVecScale(const zVec src, zVec min, zVec max, zVec dest)
 {
   zRawVecScale( zVecBufNC(src), zVecBufNC(min), zVecBufNC(max), zVecBufNC(dest), zVecSizeNC(src) );
   return dest;
 }
 
 /* uniformly scale a vector with two boundary values. */
-zVec zVecScaleUniform(zVec src, double min, double max, zVec dest)
+zVec zVecScaleUniform(const zVec src, double min, double max, zVec dest)
 {
   zRawVecScaleUniform( zVecBufNC(src), min, max, zVecBufNC(dest), zVecSizeNC(src) );
   return dest;
 }
 
 /* inner product of two vectors without checking size consistency. */
-double zVecInnerProdNC(zVec v1, zVec v2)
+double zVecInnerProdNC(const zVec v1, const zVec v2)
 {
   return zRawVecInnerProd( zVecBufNC(v1), zVecBufNC(v2), zVecSizeNC(v1) );
 }
 
 /* inner product of two vectors. */
-double zVecInnerProd(zVec v1, zVec v2)
+double zVecInnerProd(const zVec v1, const zVec v2)
 {
   if( !zVecSizeIsEqual(v1,v2) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
@@ -510,19 +505,19 @@ double zVecInnerProd(zVec v1, zVec v2)
 }
 
 /* squared norm of a vector. */
-double zVecSqrNorm(zVec v)
+double zVecSqrNorm(const zVec v)
 {
   return zVecInnerProdNC( v, v );
 }
 
 /* weighted squared norm of a vector without checking size consistency. */
-double zVecWSqrNormNC(zVec v, zVec w)
+double zVecWSqrNormNC(const zVec v, const zVec w)
 {
   return zRawVecWSqrNorm( zVecBufNC(v), zVecBufNC(w), zVecSizeNC(v) );
 }
 
 /* weighted squared norm of a vector. */
-double zVecWSqrNorm(zVec v, zVec w)
+double zVecWSqrNorm(const zVec v, const zVec w)
 {
   if( !zVecSizeIsEqual(v,w) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
@@ -532,13 +527,13 @@ double zVecWSqrNorm(zVec v, zVec w)
 }
 
 /* infinity norm of a vector. */
-double zVecInfNorm(zVec v)
+double zVecInfNorm(const zVec v)
 {
   return zDataAbsMax( zVecBufNC(v), zVecSizeNC(v), NULL );
 }
 
 /* normalize a vector. */
-zVec zVecNormalize(zVec src, zVec dest)
+zVec zVecNormalize(const zVec src, zVec dest)
 {
   return zRawVecNormalize( zVecBufNC(src), zVecSizeNC(src), zVecBufNC(dest) ) ? dest : NULL;
 }
@@ -582,7 +577,7 @@ zVec zVecFScan(FILE *fp)
 }
 
 /* print a vector out to a file. */
-void zVecFPrint(FILE *fp, zVec v)
+void zVecFPrint(FILE *fp, const zVec v)
 {
   int i;
 
@@ -617,7 +612,7 @@ zVec zVecValueFScan(FILE *fp)
 }
 
 /* print a vector out to a file. */
-void zVecValueFPrint(FILE *fp, zVec v)
+void zVecValueFPrint(FILE *fp, const zVec v)
 {
   int i;
 

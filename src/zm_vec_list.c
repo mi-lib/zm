@@ -86,7 +86,7 @@ zVec zVecListSelectRand(zVecList *vl)
 }
 
 /* find the nearest neighbor of a vector by a naive algorithm. */
-double zVecListNN(zVecList *list, zVec v, zVec *nn)
+double zVecListNN(const zVecList *list, const zVec v, zVec *nn)
 {
   zVecListCell *cell;
   double d2, dmin2;
@@ -115,7 +115,7 @@ zVecList *zVecListFScan(FILE *fp, zVecList *list)
 }
 
 /* print vectors in a list to a file. */
-void zVecListFPrint(FILE *fp, zVecList *list)
+void zVecListFPrint(FILE *fp, const zVecList *list)
 {
   zVecListCell *cp;
 

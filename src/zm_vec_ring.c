@@ -47,7 +47,7 @@ zVec zVecRingFill(zVecRing *ring, zVec v)
 }
 
 /* concatenate vectors of a ring. */
-zVec zVecRingCat(zVec v, zVec c, zVecRing *ring)
+zVec zVecRingCat(zVec v, const zVec c, const zVecRing *ring)
 {
   int i;
 
@@ -61,7 +61,7 @@ zVec zVecRingCat(zVec v, zVec c, zVecRing *ring)
 }
 
 /* linear sum of vectors of a ring. */
-zVec zVecRingLS(zVec v, zVec c, zVecRing *ring)
+zVec zVecRingLinearSum(zVec v, const zVec c, const zVecRing *ring)
 {
   zVecZero( v );
   return zVecRingCat( v, c, ring );

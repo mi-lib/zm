@@ -44,7 +44,7 @@ __EXPORT void zRawVecRand(double *v, double *min, double *max, int size)
 }
 
 /* shift a raw vector by a scalar constant. */
-void zRawVecShift(double *src, int size, double shift, double *dest)
+void zRawVecShift(const double *src, int size, double shift, double *dest)
 {
   while( size-- > 0 ) *dest++ = *src++ + shift;
 }
@@ -57,7 +57,7 @@ double *zRawVecSwap(double *v, int i1, int i2)
 }
 
 /* check if a raw vector is tiny. */
-bool zRawVecIsTol(double *v, int size, double tol)
+bool zRawVecIsTol(const double *v, int size, double tol)
 {
   while( size-- > 0 )
     if( !zIsTol( *v++, tol ) ) return false;
@@ -65,7 +65,7 @@ bool zRawVecIsTol(double *v, int size, double tol)
 }
 
 /* check if a raw vector includes NaN. */
-bool zRawVecIsNan(double *v, int size)
+bool zRawVecIsNan(const double *v, int size)
 {
   for( ; size-->0; v++ )
     if( zIsNan( *v ) || zIsInf( *v ) ) return true;
@@ -73,61 +73,61 @@ bool zRawVecIsNan(double *v, int size)
 }
 
 /* add two raw vectors. */
-void zRawVecAdd(double *v1, double *v2, double *v, int size)
+void zRawVecAdd(const double *v1, const double *v2, double *v, int size)
 {
   while( size-- > 0 ) *v++ = *v1++ + *v2++;
 }
 
 /* subtract a raw vector from another. */
-void zRawVecSub(double *v1, double *v2, double *v, int size)
+void zRawVecSub(const double *v1, const double *v2, double *v, int size)
 {
   while( size-- > 0 ) *v++ = *v1++ - *v2++;
 }
 
 /* reverse a raw vector. */
-void zRawVecRev(double *v1, double *v, int size)
+void zRawVecRev(const double *v1, double *v, int size)
 {
   while( size-- > 0 ) *v++ = -*v1++;
 }
 
 /* multiply a raw vector by a scalar value. */
-void zRawVecMul(double *v1, double k, double *v, int size)
+void zRawVecMul(const double *v1, double k, double *v, int size)
 {
   while( size-- > 0 ) *v++ = *v1++ * k;
 }
 
 /* divide a raw vector by a scalar value. */
-void zRawVecDiv(double *v1, double k, double *v, int size)
+void zRawVecDiv(const double *v1, double k, double *v, int size)
 {
   zRawVecMul( v1, 1.0/k, v, size );
 }
 
 /* amplify a raw vector by another. */
-void zRawVecAmp(double *v1, double *amp, double *v, int size)
+void zRawVecAmp(const double *v1, const double *amp, double *v, int size)
 {
   while( size-- > 0 ) *v++ = *v1++ * *amp++;
 }
 
 /* demagnify a raw vector. */
-void zRawVecDem(double *v1, double *dem, double *v, int size)
+void zRawVecDem(const double *v1, const double *dem, double *v, int size)
 {
   while( size-- > 0 ) *v++ = *v1++ / *dem++;
 }
 
 /* concatenate a vector by another multiplied vector. */
-void zRawVecCat(double *v1, double k, double *v2, double *v, int size)
+void zRawVecCat(const double *v1, double k, const double *v2, double *v, int size)
 {
   while( size-- > 0 ) *v++ = *v1++ + *v2++ * k;
 }
 
 /* add two raw vectors directly. */
-void zRawVecAddDRC(double *v1, double *v2, int size)
+void zRawVecAddDRC(double *v1, const double *v2, int size)
 {
   while( size-- > 0 ) *v1++ += *v2++;
 }
 
 /* subtract a raw vector directly from another. */
-void zRawVecSubDRC(double *v1, double *v2, int size)
+void zRawVecSubDRC(double *v1, const double *v2, int size)
 {
   while( size-- > 0 ) *v1++ -= *v2++;
 }
@@ -151,19 +151,19 @@ void zRawVecDivDRC(double *v, double k, int size)
 }
 
 /* amplify a raw vector directly by another. */
-void zRawVecAmpDRC(double *v, double *amp, int size)
+void zRawVecAmpDRC(double *v, const double *amp, int size)
 {
   while( size-- > 0 ) *v++ *= *amp++;
 }
 
 /* demagnify a raw vector directly by another. */
-void zRawVecDemDRC(double *v, double *dem, int size)
+void zRawVecDemDRC(double *v, const double *dem, int size)
 {
   while( size-- > 0 ) *v++ /= *dem++;
 }
 
 /* concatenate a raw vector directly by another vector multiplied by a scalar. */
-void zRawVecCatDRC(double *v1, double k, double *v2, int size)
+void zRawVecCatDRC(double *v1, double k, const double *v2, int size)
 {
   while( size-- > 0 ) *v1++ += *v2++ * k;
 }
@@ -193,7 +193,7 @@ void zRawVecCats(double *v, int size, int n, ...)
 }
 
 /* linear sum of the multiple sets of a scalar and a raw vector. */
-void zRawVecLS(double *v, int size, int n, ...)
+void zRawVecLinearSum(double *v, int size, int n, ...)
 {
   va_list args;
 
@@ -204,7 +204,7 @@ void zRawVecLS(double *v, int size, int n, ...)
 }
 
 /* interior division of two raw vectors. */
-void zRawVecInterDiv(double *v1, double *v2, double ratio, double *v, int size)
+void zRawVecInterDiv(const double *v1, const double *v2, double ratio, double *v, int size)
 {
   while( size-- > 0 ){
     *v++ = *v1 + ratio * ( *v2 - *v1 );
@@ -214,7 +214,7 @@ void zRawVecInterDiv(double *v1, double *v2, double ratio, double *v, int size)
 }
 
 /* replace a raw vector with the interior division with another. */
-void zRawVecInterDivDRC(double *v, double *v2, double ratio, int size)
+void zRawVecInterDivDRC(double *v, const double *v2, double ratio, int size)
 {
   while( size-- > 0 ){
     *v += ratio * ( *v2 - *v );
@@ -224,14 +224,14 @@ void zRawVecInterDivDRC(double *v, double *v2, double ratio, int size)
 }
 
 /* midpoint of two raw vectors. */
-void zRawVecMid(double *v1, double *v2, double *v, int size)
+void zRawVecMid(const double *v1, const double *v2, double *v, int size)
 {
   while( size-- > 0 )
     *v++ = 0.5 * ( *v1++ + *v2++ );
 }
 
 /* scale a raw vector with two boundary vectors. */
-void zRawVecScale(double *src, double *min, double *max, double *dest, int size)
+void zRawVecScale(const double *src, const double *min, const double *max, double *dest, int size)
 {
   while( size-- > 0 ){
     *dest++ = *min + *src++ * ( *max - *min );
@@ -241,14 +241,14 @@ void zRawVecScale(double *src, double *min, double *max, double *dest, int size)
 }
 
 /* uniformly scale a raw vector with two boundary values. */
-void zRawVecScaleUniform(double *src, double min, double max, double *dest, int size)
+void zRawVecScaleUniform(const double *src, double min, double max, double *dest, int size)
 {
   while( size-- > 0 )
     *dest++ = min + *src++ * ( max - min );
 }
 
 /* inner product of two raw vectors. */
-double zRawVecInnerProd(double *v1, double *v2, int size)
+double zRawVecInnerProd(const double *v1, const double *v2, int size)
 {
   double s=0, s_prev=0, v, q=0, r;
 
@@ -262,13 +262,13 @@ double zRawVecInnerProd(double *v1, double *v2, int size)
 }
 
 /* squared norm of a raw vector. */
-double zRawVecSqrNorm(double *v, int size)
+double zRawVecSqrNorm(const double *v, int size)
 {
   return zRawVecInnerProd( v, v, size );
 }
 
 /* weighted squared norm of a raw vector. */
-double zRawVecWSqrNorm(double *v, double *w, int size)
+double zRawVecWSqrNorm(const double *v, const double *w, int size)
 {
   double s=0, s_prev=0, vs, q=0, r;
 
@@ -282,7 +282,7 @@ double zRawVecWSqrNorm(double *v, double *w, int size)
 }
 
 /* normalize a raw vector. */
-double *zRawVecNormalize(double *src, int size, double *dest)
+double *zRawVecNormalize(const double *src, int size, double *dest)
 {
   double l;
 
@@ -296,7 +296,7 @@ double *zRawVecNormalize(double *src, int size, double *dest)
 }
 
 /* squared distance between two raw vectors. */
-double zRawVecSqrDist(double *v1, double *v2, int size)
+double zRawVecSqrDist(const double *v1, const double *v2, int size)
 {
   int i;
   double d;
@@ -307,7 +307,7 @@ double zRawVecSqrDist(double *v1, double *v2, int size)
 }
 
 /* print a raw vector out to a file. */
-void zRawVecFPrint(FILE *fp, double *v, int size)
+void zRawVecFPrint(FILE *fp, const double *v, int size)
 {
   while( size-- > 0 )
     fprintf( fp, "%.10g ", *v++ );

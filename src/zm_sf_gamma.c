@@ -6,14 +6,8 @@
 
 #include <zm/zm_sf.h>
 
-static double _zGammaSeed(double x);
-static double _zGammaBias(double x);
-
-/* (static)
- * _zGammaSeed
- * - a seed value of gamma function. see 'zGamma()' and 'zLnGamma()'.
- */
-double _zGammaSeed(double x)
+/* a seed value of gamma function. */
+static double _zGammaSeed(double x)
 {
   double s = 1.000000000190015;
 
@@ -26,34 +20,25 @@ double _zGammaSeed(double x)
   return 2.5066282746310005 * s / x;
 }
 
-/* (static)
- * _zGammaBias
- * - a vias value of gamma function. see 'zGamma()' and 'zLnGamma()'.
- */
-double _zGammaBias(double x)
+/* a vias value of gamma function. */
+static double _zGammaBias(double x)
 {
   return ( x + 0.5 ) * log( x + 5.5 ) - x - 5.5;
 }
 
-/* zGamma
- * - gamma function.
- */
+/* gamma function. */
 double zGamma(double x)
 {
   return exp( _zGammaBias(x) ) * _zGammaSeed(x);
 }
 
-/* zLnGamma
- * - logarithm of gamma function.
- */
+/* logarithm of gamma function. */
 double zLnGamma(double x)
 {
   return _zGammaBias(x) + log( _zGammaSeed(x) );
 }
 
-/* zBeta
- * - beta function.
- */
+/* beta function. */
 double zBeta(double z, double w)
 {
   return exp( zLnGamma(z) + zLnGamma(w) - zLnGamma(z+w) );

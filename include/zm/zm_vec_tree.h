@@ -11,11 +11,6 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
-/* CLASS: zVecTree
- * vector binary tree class.
- * ********************************************************** */
-
 typedef struct _zVecTree{
   int split; /*!< split index */
   zVec v;    /*!< spliting vertex */
@@ -29,7 +24,7 @@ __ZM_EXPORT void zVecTreeDestroy(zVecTree *tree);
 
 __ZM_EXPORT zVecTree *zVecTreeAdd(zVecTree *tree, zVec v);
 
-__ZM_EXPORT double zVecTreeNN(zVecTree *tree, zVec v, zVecTree **nn);
+__ZM_EXPORT double zVecTreeNN(const zVecTree *tree, const zVec v, zVecTree **nn);
 
 __END_DECLS
 

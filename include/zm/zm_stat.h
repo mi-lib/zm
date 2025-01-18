@@ -79,7 +79,7 @@ __ZM_EXPORT double zChi2CumDistrib(double x, int k);
  * The index to the max is stored where \a im points,
  * if it is not the null pointer.
  */
-__ZM_EXPORT double zDataMax(double *data, int size, int *im);
+__ZM_EXPORT double zDataMax(const double *data, int size, int *im);
 
 /*! \brief the minimum value in data.
  *
@@ -87,7 +87,7 @@ __ZM_EXPORT double zDataMax(double *data, int size, int *im);
  * The index to the max is stored where \a im points,
  * if it is not the null pointer.
  */
-__ZM_EXPORT double zDataMin(double *data, int size, int *im);
+__ZM_EXPORT double zDataMin(const double *data, int size, int *im);
 
 /*! \brief the maximum absolute value in data.
  *
@@ -95,7 +95,7 @@ __ZM_EXPORT double zDataMin(double *data, int size, int *im);
  * The index to the max is stored where \a im points,
  * if it is not the null pointer.
  */
-__ZM_EXPORT double zDataAbsMax(double *data, int size, int *im);
+__ZM_EXPORT double zDataAbsMax(const double *data, int size, int *im);
 
 /*! \brief the minimum absolute value in data.
  *
@@ -103,31 +103,31 @@ __ZM_EXPORT double zDataAbsMax(double *data, int size, int *im);
  * The index to the max is stored where \a im points,
  * if it is not the null pointer.
  */
-__ZM_EXPORT double zDataAbsMin(double *data, int size, int *im);
+__ZM_EXPORT double zDataAbsMin(const double *data, int size, int *im);
 
 /*! \brief the summation of data.
  *
  * \a size is the size of data.
  */
-__ZM_EXPORT double zDataSum(double *data, int size);
+__ZM_EXPORT double zDataSum(const double *data, int size);
 
 /*! \brief the mean of data.
  *
  * \a size is the size of data.
  */
-__ZM_EXPORT double zDataMean(double *data, int size);
+__ZM_EXPORT double zDataMean(const double *data, int size);
 
 /*! \brief the variance of data.
  *
  * \a size is the size of data.
  */
-__ZM_EXPORT double zDataVar(double *data, int size);
+__ZM_EXPORT double zDataVar(const double *data, int size);
 
 /*! \brief the standard deviation of data.
  *
  * \a size is the size of data.
  */
-__ZM_EXPORT double zDataSD(double *data, int size);
+__ZM_EXPORT double zDataStandardDeviation(const double *data, int size);
 
 /*! \brief check if a value is included in data.
  *
@@ -136,7 +136,7 @@ __ZM_EXPORT double zDataSD(double *data, int size);
  * \a tol is the tolerance to regard two values as the same.
  * \sa zIsEqual
  */
-__ZM_EXPORT bool zDataIsIncluded(double *data, int size, double val, double tol);
+__ZM_EXPORT bool zDataIsIncluded(const double *data, int size, double val, double tol);
 
 /*! \} */
 

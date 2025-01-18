@@ -59,7 +59,7 @@ __ZM_EXPORT zVec zVecListSelectRand(zVecList *vl);
  * \return
  * zVecListNN() returns the distance between \a v and the nearest neighbor.
  */
-__ZM_EXPORT double zVecListNN(zVecList *list, zVec v, zVec *nn);
+__ZM_EXPORT double zVecListNN(const zVecList *list, const zVec v, zVec *nn);
 
 /*! \brief scan/print a list of vectors from/to a file.
  *
@@ -78,7 +78,7 @@ __ZM_EXPORT double zVecListNN(zVecList *list, zVec v, zVec *nn);
  */
 __ZM_EXPORT zVecList *zVecListFScan(FILE *fp, zVecList *list);
 #define zVecListScan(l) zVecListFScan( stdin, l )
-__ZM_EXPORT void zVecListFPrint(FILE *fp, zVecList *list);
+__ZM_EXPORT void zVecListFPrint(FILE *fp, const zVecList *list);
 #define zVecListPrint(l) zVecListFPrint( stdout, l )
 
 /* ********************************************************** */

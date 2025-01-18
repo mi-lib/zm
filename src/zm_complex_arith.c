@@ -7,60 +7,60 @@
 #include <zm/zm_complex.h>
 
 /* squared absolute value of a complex number. */
-double zComplexSqrAbs(zComplex *c)
+double zComplexSqrAbs(const zComplex *c)
 {
   return _zComplexSqrAbs( c );
 }
 
 /* absolute value of a complex number. */
-double zComplexAbs(zComplex *c)
+double zComplexAbs(const zComplex *c)
 {
   return _zComplexAbs( c );
 }
 
 /* argument angle of a complex number. */
-double zComplexArg(zComplex *c)
+double zComplexArg(const zComplex *c)
 {
   return _zComplexArg( c );
 }
 
 /* complex conjugate. */
-zComplex *zComplexConj(zComplex *c, zComplex *cc)
+zComplex *zComplexConj(const zComplex *c, zComplex *cc)
 {
   _zComplexConj( c, cc );
   return cc;
 }
 
 /* add two complex numbers. */
-zComplex *zComplexAdd(zComplex *c1, zComplex *c2, zComplex *c)
+zComplex *zComplexAdd(const zComplex *c1, const zComplex *c2, zComplex *c)
 {
   _zComplexAdd( c1, c2, c );
   return c;
 }
 
 /* subtract complex number from the other. */
-zComplex *zComplexSub(zComplex *c1, zComplex *c2, zComplex *c)
+zComplex *zComplexSub(const zComplex *c1, const zComplex *c2, zComplex *c)
 {
   _zComplexSub( c1, c2, c );
   return c;
 }
 
 /* reverse complex number. */
-zComplex *zComplexRev(zComplex *c, zComplex *rc)
+zComplex *zComplexRev(const zComplex *c, zComplex *rc)
 {
   _zComplexRev( c, rc );
   return rc;
 }
 
 /* multiply a complex number by a real number. */
-zComplex *zComplexMul(zComplex *c, double k, zComplex *ec)
+zComplex *zComplexMul(const zComplex *c, double k, zComplex *ec)
 {
   _zComplexMul( c, k, ec );
   return ec;
 }
 
 /* divide a complex number by a real number. */
-zComplex *zComplexDiv(zComplex *c, double k, zComplex *rc)
+zComplex *zComplexDiv(const zComplex *c, double k, zComplex *rc)
 {
   if( zIsTiny( k ) ){
     ZRUNERROR( ZM_ERR_ZERODIV );
@@ -72,21 +72,21 @@ zComplex *zComplexDiv(zComplex *c, double k, zComplex *rc)
 }
 
 /* multiply two complex numbers. */
-zComplex *zComplexCMul(zComplex *c1, zComplex *c2, zComplex *c)
+zComplex *zComplexCMul(const zComplex *c1, const zComplex *c2, zComplex *c)
 {
   _zComplexCMul( c1, c2, c );
   return c;
 }
 
 /* multiply a complex numbers by the conjugate of another complex number. */
-zComplex *zComplexCMulConj(zComplex *c1, zComplex *c2, zComplex *c)
+zComplex *zComplexCMulConj(const zComplex *c1, const zComplex *c2, zComplex *c)
 {
   _zComplexCMulConj( c1, c2, c );
   return c;
 }
 
 /* invert a complex number. */
-zComplex *zComplexInv(zComplex *c, zComplex *ic)
+zComplex *zComplexInv(const zComplex *c, zComplex *ic)
 {
   double r2;
   zComplex cc;
@@ -97,7 +97,7 @@ zComplex *zComplexInv(zComplex *c, zComplex *ic)
 }
 
 /* divide a complex number by another. */
-zComplex *zComplexCDiv(zComplex *c1, zComplex *c2, zComplex *c)
+zComplex *zComplexCDiv(const zComplex *c1, const zComplex *c2, zComplex *c)
 {
   zComplex cc;
 
@@ -107,7 +107,7 @@ zComplex *zComplexCDiv(zComplex *c1, zComplex *c2, zComplex *c)
 }
 
 /* multiply two complex numbers. */
-zComplex *zComplexCMulDRC(zComplex *c1, zComplex *c2)
+zComplex *zComplexCMulDRC(zComplex *c1, const zComplex *c2)
 {
   zComplex tmp;
 
@@ -117,7 +117,7 @@ zComplex *zComplexCMulDRC(zComplex *c1, zComplex *c2)
 }
 
 /* multiply a complex numbers by the conjugate of another complex number. */
-zComplex *zComplexCMulConjDRC(zComplex *c1, zComplex *c2)
+zComplex *zComplexCMulConjDRC(zComplex *c1, const zComplex *c2)
 {
   zComplex tmp;
 
@@ -127,7 +127,7 @@ zComplex *zComplexCMulConjDRC(zComplex *c1, zComplex *c2)
 }
 
 /* divide a complex number by another. */
-zComplex *zComplexCDivDRC(zComplex *c1, zComplex *c2)
+zComplex *zComplexCDivDRC(zComplex *c1, const zComplex *c2)
 {
   zComplex tmp;
 
@@ -137,7 +137,7 @@ zComplex *zComplexCDivDRC(zComplex *c1, zComplex *c2)
 }
 
 /* power a complex number by a real number. */
-zComplex *zComplexPow(zComplex *c, double z, zComplex *pc)
+zComplex *zComplexPow(const zComplex *c, double z, zComplex *pc)
 {
   double r, theta;
 
@@ -148,7 +148,7 @@ zComplex *zComplexPow(zComplex *c, double z, zComplex *pc)
 }
 
 /* power complex number by a real number. */
-zComplex *zComplexPowRef(zComplex *c, double z, zComplex *ref, zComplex *pc)
+zComplex *zComplexPowRef(const zComplex *c, double z, const zComplex *ref, zComplex *pc)
 {
   double r, theta, w;
 
@@ -162,7 +162,7 @@ zComplex *zComplexPowRef(zComplex *c, double z, zComplex *ref, zComplex *pc)
 }
 
 /* power complex number by another complex number. */
-zComplex *zComplexCPow(zComplex *c, zComplex *z, zComplex *pc)
+zComplex *zComplexCPow(const zComplex *c, const zComplex *z, zComplex *pc)
 {
   double r, theta;
 
@@ -173,7 +173,7 @@ zComplex *zComplexCPow(zComplex *c, zComplex *z, zComplex *pc)
 }
 
 /* the real number base logarithm of complex number. */
-zComplex *zComplexLog(zComplex *c, double base, zComplex *lc)
+zComplex *zComplexLog(const zComplex *c, double base, zComplex *lc)
 {
   double r, theta, d;
 
@@ -189,7 +189,7 @@ zComplex *zComplexLog(zComplex *c, double base, zComplex *lc)
 }
 
 /* the complex number base logarithm of complex number. */
-zComplex *zComplexCLog(zComplex *c, zComplex *base, zComplex *lc)
+zComplex *zComplexCLog(const zComplex *c, const zComplex *base, zComplex *lc)
 {
   double rb, thetab, lrb, d, rc, thetac, lrc;
 
@@ -213,7 +213,7 @@ zComplex *zComplexCLog(zComplex *c, zComplex *base, zComplex *lc)
 }
 
 /* normalization of complex number. */
-zComplex *zComplexNormalize(zComplex *c, zComplex *nc)
+zComplex *zComplexNormalize(const zComplex *c, zComplex *nc)
 {
   return zComplexDiv( c, _zComplexAbs( c ), nc );
 }
