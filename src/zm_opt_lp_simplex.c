@@ -257,11 +257,11 @@ bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost)
   zLPTableau tab;
   bool ret = false;
 
-  if( !zMatColVecSizeIsEqual(a,ans) || !zMatRowVecSizeIsEqual(a,b) ){
+  if( !zMatColVecSizeEqual(a,ans) || !zMatRowVecSizeEqual(a,b) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }
-  if( !zVecSizeIsEqual(c,ans) ){
+  if( !zVecSizeEqual(c,ans) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return false;
   }
@@ -295,7 +295,7 @@ bool zLPFeasibleBase(zMat a, zVec b, zVec base)
   zLPTableau tab;
   bool ret = false;
 
-  if( !zMatRowVecSizeIsEqual(a,b) ){
+  if( !zMatRowVecSizeEqual(a,b) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }

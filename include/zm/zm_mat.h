@@ -45,20 +45,21 @@ typedef zMatStruct * zMat;
   zMatSetRowSize(m,r);\
   zMatSetColSize(m,c);\
 } while(0)
-#define zMatRowSizeIsEqual(m1,m2) \
+
+#define zMatRowSizeEqual(m1,m2) \
   ( zMatRowSizeNC(m1) == zMatRowSizeNC(m2) )
-#define zMatColSizeIsEqual(m1,m2) \
+#define zMatColSizeEqual(m1,m2) \
   ( zMatColSizeNC(m1) == zMatColSizeNC(m2) )
-#define zMatSizeIsEqual(m1,m2) \
-  ( zMatRowSizeIsEqual(m1,m2) && zMatColSizeIsEqual(m1,m2) )
-#define zMatColVecSizeIsEqual(m,v) \
+#define zMatSizeEqual(m1,m2) \
+  ( zMatRowSizeEqual(m1,m2) && zMatColSizeEqual(m1,m2) )
+#define zMatColVecSizeEqual(m,v) \
   ( zMatColSizeNC(m) == zVecSizeNC(v) )
-#define zMatRowVecSizeIsEqual(m,v) \
+#define zMatRowVecSizeEqual(m,v) \
   ( zMatRowSizeNC(m) == zVecSizeNC(v) )
-#define zMatRowColSizeIsEqual(m1,m2) \
+#define zMatRowColSizeEqual(m1,m2) \
   ( zMatRowSizeNC(m1) == zMatColSizeNC(m2) )
-#define zMatColRowSizeIsEqual(m1,m2) zMatRowColSizeIsEqual(m2,m1)
-#define zMatIsSqr(m) zMatRowColSizeIsEqual(m,m)
+#define zMatColRowSizeEqual(m1,m2) zMatRowColSizeEqual(m2,m1)
+#define zMatIsSqr(m) zMatRowColSizeEqual(m,m)
 
 /*! \brief pointer to the array buffer of of double-precision floating-point values in a matrix. */
 #define zMatBufNC(m)    zArray2Buf(m)
@@ -263,12 +264,16 @@ __ZM_EXPORT void zMatShift(zMat m, double shift);
 
 /*! \brief check if two matrices are equal.
  *
- * zMatIsEqual() checks if given two matrices \a m1 and \a m2 are equal.
+ * zMatEqual() checks if the given two matrices \a m1 and \a m2 are equal to each other.
  * \a tol is the tolerance to regard two values as the same.
+ *
+ * zMatMatch() checks fi the given two matrices \a m1 and \a m2 exactly match with each other.
  * \return
- * zMatIsEqual() returns the true value if \a m1 and \a m2 are equal, or the false value otherwise.
+ * zMatEqual() returns the true value if \a m1 and \a m2 are equal, or the false value otherwise.
+ * zMatMatch() returns the true value if \a m1 exactly matches with \a m2, or the false value otherwise.
  */
-__ZM_EXPORT bool zMatIsEqual(const zMat m1, const zMat m2, double tol);
+__ZM_EXPORT bool zMatEqual(const zMat m1, const zMat m2, double tol);
+__ZM_EXPORT bool zMatMatch(const zMat m1, const zMat m2);
 
 /*! \brief check if a matrix is tiny.
  *

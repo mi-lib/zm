@@ -44,7 +44,10 @@ int main(void)
 
   zAssert( zIsEven, zIsEven( 0 ) && zIsEven( 2 ) && zIsEven( -2 ) && !zIsEven( 1 ) );
   zAssert( zIsOdd, !zIsOdd( 0 ) && zIsOdd( 1 ) && zIsOdd( -1 ) );
+
+#if 0
   zAssert( zIsSgnOpp, zIsSgnOpp( 1, -1 ) && !zIsSgnOpp( 1, 0 ) && !zIsSgnOpp( -1, 0 ) );
+#endif
 
   zAssert( zPhaseNormalize, zIsTiny( zPhaseNormalize(3*zPI) - zPI ) &&
                             zIsTiny( zPhaseNormalize(-zPI-zTOL) - zPI ) );

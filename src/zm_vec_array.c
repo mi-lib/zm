@@ -37,7 +37,7 @@ zVec zVecArrayFill(zVecArray *array, zVec v)
 {
   int i;
 
-  if( !zVecSizeIsEqual(*zArrayHead(array),v) ){
+  if( !zVecSizeEqual(*zArrayHead(array),v) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }

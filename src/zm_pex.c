@@ -392,7 +392,7 @@ char *zPexSExpr(char *str, int size, zPex p, char c)
       else if( zPexCoeff(p,i) < 0 )
         __strcat_dec( str, " - ", len, size );
       if( zPexCoeff(p,i) != 0 ){
-        if( i == 0 || !zIsEqual( ( coeff = fabs( zPexCoeff(p,i) ) ), 1.0, zTOL ) ){
+        if( i == 0 || !zEqual( ( coeff = fabs( zPexCoeff(p,i) ) ), 1.0, zTOL ) ){
           sprintf( buf, "%.10g ", coeff );
           __strcat_dec( str, buf, len, size );
         }

@@ -35,14 +35,15 @@ __BEGIN_DECLS
 /*! \brief check if value is under the defined tolerance zTOL. */
 #define zIsTiny(x)    zIsTol( x, zTOL )
 
-/*! \brief check if two values are equal. */
-__ZM_EXPORT bool zIsEqual(double a, double b, double tol);
-
 /*! \brief checks if an integer value \a d is an even number. */
 #define zIsEven(d)    (~(d) & 0x1 )
 /*! \brief checks if an integer value \a d is an odd number. */
 #define zIsOdd(d)     ( (d) & 0x1 )
 
+/*! \brief check if two values are equal. */
+__ZM_EXPORT bool zEqual(double a, double b, double tol);
+
+#if 0
 /*! \brief check if signs of two values are opposite.
  *
  * zIsSgnOpp() checks if the signs of two values \a a and \a b
@@ -51,6 +52,7 @@ __ZM_EXPORT bool zIsEqual(double a, double b, double tol);
  * \retval false signs of \a a and \a b are the same.
  */
 __ZM_EXPORT bool zIsSgnOpp(double a, double b);
+#endif
 
 /*! \brief a sine and cosine set.
  *

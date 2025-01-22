@@ -63,7 +63,7 @@ bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, zVec t, zVec x)
   zVec b, v;
   bool result = true;
 
-  if( !zVecSizeIsEqual( t, x ) ){
+  if( !zVecSizeEqual( t, x ) ){
     ZRUNERROR( ZM_ERR_IP_SIZEMISMATCH );
     return false;
   }
@@ -101,7 +101,7 @@ bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, doub
   zVec b, v;
   bool result = true;
 
-  if( !zVecSizeIsEqual( t, x ) ){
+  if( !zVecSizeEqual( t, x ) ){
     ZRUNERROR( ZM_ERR_IP_SIZEMISMATCH );
     return false;
   }

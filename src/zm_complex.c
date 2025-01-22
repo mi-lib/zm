@@ -106,7 +106,7 @@ bool zComplexValIsIncluded(const zComplex *array, int size, const zComplex *c, d
   int i;
 
   for( i=0; i<size; i++ )
-    if( zComplexIsEqual( &array[i], c, tol ) ) return true;
+    if( zComplexEqual( &array[i], c, tol ) ) return true;
   return false;
 }
 
@@ -116,6 +116,6 @@ bool zComplexValConjIsIncluded(const zComplex *array, int size, const zComplex *
   int i;
 
   for( i=0; i<size; i++ )
-    if( zComplexIsConj( &array[i], c, tol ) ) return true;
+    if( zComplexCoconj( &array[i], c, tol ) ) return true;
   return false;
 }

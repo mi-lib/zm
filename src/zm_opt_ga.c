@@ -83,7 +83,7 @@ bool zOptGACreate(zOptGA *ga, double (* f)(zVec,void*), void *util, zVec min, zV
 {
   int i;
 
-  if( !zVecSizeIsEqual( min, max ) ){
+  if( !zVecSizeEqual( min, max ) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return false;
   }

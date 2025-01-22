@@ -46,7 +46,7 @@ int zMatDecompLU(zMat m, zMat l, zMat u, zIndex idx)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return -1;
   }
-  if( !zMatRowSizeIsEqual(m,l) || !zMatSizeIsEqual(m,u) ){
+  if( !zMatRowSizeEqual(m,l) || !zMatSizeEqual(m,u) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return -1;
   }

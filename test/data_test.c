@@ -40,10 +40,10 @@ void assert_fft(void)
   zFFT( data, FFT_TEST_N, res );
   zFFTInv( res, FFT_TEST_N, inv );
   for( i=0; i<FFT_TEST_N; i++ )
-    if( !zIsEqual( data[i], inv[i], zTOL ) ) result = false;
+    if( !zEqual( data[i], inv[i], zTOL ) ) result = false;
   for( i=0; i<FFT_TEST_DIM; i++ )
-    if( !zIsEqual( res[i].re, f.cc[i], zTOL ) ||
-        !zIsEqual( res[i].im, f.sc[i], zTOL ) ) result = false;
+    if( !zEqual( res[i].re, f.cc[i], zTOL ) ||
+        !zEqual( res[i].im, f.sc[i], zTOL ) ) result = false;
   zAssert( zFFT + zFFTInv, result );
   zFourierFree( &f );
 }

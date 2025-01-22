@@ -194,7 +194,7 @@ int zOptSolveNM(double (* f)(zVec,void*), void *util, zVec min, zVec max, int it
   zOptNM opt;
   int ret;
 
-  if( !zVecSizeIsEqual( min, ans ) || !zVecSizeIsEqual( max, ans ) ){
+  if( !zVecSizeEqual( min, ans ) || !zVecSizeEqual( max, ans ) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return -1;
   }

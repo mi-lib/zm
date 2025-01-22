@@ -145,11 +145,11 @@ bool zLCPSolveIP(zMat m, zVec q, zVec w, zVec z)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return false;
   }
-  if( !zMatRowVecSizeIsEqual(m,q) ){
+  if( !zMatRowVecSizeEqual(m,q) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }
-  if( ( w && ( !zVecSizeIsEqual(w,q) || !zVecSizeIsEqual(w,z) ) ) ){
+  if( ( w && ( !zVecSizeEqual(w,q) || !zVecSizeEqual(w,z) ) ) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return false;
   }

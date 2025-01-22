@@ -26,8 +26,9 @@ typedef zCVecStruct* zCVec;
 /*! \brief set the size of a complex vector. */
 #define zCVecSetSizeNC(v,s)     ( zCVecSizeNC(v) = (s) )
 #define zCVecSetSize(v,s)       ( (v) ? zCVecSetSizeNC(v,s) : 0 )
+
 /*! \brief check if the sizes of two complex vectors are equal. */
-#define zCVecSizeIsEqual(v1,v2) ( zCVecSizeNC(v1) == zCVecSizeNC(v2) )
+#define zCVecSizeEqual(v1,v2)   ( zCVecSizeNC(v1) == zCVecSizeNC(v2) )
 
 /*! \brief array buffer of a complex vector. */
 #define zCVecBufNC(v) zArrayBuf(v)
@@ -96,12 +97,12 @@ __ZM_EXPORT zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rma
 
 /*! \brief compare two complex vectors.
  *
- * zCVecIsEqual() checks if two complex vectors \a v1 and \a v2 are equal. \a tol is the tolerance
+ * zCVecEqual() checks if two complex vectors \a v1 and \a v2 are equal. \a tol is the tolerance
  * to regard two values as the same.
  * \return
- * zCVecIsEqual() returns the true value if \a v1 equals to \a v2, or the false value otherwise.
+ * zCVecEqual() returns the true value if \a v1 equals to \a v2, or the false value otherwise.
  */
-__ZM_EXPORT bool zCVecIsEqual(const zCVec v1, const zCVec v2, double tol);
+__ZM_EXPORT bool zCVecEqual(const zCVec v1, const zCVec v2, double tol);
 
 /*! \brief check if a complex vector is tiny.
  *

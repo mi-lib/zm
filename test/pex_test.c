@@ -66,7 +66,7 @@ void assert_pex_val(void)
   n = 100;
   for( i=0; i<=n; i++ ){
     x = 5.0*i/n - 2.0;
-    if( !zIsEqual( zPexVal(p,x), pex_val3(p,x), zTOL ) ) result = false;
+    if( !zEqual( zPexVal(p,x), pex_val3(p,x), zTOL ) ) result = false;
   }
   zPexFree( p );
   zAssert( zPexVal, result );
@@ -109,7 +109,7 @@ void assert_pex_div(void)
     zPexDiv( p, f, &q, &r );
     g = zPexMul( f, q );
     zPexAddDRC( g, r );
-    if( !zBoolStr( zPexIsEqual( p, g, zTOL ) ) ) result = false;
+    if( !zBoolStr( zPexEqual( p, g, zTOL ) ) ) result = false;
   }
   zAssert( zPexDiv + zPexMul + zPexAdd, result );
   zPexFree( p );

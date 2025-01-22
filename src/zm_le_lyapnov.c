@@ -19,7 +19,7 @@ zMat zLyapnovSolve(zMat a, zMat b, zMat ans)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( !zMatSizeIsEqual(a,ans) || !zMatSizeIsEqual(b,ans) ){
+  if( !zMatSizeEqual(a,ans) || !zMatSizeEqual(b,ans) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }

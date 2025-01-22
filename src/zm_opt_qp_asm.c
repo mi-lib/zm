@@ -219,8 +219,8 @@ static bool _zQPASMCheck(zMat q, zVec c, zMat a, zVec b, zVec ans)
     ZRUNERROR( ZM_ERR_MAT_NOTSYMMETRIC );
     return false;
   }
-  if( !zMatRowVecSizeIsEqual( q, c ) || !zVecSizeIsEqual( c, ans ) ||
-      !zMatRowVecSizeIsEqual( a, b ) || !zMatColVecSizeIsEqual( a, ans ) ){
+  if( !zMatRowVecSizeEqual( q, c ) || !zVecSizeEqual( c, ans ) ||
+      !zMatRowVecSizeEqual( a, b ) || !zMatColVecSizeEqual( a, ans ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }

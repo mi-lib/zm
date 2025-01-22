@@ -70,6 +70,7 @@ zCMat zCMatClone(const zCMat src)
 {
   zCMat dest;
 
+  if( !src ) return NULL;
   if( ( dest = zCMatAlloc( zCMatRowSizeNC(src), zCMatColSizeNC(src) ) ) )
     zCMatCopyNC( src, dest );
   return dest;

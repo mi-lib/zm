@@ -87,10 +87,10 @@ __ZM_EXPORT zComplex *zComplexTouchup(zComplex *c);
 #define zComplexIsReal(c,tol) zIsTol( (c)->im, tol )
 
 /*! \brief check if two complex numbers are equal. */
-#define zComplexIsEqual(c1,c2,tol) ( zIsEqual( (c1)->re, (c2)->re, tol ) && zIsEqual( (c1)->im, (c2)->im, tol ) )
+#define zComplexEqual(c1,c2,tol) ( zEqual( (c1)->re, (c2)->re, tol ) && zEqual( (c1)->im, (c2)->im, tol ) )
 
 /*! \brief check if two complex numbers are co-conjugate. */
-#define zComplexIsConj(c1,c2,tol) ( zIsEqual( (c1)->re, (c2)->re, tol ) && zIsEqual( (c1)->im, -(c2)->im, tol ) )
+#define zComplexCoconj(c1,c2,tol) ( zEqual( (c1)->re, (c2)->re, tol ) && zEqual( (c1)->im, -(c2)->im, tol ) )
 
 /*! \brief read a complex number from a string. */
 __ZM_EXPORT zComplex *zComplexFromStr(zComplex *c, const char *str);

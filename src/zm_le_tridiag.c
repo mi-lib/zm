@@ -34,8 +34,8 @@ zVec zTridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans)
 {
   zVec acp, bcp, dcp;
 
-  if( !zVecSizeIsEqual(a,b) || !zVecSizeIsEqual(b,c) ||
-      !zVecSizeIsEqual(c,d) || !zVecSizeIsEqual(d,ans) ){
+  if( !zVecSizeEqual(a,b) || !zVecSizeEqual(b,c) ||
+      !zVecSizeEqual(c,d) || !zVecSizeEqual(d,ans) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }

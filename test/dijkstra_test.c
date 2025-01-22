@@ -149,7 +149,7 @@ bool assert_dijkstra_case(double (* testfunc)(zGraph*,int*,int*,int**))
 
   zGraphDestroy( &graph );
   zListDestroy( zGraphNodeListCell, &path );
-  return zIsEqual( cost, cost_a, zTOL );
+  return zEqual( cost, cost_a, zTOL );
 }
 
 void assert_dijkstra(void)

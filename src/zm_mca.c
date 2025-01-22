@@ -13,8 +13,8 @@ bool zVecListMinMax(zVecList *list, zVec min, zVec max)
   zVecListCell *vc;
   int i;
 
-  if( !zVecSizeIsEqual( zListHead(list)->data, min ) ||
-      !zVecSizeIsEqual( zListHead(list)->data, max ) ){
+  if( !zVecSizeEqual( zListHead(list)->data, min ) ||
+      !zVecSizeEqual( zListHead(list)->data, max ) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return false;
   }
@@ -55,7 +55,7 @@ double zVecListVar(zVecList *list, zVec mean)
   zVecListCell *vc;
   double var = 0;
 
-  if( !zVecSizeIsEqual( mean, zListHead(list)->data ) ){
+  if( !zVecSizeEqual( mean, zListHead(list)->data ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return HUGE_VAL;
   }
@@ -149,7 +149,7 @@ int zVecListGenRandND(zVecList *vl, int n, zVec mean, zMat cov)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return 0;
   }
-  if( !zMatColVecSizeIsEqual( cov, mean ) ){
+  if( !zMatColVecSizeEqual( cov, mean ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return 0;
   }

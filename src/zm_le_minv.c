@@ -62,7 +62,7 @@ zMat zMatAdj(zMat m, zMat adj)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( !zMatSizeIsEqual(m,adj) ){
+  if( !zMatSizeEqual(m,adj) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -203,7 +203,7 @@ zMat zMulInvMatMat(zMat m1, zMat m2, zMat m)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( zMatColSize(m1) != zMatRowSize(m2) || !zMatSizeIsEqual(m2,m) ){
+  if( zMatColSize(m1) != zMatRowSize(m2) || !zMatSizeEqual(m2,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -222,7 +222,7 @@ zMat zMulMatInvMat(zMat m1, zMat m2, zMat m)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( zMatRowSize(m1) != zMatColSize(m2) || !zMatSizeIsEqual(m1,m) ){
+  if( zMatRowSize(m1) != zMatColSize(m2) || !zMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -278,7 +278,7 @@ zMat zMatInvHotelling(zMat m, zMat im, double tol, int iter)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( !zMatSizeIsEqual( m, im ) ){
+  if( !zMatSizeEqual( m, im ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }

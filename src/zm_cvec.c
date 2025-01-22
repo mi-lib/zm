@@ -70,7 +70,7 @@ zCVec zCVecCopyNC(const zCVec src, zCVec dest)
 /* copy a complex vector. */
 zCVec zCVecCopy(const zCVec src, zCVec dest)
 {
-  return zCVecSizeIsEqual( src, dest ) ? zCVecCopyNC( src, dest ) : NULL;
+  return zCVecSizeEqual( src, dest ) ? zCVecCopyNC( src, dest ) : NULL;
 }
 
 /* clone a complex vector. */
@@ -78,6 +78,7 @@ zCVec zCVecClone(const zCVec src)
 {
   zCVec dest;
 
+  if( !src ) return NULL;
   if( ( dest = zCVecAlloc( zCVecSizeNC(src) ) ) )
     zCVecCopyNC( src, dest );
   return dest;
@@ -104,13 +105,13 @@ zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rmax, double im
 }
 
 /* check if two complex vectors are equal. */
-bool zCVecIsEqual(const zCVec v1, const zCVec v2, double tol)
+bool zCVecEqual(const zCVec v1, const zCVec v2, double tol)
 {
   int i;
 
-  if( !zCVecSizeIsEqual( v1, v2 ) ) return false;
+  if( !zCVecSizeEqual( v1, v2 ) ) return false;
   for( i=0; i<zCVecSizeNC(v1); i++ )
-    if( !zComplexIsEqual( zCVecElemNC(v1,i), zCVecElemNC(v2,i), tol ) ) return false;
+    if( !zComplexEqual( zCVecElemNC(v1,i), zCVecElemNC(v2,i), tol ) ) return false;
   return true;
 }
 
@@ -175,7 +176,7 @@ zCVec zCVecConjPair(zCVec v, double tol)
   }
   for( i=0; i<zCVecSizeNC(v); i+=2 ){
     for( j=i+1; j<zCVecSizeNC(v); j++ ){
-      if( zComplexIsConj( zCVecElemNC(v,i), zCVecElemNC(v,j), tol ) ){
+      if( zComplexCoconj( zCVecElemNC(v,i), zCVecElemNC(v,j), tol ) ){
         if( j > i + 1 ) zSwap( zComplex, *zCVecElemNC(v,i+1), *zCVecElemNC(v,j) );
         break;
       }
@@ -262,12 +263,12 @@ zCVec zCVecCatNC(const zCVec v1, const zComplex *z, const zCVec v2, zCVec v)
 }
 
 #define __z_cvec_size_check_2(v1,v2) \
-  if( !zCVecSizeIsEqual(v1,v2) ){\
+  if( !zCVecSizeEqual(v1,v2) ){\
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );\
     return NULL;\
   }
 #define __z_cvec_size_check_3(v1,v2,v) \
-  if( !zCVecSizeIsEqual(v1,v2) || !zCVecSizeIsEqual(v1,v) ){\
+  if( !zCVecSizeEqual(v1,v2) || !zCVecSizeEqual(v1,v) ){\
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );\
     return NULL;\
   }
@@ -335,7 +336,7 @@ zComplex *zCVecInnerProdNC(const zCVec v1, const zCVec v2, zComplex *z)
 /* inner product of two complex vector. */
 zComplex *zCVecInnerProd(const zCVec v1, const zCVec v2, zComplex *z)
 {
-  if( !zCVecSizeIsEqual(v1,v2) ){
+  if( !zCVecSizeEqual(v1,v2) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }

@@ -44,11 +44,11 @@ void assert_mpinv(void)
     zMPInv( m1, mp );
     zMulMatMat( mp, m2, ma );
     zMulMPInvMatMat( m1, m2, mb );
-    if( !zMatIsEqual(ma,mb,TOL) ) result1 = false;
+    if( !zMatEqual(ma,mb,TOL) ) result1 = false;
 
     zLESolveMP( m1, v1, NULL, NULL, v2 );
     zMulMatVec( mp, v1, v3 );
-    if( !zVecIsEqual(v2,v3,TOL) ) result2 = false;
+    if( !zVecEqual(v2,v3,TOL) ) result2 = false;
   }
   zAssert( zMPInv + zMulMPInvMatMat, result1 );
   zAssert( zLESolveMP, result2 );

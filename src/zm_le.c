@@ -45,12 +45,12 @@ void zBalancingDST(zMat m, zVec v, zVec s)
 /* make a pair of matrix and vector balanced. */
 bool zBalancing(zMat morg, zVec vorg, zMat m, zVec v, zVec s)
 {
-  if( !zMatSizeIsEqual( morg, m ) ){
+  if( !zMatSizeEqual( morg, m ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return false;
   }
-  if( !zVecSizeIsEqual( vorg, v ) ||
-      ( s && !zVecSizeIsEqual( vorg, s ) ) ){
+  if( !zVecSizeEqual( vorg, v ) ||
+      ( s && !zVecSizeEqual( vorg, s ) ) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return false;
   }
@@ -123,7 +123,7 @@ zVec zLESolveGauss(zMat a, zVec b, zVec ans)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( !zMatColVecSizeIsEqual( a, b ) || !zVecSizeIsEqual( ans, b ) ){
+  if( !zMatColVecSizeEqual( a, b ) || !zVecSizeEqual( ans, b ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
@@ -247,8 +247,8 @@ zVec zLESolveGS(zMat a, zVec b, zVec ans)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( !zMatColVecSizeIsEqual(a,ans) ||
-      !zMatRowVecSizeIsEqual(a,b) ){
+  if( !zMatColVecSizeEqual(a,ans) ||
+      !zMatRowVecSizeEqual(a,b) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }

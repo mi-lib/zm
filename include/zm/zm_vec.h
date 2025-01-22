@@ -29,8 +29,9 @@ typedef zVecStruct * zVec;
 /*! \brief set the size of a vector. */
 #define zVecSetSizeNC(v,s)     ( zVecSizeNC(v) = (s) )
 #define zVecSetSize(v,s)       ( (v) ? zVecSetSizeNC(v,s) : 0 )
+
 /*! \brief check if the sizes of two vectors are equal. */
-#define zVecSizeIsEqual(v1,v2) ( zVecSizeNC(v1) == zVecSizeNC(v2) )
+#define zVecSizeEqual(v1,v2) ( zVecSizeNC(v1) == zVecSizeNC(v2) )
 
 /*! \brief check if the specified position of a vector is valid. */
 #define zVecPosIsValid(v,n)    zArrayPosIsValid( v, n )
@@ -249,14 +250,16 @@ __ZM_EXPORT double zVecVar(const zVec v);
 
 /*! \brief compare two vectors.
  *
- * zVecIsEqual() sees if the given two vector \a v1 and \a v2
- * are equal to each other. \a tol is the tolerance to regard
- * two values as the same.
+ * zVecEqual() checks if the given two vectors \a v1 and \a v2 are equal to each other. \a tol is the
+ * tolerance to regard two values as the same.
+ *
+ * zVecMatch() checks if the given two vectors \a v1 and \a v2 exactly match with each other.
  * \return
- * zVecIsEqual() returns the true value if \a v1 equals to
- * \a v2, or the false value otherwise.
+ * zVecEqual() returns the true value if \a v1 equals to \a v2, or the false value otherwise.
+ * zVecMatch() returns the true value if \a v1 exactly matches with \a v2, or the false value otherwise.
  */
-__ZM_EXPORT bool zVecIsEqual(const zVec v1, const zVec v2, double tol);
+__ZM_EXPORT bool zVecEqual(const zVec v1, const zVec v2, double tol);
+__ZM_EXPORT bool zVecMatch(const zVec v1, const zVec v2);
 
 /*! \brief check if a vector is tiny.
  *

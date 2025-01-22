@@ -178,6 +178,6 @@ bool zDataIsIncluded(const double *data, int size, double val, double tol)
   int i;
 
   for( i=0; i<size; i++ )
-    if( zIsEqual( data[i], val, tol ) ) return true;
+    if( zEqual( data[i], val, tol ) ) return true;
   return false;
 }

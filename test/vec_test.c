@@ -4,6 +4,19 @@
 #define N 1000
 #define TOL  (1.0e-10)
 
+void assert_clone(void)
+{
+  const int size = TEST_VEC_SIZE;
+  zVec src, dest;
+
+  src = zVecAlloc( size );
+  zVecRandUniform( src, -10, 10 );
+  dest = zVecClone( src );
+  zAssert( zVecClone, zVecMatch( src, dest ) );
+  zVecFree( src );
+  zVecFree( dest );
+}
+
 void assert_get_put(void)
 {
   const int size = TEST_VEC_SIZE;
@@ -67,9 +80,9 @@ void assert_shift(void)
     zVecShift( src, shift, dest );
     zVecSub( dest, src, error );
     for( j=0; j<zVecSizeNC(error); j++ )
-      if( !zIsEqual( zVecElemNC(error,j), shift, zTOL ) ) result1 = false;
+      if( !zEqual( zVecElemNC(error,j), shift, zTOL ) ) result1 = false;
     zVecShiftDRC( dest, -shift );
-    if( !zVecIsEqual( src, dest, zTOL ) ) result2 = false;
+    if( !zVecEqual( src, dest, zTOL ) ) result2 = false;
   }
   zVecFreeAtOnce( 3, src, dest, error );
   zAssert( zVecShift, result1 );
@@ -149,7 +162,7 @@ void assert_scale(void)
     zVecSubDRC( dest, min );
     zVecSubDRC( max, min );
     zVecDemDRC( dest, max );
-    if( !zVecIsEqual( src, dest, TOL ) ){
+    if( !zVecEqual( src, dest, TOL ) ){
       zVecSubDRC( src, dest );
       zVecPrint( src );
       result1 = false;
@@ -162,7 +175,7 @@ void assert_scale(void)
     zVecScaleUniform( src, elem_min, elem_max, dest );
     zVecShiftDRC( dest, -elem_min );
     zVecDivDRC( dest, ( elem_max - elem_min ) );
-    if( !zVecIsEqual( src, dest, TOL ) ){
+    if( !zVecEqual( src, dest, TOL ) ){
       zVecSubDRC( src, dest );
       zVecPrint( src );
       result2 = false;
@@ -217,7 +230,7 @@ void assert_nearest_neighbor(void)
 
   dmin1 = zVecTreeNN( &tree, v, &node );
   dmin2 = zVecListNN( &list, v, &nn );
-  result = ( dmin1 == dmin2 ) && zVecIsEqual( node->v, nn, 0 ) ? true : false;
+  result = ( dmin1 == dmin2 ) && zVecEqual( node->v, nn, 0 ) ? true : false;
 
   zVecFree( v );
   zVecListDestroy( &list );

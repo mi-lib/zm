@@ -176,7 +176,7 @@ static zVec _zOptDMStepDS(zOptDM *opt, zVec var, void *util, double e0, double *
   if( _zOptDMStepTest( opt, var, util, &a1, e0, df, e1 ) ) goto TERMINATE;
   /* cubic approximation test */
   for( ; ; v2=v1 ){
-    if( zIsEqual( ( da = a1 - a2 ), a1, zTOL ) ) break;
+    if( zEqual( ( da = a1 - a2 ), a1, zTOL ) ) break;
     v1 = ( *e1 - e0 + s*a2 ) / ( a2*a2 );
     c1 = 3 * ( v1 - v2 ) / da;
     c2 = ( v2*a1 - v1*a2 ) / da;

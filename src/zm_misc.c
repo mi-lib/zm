@@ -7,16 +7,18 @@
 #include <zm/zm_misc.h>
 
 /* check if two values are equal. */
-bool zIsEqual(double a, double b, double tol)
+bool zEqual(double a, double b, double tol)
 {
   return zIsTol( a-b, tol*zMax( 1, zMax( fabs(a), fabs(b) ) ) );
 }
 
+#if 0
 /* check if signs of two values are opposite. */
 bool zIsSgnOpp(double a, double b)
 {
   return ( a < 0 && b > 0 ) || ( b < 0 && a > 0 );
 }
+#endif
 
 /* compute a pair of sine and cosine values of an angle. */
 void zSinCos(double angle, double *s, double *c)

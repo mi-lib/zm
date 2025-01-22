@@ -105,7 +105,7 @@ zVec zVecCopyNC(const zVec src, zVec dest)
 /* copy a vector. */
 zVec zVecCopy(const zVec src, zVec dest)
 {
-  return zVecSizeIsEqual( src, dest ) ?
+  return zVecSizeEqual( src, dest ) ?
     zVecCopyNC( src, dest ) : NULL;
 }
 
@@ -122,6 +122,7 @@ zVec zVecClone(const zVec src)
 {
   zVec dest;
 
+  if( !src ) return NULL;
   if( ( dest = zVecAlloc( zVecSizeNC(src) ) ) )
     zVecCopyNC( src, dest );
   return dest;
@@ -260,13 +261,24 @@ double zVecMean(const zVec v){ return _zVecMean( v ); }
 double zVecVar(const zVec v){ return _zVecVar( v ); }
 
 /* check if two vectors are equal. */
-bool zVecIsEqual(const zVec v1, const zVec v2, double tol)
+bool zVecEqual(const zVec v1, const zVec v2, double tol)
 {
   int i;
 
-  if( !zVecSizeIsEqual( v1, v2 ) ) return false;
+  if( !zVecSizeEqual( v1, v2 ) ) return false;
   for( i=0; i<zVecSizeNC(v1); i++ )
-    if( !zIsEqual( zVecElemNC(v1,i), zVecElemNC(v2,i), tol ) ) return false;
+    if( !zEqual( zVecElemNC(v1,i), zVecElemNC(v2,i), tol ) ) return false;
+  return true;
+}
+
+/* check if two vectors exactly matches with each other. */
+bool zVecMatch(const zVec v1, const zVec v2)
+{
+  int i;
+
+  if( !zVecSizeEqual( v1, v2 ) ) return false;
+  for( i=0; i<zVecSizeNC(v1); i++ )
+    if( zVecElemNC(v1,i) != zVecElemNC(v2,i) ) return false;
   return true;
 }
 
@@ -341,13 +353,13 @@ zVec zVecCatNC(const zVec v1, double k, const zVec v2, zVec v)
 }
 
 #define __z_vec_size_check_2(v1,v2) \
-  if( !zVecSizeIsEqual(v1,v2) ){\
+  if( !zVecSizeEqual(v1,v2) ){\
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );\
     return NULL;\
   }
 
 #define __z_vec_size_check_3(v1,v2,v) \
-  if( !zVecSizeIsEqual(v1,v2) || !zVecSizeIsEqual(v1,v) ){\
+  if( !zVecSizeEqual(v1,v2) || !zVecSizeEqual(v1,v) ){\
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );\
     return NULL;\
   }
@@ -424,7 +436,7 @@ static void _zVecCats(zVec v, int n, va_list args)
   for( i=0; i<n; i++ ){
     k = (double)va_arg( args, double );
     vec = (zVec)va_arg( args, zVec );
-    if( !zVecSizeIsEqual( v, vec ) )
+    if( !zVecSizeEqual( v, vec ) )
       ZRUNWARN( ZM_ERR_VEC_SIZEMISMATCH );
     zVecCatDRC( v, k, vec );
   }
@@ -497,7 +509,7 @@ double zVecInnerProdNC(const zVec v1, const zVec v2)
 /* inner product of two vectors. */
 double zVecInnerProd(const zVec v1, const zVec v2)
 {
-  if( !zVecSizeIsEqual(v1,v2) ){
+  if( !zVecSizeEqual(v1,v2) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return 0;
   }
@@ -519,7 +531,7 @@ double zVecWSqrNormNC(const zVec v, const zVec w)
 /* weighted squared norm of a vector. */
 double zVecWSqrNorm(const zVec v, const zVec w)
 {
-  if( !zVecSizeIsEqual(v,w) ){
+  if( !zVecSizeEqual(v,w) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return 0;
   }

@@ -3,6 +3,20 @@
 #define MAT_ROW_SIZE 12
 #define MAT_COL_SIZE 10
 
+void assert_clone(void)
+{
+  const int rowsize = MAT_ROW_SIZE;
+  const int colsize = MAT_COL_SIZE;
+  zMat src, dest;
+
+  src = zMatAlloc( rowsize, colsize );
+  zMatRandUniform( src, -10, 10 );
+  dest = zMatClone( src );
+  zAssert( zMatClone, zMatMatch( src, dest ) );
+  zMatFree( src );
+  zMatFree( dest );
+}
+
 void assert_is_symmetric(void)
 {
   zMat m, mt;
@@ -374,7 +388,7 @@ void assert_mulmatmatmatt(void)
   zMulMatMatMatTNC( a, q, m );
   zMulMatMatT( q, a, qat );
   zMulMatMat( a, qat, mtest );
-  zAssert( zMulMatMatMatT, zMatIsEqual( m, mtest, zTOL ) );
+  zAssert( zMulMatMatMatT, zMatEqual( m, mtest, zTOL ) );
   zMatFreeAtOnce( 5, a, q, m, qat, mtest );
 }
 
@@ -392,13 +406,14 @@ void assert_mulmattmatmat(void)
   zMulMatTMatMatNC( a, q, m );
   zMulMatMat( q, a, qa );
   zMulMatTMat( a, qa, mtest );
-  zAssert( zMulMatMatMatT, zMatIsEqual( m, mtest, zTOL ) );
+  zAssert( zMulMatMatMatT, zMatEqual( m, mtest, zTOL ) );
   zMatFreeAtOnce( 5, a, q, m, qa, mtest );
 }
 
 int main(void)
 {
   zRandInit();
+  assert_clone();
   assert_is_symmetric();
   assert_get_put();
   assert_arith();

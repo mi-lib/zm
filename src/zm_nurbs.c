@@ -32,7 +32,7 @@ bool zBSplineParamCopy(const zBSplineParam *src, zBSplineParam *dest)
     ZRUNERROR( ZM_ERR_NURBS_ORDERMISMATCH, src->order, dest->order );
     return false;
   }
-  if( !zVecSizeIsEqual( src->knot, dest->knot ) ){
+  if( !zVecSizeEqual( src->knot, dest->knot ) ){
     ZRUNERROR( ZM_ERR_NURBS_KNOTNUMMISMATCH, zVecSize(src->knot), zVecSize(dest->knot) );
     return false;
   }
@@ -268,7 +268,7 @@ double zNURBSVecNN(const zNURBS *nurbs, const zVec v, zVec nn)
         s2 = sj;
       }
     }
-    if( zIsEqual( s1, s2, zTOL ) || zIsEqual( dmin1, dmin2, zTOL ) ) break;
+    if( zEqual( s1, s2, zTOL ) || zEqual( dmin1, dmin2, zTOL ) ) break;
   }
   zNURBSVec( nurbs, ( sj = 0.5*(s1+s2) ), nn );
   zVecFree( vs );

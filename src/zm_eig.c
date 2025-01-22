@@ -78,7 +78,7 @@ zMat zHess(zMat m, zMat h, zMat p)
   }
   /* target hessian matrix */
   if( h ){
-    if( !zMatSizeIsEqual( m, h ) ){
+    if( !zMatSizeEqual( m, h ) ){
       ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
       return NULL;
     }
@@ -86,7 +86,7 @@ zMat zHess(zMat m, zMat h, zMat p)
   } else
     h = m;
   /* transformation matrix */
-  if( p && !zMatSizeIsEqual( h, p ) ){
+  if( p && !zMatSizeEqual( h, p ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -465,11 +465,11 @@ zVec zEigSymBisec(zMat m, zVec eig, zMat r)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( !r || !zMatSizeIsEqual( m, r ) ){
+  if( !r || !zMatSizeEqual( m, r ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
-  if( !eig || !zMatRowVecSizeIsEqual( m, eig ) ){
+  if( !eig || !zMatRowVecSizeEqual( m, eig ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
@@ -553,11 +553,11 @@ zVec zEigSymJacobi(zMat m, zVec eig, zMat r)
     return NULL;
   }
   /* transformation matrix */
-  if( !r || !zMatSizeIsEqual( m, r ) ){
+  if( !r || !zMatSizeEqual( m, r ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
-  if( !eig || !zMatRowVecSizeIsEqual( m, eig ) ){
+  if( !eig || !zMatRowVecSizeEqual( m, eig ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }

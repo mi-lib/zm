@@ -167,7 +167,7 @@ int zOptSolvePSO(double (* f)(zVec,void*), void *util, zVec min, zVec max, int i
   zVec vmin, vmax;
   int i = -1;
 
-  if( !zVecSizeIsEqual( min, ans ) || !zVecSizeIsEqual( max, ans ) ){
+  if( !zVecSizeEqual( min, ans ) || !zVecSizeEqual( max, ans ) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return -1;
   }

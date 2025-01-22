@@ -167,7 +167,7 @@ zGNG *zGNGInit(zGNG *gng, int dim, zVec (* f)(zVec,void*), void *util)
   if( !( unit1 = _zGNGUnitAlloc( gng->_v ) ) ) goto ZGNG_INIT1_ERROR;
   do{
     gng->sampler( gng->_v, util );
-  } while( zVecIsEqual( gng->_v, unit1->data.v, zTOL ) );
+  } while( zVecEqual( gng->_v, unit1->data.v, zTOL ) );
   if( !( unit2 = _zGNGUnitAlloc( gng->_v ) ) ) goto ZGNG_INIT2_ERROR;
   zListInsertHead( &gng->unitlist, unit1 );
   zListInsertHead( &gng->unitlist, unit2 );

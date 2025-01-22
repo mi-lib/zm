@@ -128,7 +128,7 @@ zMat zMatDiag(zMat m, zVec d)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( !zMatColVecSizeIsEqual( m, d ) ){
+  if( !zMatColVecSizeEqual( m, d ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
@@ -159,7 +159,7 @@ zMat zMatCopyNC(const zMat src, zMat dest)
 /* copy a matrix. */
 zMat zMatCopy(const zMat src, zMat dest)
 {
-  if( !zMatSizeIsEqual( src, dest ) ){
+  if( !zMatSizeEqual( src, dest ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -182,6 +182,7 @@ zMat zMatClone(const zMat src)
 {
   zMat dest;
 
+  if( !src ) return NULL;
   if( ( dest = zMatAlloc( zMatRowSizeNC(src), zMatColSizeNC(src) ) ) )
     zMatCopyNC( src, dest );
   return dest;
@@ -286,7 +287,7 @@ zVec zMatGetColNC(const zMat m, int col, zVec v)
 /* abstract row vector of matrix. */
 zVec zMatGetRow(const zMat m, int row, zVec v)
 {
-  if( !zMatColVecSizeIsEqual( m, v ) ){
+  if( !zMatColVecSizeEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
@@ -300,7 +301,7 @@ zVec zMatGetRow(const zMat m, int row, zVec v)
 /* abstract column vector of matrix. */
 zVec zMatGetCol(const zMat m, int col, zVec v)
 {
-  if( !zMatRowVecSizeIsEqual( m, v ) ){
+  if( !zMatRowVecSizeEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
@@ -328,7 +329,7 @@ zMat zMatPutColNC(zMat m, int col, const zVec v)
 /* put a row vector to matrix. */
 zMat zMatPutRow(zMat m, int row, const zVec v)
 {
-  if( !zMatColVecSizeIsEqual( m, v ) ){
+  if( !zMatColVecSizeEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
@@ -342,7 +343,7 @@ zMat zMatPutRow(zMat m, int row, const zVec v)
 /* put a column vector to matrix. */
 zMat zMatPutCol(zMat m, int col, const zVec v)
 {
-  if( !zMatRowVecSizeIsEqual( m, v ) ){
+  if( !zMatRowVecSizeEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
@@ -396,15 +397,27 @@ void zMatShift(zMat m, double shift)
     zMatElemNC( m, i, i ) += shift;
 }
 
-/* see if two matrices are equal. */
-bool zMatIsEqual(const zMat m1, const zMat m2, double tol)
+/* check if two matrices are equal. */
+bool zMatEqual(const zMat m1, const zMat m2, double tol)
 {
   int i, j;
 
-  if( !zMatSizeIsEqual( m1, m2 ) ) return false;
+  if( !zMatSizeEqual( m1, m2 ) ) return false;
   for( i=0; i<zMatRowSizeNC(m1); i++ )
     for( j=0; j<zMatColSizeNC(m1); j++ )
-      if( !zIsEqual( zMatElemNC(m1,i,j), zMatElemNC(m2,i,j), tol ) ) return false;
+      if( !zEqual( zMatElemNC(m1,i,j), zMatElemNC(m2,i,j), tol ) ) return false;
+  return true;
+}
+
+/* check if two matrices exactly match with each other. */
+bool zMatMatch(const zMat m1, const zMat m2)
+{
+  int i, j;
+
+  if( !zMatSizeEqual( m1, m2 ) ) return false;
+  for( i=0; i<zMatRowSizeNC(m1); i++ )
+    for( j=0; j<zMatColSizeNC(m1); j++ )
+      if( zMatElemNC(m1,i,j) != zMatElemNC(m2,i,j) ) return false;
   return true;
 }
 
@@ -492,7 +505,7 @@ zMat zMatCatNC(const zMat m1, double k, const zMat m2, zMat m)
 /* add matrices. */
 zMat zMatAdd(const zMat m1, const zMat m2, zMat m)
 {
-  if( !zMatSizeIsEqual(m1,m2) || !zMatSizeIsEqual(m1,m) ){
+  if( !zMatSizeEqual(m1,m2) || !zMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -502,7 +515,7 @@ zMat zMatAdd(const zMat m1, const zMat m2, zMat m)
 /* substract a matrix from another. */
 zMat zMatSub(const zMat m1, const zMat m2, zMat m)
 {
-  if( !zMatSizeIsEqual(m1,m2) || !zMatSizeIsEqual(m1,m) ){
+  if( !zMatSizeEqual(m1,m2) || !zMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -512,7 +525,7 @@ zMat zMatSub(const zMat m1, const zMat m2, zMat m)
 /* reverse a matrix. */
 zMat zMatRev(const zMat m1, zMat m)
 {
-  if( !zMatSizeIsEqual(m1,m) ){
+  if( !zMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -522,7 +535,7 @@ zMat zMatRev(const zMat m1, zMat m)
 /* multiply a matrix by a scalar value. */
 zMat zMatMul(const zMat m1, double k, zMat m)
 {
-  if( !zMatSizeIsEqual(m1,m) ){
+  if( !zMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -532,7 +545,7 @@ zMat zMatMul(const zMat m1, double k, zMat m)
 /* divide a matrix by a scalar value. */
 zMat zMatDiv(const zMat m1, double k, zMat m)
 {
-  if( !zMatSizeIsEqual(m1,m) ){
+  if( !zMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -546,7 +559,7 @@ zMat zMatDiv(const zMat m1, double k, zMat m)
 /* concatenate a matrix with another. */
 zMat zMatCat(const zMat m1, double k, const zMat m2, zMat m)
 {
-  if( !zMatSizeIsEqual(m1,m2) || !zMatSizeIsEqual(m1,m) ){
+  if( !zMatSizeEqual(m1,m2) || !zMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -584,7 +597,7 @@ zMat zMatTNC(const zMat m, zMat tm)
 /* transpose a matrix. */
 zMat zMatT(const zMat m, zMat tm)
 {
-  if( !zMatColRowSizeIsEqual( tm, m ) || !zMatColRowSizeIsEqual( m, tm ) ){
+  if( !zMatColRowSizeEqual( tm, m ) || !zMatColRowSizeEqual( m, tm ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -608,6 +621,7 @@ zMat zMatTClone(const zMat src)
 {
   zMat dest;
 
+  if( !src ) return NULL;
   if( ( dest = zMatAlloc( zMatColSizeNC(src), zMatRowSizeNC(src) ) ) )
     zMatTNC( src, dest );
   return dest;
@@ -738,7 +752,7 @@ zMat zMulMatTMatNC(const zMat m1, const zMat m2, zMat m)
 /* multiply a vector by a matrix from the left side. */
 zVec zMulMatVec(const zMat m, const zVec v1, zVec v)
 {
-  if( !zMatColVecSizeIsEqual( m, v1 ) || !zMatRowVecSizeIsEqual( m, v ) ){
+  if( !zMatColVecSizeEqual( m, v1 ) || !zMatRowVecSizeEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
@@ -748,7 +762,7 @@ zVec zMulMatVec(const zMat m, const zVec v1, zVec v)
 /* multiply a vector by transpose of a matrix from the left side. */
 zVec zMulMatTVec(const zMat m, const zVec v1, zVec v)
 {
-  if( !zMatRowVecSizeIsEqual( m, v1 ) || !zMatColVecSizeIsEqual( m, v ) ){
+  if( !zMatRowVecSizeEqual( m, v1 ) || !zMatColVecSizeEqual( m, v ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
@@ -758,8 +772,8 @@ zVec zMulMatTVec(const zMat m, const zVec v1, zVec v)
 /* multiply two matrices. */
 zMat zMulMatMat(const zMat m1, const zMat m2, zMat m)
 {
-  if( !zMatColRowSizeIsEqual( m1, m2 ) ||
-      !zMatRowSizeIsEqual( m1, m ) || !zMatColSizeIsEqual( m2, m ) ){
+  if( !zMatColRowSizeEqual( m1, m2 ) ||
+      !zMatRowSizeEqual( m1, m ) || !zMatColSizeEqual( m2, m ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -769,8 +783,8 @@ zMat zMulMatMat(const zMat m1, const zMat m2, zMat m)
 /* multiply a matrix by transpose of another matrix from the right side. */
 zMat zMulMatMatT(const zMat m1, const zMat m2, zMat m)
 {
-  if( !zMatColSizeIsEqual( m1, m2 ) || !zMatRowSizeIsEqual( m1, m ) ||
-      !zMatRowColSizeIsEqual( m2, m ) ){
+  if( !zMatColSizeEqual( m1, m2 ) || !zMatRowSizeEqual( m1, m ) ||
+      !zMatRowColSizeEqual( m2, m ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -780,8 +794,8 @@ zMat zMulMatMatT(const zMat m1, const zMat m2, zMat m)
 /* multiply a matrix by transpose of another matrix from the left side. */
 zMat zMulMatTMat(const zMat m1, const zMat m2, zMat m)
 {
-  if( !zMatRowSizeIsEqual( m1, m2 ) ||
-      !zMatColRowSizeIsEqual( m1, m ) || !zMatColSizeIsEqual( m2, m ) ){
+  if( !zMatRowSizeEqual( m1, m2 ) ||
+      !zMatColRowSizeEqual( m1, m ) || !zMatColSizeEqual( m2, m ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -835,11 +849,11 @@ zMat zMatQuadNC(const zMat a, const zVec w, zMat q)
 /* quadratic multiplication of matrices ('q = a diag{w} a^T'). */
 zMat zMatQuad(const zMat a, const zVec w, zMat q)
 {
-  if( w && !zMatColVecSizeIsEqual( a, w ) ){
+  if( w && !zMatColVecSizeEqual( a, w ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
-  if( !zMatRowSizeIsEqual( a, q ) ){
+  if( !zMatRowSizeEqual( a, q ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -872,11 +886,11 @@ zMat zMatTQuadNC(const zMat a, const zVec w, zMat q)
 /* quadratic multiplication of matrices ('q = a^T diag{w} a'). */
 zMat zMatTQuad(const zMat a, const zVec w, zMat q)
 {
-  if( w && !zMatRowVecSizeIsEqual( a, w ) ){
+  if( w && !zMatRowVecSizeEqual( a, w ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
-  if( !zMatColRowSizeIsEqual( a, q ) ){
+  if( !zMatColRowSizeEqual( a, q ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -912,7 +926,7 @@ zMat zMulMatMatMatT(const zMat a, const zMat q, zMat m)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( !zMatColRowSizeIsEqual( a, q ) ){
+  if( !zMatColRowSizeEqual( a, q ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -944,7 +958,7 @@ zMat zMulMatTMatMat(const zMat a, const zMat q, zMat m)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( !zMatRowSizeIsEqual( a, q ) ){
+  if( !zMatRowSizeEqual( a, q ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
