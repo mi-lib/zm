@@ -13,35 +13,37 @@
 
 /* warning message */
 
-#define ZM_WARN_BESSEL_UNDEF         "undefined for negative integer"
-#define ZM_WARN_VEC_INVALIDSIZE      "invalid vector size, ignored"
-#define ZM_WARN_MAT_INVALIDSIZE      "invalid matrix size, ignored"
+#define ZM_WARN_ITERATION                  "iteration unconverged within %d steps"
 
-#define ZM_WARN_VEC_SIZEMISMATCH     "vector has only %d components, while specified size is %d"
-#define ZM_WARN_MAT_SIZEMISMATCH     "matrix has only %d components, while specified size is %d"
+#define ZM_WARN_BESSEL_UNDEF               "undefined for negative integer"
+#define ZM_WARN_VEC_INVALIDSIZE            "invalid vector size, ignored"
+#define ZM_WARN_MAT_INVALIDSIZE            "invalid matrix size, ignored"
 
-#define ZM_WARN_VECLIST_EMPTY        "empty vector list assigned"
+#define ZM_WARN_VEC_SIZEMISMATCH           "vector has only %d components, while specified size is %d"
+#define ZM_WARN_MAT_SIZEMISMATCH           "matrix has only %d components, while specified size is %d"
 
-#define ZM_WARN_LE_ZEROPIVOT         "cannot sweep out by zero pivot"
+#define ZM_WARN_VECLIST_EMPTY              "empty vector list assigned"
 
-#define ZM_WARN_NLE_NOROOT           "probably, equation has no root"
+#define ZM_WARN_LE_ZEROPIVOT               "cannot sweep out by zero pivot"
 
-#define ZM_WARN_SEQ_EMPTY            "empty vector sequence assigned"
-#define ZM_WARN_SEQ_STEP             "too large step index"
+#define ZM_WARN_NLE_NOROOT                 "probably, equation has no root"
 
-#define ZM_WARN_PEX_SIZEMISMATCH     "polynomial expression has only %d components, while specified size is %d"
+#define ZM_WARN_SEQ_EMPTY                  "empty vector sequence assigned"
+#define ZM_WARN_SEQ_STEP                   "too large step index"
 
-#define ZM_WARN_INSUFFICIENT_SAMPLES "maybe insufficient number of samples %d for %d parameters"
+#define ZM_WARN_PEX_SIZEMISMATCH           "polynomial expression has only %d components, while specified size is %d"
 
-#define ZM_WARN_OPT_BADINI           "probably inadequate initial guess"
+#define ZM_WARN_INSUFFICIENT_SAMPLES       "maybe insufficient number of samples %d for %d parameters"
 
-#define ZM_WARN_ODE_GEAR1            "invalid step number %d, modified to 1"
-#define ZM_WARN_ODE_GEAR2            "step number %d over 6 may cause instability, modified"
+#define ZM_WARN_OPT_BADINI                 "probably inadequate initial guess"
 
-#define ZM_WARN_GRAPH_DUPNODE        "duplicate specification of a node"
-#define ZM_WARN_GRAPH_DUPCONNECTION  "duplicate node connection, overwritten"
+#define ZM_WARN_ODE_GEAR1                  "invalid step number %d, modified to 1"
+#define ZM_WARN_ODE_GEAR2                  "step number %d over 6 may cause instability, modified"
 
-#define ZM_WARN_MCA_NOSILHOUETTE     "silhouette score not computed, need to call zMClusterSilhouetteScore()"
+#define ZM_WARN_GRAPH_DUPNODE              "duplicate specification of a node"
+#define ZM_WARN_GRAPH_DUPCONNECTION        "duplicate node connection, overwritten"
+
+#define ZM_WARN_MCA_NOSILHOUETTE           "silhouette score not computed, need to call zMClusterSilhouetteScore()"
 
 /* error messages */
 

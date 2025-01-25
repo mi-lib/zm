@@ -84,11 +84,9 @@ __ZM_EXPORT double zPhaseNormalize(double angle);
 /*! \brief maximum number of iteration times. */
 #define Z_MAX_ITER_NUM 10000
 /*! \brief set the muximum iteration number. */
-#define ZITERINIT(iter) do{\
-  if( (iter) <= 0 ) (iter) = Z_MAX_ITER_NUM; } while(0)
+#define ZITERINIT(iter) do{ if( (iter) <= 0 ) (iter) = Z_MAX_ITER_NUM; } while(0)
 /*! \brief warn when an iteration counts over the maximum. */
-#define ZITERWARN(iter) \
-  ZRUNWARN( "iteration unconverged within %d steps", (iter) )
+#define ZITERWARN(iter) ZRUNWARN( ZM_WARN_ITERATION, (iter) )
 
 /*! \brief sign function. */
 #define zSgn(x)     ( (x)>=0 ? 1 : -1 )

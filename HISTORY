@@ -1,3 +1,4 @@
+2025. 1.25. Added ZM_WARN_ITERATION, and modified ZITERWARN. [zm_errmsg, zm_misc]
 2025. 1.22. Added zMatMatch. [zm_mat]
 2025. 1.22. Added zVecMatch. [zm_vec]
 2025. 1.22. Renamed zPexIsEqual to zPexEqual. [zm_pex]
