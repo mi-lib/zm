@@ -19,7 +19,7 @@ int main(void)
     printf( "v_%d: ", i ); zVecPrint( *zRingElem(&v,i) );
   }
   printf( "k: " ); zVecPrint( k );
-  zVecRingLS( s, k, &v );
+  zVecRingLinearSum( s, k, &v );
   zVecPrint( s );
   zVecRingFree( &v );
   return 0;
