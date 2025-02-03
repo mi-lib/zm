@@ -65,3 +65,17 @@ double zFourierAcc(zFourier *f, double t)
   }
   return val;
 }
+
+/* print out coefficients of a Fourier series. */
+void zFourierFPrint(FILE *fp, zFourier *fourier)
+{
+  int i;
+
+  fprintf( fp, "%d\n", fourier->n );
+  for( i=0; i<fourier->n; i++ )
+    fprintf( fp, " %.10g", fourier->sc[i] );
+  fprintf( fp, "\n" );
+  for( i=0; i<fourier->n; i++ )
+    fprintf( fp, " %.10g", fourier->cc[i] );
+  fprintf( fp, "\n" );
+}

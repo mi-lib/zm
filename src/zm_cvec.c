@@ -6,11 +6,6 @@
 
 #include <zm/zm_cvec.h>
 
-/* ********************************************************** */
-/* CLASS: zCVec
- * double precision floating point value vector class
- * ********************************************************** */
-
 /* allocate a complex vector. */
 zCVec zCVecAlloc(int size)
 {
@@ -89,9 +84,41 @@ zCVec zVecToCVec(const zVec v, zCVec cv)
 {
   int i;
 
+  if( zVecSize(v) != zCVecSize(cv) ){
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
+    return NULL;
+  }
   for( i=0; i<zCVecSizeNC(cv); i++ )
     zComplexCreate( zCVecElemNC(cv,i), zVecElemNC(v,i), 0 );
   return cv;
+}
+
+/* abstract the real-part vector from a complex vector. */
+zVec zCVecToReVec(const zCVec cv, zVec rv)
+{
+  int i;
+
+  if( zVecSize(rv) != zCVecSize(cv) ){
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
+    return NULL;
+  }
+  for( i=0; i<zCVecSizeNC(cv); i++ )
+    zVecSetElemNC( rv, i, zCVecElemNC(cv,i)->re );
+  return rv;
+}
+
+/* abstract the imaginary-part vector from a complex vector. */
+zVec zCVecToImVec(const zCVec cv, zVec iv)
+{
+  int i;
+
+  if( zVecSize(iv) != zCVecSize(cv) ){
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
+    return NULL;
+  }
+  for( i=0; i<zCVecSizeNC(cv); i++ )
+    zVecSetElemNC( iv, i, zCVecElemNC(cv,i)->im );
+  return iv;
 }
 
 /* generate a uniformly random complex vector. */
@@ -125,7 +152,7 @@ bool zCVecIsTol(const zCVec v, double tol)
   return true;
 }
 
-/* split a complex vector to a real vector and an imaginary vector. */
+/* split a complex vector into real and imaginary vectors. */
 bool zCVecToReIm(const zCVec cvec, zVec *rvec, zCVec *ivec, double tol)
 {
   zIndex ridx, iidx;
@@ -221,9 +248,29 @@ zCVec zCVecRevNC(const zCVec v1, zCVec v)
   return v;
 }
 
-/* multiply a complex vector by a complex scalar value
- * without checking size consistency. */
-zCVec zCVecMulNC(const zCVec v1, const zComplex *z, zCVec v)
+/* multiply a complex vector by a complex scalar value without checking size consistency. */
+zCVec zCVecMulNC(const zCVec v1, double k, zCVec v)
+{
+  int i;
+
+  for( i=0; i<zCVecSizeNC(v); i++ )
+    zComplexMul( zCVecElemNC(v1,i), k, zCVecElemNC(v,i) );
+  return v;
+}
+
+/* divide a complex vector by a complex scalar value without checking size consistency. */
+zCVec zCVecDivNC(const zCVec v1, double k, zCVec v)
+{
+  int i;
+
+  k = 1 / k;
+  for( i=0; i<zCVecSizeNC(v); i++ )
+    zComplexMul( zCVecElemNC(v1,i), k, zCVecElemNC(v,i) );
+  return v;
+}
+
+/* multiply a complex vector by a complex scalar value without checking size consistency. */
+zCVec zCVecCMulNC(const zCVec v1, const zComplex *z, zCVec v)
 {
   int i;
 
@@ -232,9 +279,8 @@ zCVec zCVecMulNC(const zCVec v1, const zComplex *z, zCVec v)
   return v;
 }
 
-/* divide a complex vector by a complex scalar value
- * without checking size consistency. */
-zCVec zCVecDivNC(const zCVec v1, const zComplex *z, zCVec v)
+/* divide a complex vector by a complex scalar value without checking size consistency. */
+zCVec zCVecCDivNC(const zCVec v1, const zComplex *z, zCVec v)
 {
   int i;
   double r;
@@ -248,8 +294,8 @@ zCVec zCVecDivNC(const zCVec v1, const zComplex *z, zCVec v)
   return v;
 }
 
-/* concatenate a complex vector with another multiplied by a
- * complex scalar value without checking size consistency. */
+/* concatenate a complex vector with another multiplied by a complex scalar value without checking
+ * size consistency. */
 zCVec zCVecCatNC(const zCVec v1, const zComplex *z, const zCVec v2, zCVec v)
 {
   int i;
@@ -294,22 +340,40 @@ zCVec zCVecRev(const zCVec v1, zCVec v)
   return zCVecRevNC( v1, v );
 }
 
-/* multiply a complex vector by a complex scalar value. */
-zCVec zCVecMul(const zCVec v1, const zComplex *z, zCVec v)
+/* multiply a complex vector by a scalar value. */
+zCVec zCVecMul(const zCVec v1, double k, zCVec v)
 {
   __z_cvec_size_check_2( v1, v );
-  return zCVecMulNC( v1, z, v );
+  return zCVecMulNC( v1, k, v );
 }
 
-/* divide a complex vector by a complex scalar value. */
-zCVec zCVecDiv(const zCVec v1, const zComplex *z, zCVec v)
+/* divide a complex vector by a scalar value. */
+zCVec zCVecDiv(const zCVec v1, double k, zCVec v)
+{
+  __z_cvec_size_check_2( v1, v );
+  if( zIsTiny( k ) ){
+    ZRUNERROR( ZM_ERR_ZERODIV );
+    return NULL;
+  }
+  return zCVecDivNC( v1, k, v );
+}
+
+/* multiply a complex vector by a complex number. */
+zCVec zCVecCMul(const zCVec v1, const zComplex *z, zCVec v)
+{
+  __z_cvec_size_check_2( v1, v );
+  return zCVecCMulNC( v1, z, v );
+}
+
+/* divide a complex vector by a complex number. */
+zCVec zCVecCDiv(const zCVec v1, const zComplex *z, zCVec v)
 {
   __z_cvec_size_check_2( v1, v );
   if( zComplexIsTiny( z ) ){
     ZRUNERROR( ZM_ERR_ZERODIV );
     return NULL;
   }
-  return zCVecDivNC( v1, z, v );
+  return zCVecCDivNC( v1, z, v );
 }
 
 /* concatenate a complex vector with another multiplied by a complex scalar value. */

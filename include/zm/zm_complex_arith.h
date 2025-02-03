@@ -38,13 +38,6 @@ __ZM_EXPORT double zComplexArg(const zComplex *c);
 #define _zComplexConj(c,cc) _zComplexCreate( cc, (c)->re, -(c)->im )
 __ZM_EXPORT zComplex *zComplexConj(const zComplex *c, zComplex *cc);
 
-#define _zComplexCreateAdd(c,r1,i1,r2,i2) _zComplexCreate( c, (r1)+(r2), (i1)+(i2) )
-#define _zComplexCreateSub(c1,c2,c)       _zComplexCreate( c, (r1)-(r2), (i1)-(i2) )
-#define _zComplexCreateRev(c,r,i)         _zComplexCreate( c, -(r), -(i) )
-#define _zComplexCreateMul(c,r,i,k)       _zComplexCreate( c, (k)*(r), (k)*(i) )
-#define _zComplexCreateCMul(c,r1,i1,r2,i2) _zComplexCreate( c, (r1)*(r2) - (i1)*(i2), (r1)*(i2) + (i1)*(r2) )
-#define _zComplexCreateCMulConj(c,r1,i1,r2,i2) _zComplexCreate( c, (r1)*(r2) + (i1)*(i2), -(r1)*(i2) + (i1)*(r2) )
-
 /*! \brief arithmatics of complex numbers.
  *
  * zComplexAdd() adds two complex numbers \a c1 and \a c2.
@@ -99,11 +92,11 @@ __ZM_EXPORT zComplex *zComplexCDiv(const zComplex *c1, const zComplex *c2, zComp
 #define _zComplexMulDRC(c,k)   _zComplexMul( c, k, c )
 #define _zComplexDivDRC(c,k)   _zComplexDiv( c, k, c )
 
-#define zComplexAddDRC(c1,c2) zComplexAdd( c1, c2, c1 )
-#define zComplexSubDRC(c1,c2) zComplexSub( c1, c2, c1 )
-#define zComplexRevDRC(c)     zComplexRev( c, c )
-#define zComplexMulDRC(c,k)   zComplexMul( c, k, c )
-#define zComplexDivDRC(c,k)   zComplexDiv( c, k, c )
+#define zComplexAddDRC(c1,c2)  zComplexAdd( c1, c2, c1 )
+#define zComplexSubDRC(c1,c2)  zComplexSub( c1, c2, c1 )
+#define zComplexRevDRC(c)      zComplexRev( c, c )
+#define zComplexMulDRC(c,k)    zComplexMul( c, k, c )
+#define zComplexDivDRC(c,k)    zComplexDiv( c, k, c )
 
 /*! \brief multiply two complex numbers. */
 __ZM_EXPORT zComplex *zComplexCMulDRC(zComplex *c1, const zComplex *c2);

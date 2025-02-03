@@ -31,28 +31,28 @@ int main(void)
     zMatAdj( a, aa );
     zMatDivDRC( aa, zMatDet(a) );
     zMulMatVec( aa, b, x );
-    if( !zVecIsEqual( x, ans, TOL ) ){
+    if( !zVecEqual( x, ans, TOL ) ){
       count_cramel++;
     }
     /* Gauss's elimination method */
     zLESolveGauss( a, b, x );
-    if( !zVecIsEqual( x, ans, TOL ) ){
+    if( !zVecEqual( x, ans, TOL ) ){
       count_gauss++;
     }
     /* LU decomposition method */
     zMatDecompLU( a, l, u, index );
     zLESolveLU( l, u, b, x, index );
-    if( !zVecIsEqual( x, ans, TOL ) ){
+    if( !zVecEqual( x, ans, TOL ) ){
       count_lu++;
     }
     /* Residual iteration method */
     zLESolveRI( a, b, x );
-    if( !zVecIsEqual( x, ans, TOL ) ){
+    if( !zVecEqual( x, ans, TOL ) ){
       count_ri++;
     }
     /* Gauss-Seidel's method */
     zLESolveGS( a, b, x );
-    if( !zVecIsEqual( x, ans, TOL ) ){
+    if( !zVecEqual( x, ans, TOL ) ){
       count_gs++;
     }
   }

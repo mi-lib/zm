@@ -39,7 +39,7 @@ void assert_get_put(void)
   const int colsize = MAT_COL_SIZE;
   zMat mat_test1, mat_test2, mat_test3;
   zVec vec_test1, vec_test2;
-  register int i, j;
+  int i, j;
   bool result;
 
   mat_test1 = zMatAlloc( rowsize, colsize );
@@ -103,7 +103,7 @@ void assert_arith(void)
   const int colsize = MAT_COL_SIZE;
   zMat mat_test1, mat_test2, mat_test3;
   double k;
-  register int i, j;
+  int i, j;
   bool result;
 
   mat_test1 = zMatAlloc( rowsize, colsize );
@@ -188,7 +188,7 @@ void assert_transpose(void)
   const int colsize = MAT_COL_SIZE;
   zMat mat_test1, mat_test2;
   double tr;
-  register int i, j;
+  int i, j;
   bool result;
 
   mat_test1 = zMatAlloc( colsize, rowsize );

@@ -38,12 +38,21 @@ typedef zCMatStruct * zCMat;
   zCMatSetColSize(m,c);\
 } while(0)
 
-#define zCMatSizeIsEqual(m1,m2) \
-  ( zCMatRowSizeNC(m1) == zCMatRowSizeNC(m2) && \
-    zCMatColSizeNC(m1) == zCMatColSizeNC(m2) )
+#define zCMatRowSizeEqual(m1,m2)    ( zCMatRowSizeNC(m1) == zCMatRowSizeNC(m2) )
+#define zCMatColSizeEqual(m1,m2)    ( zCMatColSizeNC(m1) == zCMatColSizeNC(m2) )
+#define zCMatSizeEqual(m1,m2)       ( zCMatRowSizeEqual(m1,m2) && zCMatColSizeEqual(m1,m2) )
+#define zCMatColCVecSizeEqual(m,v)  ( zCMatColSizeNC(m) == zCVecSizeNC(v) )
+#define zCMatRowCVecSizeEqual(m,v)  ( zCMatRowSizeNC(m) == zCVecSizeNC(v) )
+#define zCMatRowColSizeEqual(m1,m2) ( zCMatRowSizeNC(m1) == zCMatColSizeNC(m2) )
+#define zCMatColRowSizeEqual(m1,m2) zCMatRowColSizeEqual(m2,m1)
+#define zCMatIsSqr(m)               zCMatRowColSizeEqual(m,m)
 
-#define zCMatBufNC(m) zArrayBuf(m)
-#define zCMatBuf(m)   ( (m) ? zCMatBufNC(m) : NULL )
+/*! \brief pointer to the array buffer of a complex matrix. */
+#define zCMatBufNC(m)      zArrayBuf(m)
+#define zCMatBuf(m)        ( (m) ? zCMatBufNC(m) : NULL )
+/*! \brief pointer to the \a r th row array buffer of a complex matrix. */
+#define zCMatRowBufNC(m,r) ( zCMatBufNC(m) + (r)*zCMatColSizeNC(m) )
+#define zCMatRowBuf(m,r)   ( (m) ? zCMatRowBufNC(m,r) : NULL )
 
 /*! \brief retrieve and set an element of a complex matrix.
  *
@@ -81,6 +90,21 @@ __ZM_EXPORT zCMat zCMatAlloc(int row, int col);
 __ZM_EXPORT void zCMatFree(zCMat m);
 __ZM_EXPORT zCMat zCMatZero(zCMat m);
 
+/*! \brief touchup a complex matrix.
+ *
+ * zCMatTouchup() replaces tiny components of a complex matrix \a m with zeroes.
+ * To be tiny in this context means that the absolute value of a component is less than zTOL, which is
+ * defined in zm_misc.h.
+ * \return
+ * zCMatTouchup() returns the pointer \a m.
+ */
+__ZM_EXPORT zCMat zCMatTouchup(zCMat m);
+
+/*! \brief create a random complex matrix with a uniform range. */
+__ZM_EXPORT zCMat zCMatRandUniform(zCMat m, double rmin, double rmax, double imin, double imax);
+/*! \brief create a complex random matrix with range matrices. */
+__ZM_EXPORT zCMat zCMatRand(zCMat m, zCMat min, zCMat max);
+
 /*! \brief copy a complex  matrix.
  *
  * zCMatCopyNC() copies a complex matrix \a src to the other \a dest without checking the size
@@ -105,7 +129,39 @@ __ZM_EXPORT zCMat zCMatCopyNC(const zCMat src, zCMat dest);
 __ZM_EXPORT zCMat zCMatCopy(const zCMat src, zCMat dest);
 __ZM_EXPORT zCMat zCMatClone(const zCMat src);
 
+/*! \brief convert a real matrix to a complex matrix. */
 __ZM_EXPORT zCMat zMatToCMat(const zMat m, zCMat cm);
+
+/*! \brief abstract and put row/column vector of a complex matrix.
+ *
+ * zCMatRowNC() abstracts the \a row th row vector of a complex matrix \a m and puts it into a complex
+ * vector \a v without checking the size.
+ * zCMatRow() abstracts the \a row th row vector of \a m and puts it into \a v.
+ *
+ * zCMatColNC() abstracts the \a col th column vector of \a m and puts it into \a v without checking
+ * the size.
+ * zCMatCol() abstracts the \a col th column vector of \a m and puts it into \a v.
+ *
+ * zCMatPutRowNC() puts the \a row th row vector of \a m for \a v without checking the size.
+ * zCMatPutRow() puts the \a row th row vector of \a m for \a v.
+ *
+ * zCMatPutColNC() puts the \a col th column vector of \a m for \a v without checking the size.
+ * zCMatPutCol() puts the \a col th column vector of \a m for \a v.
+ * \return
+ * zCMatRowNC(), zCMatColNC(), zCMatRow(), and zCMatCol() return a pointer to the abstracted vector.
+ *
+ * zCMatPutRowNC(), zCMatPutColNC(), zCMatPutRow(), and zCMatPutCol() return a pointer \a m.
+ * \notes
+ * If it is not urgent and you are not hasty, you'd better not use NC functions for safety.
+ */
+__ZM_EXPORT zCVec zCMatGetRowNC(const zCMat m, int row, zCVec v);
+__ZM_EXPORT zCVec zCMatGetColNC(const zCMat m, int col, zCVec v);
+__ZM_EXPORT zCVec zCMatGetRow(const zCMat m, int row, zCVec v);
+__ZM_EXPORT zCVec zCMatGetCol(const zCMat m, int col, zCVec v);
+__ZM_EXPORT zCMat zCMatPutRowNC(zCMat m, int row, const zCVec v);
+__ZM_EXPORT zCMat zCMatPutColNC(zCMat m, int col, const zCVec v);
+__ZM_EXPORT zCMat zCMatPutRow(zCMat m, int row, const zCVec v);
+__ZM_EXPORT zCMat zCMatPutCol(zCMat m, int col, const zCVec v);
 
 /*! \brief check if a complex matrix is tiny.
  *
@@ -128,9 +184,13 @@ __ZM_EXPORT bool zCMatIsTol(const zCMat m, double tol);
  *
  * zCMatRevNC() and zCMatRev() reverse \a m1, and put the result into \a m.
  *
- * zCMatMulNC() and zCMatMul() multiply \a m1 by a scalar value \a k, and put the result into \a m.
+ * zCMatMulNC() and zCMatMul() multiply \a m1 by a real scalar value \a k, and put the result into \a m.
  *
  * zCMatDivNC() and zCMatDiv() divide \a m1 by \a k, and put the result into \a m.
+ *
+ * zCMatCMulNC() and zCMatCMul() multiply \a m1 by a complex scalar value \a z, and put the result into \a m.
+ *
+ * zCMatCDivNC() and zCMatCDiv() divide \a m1 by \a z, and put the result into \a m.
  *
  * zCMatAddNCDRC() and zCMatAddDRC() directly add \a m2 to \a m1.
  *
@@ -141,6 +201,10 @@ __ZM_EXPORT bool zCMatIsTol(const zCMat m, double tol);
  * zCMatMulNCDRC() and zCMatMulDRC() directly multiply \a m by \a k.
  *
  * zCMatDivNCDRC() and zCMatDivDRC() directly divide \a m by \a k.
+ *
+ * zCMatCMulNCDRC() and zCMatCMulDRC() directly multiply \a m by \a z.
+ *
+ * zCMatCDivNCDRC() and zCMatCDivDRC() directly divide \a m by \a z.
  * \return
  * These functions return a pointer to the result.
  * \notes
@@ -150,26 +214,34 @@ __ZM_EXPORT bool zCMatIsTol(const zCMat m, double tol);
 __ZM_EXPORT zCMat zCMatAddNC(const zCMat m1, const zCMat m2, zCMat m);
 __ZM_EXPORT zCMat zCMatSubNC(const zCMat m1, const zCMat m2, zCMat m);
 __ZM_EXPORT zCMat zCMatRevNC(const zCMat m1, zCMat m);
-__ZM_EXPORT zCMat zCMatMulNC(const zCMat m1, const zComplex *z, zCMat m);
-__ZM_EXPORT zCMat zCMatDivNC(const zCMat m1, const zComplex *z, zCMat m);
+__ZM_EXPORT zCMat zCMatMulNC(const zCMat m1, double k, zCMat m);
+__ZM_EXPORT zCMat zCMatDivNC(const zCMat m1, double k, zCMat m);
+__ZM_EXPORT zCMat zCMatCMulNC(const zCMat m1, const zComplex *z, zCMat m);
+__ZM_EXPORT zCMat zCMatCDivNC(const zCMat m1, const zComplex *z, zCMat m);
 
 __ZM_EXPORT zCMat zCMatAdd(const zCMat m1, const zCMat m2, zCMat m);
 __ZM_EXPORT zCMat zCMatSub(const zCMat m1, const zCMat m2, zCMat m);
 __ZM_EXPORT zCMat zCMatRev(const zCMat m1, zCMat m);
-__ZM_EXPORT zCMat zCMatMul(const zCMat m1, const zComplex *z, zCMat m);
-__ZM_EXPORT zCMat zCMatDiv(const zCMat m1, const zComplex *z, zCMat m);
+__ZM_EXPORT zCMat zCMatMul(const zCMat m1, double k, zCMat m);
+__ZM_EXPORT zCMat zCMatDiv(const zCMat m1, double k, zCMat m);
+__ZM_EXPORT zCMat zCMatCMul(const zCMat m1, const zComplex *z, zCMat m);
+__ZM_EXPORT zCMat zCMatCDiv(const zCMat m1, const zComplex *z, zCMat m);
 
 #define zCMatAddNCDRC(m1,m2) zCMatAddNC( (m1), (m2), (m1) )
 #define zCMatSubNCDRC(m1,m2) zCMatSubNC( (m1), (m2), (m1) )
 #define zCMatRevNCDRC(m)     zCMatRevNC( (m), (m) )
-#define zCMatMulNCDRC(m,z)   zCMatMulNC( (m), (z) , (m) )
-#define zCMatDivNCDRC(m,z)   zCMatDivNC( (m), (z) , (m) )
+#define zCMatMulNCDRC(m,k)   zCMatMulNC( (m), (k) , (m) )
+#define zCMatDivNCDRC(m,k)   zCMatDivNC( (m), (k) , (m) )
+#define zCMatCMulNCDRC(m,z)  zCMatCMulNC( (m), (z) , (m) )
+#define zCMatCDivNCDRC(m,z)  zCMatCDivNC( (m), (z) , (m) )
 
 #define zCMatAddDRC(m1,m2)   zCMatAdd( (m1), (m2), (m1) )
 #define zCMatSubDRC(m1,m2)   zCMatSub( (m1), (m2), (m1) )
 #define zCMatRevDRC(m)       zCMatRev( (m), (m) )
-#define zCMatMulDRC(m,z)     zCMatMul( (m), (z), (m) )
-#define zCMatDivDRC(m,z)     zCMatDiv( (m), (z), (m) )
+#define zCMatMulDRC(m,k)     zCMatMul( (m), (k), (m) )
+#define zCMatDivDRC(m,k)     zCMatDiv( (m), (k), (m) )
+#define zCMatCMulDRC(m,z)    zCMatMul( (m), (z), (m) )
+#define zCMatCDivDRC(m,z)    zCMatDiv( (m), (z), (m) )
 
 /*! \brief multiply a complex matrix and a complex vector, or of two matrices.
  *

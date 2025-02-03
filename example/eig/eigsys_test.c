@@ -108,7 +108,7 @@ int main(void)
 
   /* ensurance */
   cma = zCMatAlloc( n, n );
-  zMat2CMat( ma, cma );
+  zMatToCMat( ma, cma );
   vt = zCVecAlloc( n );
   for( i=0; i<n; i++ ){
     printf( "eig.#%d val= ", i );

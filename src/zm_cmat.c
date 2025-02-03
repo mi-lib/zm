@@ -44,6 +44,41 @@ zCMat zCMatZero(zCMat m)
   return m;
 }
 
+/* touchup a complex matrix. */
+zCMat zCMatTouchup(zCMat m)
+{
+  int i, j;
+
+  for( i=0; i<zCMatRowSizeNC(m); i++ )
+    for( j=0; j<zCMatColSizeNC(m); j++ )
+      zComplexTouchup( zCMatElemNC(m,i,j) );
+  return m;
+}
+
+/* create a random complex matrix with a uniform range. */
+zCMat zCMatRandUniform(zCMat m, double rmin, double rmax, double imin, double imax)
+{
+  int i, j;
+
+  for( i=0; i<zCMatRowSizeNC(m); i++ )
+    for( j=0; j<zCMatColSizeNC(m); j++ )
+      zComplexCreate( zCMatElemNC(m,i,j), zRandF(rmin,rmax), zRandF(imin,imax) );
+  return m;
+}
+
+/* create a complex random matrix with range matrices. */
+zCMat zCMatRand(zCMat m, zCMat min, zCMat max)
+{
+  int i, j;
+
+  for( i=0; i<zCMatRowSizeNC(m); i++ )
+    for( j=0; j<zCMatColSizeNC(m); j++ )
+      zComplexCreate( zCMatElemNC(m,i,j),
+        zRandF(zCMatElemNC(min,i,j)->re,zCMatElemNC(max,i,j)->re),
+        zRandF(zCMatElemNC(min,i,j)->im,zCMatElemNC(max,i,j)->im) );
+  return m;
+}
+
 /* copy a complex matrix to another without checking size consistency. */
 zCMat zCMatCopyNC(const zCMat src, zCMat dest)
 {
@@ -58,7 +93,7 @@ zCMat zCMatCopyNC(const zCMat src, zCMat dest)
 /* copy a complex matrix. */
 zCMat zCMatCopy(const zCMat src, zCMat dest)
 {
-  if( !zCMatSizeIsEqual( src, dest ) ){
+  if( !zCMatSizeEqual( src, dest ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -85,6 +120,96 @@ zCMat zMatToCMat(const zMat m, zCMat cm)
   for( i=0; i<n; i++ )
     zComplexCreate( &zCMatBufNC(cm)[i], zMatBufNC(m)[i], 0 );
   return cm;
+}
+
+/* abstract row vector of a complex matrix without checking size consistency. */
+zCVec zCMatGetRowNC(const zCMat m, int row, zCVec v)
+{
+  memcpy( zCVecBufNC(v), zCMatBufNC(m)+row*zCMatColSize(m), sizeof(zComplex)*zCMatColSizeNC(m) );
+  return v;
+}
+
+/* abstract column vector of a complex matrix without checking size consistency. */
+zCVec zCMatGetColNC(const zCMat m, int col, zCVec v)
+{
+  int i;
+
+  for( i=0; i<zCMatRowSizeNC(m); i++ )
+    zComplexCopy( zCMatElemNC(m,i,col), zCVecElemNC(v,i) );
+  return v;
+}
+
+/* abstract row vector of a complex matrix. */
+zCVec zCMatGetRow(const zCMat m, int row, zCVec v)
+{
+  if( !zCMatColCVecSizeEqual( m, v ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return NULL;
+  }
+  if( row >= zCMatRowSizeNC(m) ){
+    ZRUNERROR( ZM_ERR_INVALID_ROW );
+    return NULL;
+  }
+  return zCMatGetRowNC( m, row, v );
+}
+
+/* abstract column vector of a complex matrix. */
+zCVec zCMatGetCol(const zCMat m, int col, zCVec v)
+{
+  if( !zCMatRowCVecSizeEqual( m, v ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return NULL;
+  }
+  if( col >= zCMatColSizeNC(m) ){
+    ZRUNERROR( ZM_ERR_INVALID_COL );
+    return NULL;
+  }
+  return zCMatGetColNC( m, col, v );
+}
+
+/* put a row vector to a complex matrix without checking size consistency. */
+zCMat zCMatPutRowNC(zCMat m, int row, const zCVec v)
+{
+  memcpy( zCMatBufNC(m)+row*zCMatColSize(m), zCVecBufNC(v), sizeof(zComplex)*zCVecSizeNC(v) );
+  return m;
+}
+
+/* put a column vector to a complex matrix without checking size consistency. */
+zCMat zCMatPutColNC(zCMat m, int col, const zCVec v)
+{
+  int i;
+
+  for( i=0; i<zCVecSizeNC(v); i++ )
+    zComplexCopy( zCVecElemNC(v,i), zCMatElemNC(m,i,col) );
+  return m;
+}
+
+/* put a row vector to a complex matrix. */
+zCMat zCMatPutRow(zCMat m, int row, const zCVec v)
+{
+  if( !zCMatColCVecSizeEqual( m, v ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return NULL;
+  }
+  if( row >= zCMatRowSizeNC(m) ){
+    ZRUNERROR( ZM_ERR_INVALID_ROW );
+    return NULL;
+  }
+  return zCMatPutRowNC( m, row, v );
+}
+
+/* put a column vector to a complex matrix. */
+zCMat zCMatPutCol(zCMat m, int col, const zCVec v)
+{
+  if( !zCMatRowCVecSizeEqual( m, v ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return NULL;
+  }
+  if( col >= zCMatColSizeNC(m) ){
+    ZRUNERROR( ZM_ERR_INVALID_COL );
+    return NULL;
+  }
+  return zCMatPutColNC( m, col, v );
 }
 
 /* check if a complex matrix is tiny. */
@@ -131,8 +256,31 @@ zCMat zCMatRevNC(const zCMat m1, zCMat m)
   return m;
 }
 
+/* multiply a complex matrix by a real scalar value without checking size consistency. */
+zCMat zCMatMulNC(const zCMat m1, double k, zCMat m)
+{
+  int i, n;
+
+  n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
+  for( i=0; i<n; i++ )
+    zComplexMul( &zCMatBufNC(m1)[i], k, &zCMatBufNC(m)[i] );
+  return m;
+}
+
+/* divide a complex matrix by a real scalar value without checking size consistency. */
+zCMat zCMatDivNC(const zCMat m1, double k, zCMat m)
+{
+  int i, n;
+
+  k = 1 / k;
+  n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
+  for( i=0; i<n; i++ )
+    zComplexMul( &zCMatBufNC(m1)[i], k, &zCMatBufNC(m)[i] );
+  return m;
+}
+
 /* multiply a complex matrix by a complex scalar without checking size consistency. */
-zCMat zCMatMulNC(const zCMat m1, const zComplex *z, zCMat m)
+zCMat zCMatCMulNC(const zCMat m1, const zComplex *z, zCMat m)
 {
   int i, n;
 
@@ -143,7 +291,7 @@ zCMat zCMatMulNC(const zCMat m1, const zComplex *z, zCMat m)
 }
 
 /* divide a complex matrix by a complex scalar without checking size consistency. */
-zCMat zCMatDivNC(const zCMat m1, const zComplex *z, zCMat m)
+zCMat zCMatCDivNC(const zCMat m1, const zComplex *z, zCMat m)
 {
   int i, n;
   double r;
@@ -161,7 +309,7 @@ zCMat zCMatDivNC(const zCMat m1, const zComplex *z, zCMat m)
 /* add two complex matrices. */
 zCMat zCMatAdd(const zCMat m1, const zCMat m2, zCMat m)
 {
-  if( !zCMatSizeIsEqual(m1,m2) || !zCMatSizeIsEqual(m1,m) ){
+  if( !zCMatSizeEqual(m1,m2) || !zCMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -171,7 +319,7 @@ zCMat zCMatAdd(const zCMat m1, const zCMat m2, zCMat m)
 /* substract a complex matrix from another. */
 zCMat zCMatSub(const zCMat m1, const zCMat m2, zCMat m)
 {
-  if( !zCMatSizeIsEqual(m1,m2) || !zCMatSizeIsEqual(m1,m) ){
+  if( !zCMatSizeEqual(m1,m2) || !zCMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -181,27 +329,51 @@ zCMat zCMatSub(const zCMat m1, const zCMat m2, zCMat m)
 /* reverse a complex matrix. */
 zCMat zCMatRev(const zCMat m1, zCMat m)
 {
-  if( !zCMatSizeIsEqual(m1,m) ){
+  if( !zCMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
   return zCMatRevNC( m1, m );
 }
 
-/* multiply a complex matrix by a complex scalar. */
-zCMat zCMatMul(const zCMat m1, const zComplex *z, zCMat m)
+/* multiply a complex matrix by a real scalar value. */
+zCMat zCMatMul(const zCMat m1, double k, zCMat m)
 {
-  if( !zCMatSizeIsEqual(m1,m) ){
+  if( !zCMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
-  return zCMatMulNC( m1, z, m );
+  return zCMatMulNC( m1, k, m );
 }
 
-/* divide a complex matrix by a complex scalar. */
-zCMat zCMatDiv(const zCMat m1, const zComplex *z, zCMat m)
+/* divide a complex matrix by a real scalar value. */
+zCMat zCMatDiv(const zCMat m1, double k, zCMat m)
 {
-  if( !zCMatSizeIsEqual(m1,m) ){
+  if( !zCMatSizeEqual(m1,m) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+    return NULL;
+  }
+  if( zIsTiny( k ) ){
+    ZRUNERROR( ZM_ERR_ZERODIV );
+    return NULL;
+  }
+  return zCMatDivNC( m1, k, m );
+}
+
+/* multiply a complex matrix by a complex number. */
+zCMat zCMatCMul(const zCMat m1, const zComplex *z, zCMat m)
+{
+  if( !zCMatSizeEqual(m1,m) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+    return NULL;
+  }
+  return zCMatCMulNC( m1, z, m );
+}
+
+/* divide a complex matrix by a complex number. */
+zCMat zCMatCDiv(const zCMat m1, const zComplex *z, zCMat m)
+{
+  if( !zCMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -209,7 +381,7 @@ zCMat zCMatDiv(const zCMat m1, const zComplex *z, zCMat m)
     ZRUNERROR( ZM_ERR_ZERODIV );
     return NULL;
   }
-  return zCMatDivNC( m1, z, m );
+  return zCMatCDivNC( m1, z, m );
 }
 
 /* multiply a complex matrix and a complex column vector without checking size consistency. */
@@ -232,8 +404,7 @@ zCVec zCMulMatVecNC(const zCMat m, const zCVec v1, zCVec v)
 /* multiply a complex matrix and a complex column vector. */
 zCVec zCMulMatVec(const zCMat m, const zCVec v1, zCVec v)
 {
-  if( zCMatColSizeNC(m) != zCVecSizeNC(v1) ||
-      zCMatRowSizeNC(m) != zCVecSizeNC(v) ){
+  if( !zCMatColCVecSizeEqual(m,v1) || !zCMatRowCVecSizeEqual(m,v) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }

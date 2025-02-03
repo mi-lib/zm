@@ -43,17 +43,6 @@ __BEGIN_DECLS
 /*! \brief check if two values are equal. */
 __ZM_EXPORT bool zEqual(double a, double b, double tol);
 
-#if 0
-/*! \brief check if signs of two values are opposite.
- *
- * zIsSgnOpp() checks if the signs of two values \a a and \a b
- * are opposite or not.
- * \retval true signs of \a a and \a b are opposite.
- * \retval false signs of \a a and \a b are the same.
- */
-__ZM_EXPORT bool zIsSgnOpp(double a, double b);
-#endif
-
 /*! \brief a sine and cosine set.
  *
  * zSinCos() computes a set of sine and cosine values

@@ -41,10 +41,10 @@ typedef zCVecStruct* zCVec;
  * \return
  * zCVecElem() and zCVecSetElem() return the \a i th component of \a v.
  */
-#define zCVecElemNC(v,n)      zArrayElemNC(v,n)
-#define zCVecElem(v,n)        zArrayElem(v,n)
-#define zCVecSetElemNC(v,n,e) zArraySetElemNC(v,n,e)
-#define zCVecSetElem(v,n,e)   zArraySetElem(v,n,e)
+#define zCVecElemNC(v,n)        zArrayElemNC(v,n)
+#define zCVecElem(v,n)          zArrayElem(v,n)
+#define zCVecSetElemNC(v,n,e)   zArraySetElemNC(v,n,e)
+#define zCVecSetElem(v,n,e)     zArraySetElem(v,n,e)
 
 /*! \brief allocate, free, zero and copy a complex vector.
  *
@@ -91,6 +91,10 @@ __ZM_EXPORT zCVec zCVecClone(const zCVec src);
 
 /*! \brief convert a vector to a complex vector. */
 __ZM_EXPORT zCVec zVecToCVec(const zVec v, zCVec cv);
+/*! \brief abstract the real-part vector from a complex vector. */
+__ZM_EXPORT zVec zCVecToReVec(const zCVec cv, zVec rv);
+/*! \brief abstract the imaginary-part vector from a complex vector. */
+__ZM_EXPORT zVec zCVecToImVec(const zCVec cv, zVec iv);
 
 /*! \brief generate a uniformly random complex vector. */
 __ZM_EXPORT zCVec zCVecRandUniform(zCVec v, double rmin, double imin, double rmax, double imax);
@@ -117,7 +121,7 @@ __ZM_EXPORT bool zCVecEqual(const zCVec v1, const zCVec v2, double tol);
 __ZM_EXPORT bool zCVecIsTol(const zCVec v, double tol);
 #define zCVecIsTiny(v) zCVecIsTol( v, zTOL )
 
-/*! \brief split a complex vector to a real vector and an imaginary vector. */
+/*! \brief split a complex vector into real and imaginary vectors. */
 __ZM_EXPORT bool zCVecToReIm(const zCVec cvec, zVec *rvec, zCVec *ivec, double tol);
 
 /*! \brief reorder a complex vector as co-conjugate numbers are paired as adjacencies. */
@@ -133,7 +137,11 @@ __ZM_EXPORT zCVec zCVecConjPair(zCVec v, double tol);
  *
  * zCVecMulNC() and zCVecMul() multiply \a v1 by a scalar value \a k, and puts the result into \a v.
  *
- * zCVecDivNC() and zCVecDiv() divide \a v1 by \a k, and puts the result into \a v.
+ * zCVecDivNC() and zCVecDiv() divide \a v1 by a scalar value \a k, and puts the result into \a v.
+ *
+ * zCVecCMulNC() and zCVecCMul() multiply \a v1 by a complex number \a z, and puts the result into \a v.
+ *
+ * zCVecCDivNC() and zCVecCDiv() divide \a v1 by a complex number \a z, and puts the result into \a v.
  *
  * zCVecAddNCDRC() and zCVecAddDRC() directly add \a v2 to \a v1.
  *
@@ -141,9 +149,13 @@ __ZM_EXPORT zCVec zCVecConjPair(zCVec v, double tol);
  *
  * zCVecRevNCDRC() and zCVecRevDRC() directly reverse \a v.
  *
- * zCVecMulNCDRC() and zCVecMulDRC() directly multiply \a v by \a k.
+ * zCVecMulNCDRC() and zCVecMulDRC() directly multiply \a v by a scalar value \a k.
  *
- * zCVecDivNCDRC() and zCVecDivDRC() directly divide \a v by \a k.
+ * zCVecDivNCDRC() and zCVecDivDRC() directly divide \a v by a scalar value \a k.
+ *
+ * zCVecCMulNCDRC() and zCVecCMulDRC() directly multiply \a v by a complex number \a z.
+ *
+ * zCVecCDivNCDRC() and zCVecCDivDRC() directly divide \a v by a complex number \a z.
  * \return
  * These functions return a pointer to the result.
  * \notes
@@ -153,15 +165,19 @@ __ZM_EXPORT zCVec zCVecConjPair(zCVec v, double tol);
 __ZM_EXPORT zCVec zCVecAddNC(const zCVec v1, const zCVec v2, zCVec v);
 __ZM_EXPORT zCVec zCVecSubNC(const zCVec v1, const zCVec v2, zCVec v);
 __ZM_EXPORT zCVec zCVecRevNC(const zCVec v1, zCVec v);
-__ZM_EXPORT zCVec zCVecMulNC(const zCVec v1, const zComplex *z, zCVec v);
-__ZM_EXPORT zCVec zCVecDivNC(const zCVec v1, const zComplex *z, zCVec v);
+__ZM_EXPORT zCVec zCVecMulNC(const zCVec v1, double k, zCVec v);
+__ZM_EXPORT zCVec zCVecDivNC(const zCVec v1, double k, zCVec v);
+__ZM_EXPORT zCVec zCVecCMulNC(const zCVec v1, const zComplex *z, zCVec v);
+__ZM_EXPORT zCVec zCVecCDivNC(const zCVec v1, const zComplex *z, zCVec v);
 __ZM_EXPORT zCVec zCVecCatNC(const zCVec v1, const zComplex *z, const zCVec v2, zCVec v);
 
 __ZM_EXPORT zCVec zCVecAdd(const zCVec v1, const zCVec v2, zCVec v);
 __ZM_EXPORT zCVec zCVecSub(const zCVec v1, const zCVec v2, zCVec v);
 __ZM_EXPORT zCVec zCVecRev(const zCVec v1, zCVec v);
-__ZM_EXPORT zCVec zCVecMul(const zCVec v1, const zComplex *z, zCVec v);
-__ZM_EXPORT zCVec zCVecDiv(const zCVec v1, const zComplex *z, zCVec v);
+__ZM_EXPORT zCVec zCVecMul(const zCVec v1, double k, zCVec v);
+__ZM_EXPORT zCVec zCVecDiv(const zCVec v1, double k, zCVec v);
+__ZM_EXPORT zCVec zCVecCMul(const zCVec v1, const zComplex *z, zCVec v);
+__ZM_EXPORT zCVec zCVecCDiv(const zCVec v1, const zComplex *z, zCVec v);
 __ZM_EXPORT zCVec zCVecCat(const zCVec v1, const zComplex *z, const zCVec v2, zCVec v);
 
 #define zCVecAddNCDRC(v1,v2)   zCVecAddNC( v1, v2, v1 )
@@ -169,14 +185,18 @@ __ZM_EXPORT zCVec zCVecCat(const zCVec v1, const zComplex *z, const zCVec v2, zC
 #define zCVecRevNCDRC(v)       zCVecRevNC( v, v )
 #define zCVecMulNCDRC(v,z)     zCVecMulNC( v, z, v )
 #define zCVecDivNCDRC(v,z)     zCVecDivNC( v, z, v )
+#define zCVecCMulNCDRC(v,z)    zCVecCMulNC( v, z, v )
+#define zCVecCDivNCDRC(v,z)    zCVecCDivNC( v, z, v )
 #define zCVecCatNCDRC(v1,z,v2) zCVecCatNC( v1, z, v2, v1 )
 
-#define zCVecAddDRC(v1,v2)   zCVecAdd( v1, v2, v1 )
-#define zCVecSubDRC(v1,v2)   zCVecSub( v1, v2, v1 )
-#define zCVecRevDRC(v)       zCVecRev( v, v )
-#define zCVecMulDRC(v,z)     zCVecMul( v, z, v )
-#define zCVecDivDRC(v,z)     zCVecDiv( v, z, v )
-#define zCVecCatDRC(v1,z,v2) zCVecCat( v1, z, v2, v1 )
+#define zCVecAddDRC(v1,v2)     zCVecAdd( v1, v2, v1 )
+#define zCVecSubDRC(v1,v2)     zCVecSub( v1, v2, v1 )
+#define zCVecRevDRC(v)         zCVecRev( v, v )
+#define zCVecMulDRC(v,z)       zCVecMul( v, z, v )
+#define zCVecDivDRC(v,z)       zCVecDiv( v, z, v )
+#define zCVecCMulDRC(v,z)      zCVecMul( v, z, v )
+#define zCVecCDivDRC(v,z)      zCVecDiv( v, z, v )
+#define zCVecCatDRC(v1,z,v2)   zCVecCat( v1, z, v2, v1 )
 
 /*! \brief inner product of two complex vectors.
  *

@@ -89,6 +89,9 @@ __ZM_EXPORT zComplex *zComplexTouchup(zComplex *c);
 /*! \brief check if two complex numbers are equal. */
 #define zComplexEqual(c1,c2,tol) ( zEqual( (c1)->re, (c2)->re, tol ) && zEqual( (c1)->im, (c2)->im, tol ) )
 
+/*! \brief check if two complex numbers are exactly the same. */
+#define zComplexMatch(c1,c2) ( (c1)->re == (c2)->re && (c1)->im == (c2)->im )
+
 /*! \brief check if two complex numbers are co-conjugate. */
 #define zComplexCoconj(c1,c2,tol) ( zEqual( (c1)->re, (c2)->re, tol ) && zEqual( (c1)->im, -(c2)->im, tol ) )
 

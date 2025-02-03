@@ -34,8 +34,8 @@ zComplex *zComplexTouchup(zComplex *c)
 
   ri = c->re / c->im;
   ir = c->im / c->re;
-  if( zIsTiny(ri) ) c->re = 0;
-  if( zIsTiny(ir) ) c->im = 0;
+  if( zIsTiny(ri) || zIsTiny(c->re) ) c->re = 0;
+  if( zIsTiny(ir) || zIsTiny(c->im) ) c->im = 0;
   return c;
 }
 

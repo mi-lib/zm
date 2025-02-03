@@ -41,7 +41,7 @@ static bool _zFresnelIntgGilbert(double x, double *s, double *c)
 static bool _zFresnelIntgLentz(double x, double *s, double *c)
 {
   int i, n;
-  double a, pix2;
+  double a, pix2, sp, cp;
   zComplex z1, b, ca, cd, cc, d, h, del, cs;
   bool ret = true;
 
@@ -69,9 +69,10 @@ static bool _zFresnelIntgLentz(double x, double *s, double *c)
     ZITERWARN( Z_MAX_ITER_NUM );
     ret = false;
   }
-  _zComplexCreateCMul( &ca, h.re, h.im, x, -x );
-  _zComplexCreateCMul( &cd, cos(pix2), sin(pix2), ca.re, ca.im );
-  _zComplexCreateCMul( &cs, 0.5, 0.5, 1-cd.re, -cd.im );
+  zSinCos( pix2, &sp, &cp );
+  _zComplexCreate( &ca, (h.re + h.im)*x, (-h.re + h.im)*x );
+  _zComplexCreate( &cd, cp*ca.re - sp*ca.im, cp*ca.im + sp*ca.re );
+  _zComplexCreate( &cs, 0.5*(1-cd.re +cd.im), 0.5*(1-cd.re-cd.im) );
   *c = cs.re;
   *s = cs.im;
   return ret;

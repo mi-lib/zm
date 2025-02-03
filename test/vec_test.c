@@ -43,7 +43,7 @@ void assert_misc(void)
   const int size = TEST_VEC_SIZE;
   zVec test_vec1, test_vec2;
   double val1, val2, dval;
-  register int i;
+  int i;
   bool result;
 
   test_vec1 = zVecAlloc( size );
@@ -94,7 +94,7 @@ void assert_arith(void)
   const int size = TEST_VEC_SIZE;
   zVec test_vec1, test_vec2, test_vec3;
   double k;
-  register int i;
+  int i;
   bool result;
 
   test_vec1 = zVecAlloc( size );
@@ -191,7 +191,7 @@ void assert_normalize(void)
   const int size = TEST_VEC_SIZE;
   zVec test_vec1, test_vec2;
   double norm;
-  register int i;
+  int i;
   bool result;
 
   test_vec1 = zVecAlloc( size );

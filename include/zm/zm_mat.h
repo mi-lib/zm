@@ -46,25 +46,19 @@ typedef zMatStruct * zMat;
   zMatSetColSize(m,c);\
 } while(0)
 
-#define zMatRowSizeEqual(m1,m2) \
-  ( zMatRowSizeNC(m1) == zMatRowSizeNC(m2) )
-#define zMatColSizeEqual(m1,m2) \
-  ( zMatColSizeNC(m1) == zMatColSizeNC(m2) )
-#define zMatSizeEqual(m1,m2) \
-  ( zMatRowSizeEqual(m1,m2) && zMatColSizeEqual(m1,m2) )
-#define zMatColVecSizeEqual(m,v) \
-  ( zMatColSizeNC(m) == zVecSizeNC(v) )
-#define zMatRowVecSizeEqual(m,v) \
-  ( zMatRowSizeNC(m) == zVecSizeNC(v) )
-#define zMatRowColSizeEqual(m1,m2) \
-  ( zMatRowSizeNC(m1) == zMatColSizeNC(m2) )
+#define zMatRowSizeEqual(m1,m2)    ( zMatRowSizeNC(m1) == zMatRowSizeNC(m2) )
+#define zMatColSizeEqual(m1,m2)    ( zMatColSizeNC(m1) == zMatColSizeNC(m2) )
+#define zMatSizeEqual(m1,m2)       ( zMatRowSizeEqual(m1,m2) && zMatColSizeEqual(m1,m2) )
+#define zMatColVecSizeEqual(m,v)   ( zMatColSizeNC(m) == zVecSizeNC(v) )
+#define zMatRowVecSizeEqual(m,v)   ( zMatRowSizeNC(m) == zVecSizeNC(v) )
+#define zMatRowColSizeEqual(m1,m2) ( zMatRowSizeNC(m1) == zMatColSizeNC(m2) )
 #define zMatColRowSizeEqual(m1,m2) zMatRowColSizeEqual(m2,m1)
-#define zMatIsSqr(m) zMatRowColSizeEqual(m,m)
+#define zMatIsSqr(m)               zMatRowColSizeEqual(m,m)
 
-/*! \brief pointer to the array buffer of of double-precision floating-point values in a matrix. */
-#define zMatBufNC(m)    zArray2Buf(m)
-#define zMatBuf(m)      ( (m) ? zMatBufNC(m) : NULL )
-/*! \brief pointer to the \a r th row array buffer of of double-precision floating-point values in a matrix. */
+/*! \brief pointer to the array buffer of double-precision floating-point values in a matrix. */
+#define zMatBufNC(m)      zArray2Buf(m)
+#define zMatBuf(m)        ( (m) ? zMatBufNC(m) : NULL )
+/*! \brief pointer to the \a r th row array buffer of double-precision floating-point values in a matrix. */
 #define zMatRowBufNC(m,r) ( zMatBufNC(m) + (r)*zMatColSizeNC(m) )
 #define zMatRowBuf(m,r)   ( (m) ? zMatRowBufNC(m,r) : NULL )
 
