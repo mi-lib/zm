@@ -1,3 +1,7 @@
+2025.02.15. Added zm_histogram. [app]
+2025.02.15. Debugged zm_ave. [app]
+2025.02.14. Added zHistogram class. [zm_stat, zm_stat_histogram]
+2025.02.14. Added zDataMinMax. [zm_stat]
 2025.02.03. Reflected renaming of zEqual, zMatToCMat, and zVecRingLinearSum to examples (thanks to Daishi Kaneta). [example]
 2025.01.27. Modified zComplexTouchup. [zm_complex]
 2025.01.27. Added zCMatTouchup. [zm_cmat]

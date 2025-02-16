@@ -18,7 +18,7 @@ bool zm_ave_sample(FILE *fp, zVecList *list)
     ZRUNERROR( "empty data file" );
     return false;
   }
-  while( *zSDouble( buf, &val ) ) nd++;
+  while( zSDouble( buf, &val ) ) nd++;
   rewind( fp );
   while( fgets( buf, BUFSIZ, fp ) ){
     if( !( v = zVecAlloc( nd ) ) ) break;
@@ -26,7 +26,7 @@ bool zm_ave_sample(FILE *fp, zVecList *list)
       zSDouble( buf, &val );
       zVecSetElemNC( v, i, val );
     }
-    zVecAddrListInsertHead( list, v );
+    zVecListInsertHead( list, v );
   }
   return true;
 }

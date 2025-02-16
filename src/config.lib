@@ -1,6 +1,6 @@
 OBJ=zm_ieee.o zm_misc.o\
 	zm_sf_erf.o zm_sf_gamma.o zm_sf_bessel.o zm_sf_fresnel.o\
-	zm_rand.o zm_stat.o\
+	zm_rand.o zm_stat.o zm_stat_histogram.o\
 	zm_complex.o zm_complex_arith.o zm_complex_pe.o\
 	zm_raw_vec.o zm_raw_mat.o\
 	zm_vec.o zm_vec_array.o zm_vec_list.o zm_vec_tree.o zm_vec_ring.o zm_mat.o\

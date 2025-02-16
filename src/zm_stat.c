@@ -103,6 +103,30 @@ double zDataMin(const double *data, int size, int *im)
   return min;
 }
 
+/* minimum and maximum elements of data. */
+void zDataMinMax(const double *data, int size, double *min, int *imin, double *max, int *imax)
+{
+  double __min, __max;
+  int __imin, __imax;
+  int i;
+
+  if( !min ) min = &__min;
+  if( !max ) max = &__max;
+  if( !imin ) imin = &__imin;
+  if( !imax ) imax = &__imax;
+  *min = *max = data[( *imin = *imax = 0 )];
+  for( i=0; i<size; i++ ){
+    if( data[i] < *min ){
+      *imin = i;
+      *min = data[i];
+    }
+    if( data[i] > *max ){
+      *imax = i;
+      *max = data[i];
+    }
+  }
+}
+
 /* maximum absolute component of data. */
 double zDataAbsMax(const double *data, int size, int *im)
 {

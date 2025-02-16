@@ -75,33 +75,47 @@ __ZM_EXPORT double zChi2CumDistrib(double x, int k);
 
 /*! \brief the maximum value in data.
  *
- * \a size is the size of data.
- * The index to the max is stored where \a im points,
- * if it is not the null pointer.
+ * zDataMax() finds the maximum element of data \a data.
+ * \a size is the size of \a data.
+ * The index of the maximum element is stored where \a im points, unless it is the null pointer.
+ * \retval the maximum value of \a data.
  */
 __ZM_EXPORT double zDataMax(const double *data, int size, int *im);
 
 /*! \brief the minimum value in data.
  *
- * \a size is the size of data.
- * The index to the max is stored where \a im points,
- * if it is not the null pointer.
+ * zDataMin() finds the minimum element of data \a data.
+ * \a size is the size of \a data.
+ * The index of the minimum element is stored where \a im points, unless it is the null pointer.
  */
 __ZM_EXPORT double zDataMin(const double *data, int size, int *im);
 
+/*! \brief minimum and maximum elements of data.
+ *
+ * zDataMinMax() finds the minimum and maximum elements of data \a data.
+ * \a size is the size of the array \a data.
+ * The minimum and maximum values are stored where \a min and \a max point, respectively, unless
+ * they are the null pointers.
+ * The indices of the minimum and maximum elements are stored where \a imin and \a imax point,
+ * respectively, unless they are the null pointers.
+ * \return
+ * zDataMinMax() does not return any values.
+ */
+__ZM_EXPORT void zDataMinMax(const double *data, int size, double *min, int *imin, double *max, int *imax);
+
 /*! \brief the maximum absolute value in data.
  *
- * \a size is the size of data.
- * The index to the max is stored where \a im points,
- * if it is not the null pointer.
+ * zDataAbsMax() finds the maximum absolute element of data \a data.
+ * \a size is the size of \a data.
+ * The index of the maximum element is stored where \a im points, unless it is the null pointer.
  */
 __ZM_EXPORT double zDataAbsMax(const double *data, int size, int *im);
 
 /*! \brief the minimum absolute value in data.
  *
- * \a size is the size of data.
- * The index to the max is stored where \a im points,
- * if it is not the null pointer.
+ * zDataAbsMax() finds the minimum absolute element of data \a data.
+ * \a size is the size of \a data.
+ * The index of the minimum element is stored where \a im points, unless it is the null pointer.
  */
 __ZM_EXPORT double zDataAbsMin(const double *data, int size, int *im);
 
@@ -139,6 +153,8 @@ __ZM_EXPORT double zDataStandardDeviation(const double *data, int size);
 __ZM_EXPORT bool zDataIsIncluded(const double *data, int size, double val, double tol);
 
 /*! \} */
+
+#include <zm/zm_stat_histogram.h>
 
 __END_DECLS
 

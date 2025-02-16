@@ -5,8 +5,6 @@
 zSeq seq;
 char *seqfile;
 
-/* ******************************************************* */
-
 enum{
   SEQMOD_HELP = 0,
   SEQMOD_COUNT,
@@ -49,7 +47,7 @@ void seqmodCount(void)
 
 void seqmodInterpolate(double dt)
 {
-  register int i;
+  int i;
   int dim, step;
   double tt = 0;
   zIP ip;
