@@ -1,4 +1,4 @@
-#include <zm/zm_eig.h>
+#include <zm/zm_mat_eig.h>
 
 void test(zMat m, zVec eig, zMat r, int n)
 {
@@ -41,7 +41,7 @@ int main(void)
   printf( "original matrix\n" );
   zMatPrint( m );
 
-  zEigSymJacobi( m, eig, r );
+  zMatSymEigJacobi( m, eig, r );
   test( m, eig, r, N );
 
   zMatFree( m );

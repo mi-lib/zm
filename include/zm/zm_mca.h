@@ -10,7 +10,7 @@
 #define __ZM_MCA_H__
 
 #include <zm/zm_data.h>
-#include <zm/zm_eig.h>
+#include <zm/zm_mat_eig.h>
 
 __BEGIN_DECLS
 

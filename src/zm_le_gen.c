@@ -5,7 +5,7 @@
  */
 
 #include <zm/zm_le.h>
-#include <zm/zm_eig.h> /* for MP-inverse and SVD */
+#include <zm/zm_mat_eig.h> /* for MP-inverse and SVD */
 
 /* initialize workspace for generalized linear equation solver. */
 void zLEWorkspaceInit(zLEWorkspace *workspace)
@@ -262,7 +262,7 @@ zVec zLESolveMPSVD(zMat a, zVec b, zVec ans)
   sv = zVecAlloc( zMatRowSizeNC(a) );
   tmp = zVecAlloc( zMatRowSizeNC(a) );
   if( !u || !v || !sv || !tmp ) goto TERMINATE;
-  if( ( rank = zSVD( a, sv, u, v ) ) < (int)zMatRowSizeNC(a) ){
+  if( ( rank = zMatSVD( a, sv, u, v ) ) < (int)zMatRowSizeNC(a) ){
     zMatColReg( u, rank );
     zMatRowReg( v, rank );
     zVecSetSize( sv, rank );

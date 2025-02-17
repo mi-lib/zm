@@ -1,4 +1,4 @@
-#include <zm/zm_eig.h>
+#include <zm/zm_mat_eig.h>
 
 #define TEST 0
 #define N    10
@@ -104,7 +104,7 @@ int main(void)
   for( i=0; i<n; i++ )
     ve[i] = zCVecAlloc( n );
 
-  zEigSystem( ma, z, ve, 0 );
+  zMatEig( ma, z, ve, 0 );
 
   /* ensurance */
   cma = zCMatAlloc( n, n );

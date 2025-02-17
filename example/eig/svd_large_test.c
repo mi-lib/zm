@@ -1,4 +1,4 @@
-#include <zm/zm_eig.h>
+#include <zm/zm_mat_eig.h>
 
 #define ROW 20
 #define COL 8
@@ -17,7 +17,7 @@ int main(void)
   zRandInit();
   zMatRandUniform( ma, -10, 10 );
   zMatPrint( ma );
-  rank = zSVD( ma, sv, u, v );
+  rank = zMatSVD( ma, sv, u, v );
   zVecPrint( sv );
   zMatPrint( u );
   zMatPrint( v );

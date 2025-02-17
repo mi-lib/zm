@@ -1,4 +1,4 @@
-#include <zm/zm_eig.h>
+#include <zm/zm_mat_eig.h>
 #include <zm/zm_rand.h>
 
 #define N 10
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   for( i=0; i<n; i++ )
     ve[i] = zCVecAlloc( n );
 
-  zEigSystem( ma, z, ve, 0 );
+  zMatEig( ma, z, ve, 0 );
 
   /* ensurance */
   cma = zCMatAlloc( n, n );

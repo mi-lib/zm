@@ -1,4 +1,4 @@
-#include <zm/zm_eig.h>
+#include <zm/zm_mat_eig.h>
 
 #define TEST 6
 #define N    10
@@ -73,7 +73,7 @@ int main(void)
   zMat ma;
 
   ma = zMatCloneArray(a,n,n);
-  zEigDQR( ma, z, 0 );
+  zMatEigDQR( ma, z, 0 );
   for( i=0; i<n; i++ ){
     zComplexPrint(&z[i]);
     printf( "\n" );

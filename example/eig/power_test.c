@@ -1,4 +1,4 @@
-#include <zm/zm_eig.h>
+#include <zm/zm_mat_eig.h>
 
 void check(zMat m, zVec v, double s)
 {
@@ -28,16 +28,16 @@ int main(int argc, char *argv[])
   zMatRandUniform( l, -10, 10 );
   zMulMatTMat( l, l, m );
 
-  zEigSymJacobi( m, e, r );
+  zMatSymEigJacobi( m, e, r );
   eprintf( "maximal eigenvalue = %.16g\n", zVecMax(e,NULL) );
   eprintf( "minimal eigenvalue = %.16g\n", zVecMin(e,NULL) );
 
   eprintf( ">> maximal eigenvalue by Power method\n" );
-  s = zEigPower( m, v, 0 );
+  s = zMatEigPower( m, v, 0 );
   check( m, v, s );
 
   eprintf( ">> minimal eigenvalue by Power method\n" );
-  s = zEigPowerInv( m, v, 0 );
+  s = zMatEigPowerInv( m, v, 0 );
   check( m, v, s );
 
   zMatFree( l );

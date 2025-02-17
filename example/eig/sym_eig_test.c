@@ -1,4 +1,4 @@
-#include <zm/zm_eig.h>
+#include <zm/zm_mat_eig.h>
 #include <zm/zm_rand.h>
 
 void check(zMat m, zVec s, zMat r, int c)
@@ -40,12 +40,12 @@ int main(int argc, char *argv[])
     }
 
   c1 = clock();
-  zEigSymBisec( m, s, r );
+  zMatSymEigBisec( m, s, r );
   c2 = clock();
   check( m, s, r, c2-c1 );
 
   c1 = clock();
-  zEigSymJacobi( m, s, r );
+  zMatSymEigJacobi( m, s, r );
   c2 = clock();
   check( m, s, r, c2-c1 );
 

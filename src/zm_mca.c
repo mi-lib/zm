@@ -121,7 +121,7 @@ int zPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loading)
     goto TERMINATE;
   }
   if( !zVecListMeanCov( points, mean, cov ) ||
-      !zEigSymJacobi( cov, score, loading ) ){
+      !zMatSymEigJacobi( cov, score, loading ) ){
     n = -1;
     goto TERMINATE;
   }

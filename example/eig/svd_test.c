@@ -1,4 +1,4 @@
-#include <zm/zm_eig.h>
+#include <zm/zm_mat_eig.h>
 
 #define TEST 4
 int main(void)
@@ -59,7 +59,7 @@ int main(void)
   sv = zVecAlloc( n );
 
   zMatPrint( ma );
-  rank = zSVD( ma, sv, u, v );
+  rank = zMatSVD( ma, sv, u, v );
   zVecPrint( sv );
   zMatPrint( u );
   zMatPrint( v );

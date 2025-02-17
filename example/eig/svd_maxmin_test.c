@@ -1,4 +1,4 @@
-#include <zm/zm_eig.h>
+#include <zm/zm_mat_eig.h>
 
 #define N 200
 #define M 100
@@ -16,10 +16,10 @@ int main(int argc, char *argv[])
   sv = zVecAlloc( N );
   zMatRandUniform( m, -10, 10 );
 
-  printf( "maximum singular value = %.10g\n", zSVMax( m ) );
-  printf( "minimum singular value = %.10g\n", zSVMin( m ) );
+  printf( "maximum singular value = %.10g\n", zMatSingularValueMax( m ) );
+  printf( "minimum singular value = %.10g\n", zMatSingularValueMin( m ) );
 
-  rank = zSVD( m, sv, u, v );
+  rank = zMatSVD( m, sv, u, v );
   zVecPrint( sv );
 
   printf( ">>ensurance\n" );

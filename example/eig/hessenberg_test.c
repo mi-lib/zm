@@ -1,4 +1,4 @@
-#include <zm/zm_eig.h>
+#include <zm/zm_mat_eig.h>
 
 #define N 10
 
@@ -15,7 +15,7 @@ int main(void)
   printf( "original matrix(M)\n" );
   zMatImg( m );
 
-  zHess( m, tm, p );
+  zMatToHessenberg( m, tm, p );
   printf( "Hessenberg matrix(H)\n" );
   zMatImg( tm );
 
