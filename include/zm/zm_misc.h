@@ -65,9 +65,9 @@ __ZM_EXPORT void zSinCos(double angle, double *s, double *c);
 __ZM_EXPORT double zPhaseNormalize(double angle);
 
 /*! \brief logarithmic function with an arbitrary base. */
-#define zLog(b,x) ( log(x) / log(b) )
+#define zLog(base,x) ( log(x) / log(base) )
 
-/*! \brief the base of natural logarithms. */
+/*! \brief Napier's constant (the base of natural logarithms). */
 #define zE 2.7182818284590452354
 
 /*! \brief maximum number of iteration times. */
@@ -89,8 +89,10 @@ __ZM_EXPORT double zPhaseNormalize(double angle);
  * \note if \a y is zero, anything might happen. */
 #define zFruct(x,y) ( (x) - floor((x)/(y))*(y) )
 /*! \brief the squared value of \a x. */
+#define _zSqr(x)    ( (x) * (x) )
 __ZM_EXPORT double zSqr(double x);
 /*! \brief the cubed value of \a x. */
+#define _zCube(x)   ( (x) * (x) * (x) )
 __ZM_EXPORT double zCube(double x);
 
 /*! \brief a non-negative integer \a n power of \a x. */

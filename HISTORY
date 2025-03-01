@@ -1,3 +1,4 @@
+2025.03.01. Added _zSqr and _zCube, and redefined zSqr and zCube. [zm_misc]
 2025.02.17. Renamed zHess to zMatToHessenberg. [zm_mat_eig]
 2025.02.17. Renamed zHouseholder and zHouseholderVec to _zMatToHessenbergHouseholder and _zMatToHessenbergHouseholderVec, respectively, and redefined them as static functions. [zm_mat_eig]
 2025.02.17. Renamed zSVD,_zSVDSort, _zSVMat, zSVMax, and zSVMin to zMatSVD, _zMatSVDSort, _zMatSingularValueMat, zMatSingularValueMax,and zMatSingularValueMin, respectively. [zm_mat_eig, zm_le_gen]

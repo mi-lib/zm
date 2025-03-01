@@ -28,10 +28,10 @@ double zPhaseNormalize(double angle)
 }
 
 /* square a value. */
-double zSqr(double x){ return x * x; }
+double zSqr(double x){ return _zSqr(x); }
 
 /* cube a value. */
-double zCube(double x){ return x * x * x; }
+double zCube(double x){ return _zCube(x); }
 
 /* a non-negative integer power. */
 double zPowN(double x, unsigned int n)
