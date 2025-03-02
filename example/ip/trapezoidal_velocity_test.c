@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
   step = trvelprof.term() / DT + 1;
   for( i=0; i<=step; i++ ){
     t = i * DT;
-    printf( "%g %g %g\n", trvelprof.dist(t), trvelprof.vel(t), trvelprof.acc(t) );
+    printf( "%g %g %g\n", trvelprof.distance(t), trvelprof.velocity(t), trvelprof.acceleration(t) );
   }
 #else
   zTRVelProfCreate( &trvelprof, -1, -2, 5, 4, argc > 1 ? atof(argv[1]) : 5 );
