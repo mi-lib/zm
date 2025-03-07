@@ -262,7 +262,7 @@ zVec zLESolveMPSVD(zMat a, zVec b, zVec ans)
   sv = zVecAlloc( zMatRowSizeNC(a) );
   tmp = zVecAlloc( zMatRowSizeNC(a) );
   if( !u || !v || !sv || !tmp ) goto TERMINATE;
-  if( ( rank = zMatSVD( a, sv, u, v ) ) < (int)zMatRowSizeNC(a) ){
+  if( ( rank = zMatSVD( a, u, sv, v ) ) < zMatRowSizeNC(a) ){
     zMatColReg( u, rank );
     zMatRowReg( v, rank );
     zVecSetSize( sv, rank );

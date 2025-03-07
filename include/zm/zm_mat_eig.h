@@ -37,40 +37,61 @@ __ZM_EXPORT zMat zMatToHessenberg(zMat m, zMat h, zMat p);
  * \return
  * zMatEigDQR() returns a boolean value. When it fails to allocate working memory, or \a a is a non-square
  * matrix, the false value is returned. Otherwise, the true value is returned.
+ * \sa
+ * zMatEig
  */
-bool zMatEigDQR(zMat a, zComplex eig[], int iter);
+__ZM_EXPORT bool zMatEigDQR(zMat m, zCVec eigval, int iter);
 
-/*! \brief the dominant eigenvalue of a matrix.
+/*! \brief the greatest and least eigenvalue of a matrix.
  *
- * zMatEigPower() calculates the dominant eigenvalue of matrix \a a by the power method. The corresponding
- * eivenvector is put into \a evec.
+ * zMatEigPower() calculates the greatest real eigenvalue of a square matrix \a m by the power method.
+ * zMatEigPowerInv() calculates the least real eigenvalue of a square matrix \a m by the power method.
+ * For the both functions, the corresponding eivenvector is put into \a eigvec.
  *
- * The method might not converge to the true value. If the iteration does not be finished even if it
- * repeats more than Z_MAX_ITER_NUM (defined in zm_misc.h), the function gives up to calculate.
+ * The methods are based on an iterative computation. \a iter is the maximum iteration number. If 0 is
+ * assigned, it is replaced by Z_MAX_ITER_NUM (defined in zm_misc.h).
  * \return
- * zMatEigPower() returns the computed eigenvalue.
+ * zMatEigPower() and zMatEigPowerInv() return the computed eigenvalues.
  */
-__ZM_EXPORT double zMatEigPower(zMat a, zVec evec, int iter);
-__ZM_EXPORT double zMatEigPowerInv(zMat a, zVec evec, int iter);
+__ZM_EXPORT double zMatEigPower(zMat a, zVec eigvec, int iter);
+__ZM_EXPORT double zMatEigPowerInv(zMat a, zVec eigvec, int iter);
 
-__ZM_EXPORT int zMatEig(zMat m, zComplex eig[], zCVec eigv[], int iter);
+/*! \brief eigenvalues and eigenvectors of a real square matrix.
+ *
+ * zMatEig() finds all eigenvalues and corresponding eigenvectors of a real square matrix \a m.
+ * The eigenvalues are stored in a complex vector \a eigval, while the corresponding eigenvectors are
+ * put in columns of a complex matrix \a eigbase.
+ * Namely, the following equation holds:
+ *  \a m \a eigbase = \a eigbase diag{ \a eigval }
+ * It is based on the double QR method, and available for arbitrary real square matrices.
+ * \return
+ * zMatEig() returns the number of the found eigenvalues.
+ * \sa
+ * zMatEigDQR
+ */
+__ZM_EXPORT int zMatEig(zMat m, zCVec eigval, zCMat eigbase, int iter);
 
 /*! \brief diagonalize a symmetric matrix by bisection method.
  *
  * zMatSymEigBisec() diagonalizes a symmetric matrix \a m based on the bisection method proposed by
- * J. W. Givens in 1954. The result diagonal values are stored in a vector form \a eig, while the
- * transformation matrix is stored in \a r.
+ * J. W. Givens in 1954. The result diagonal values are stored in a vector form \a eigval, while the
+ * transformation matrix is stored in \a eigbase. Namely, the following equation holds:
+ *   \a m \a eigbase = \a eigbase diag{ \a eigval }
  * \return
- * zMatSymEigBisec() returns a pointer \a eig.
+ * zMatSymEigBisec() returns a pointer \a eigval.
  * \notes
  * When \a m is not symmetric, zMatSymEigBisec() does not work as expected.
+ * \sa
+ * zMatSymEigJacobi
  */
-__ZM_EXPORT zVec zMatSymEigBisec(zMat m, zVec eig, zMat r);
+__ZM_EXPORT zVec zMatSymEigBisec(zMat m, zVec eigval, zMat eigbase);
 
 /*! \brief diagonalize a symmetric matrix by Jacobi method.
  *
  * zMatSymEigJacobi() diagonalizes a symmetric matrix \a m by Jacobi method. The result diagonal values
- * are stored in a vector form \a eig, while the transformation matrix is stored in \a r.
+ * are stored in a vector form \a eigval, while the transformation matrix is stored in \a eigbase.
+ * Namely, the following equation holds:
+ *   \a m \a eigbase = \a eigbase diag{ \a eigval }
  * The iteration will finish when the whole non-diagonal components become smaller than zTOL, or the
  * number of steps exceeds Z_MAX_ITER_NUM (defined in zm_misc.h).
  *
@@ -79,18 +100,20 @@ __ZM_EXPORT zVec zMatSymEigBisec(zMat m, zVec eig, zMat r);
  * zMatSymEigJacobi() returns a pointer \a eig.
  * \notes
  * When \a m is not symmetric, zMatSymEigJacobi() does not work as expected.
+ * \sa
+ * zMatSymEigBisec
  */
-__ZM_EXPORT zVec zMatSymEigJacobi(zMat m, zVec eig, zMat r);
+__ZM_EXPORT zVec zMatSymEigJacobi(zMat m, zVec eigval, zMat eigbase);
 
 /* singular value decomposition */
 
-/*! \brief singular value decomposition.
+/*! \brief singular value decomposition (SVD).
  *
  * zMatSVD() decomposes a matrix \a m into the following form:
- *   \a m = \a u \a s \a v.
- * where \a u and \a v are orthogonal matrices and \a s is a diagonal matrix. Note that, different from
- * a standard SVD from, \a v is defined in non-transposed form.
- * The diagonal components of \a s are so-called singular values, which are stored in a vector \a sv.
+ *   \a m = \a u s \a v.
+ * where \a u and \a v are orthonormal matrices and s is a diagonal matrix. Note that, different from
+ * the standard SVD from, \a v is defined in non-transposed form.
+ * The diagonal components of s are so-called singular values, which are stored in a vector \a sv.
  * The number of non-zero singular values coincides with the rank of \a m.
  *
  * The original sizes of each matrix have to be
@@ -102,7 +125,7 @@ __ZM_EXPORT zVec zMatSymEigJacobi(zMat m, zVec eig, zMat r);
  * \return
  * zMatSVD() returns the rank of \a m, namely, the number of non-zero singular values of \a m.
  */
-__ZM_EXPORT int zMatSVD(zMat m, zVec sv, zMat u, zMat v);
+__ZM_EXPORT int zMatSVD(zMat m, zMat u, zVec sv, zMat v);
 
 /*! \brief maximum singular value of a matrix.
  */

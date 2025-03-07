@@ -40,7 +40,7 @@ void zHistogramVote(zHistogram *histogram, double val)
 /* create a histogram from data and specified range. */
 zHistogram *zHistogramCreate(zHistogram *histogram, const double data[], size_t size, double min, double max, size_t num)
 {
-  int i;
+  uint i;
 
   if( !zHistogramAllocBin( histogram, min, max, num ) )
     return NULL;

@@ -54,6 +54,7 @@
 #define ZM_ERR_VEC_SIZEMISMATCH            "size mismatch of vectors"
 #define ZM_ERR_MAT_SIZEMISMATCH            "size mismatch of matrices"
 #define ZM_ERR_MAT_SIZEMISMATCH_VEC        "size mismatch of matrix and vector"
+#define ZM_ERR_MAT_SIZEMISMATCH_CVEC       "size mismatch of matrix and complex vector"
 #define ZM_ERR_MAT_NOTSQR                  "not a square matrix"
 #define ZM_ERR_MAT_NOTSYMMETRIC            "not a symmetric matrix"
 
