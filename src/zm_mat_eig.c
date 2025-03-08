@@ -60,7 +60,7 @@ static zVec _zMatToHessenbergHouseholderVec(zMat m, int col, int from, int to, z
     s += zSqr( zVecSetElemNC( u, i, zMatElemNC(m,i,col) ) );
   if( zIsTiny( s ) ) return u;
   zVecElemNC(u,from) -= ( s = -zSgn(zMatElemNC(m,from,col)) * sqrt(s) );
-  zRawVecDivDRC( &zVecElemNC(u,from), sqrt(2*(s-zMatElemNC(m,from,col))*s), to-from );
+  zRawVecDivDRC( &zVecElemNC(u,from), sqrt( 2*(s-zMatElemNC(m,from,col))*s ), to-from );
   return u;
 }
 
@@ -115,7 +115,7 @@ static void _zMatEigDQRHouseholder(zMat a, int r, int c, double g1, double g2, d
   double s, den, alpha;
   int i, c1, c2, n;
 
-  s = sqrt( g1*g1 + g2*g2 + g3*g3 );
+  s = ( s = g1*g1 + g2*g2 + g3*g3 ) < 0 ? 0 : sqrt( s );
   den = g1 + ( g1 > 0 ? s : -s );
   g2 /= den;
   g3 /= den;
@@ -124,7 +124,7 @@ static void _zMatEigDQRHouseholder(zMat a, int r, int c, double g1, double g2, d
   c1 = c + 1;
   c2 = c + 2;
   for( i=zMax(c-1,0); i<=r; i++ ){
-    s = (zMatElemNC(a,c,i)+g2*zMatElemNC(a,c1,i)+g3*zMatElemNC(a,c2,i))*alpha;
+    s = ( zMatElemNC(a,c,i) + g2*zMatElemNC(a,c1,i) + g3*zMatElemNC(a,c2,i) ) * alpha;
     zMatElemNC(a,c ,i) -= s;
     zMatElemNC(a,c1,i) -= s * g2;
     zMatElemNC(a,c2,i) -= s * g3;
@@ -172,9 +172,8 @@ bool zMatEigDQR(zMat m, zCVec eigval, int iter)
         r = r1;
         break;
       }
-      b =-zMatElemNC(a,r1,r1)-zMatElemNC(a,r,r);
-      c = zMatElemNC(a,r1,r1)*zMatElemNC(a,r,r)
-         -zMatElemNC(a,r1,r) *zMatElemNC(a,r,r1);
+      b = -zMatElemNC(a,r1,r1) - zMatElemNC(a,r,r);
+      c =  zMatElemNC(a,r1,r1)*zMatElemNC(a,r,r) - zMatElemNC(a,r1,r)*zMatElemNC(a,r,r1);
       if( r1 == 0 || zIsTiny( zMatElemNC(a,r1,r1-1) ) ){
         zQESolve( 1.0, b, c, zCVecElemNC(eigval,r1) );
         r -= 2;
@@ -324,16 +323,17 @@ static int _zMatEigVecComplex(zMat m, zComplex *eigval, zCVec eigvec1, zCVec eig
 
 /* compute sets of eigenvalues and eigenvectors of a square matrix. */
 #define Z_EIGSYS_ITER_NUM 10
-int zMatEig(zMat m, zCVec eigval, zCMat eigbase, int iter)
+bool zMatEig(zMat m, zCVec eigval, zCMat eigbase, int iter)
 {
-  int i = -1;
   zCVec eigvec1, eigvec2;
+  bool ret = false;
+  int i;
 
   eigvec1 = zCVecAlloc( zCMatRowSizeNC(eigbase) );
   eigvec2 = zCVecAlloc( zCMatRowSizeNC(eigbase) );
   if( !eigvec1 || !eigvec2 ) goto TERMINATE;
   /* eigenvalues by double QR method */
-  if( !zMatEigDQR( m, eigval, iter ) ) return -1;
+  if( !zMatEigDQR( m, eigval, iter ) ) goto TERMINATE;
   /* eigenvectors by inverse iteration method */
   for( i=0; i<zMatRowSizeNC(m); ){
     if( zComplexIsReal( zCVecElemNC(eigval,i), zTOL ) ){
@@ -349,12 +349,29 @@ int zMatEig(zMat m, zCVec eigval, zCMat eigbase, int iter)
       i += 2;
     }
   }
+  ret = true;
   /* return the number of eigenvalues and eigenvectors */
  TERMINATE:
   zCVecFree( eigvec1 );
   zCVecFree( eigvec2 );
-  return i;
+  return ret;
 }
+
+/* check if sizes of matrices and a vector for eigenvalues are consisten. */
+#define _zMatSymEigCheckSize(m,eigval,eigbase) do{\
+  if( !zMatIsSqr( m ) ){\
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );\
+    return false;\
+  }\
+  if( !eigbase || !zMatSizeEqual( m, eigbase ) ){\
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );\
+    return false;\
+  }\
+  if( !eigval || !zMatRowVecSizeEqual( m, eigval ) ){\
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );\
+    return false;\
+  }\
+} while(0)
 
 /* compute the range in which all eigenvalues exist based on Gerschgorin's theorem. */
 static void _zMatSymEigBisecRange(zMat m, double *emin, double *emax)
@@ -455,23 +472,12 @@ static bool _zMatSymEigBisecR(zMat m, zVec eigval, zMat eigbase, int iter)
 }
 
 /* diagonalize a symmetric matrix by bisection method (J. W. Givens, 1954). */
-zVec zMatSymEigBisec(zMat m, zVec eigval, zMat eigbase)
+bool zMatSymEigBisec(zMat m, zVec eigval, zMat eigbase)
 {
   double emin, emax;
   int nmin, nmax;
 
-  if( !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
-    return NULL;
-  }
-  if( !eigbase || !zMatSizeEqual( m, eigbase ) ){
-    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
-    return NULL;
-  }
-  if( !eigval || !zMatRowVecSizeEqual( m, eigval ) ){
-    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
-    return NULL;
-  }
+  _zMatSymEigCheckSize( m, eigval, eigbase );
   /* eigenvalues */
   zMatCopyNC( m, eigbase ); /* temporary working space */
   zMatToHessenberg( eigbase, NULL, NULL );
@@ -480,7 +486,7 @@ zVec zMatSymEigBisec(zMat m, zVec eigval, zMat eigbase)
   nmax = _zMatSymEigBisecSturm( eigbase, emax );
   _zMatSymEigBisecRec( eigbase, emin, nmin, emax, nmax, zVecBuf(eigval) );
   _zMatSymEigBisecR( m, eigval, eigbase, Z_EIGSYS_ITER_NUM );
-  return eigval;
+  return true;
 }
 
 /* shift diagonal values of a matrix to accelerate diagonalization. */
@@ -489,9 +495,8 @@ static double _zMatSymEigJacobiShift(zMat m, double *shift)
   zComplex c_shift[2];
   double b, c;
 
-  b = - zMatBuf(m)[0] - zMatElemNC(m,1,1);
-  c = zMatBuf(m)[0] * zMatElemNC(m,1,1)
-      - zMatElemNC(m,1,0) * zMatElemNC(m,0,1);
+  b =-zMatBuf(m)[0] - zMatElemNC(m,1,1);
+  c = zMatBuf(m)[0] * zMatElemNC(m,1,1) - zMatElemNC(m,1,0) * zMatElemNC(m,0,1);
   zQESolve( 1, b, c, c_shift );
   c = fabs( c_shift[0].re - zMatBuf(m)[0] ) < fabs( c_shift[1].re - zMatBuf(m)[0] ) ?
     c_shift[0].re : c_shift[1].re;
@@ -508,7 +513,7 @@ static void _zMatSymEigJacobiRot(zMat m, zMat eigbase, int i, int j)
 
   as = 0.5 * ( zMatElemNC(m,i,i) + zMatElemNC(m,j,j) );
   ad = 0.5 * ( zMatElemNC(m,i,i) - zMatElemNC(m,j,j) );
-  ti = sqrt( ad*ad + zSqr( zMatElemNC(m,i,j) ) );
+  ti = sqrt( ad*ad + _zSqr( zMatElemNC(m,i,j) ) );
   if( ad < 0 ) ti = -ti;
   c = sqrt( 0.5 + 0.5*ad/ti );
   s = 0.5 * zMatElemNC(m,i,j) / ( ti * c );
@@ -535,29 +540,17 @@ static void _zMatSymEigJacobiRot(zMat m, zMat eigbase, int i, int j)
 }
 
 /* diagonalize a symmetric matrix by Jacobi's method. */
-zVec zMatSymEigJacobi(zMat m, zVec eigval, zMat eigbase)
+bool zMatSymEigJacobi(zMat m, zVec eigval, zMat eigbase)
 {
   int i, j, n = 0;
   double shift;
   bool is_complete;
   zMat d;
 
-  if( !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
-    return NULL;
-  }
-  /* transformation matrix */
-  if( !eigbase || !zMatSizeEqual( m, eigbase ) ){
-    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
-    return NULL;
-  }
-  if( !eigval || !zMatRowVecSizeEqual( m, eigval ) ){
-    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
-    return NULL;
-  }
+  _zMatSymEigCheckSize( m, eigval, eigbase );
   if( !( d = zMatClone( m ) ) ){ /* diagonal matrix */
     ZALLOCERROR();
-    return NULL;
+    return false;
   }
 
   zMatIdent( eigbase );
@@ -580,7 +573,7 @@ zVec zMatSymEigJacobi(zMat m, zVec eigval, zMat eigbase)
   for( j=0; j<zMatRowSizeNC(m); j++ )
     zVecSetElemNC( eigval, j, zMatElemNC(d,j,j) + shift );
   zMatFree( d );
-  return eigval;
+  return true;
 }
 
 /* sort singular values and corresponding bases. */

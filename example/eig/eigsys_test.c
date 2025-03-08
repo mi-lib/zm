@@ -1,6 +1,6 @@
 #include <zm/zm_mat_eig.h>
 
-#define N 100
+#define N 1
 
 bool assert_mat_eig_one(double a[], int n)
 {

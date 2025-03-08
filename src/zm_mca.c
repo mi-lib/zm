@@ -108,7 +108,7 @@ zMat zVecListMeanCov(zVecList *list, zVec mean, zMat cov)
 }
 
 /* principal component analysis. */
-int zPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loading)
+int zVecListPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loading)
 {
   zMat cov;
   int s, n;

@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
   score = zVecAlloc( DIM );
   loading = zMatAllocSqr( DIM );
   printf( "executing PCA. the number of PC = %d\n",
-    zPCA( &points, cr, mean, score, loading ) );
+    zVecListPCA( &points, cr, mean, score, loading ) );
 
   fp = fopen( "a", "w" );
   zListForEach( &points, pc ){

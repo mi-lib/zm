@@ -1,3 +1,7 @@
+2025.03.08. Renamed zPCA to zVecListPCA. [zm_mca]
+2025.03.08. Modified types of return values of zMatSymEigBisec and zMatSymEigJacobi. [zm_mat_eig]
+2025.03.08. Defined _zMatSymEigCheckSize for zMatSymEigBisec and zMatSymEigJacobi. [zm_mat_eig]
+2025.03.08. Modified _zMatEigDQRHouseholder to cope with numerical inaccuracy. [zm_mat_eig]
 2025.03.06. Modified APIs of zMatEigDQR and zMatEig to use zCVec for eigenvalues and zCMat for eigenvectors. [zm_mat_eig, zm_errmsg]
 2025.03.06. Modified zMatEig to check the result of zMatEigDQR. [zm_mat_eig]
 2025.03.06. Modified zMatEigPower not to warn iteration over. [zm_mat_eig]

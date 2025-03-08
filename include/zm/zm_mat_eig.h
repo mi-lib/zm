@@ -65,45 +65,37 @@ __ZM_EXPORT double zMatEigPowerInv(zMat a, zVec eigvec, int iter);
  *  \a m \a eigbase = \a eigbase diag{ \a eigval }
  * It is based on the double QR method, and available for arbitrary real square matrices.
  * \return
- * zMatEig() returns the number of the found eigenvalues.
+ * zMatEig() returns the false value if
+ *  - \a m is not a square matrix.
+ *  - the sizes of \a m and \a eigbase are not equal.
+ *  - the size of \a eigval does not coincide with the row size of \a m.
+ *  - it fails to allocate internal working memory.
+ * Otherwise, it returns the true value.
  * \sa
  * zMatEigDQR
  */
-__ZM_EXPORT int zMatEig(zMat m, zCVec eigval, zCMat eigbase, int iter);
+__ZM_EXPORT bool zMatEig(zMat m, zCVec eigval, zCMat eigbase, int iter);
 
-/*! \brief diagonalize a symmetric matrix by bisection method.
+/*! \brief diagonalize a symmetric matrix.
  *
- * zMatSymEigBisec() diagonalizes a symmetric matrix \a m based on the bisection method proposed by
- * J. W. Givens in 1954. The result diagonal values are stored in a vector form \a eigval, while the
- * transformation matrix is stored in \a eigbase. Namely, the following equation holds:
+ * zMatSymEigBisec() and zMatSymEigJacobi() diagonalizes a symmetric matrix \a m. The former is based
+ * on the bisection method proposed by J. W. Givens in 1954, while the latter on Jacobi's method with
+ * Wilkinson's formula.
+ * The result diagonal values are stored in a vector form \a eigval, while the transformation matrix
+ * is stored in \a eigbase. Namely, the following equation holds:
  *   \a m \a eigbase = \a eigbase diag{ \a eigval }
  * \return
- * zMatSymEigBisec() returns a pointer \a eigval.
+ * zMatSymEigBisec() and zMatSymEigJacobi() return the false value if
+ *  - \a m is not a square matrix
+ *  - the sizes of \a m and \a eigbase are not equal
+ *  - the size of \a eigval does not coincide with the row size of \a m
+ *  - it fails to allocate internal working memory
+ * Otherwise, they return the true value.
  * \notes
- * When \a m is not symmetric, zMatSymEigBisec() does not work as expected.
- * \sa
- * zMatSymEigJacobi
+ * When \a m is not symmetric, those functions do not work as expected.
  */
-__ZM_EXPORT zVec zMatSymEigBisec(zMat m, zVec eigval, zMat eigbase);
-
-/*! \brief diagonalize a symmetric matrix by Jacobi method.
- *
- * zMatSymEigJacobi() diagonalizes a symmetric matrix \a m by Jacobi method. The result diagonal values
- * are stored in a vector form \a eigval, while the transformation matrix is stored in \a eigbase.
- * Namely, the following equation holds:
- *   \a m \a eigbase = \a eigbase diag{ \a eigval }
- * The iteration will finish when the whole non-diagonal components become smaller than zTOL, or the
- * number of steps exceeds Z_MAX_ITER_NUM (defined in zm_misc.h).
- *
- * This implimentation of Jacobi rotation transformation is based on Wilkinson's formula.
- * \return
- * zMatSymEigJacobi() returns a pointer \a eig.
- * \notes
- * When \a m is not symmetric, zMatSymEigJacobi() does not work as expected.
- * \sa
- * zMatSymEigBisec
- */
-__ZM_EXPORT zVec zMatSymEigJacobi(zMat m, zVec eigval, zMat eigbase);
+__ZM_EXPORT bool zMatSymEigBisec(zMat m, zVec eigval, zMat eigbase);
+__ZM_EXPORT bool zMatSymEigJacobi(zMat m, zVec eigval, zMat eigbase);
 
 /* singular value decomposition */
 
