@@ -11,9 +11,8 @@
 
 __BEGIN_DECLS
 
-/* Lagrange interpolation, which interpolates n points by n-1 th order
- * polynomial curve. */
-__ZM_EXPORT bool zIPCreateLagrange(zIP *ip, zSeq *seq);
+/* Lagrange interpolation interpolates n points by n-1 th order polynomial curve. */
+__ZM_EXPORT bool zIPCreateLagrange(zIP *ip, const zSeq *seq);
 
 __END_DECLS
 

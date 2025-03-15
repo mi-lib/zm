@@ -84,23 +84,23 @@ __ZM_EXPORT void zPexIPFree(zPexIP *pc);
  * zPexIPCreateBoundary(), zPexIPCreateLSM() and zPexIPCreateBounderyLSM() return the true value
  * if they succeed to create the polynomial function, or the false value otherwise.
  */
-__ZM_EXPORT bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, zVec v);
-__ZM_EXPORT bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, zVec t, zVec x);
+__ZM_EXPORT bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, const zVec v);
+__ZM_EXPORT bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, const zVec t, const zVec x);
 /*! \brief create a polynomial function from the boundary condition and a sequence of points to fit. */
-__ZM_EXPORT bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, zVec t, zVec x);
+__ZM_EXPORT bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, const zVec t, const zVec x);
 
 /*! \brief value of polynomial function.
  *
  * \return
  * zPexIPVal() returns the value of a polynomial function \a pc at the time \a t.
  */
-__ZM_EXPORT double zPexIPVal(zPexIP *pc, double t);
+__ZM_EXPORT double zPexIPVal(const zPexIP *pc, double t);
 
 /*! \brief velocity of a polynomial function. */
-__ZM_EXPORT double zPexIPVel(zPexIP *pc, double t);
+__ZM_EXPORT double zPexIPVel(const zPexIP *pc, double t);
 
 /*! \brief acceleration of a polynomial function. */
-__ZM_EXPORT double zPexIPAcc(zPexIP *pc, double t);
+__ZM_EXPORT double zPexIPAcc(const zPexIP *pc, double t);
 
 /*! \brief print a polynomial function.
  *
@@ -110,7 +110,7 @@ __ZM_EXPORT double zPexIPAcc(zPexIP *pc, double t);
  * \return
  * zPexIPFPrint() and zPexIPPrint() return no value.
  */
-__ZM_EXPORT void zPexIPFPrint(FILE *fp, zPexIP *pc);
+__ZM_EXPORT void zPexIPFPrint(FILE *fp, const zPexIP *pc);
 #define zPexIPPrint(p) zPexIPFPrint( stdout, (p) )
 
 __END_DECLS

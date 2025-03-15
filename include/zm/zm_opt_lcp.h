@@ -30,8 +30,8 @@ __BEGIN_DECLS
  * Since \a w is often not required to be answered, it is allowed to give
  * the null pointer for \a w to skip the operation.
  */
-__ZM_EXPORT bool zLCPSolveLemke(zMat m, zVec p, zVec w, zVec z);
-__ZM_EXPORT bool zLCPSolveIP(zMat m, zVec p, zVec w, zVec z);
+__ZM_EXPORT bool zLCPSolveLemke(const zMat m, const zVec p, zVec w, zVec z);
+__ZM_EXPORT bool zLCPSolveIP(const zMat m, const zVec p, zVec w, zVec z);
 
 __END_DECLS
 

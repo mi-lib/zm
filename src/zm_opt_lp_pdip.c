@@ -33,7 +33,7 @@ static void _zLP_PDIPFree(_zLP_PDIP *dat)
 }
 
 /* allocate working memory for PD-IP. */
-static _zLP_PDIP *_zLP_PDIPAlloc(_zLP_PDIP *dat, zMat a, zVec b, zVec c, zVec x)
+static _zLP_PDIP *_zLP_PDIPAlloc(_zLP_PDIP *dat, const zMat a, const zVec b, const zVec c, const zVec x)
 {
   /* bind pointers */
   dat->a = a;
@@ -91,7 +91,7 @@ static int _zLP_PDIPEqLUDecomp(_zLP_PDIP *dat)
 }
 
 /* solve gradient equation by LU factorization for PD-IP. */
-static zVec _zLESolveLUDeg(zMat l, zMat u, int rank, zVec b, zVec ans, zIndex idx)
+static zVec _zLESolveLUDeg(zMat l, zMat u, int rank, const zVec b, zVec ans, zIndex idx)
 {
   zVec c;
 
@@ -106,7 +106,7 @@ static zVec _zLESolveLUDeg(zMat l, zMat u, int rank, zVec b, zVec ans, zIndex id
   return ans;
 }
 
-static void _zLP_PDIPEqLU(_zLP_PDIP *dat, int rank, zVec v1, zVec v2, zVec v3, zVec dx, zVec dy, zVec dz)
+static void _zLP_PDIPEqLU(_zLP_PDIP *dat, int rank, const zVec v1, const zVec v2, const zVec v3, zVec dx, zVec dy, zVec dz)
 {
   /* dy (dz for temporary working space) */
   v2 ? zVecAmpNC( v2, dat->x, dz ) : zVecZero( dz );
@@ -144,7 +144,7 @@ static void _zLP_PDIP_PCFree(_zLP_PDIP_PC *pc)
 }
 
 /* allocate working memory for PD-IP-PC. */
-static _zLP_PDIP_PC *_zLP_PDIP_PCAlloc(_zLP_PDIP_PC *pc, zVec b, zVec c)
+static _zLP_PDIP_PC *_zLP_PDIP_PCAlloc(_zLP_PDIP_PC *pc, const zVec b, const zVec c)
 {
   pc->dx = zVecAlloc( zVecSizeNC(c) );
   pc->dy = zVecAlloc( zVecSizeNC(b) );
@@ -173,7 +173,7 @@ static double _zLP_PDIP_PCErr(_zLP_PDIP *dat)
 }
 
 /* updating step of PD-IP-PC. */
-static double _zLP_PDIP_PCStep(zVec x, zVec dx)
+static double _zLP_PDIP_PCStep(const zVec x, zVec dx)
 {
   int i;
   bool max_ok = false, min_ok = false;
@@ -221,7 +221,7 @@ static void _zLP_PDIP_PCCorrect(_zLP_PDIP *dat, _zLP_PDIP_PC *pc, double ap, dou
 /* linear programming solver based on primal-dual interior-point method
  * with Mehrotra s predictor-corrector. */
 #define ZM_LPSOLVE_PDIP_PCSTEP_MUL 0.99
-bool zLPSolvePDIP_PC(zMat a, zVec b, zVec c, zVec x, double *cost)
+bool zLPSolvePDIP_PC(const zMat a, const zVec b, const zVec c, zVec x, double *cost)
 {
   _zLP_PDIP dat;
   _zLP_PDIP_PC pc;

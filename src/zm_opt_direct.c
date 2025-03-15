@@ -46,7 +46,7 @@ static zOptDIRECTRect *_zOptDIRECTRectClone(zOptDIRECTRect *src)
 }
 
 /* evaluate the center value of a hyper-rectangle region */
-static double _zOptDIRECTRectEval(zOptDIRECTRect *rect, double (* f)(zVec,void*), void *util, zVec min, zVec max, zVec v)
+static double _zOptDIRECTRectEval(zOptDIRECTRect *rect, double (* f)(const zVec,void*), void *util, const zVec min, const zVec max, zVec v)
 {
   return rect->val = f( zVecScale( rect->x, min, max, v ), util );
 }
@@ -170,7 +170,7 @@ static zOptDIRECTRectListCell *_zOptDIRECTRectSetDeleteCell(zOptDIRECTRectSet *s
 }
 
 /* initialize a set of hyper-rectangle regions */
-static zOptDIRECTRectSet *_zOptDIRECTRectSetInit(zOptDIRECTRectSet *set, double (* f)(zVec,void*), void *util, int dim, zVec min, zVec max, zVec x)
+static zOptDIRECTRectSet *_zOptDIRECTRectSetInit(zOptDIRECTRectSet *set, double (* f)(const zVec,void*), void *util, int dim, const zVec min, const zVec max, zVec x)
 {
   zOptDIRECTRect *rect;
 
@@ -238,7 +238,7 @@ static void _zOptDIRECTRectPatternDestroy(zOptDIRECTRectPattern *pat, int dim)
 }
 
 /* create a dividing pattern of a hyper-rectangle region */
-static bool _zOptDIRECTRectPatternCreate(zOptDIRECTRectPattern *pat, int i, int level, zOptDIRECTRect *rect, double (* f)(zVec,void*), void *util, zVec min, zVec max, zVec x)
+static bool _zOptDIRECTRectPatternCreate(zOptDIRECTRectPattern *pat, int i, int level, zOptDIRECTRect *rect, double (* f)(const zVec,void*), void *util, const zVec min, const zVec max, zVec x)
 {
   double d;
 
@@ -259,7 +259,7 @@ static bool _zOptDIRECTRectPatternCreate(zOptDIRECTRectPattern *pat, int i, int 
 }
 
 /* divide a hyper-rectangle region */
-static bool _zOptDIRECTRectSetRectDivide(zOptDIRECTRectSet *set, int level, zOptDIRECTRect *rect, double (* f)(zVec,void*), void *util, zVec min, zVec max, zVec x)
+static bool _zOptDIRECTRectSetRectDivide(zOptDIRECTRectSet *set, int level, zOptDIRECTRect *rect, double (* f)(const zVec,void*), void *util, const zVec min, const zVec max, zVec x)
 {
   zOptDIRECTRectPattern *pat;
   zIntList index;
@@ -389,7 +389,7 @@ static bool _zOptDIRECTRectPORIdent(zOptDIRECTRectPOR *por, zOptDIRECTRectSet *s
 }
 
 /* divide potentially optimal hyper-rectangle regions */
-static bool _zOptDIRECTRectPORSetDivide(zOptDIRECTRectPOR *por, zOptDIRECTRectSet *set, double (* f)(zVec,void*), void *util, zVec min, zVec max, zVec x)
+static bool _zOptDIRECTRectPORSetDivide(zOptDIRECTRectPOR *por, zOptDIRECTRectSet *set, double (* f)(const zVec,void*), void *util, const zVec min, const zVec max, zVec x)
 {
   int i;
 
@@ -417,7 +417,7 @@ static void _zOptDIRECTRectPORFPrint(FILE *fp, zOptDIRECTRectPOR *por)
 #endif
 
 /* solve an optimization problem by DIRECT method. */
-int zOptSolveDIRECT(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval)
+int zOptSolveDIRECT(double (* f)(const zVec,void*), void *util, const zVec min, const zVec max, int iter, double tol, zVec ans, double *eval)
 {
   zOptDIRECTRectSet set;
   zOptDIRECTRectPOR por;

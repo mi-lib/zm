@@ -11,8 +11,8 @@
 
 __BEGIN_DECLS
 
-/* linear interpolation, which connects the sections by lines. */
-__ZM_EXPORT bool zIPCreateLinear(zIP *ip, zSeq *seq);
+/* linear interpolation connects sections by segmented lines. */
+__ZM_EXPORT bool zIPCreateLinear(zIP *ip, const zSeq *seq);
 
 __END_DECLS
 

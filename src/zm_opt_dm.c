@@ -6,21 +6,21 @@
 
 #include <zm/zm_opt.h>
 
-/* *** gradient vector function *** */
+/* gradient vector function */
 
-static zVec _zOptDMGrad(zOptDM *opt, zVec var, zVec g, void *util){
+static zVec _zOptDMGrad(zOptDM *opt, const zVec var, zVec g, void *util){
   return opt->grad( var, g, util );
 }
-static zVec _zOptDMGradNG(zOptDM *opt, zVec var, zVec g, void *util)
+static zVec _zOptDMGradNG(zOptDM *opt, const zVec var, zVec g, void *util)
 {
   int i;
   double adv, prv, org;
 
   for( i=0; i<zVecSizeNC(var); i++ ){
-    org = zVecElem(var,i);
-    zVecSetElemNC( var, i, org+Z_OPT_EPS );
+    org = zVecElemNC(var,i);
+    zVecSetElemNC( var, i, org + Z_OPT_EPS );
     adv = opt->eval( var, util );
-    zVecSetElemNC( var, i, org-Z_OPT_EPS );
+    zVecSetElemNC( var, i, org - Z_OPT_EPS );
     prv = opt->eval( var, util );
     zVecSetElemNC( g, i, 0.5 * ( adv - prv ) / Z_OPT_EPS );
     zVecSetElemNC( var, i, org );
@@ -28,12 +28,12 @@ static zVec _zOptDMGradNG(zOptDM *opt, zVec var, zVec g, void *util)
   return g;
 }
 
-/* *** Hessian matix function *** */
+/* Hessian matix function */
 
-static zMat _zOptDMHess(zOptDM *opt, zVec var, zMat h, void *util){
+static zMat _zOptDMHess(zOptDM *opt, const zVec var, zMat h, void *util){
   return opt->hess( var, h, util );
 }
-static zMat _zOptDMHessNG(zOptDM *opt, zVec var, zMat h, void *util)
+static zMat _zOptDMHessNG(zOptDM *opt, const zVec var, zMat h, void *util)
 {
   int i;
   double org;
@@ -47,10 +47,10 @@ static zMat _zOptDMHessNG(zOptDM *opt, zVec var, zMat h, void *util)
     goto TERMINATE;
   }
   for( i=0; i<zVecSizeNC(var); i++ ){
-    org = zVecElem(var,i);
-    zVecSetElemNC( var, i, org+Z_OPT_EPS );
+    org = zVecElemNC(var,i);
+    zVecSetElemNC( var, i, org + Z_OPT_EPS );
     opt->_grad( opt, var, adg, util );
-    zVecSetElemNC( var, i, org-Z_OPT_EPS );
+    zVecSetElemNC( var, i, org - Z_OPT_EPS );
     opt->_grad( opt, var, prg, util );
     zRawVecSub( zVecBuf(adg), zVecBuf(prg), zMatRowBuf(h,i), zMatRowSizeNC(h) );
     zVecSetElemNC( var, i, org );
@@ -62,9 +62,9 @@ static zMat _zOptDMHessNG(zOptDM *opt, zVec var, zMat h, void *util)
   return h;
 }
 
-/* *** line search *** */
+/* line search */
 
-static bool _zOptDMStepTest(zOptDM *opt, zVec var, void *util, double *a, double e0, double df, double *e)
+static bool _zOptDMStepTest(zOptDM *opt, const zVec var, void *util, double *a, double e0, double df, double *e)
 {
   double max;
 
@@ -84,7 +84,7 @@ static bool _zOptDMStepTest(zOptDM *opt, zVec var, void *util, double *a, double
 }
 
 /* directly add a step vector to a variable */
-static zVec _zOptDMStepPlain(zOptDM *opt, zVec var, void *util, double e0, double *e1)
+static zVec _zOptDMStepPlain(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
 {
   zVecAddNCDRC( var, opt->_d );
   *e1 = opt->eval( var, util );
@@ -92,12 +92,12 @@ static zVec _zOptDMStepPlain(zOptDM *opt, zVec var, void *util, double e0, doubl
 }
 
 /* line search by More-Thuente's method */
-static zVec _zOptDMStepMT(zOptDM *opt, zVec var, void *util, double e0, double *e1)
+static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
 {
   double al = 0.0, au = 1.0, at, ac, aq, as, da, s, df;
   double fl, gl, gt, c1, c2, v1, v2;
 
-  if( zIsNan(e0) ){
+  if( zIsNan( e0 ) ){
     ZRUNWARN( ZM_WARN_OPT_BADINI );
     return NULL;
   }
@@ -159,11 +159,11 @@ static zVec _zOptDMStepMT(zOptDM *opt, zVec var, void *util, double e0, double *
 
 /* line search by Dennis-Schnabel's backtracking */
 #define Z_OPT_DM_STEP_MIN 0.001
-static zVec _zOptDMStepDS(zOptDM *opt, zVec var, void *util, double e0, double *e1)
+static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
 {
   double a1, a2=1.0, da, v1, v2, s, df, c1, c2;
 
-  if( zIsNan(e0) ){
+  if( zIsNan( e0 ) ){
     ZRUNWARN( ZM_WARN_OPT_BADINI );
     return NULL;
   }
@@ -193,11 +193,11 @@ static zVec _zOptDMStepDS(zOptDM *opt, zVec var, void *util, double e0, double *
 }
 
 /* line search by Nocedal's backtracking based on Wolfe's condition */
-static zVec _zOptDMStepNoc(zOptDM *opt, zVec var, void *util, double e0, double *e1)
+static zVec _zOptDMStepNoc(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
 {
   double a, s, df, cf;
 
-  if( zIsNan(e0) ){
+  if( zIsNan( e0 ) ){
     ZRUNWARN( ZM_WARN_OPT_BADINI );
     return NULL;
   }
@@ -225,7 +225,7 @@ static zVec _zOptDMStepNoc(zOptDM *opt, zVec var, void *util, double e0, double 
 /* line search by Brent's strict minimization (particularly for CG) */
 typedef struct{
   zOptDM *opt;
-  zVec *var;
+  const zVec *var;
   void *util;
 } _zOptDMStepData;
 
@@ -237,12 +237,12 @@ static double _zOptDMStepBrentEval(double x, void *util)
 }
 #undef _zm_opt_data
 
-static zVec _zOptDMStepBrent(zOptDM *opt, zVec var, void *util, double e0, double *e1)
+static zVec _zOptDMStepBrent(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
 {
   double a;
   _zOptDMStepData opt_data;
 
-  if( zIsNan(e0) ){
+  if( zIsNan( e0 ) ){
     ZRUNWARN( ZM_WARN_OPT_BADINI );
     return NULL;
   }
@@ -260,7 +260,7 @@ static zVec _zOptDMStepBrent(zOptDM *opt, zVec var, void *util, double e0, doubl
   return zVecCopyNC( opt->_x, var );
 }
 
-/* *** update pseudo-Hessian matix *** */
+/* update pseudo-Hessian matix */
 
 static zMat _zOptDMUpdateNone(zOptDM *opt, int count){
   if( ( count - 1 ) % zVecSizeNC(opt->_d) == 0 )
@@ -297,16 +297,16 @@ static zMat _zOptDMUpdateBFGS(zOptDM *opt, int count) /* Broyden-Fletcher-Goldfa
   return opt->_h;
 }
 
-/* *** descent vector *** */
+/* descent vector */
 
 /* Steepest descent method */
-static zVec _zOptDMVecSD(zOptDM *opt, zVec var, zVec d, void *util)
+static zVec _zOptDMVecSD(zOptDM *opt, const zVec var, zVec d, void *util)
 {
   return zVecCopyNC( opt->_g, d );
 }
 
 /* Levenberg-Marquardt method */
-static zVec _zOptDMVecLM(zOptDM *opt, zVec var, zVec d, void *util)
+static zVec _zOptDMVecLM(zOptDM *opt, const zVec var, zVec d, void *util)
 {
   int i;
   double m;
@@ -319,22 +319,22 @@ static zVec _zOptDMVecLM(zOptDM *opt, zVec var, zVec d, void *util)
 }
 
 /* variable metric method */
-static zVec _zOptDMVecVM(zOptDM *opt, zVec var, zVec d, void *util)
+static zVec _zOptDMVecVM(zOptDM *opt, const zVec var, zVec d, void *util)
 {
   return zMulMatVecNC( opt->_h, opt->_g, opt->_d );
 }
 
 /* conjugate gradient method */
-static zVec _zOptDMVecCG(zOptDM *opt, zVec var, zVec d, void *util)
+static zVec _zOptDMVecCG(zOptDM *opt, const zVec var, zVec d, void *util)
 {
   zVecMulDRC( opt->_d, opt->_b );
   return zVecAddNCDRC( opt->_d, opt->_g );
 }
 
-/* *** constructor & destructor *** */
+/* constructor and destructor */
 
 #define Z_OPT_DM_SCALE ( 1.0e3 )
-zOptDM *zOptDMCreate(zOptDM *opt, int dim, double scale, double (*eval)(zVec,void*), zVec (*grad)(zVec,zVec,void*), zMat (*hess)(zVec,zMat,void*))
+zOptDM *zOptDMCreate(zOptDM *opt, int dim, double scale, double (* eval)(const zVec,void*), zVec (* grad)(const zVec,zVec,void*), zMat (* hess)(const zVec,zMat,void*))
 {
   if( !( opt->eval = eval ) ){
     ZRUNERROR( ZM_ERR_OPT_NOEVALUATOR );
@@ -429,7 +429,7 @@ void zOptDMDestroy(zOptDM *opt)
   opt->_update_h = NULL;
 }
 
-int zOptDMSolve(zOptDM *opt, zVec var, void *util, double tol, int iter, double *eval)
+int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, double *eval)
 {
   int i;
   double _e_dummy, e;

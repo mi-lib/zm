@@ -7,10 +7,8 @@
 
 #include <zm/zm_opt.h>
 
-/* convert linear programming problem from inequality constraint form
- * to standard equation form.
- */
-bool zLPIneq2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs)
+/* convert linear programming problem from inequality constraint form to standard equation form. */
+bool zLPIneq2Std(const zMat a, const zVec c, const zVec x, zMat *as, zVec *cs, zVec *xs)
 {
   int i;
 
@@ -30,16 +28,16 @@ bool zLPIneq2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs)
   return true;
 }
 
-/* convert linear programming problem from inequality constraint form
- * with unbounded variables to standard equation form with positive variables.
+/* convert linear programming problem from inequality constraint form with unbounded variables to
+ * standard equation form with positive variables.
  */
-bool zLPUnb2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs)
+bool zLPUnb2Std(const zMat a, const zVec c, const zVec x, zMat *as, zVec *cs, zVec *xs)
 {
   int i, j;
 
-  *as = zMatAlloc( zMatRowSizeNC(a), zMatColSizeNC(a)*2+zMatRowSizeNC(a) );
-  *cs = zVecAlloc( zVecSizeNC(c)*2+zMatRowSizeNC(a) );
-  *xs = zVecAlloc( zVecSizeNC(x)*2+zMatRowSizeNC(a) );
+  *as = zMatAlloc( zMatRowSizeNC(a), zMatColSizeNC(a)*2 + zMatRowSizeNC(a) );
+  *cs = zVecAlloc( zVecSizeNC(c)*2 + zMatRowSizeNC(a) );
+  *xs = zVecAlloc( zVecSizeNC(x)*2 + zMatRowSizeNC(a) );
   if( !*as || !*cs || !*xs ){
     zMatFree( *as );
     zVecFree( *cs );

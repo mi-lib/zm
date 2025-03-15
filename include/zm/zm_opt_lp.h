@@ -23,7 +23,7 @@ typedef struct{
 } zLPTableau;
 
 /*! \brief create initial simplex tableau with slack variables. */
-__ZM_EXPORT bool zLPTableauCreate(zLPTableau *tab, zMat a, zVec b);
+__ZM_EXPORT bool zLPTableauCreate(zLPTableau *tab, const zMat a, const zVec b);
 /*! \brief destroy simplex tableau. */
 __ZM_EXPORT void zLPTableauDestroy(zLPTableau *tab);
 /*! \brief simplex method for initialized tableau. */
@@ -31,95 +31,76 @@ __ZM_EXPORT bool zLPTableauSimplex(zLPTableau *tab);
 /*! \brief find initial feasible base for the second stage from tableau. */
 __ZM_EXPORT bool zLPTableauFindBase(zLPTableau *tab);
 
-/*! \brief convert linear programming problem from inequality
- * constraint to standard equation form.
+/*! \brief convert linear programming problem from inequality constraint to standard equation form.
  *
- * The standard equation form of linear programming problem
- * is as follows.
+ * The standard equation form of linear programming problem is as follows.
  *   \a c^T x -> minimum
  *   subject to \a a x = \a b and x >= 0
  *
- * zLPIneq2Std() converts linear programming problem from
- * the following inequality constraint form:
+ * zLPIneq2Std() converts linear programming problem from the following inequality constraint form:
  *   \a c^T x -> minimum
  *   subject to \a a x <= \a b and x >= 0
- * to the standard equation form, where the set of \a a, \a b
- * and \a c denotes the original inequality form and the set
- * of \a as, \a bs and \a cs does the standard form. Namely:
+ * to the standard equation form, where the set of \a a, \a b and \a c denotes the original inequality
+ * form and the set of \a as, \a bs and \a cs does the standard form. Namely:
  *   \a cs^T \a x -> minimum
  *   subject to \a as x = \a bs and x >= 0
  *
- * zLPUnb2Std() converts linear programming problem from the
- * following inequality constraint form with unbounded
- * variables:
+ * zLPUnb2Std() converts linear programming problem from the following inequality constraint form with
+ * unbounded variables:
  *   \a c^T x -> minimum
  *   subject to \a a x <= \a b
  * to the standard equation form with positive variables.
- * The set of \a as, \a bs and \a cs of this function are also
- * for the following standard form:
+ * The set of \a as, \a bs and \a cs of this function are also for the following standard form:
  *   \a cs^T x -> minimum
  *   subject to \a as x = \a bs and x >= 0
  * \return
- * zLPIneq2Std() and zLPUnb2Std() return the true value
- * if succeeding. Or, the false value is returned when they
- * fail to allocate working memory.
+ * zLPIneq2Std() and zLPUnb2Std() return the true value if succeeding. Or, the false value is returned
+ * when they fail to allocate working memory.
  */
-__ZM_EXPORT bool zLPIneq2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs);
-__ZM_EXPORT bool zLPUnb2Std(zMat a, zVec c, zVec x, zMat *as, zVec *cs, zVec *xs);
+__ZM_EXPORT bool zLPIneq2Std(const zMat a, const zVec c, const zVec x, zMat *as, zVec *cs, zVec *xs);
+__ZM_EXPORT bool zLPUnb2Std(const zMat a, const zVec c, const zVec x, zMat *as, zVec *cs, zVec *xs);
 
 /*! \brief linear programming solver with the simplex method.
  *
- * zLPSolveSimplex() solves a linear programming problem
- * by dual phase simplex method (1947 G. B. Danzig) which forms:
- *   \a c^T x -> minimum
- *   subject to \a a x = \a b and x >= 0
- * where \a c is a coefficient vector of the cost funtion,
- * \a a and \a b are a coefficient matrix and constant vector
- * to describe the constraints,
- * \a ans is a vector which the answer will be put into,
- * and \a index is an index vector for bases.
- *
- * The result optimum value is stored where \a cost points,
- * unless \a cost is the null pointer.
- * \return
- * zLPSolveSimplex() returns the true value if it succeeds
- * to get optimum (i.e. minimum) cost, or the the false
- * value if there are vector/matrix size mismatch, bad
- * memory allocation, non-feasible solution and infinite
- * solution found.
- */
-__ZM_EXPORT bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost);
-
-/*! \brief find a feasible base under Ax=b and x>=0 based on simplex method.
- */
-__ZM_EXPORT bool zLPFeasibleBase(zMat a, zVec b, zVec base);
-
-/*! \brief linear programming solver based on primal-dual
- * interior-point method.
- *
- * zLPSolvePDIP_PC() solves a linear programming problem
+ * zLPSolveSimplex() solves a linear programming problem by dual phase simplex method (1947 G. B. Danzig)
  * which forms:
  *   \a c^T x -> minimum
  *   subject to \a a x = \a b and x >= 0
- * where \a c is a coefficient vector of the cost funtion,
- * \a a and \a b are a coefficient matrix and constant vector
- * to describe the constraints, and \a ans is a vector which
- * the answer will be put into.
- * Note that all constraints are equations. Programmers
- * have to add slack variables in order to cope with
- * inequality constraints.
- * The resultant minimum cost value is put where \a cost points
- * unless it is not the null pointer.
+ * where \a c is a coefficient vector of the cost funtion, \a a and \a b are a coefficient matrix and
+ * constant vector to describe the constraints, \a ans is a vector which the answer will be put into,
+ * and \a index is an index vector for bases.
  *
- * zLPSolvePDIP_PC() is based on primal-dual interior-point
- * method with Mehrotra s predictor-corrector (1992 S. Mehrotra).
+ * The result optimum value is stored where \a cost points, unless \a cost is the null pointer.
  * \return
- * zLPSolvePDIP_PC() returns the true value if it succeeds
- * to obtain the minimum value. Or, the false value is
- * returned when it fails to allocate enough working memory
- * or to solve the problem if a set of constraints is unbounded.
+ * zLPSolveSimplex() returns the true value if it succeeds to get optimum (i.e. minimum) cost, or the
+ * the false value if there are vector/matrix size mismatch, bad memory allocation, non-feasible solution
+ * and infinite solution found.
  */
-__ZM_EXPORT bool zLPSolvePDIP_PC(zMat a, zVec b, zVec c, zVec x, double *cost);
+__ZM_EXPORT bool zLPSolveSimplex(const zMat a, const zVec b, const zVec c, zVec ans, double *cost);
+
+/*! \brief find a feasible base under Ax=b and x>=0 based on simplex method.
+ */
+__ZM_EXPORT bool zLPFeasibleBase(const zMat a, const zVec b, zVec base);
+
+/*! \brief linear programming solver based on primal-dual interior-point method.
+ *
+ * zLPSolvePDIP_PC() solves a linear programming problem which forms:
+ *   \a c^T x -> minimum
+ *   subject to \a a x = \a b and x >= 0
+ * where \a c is a coefficient vector of the cost funtion, \a a and \a b are a coefficient matrix and
+ * constant vector to describe the constraints, and \a ans is a vector which the answer will be put into.
+ * Note that all constraints are equations. Programmers have to add slack variables in order to cope with
+ * inequality constraints.
+ * The result minimum cost value is put where \a cost points unless it is not the null pointer.
+ *
+ * zLPSolvePDIP_PC() is based on primal-dual interior-point method with Mehrotra s predictor-corrector
+ * (1992 S. Mehrotra).
+ * \return
+ * zLPSolvePDIP_PC() returns the true value if it succeeds to obtain the minimum value. Or, the false
+ * value is returned when it fails to allocate enough working memory or to solve the problem if a set of
+ * constraints is unbounded.
+ */
+__ZM_EXPORT bool zLPSolvePDIP_PC(const zMat a, const zVec b, const zVec c, zVec x, double *cost);
 
 __END_DECLS
 

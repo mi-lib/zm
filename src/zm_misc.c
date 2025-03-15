@@ -12,7 +12,7 @@ bool zEqual(double a, double b, double tol)
   return zIsTol( a-b, tol*zMax( 1, zMax( fabs(a), fabs(b) ) ) );
 }
 
-/* compute a pair of sine and cosine values of an angle. */
+/* a pair of sine and cosine values of an angle */
 void zSinCos(double angle, double *s, double *c)
 {
   _zSinCos( angle, s, c );
@@ -114,17 +114,26 @@ double zCombi(int n, int i)
   return val;
 }
 
+/* combination (recursive version). */
+double zCombiRecursive(int n, int i)
+{
+  if( n <= 0 ) return 1;
+  if( i == 0 || i == n ) return 1;
+  if( i < 0 || i > n ) return NAN;
+  return zCombiRecursive( n-1, i-1 ) + zCombiRecursive( n-1, i );
+}
+
 /* series of combination. */
 double *zCombiSeries(uint n, size_t size, double c[])
 {
-  uint i, j;
+  int i, j;
 
   if( n >= size ){
     ZRUNERROR( ZM_ERR_OUTOFRANGE );
     return NULL;
   }
   for( i=0; i<=n; i++ ){
-    c[0] = c[i] = 1.0;
+    c[i] = 1.0;
     for( j=i-1; j>0; j-- )
       c[j] += c[j-1];
   }

@@ -53,7 +53,7 @@ zTRVelProf *zTRVelProfCreate(zTRVelProf *trvelprof, double v0, double vT, double
 }
 
 /* travel distance of a trapezoidal velocity profiler. */
-double zTRVelProfDist(zTRVelProf *trvelprof, double t)
+double zTRVelProfDist(const zTRVelProf *trvelprof, double t)
 {
   double d, dt;
 
@@ -65,7 +65,7 @@ double zTRVelProfDist(zTRVelProf *trvelprof, double t)
 }
 
 /* velocity of a trapezoidal velocity profiler. */
-double zTRVelProfVel(zTRVelProf *trvelprof, double t)
+double zTRVelProfVel(const zTRVelProf *trvelprof, double t)
 {
   if( t < trvelprof->_t1 ) return trvelprof->v0 + trvelprof->acc_max * t;
   if( t < trvelprof->_t2 ) return trvelprof->vmax;
@@ -73,7 +73,7 @@ double zTRVelProfVel(zTRVelProf *trvelprof, double t)
 }
 
 /* acceleration of a trapezoidal velocity profiler. */
-double zTRVelProfAcc(zTRVelProf *trvelprof, double t)
+double zTRVelProfAcc(const zTRVelProf *trvelprof, double t)
 {
   if( t < trvelprof->_t1 ) return trvelprof->acc_max;
   if( t < trvelprof->_t2 ) return 0;

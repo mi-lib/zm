@@ -16,11 +16,11 @@ typedef struct{
 
 #ifdef DEBUG
 /* print out tableau contents (for debug). */
-static void _zLemkePrint(_zLemke *lemke)
+static void _zLemkePrint(const _zLemke *lemke)
 { /* for debug. */
-  printf( "tableau: " ); zMatPrint( lemke->tab );
-  printf( "answer: " ); zVecPrint( lemke->p );
-  printf( "base lex.: " ); zIndexPrint( lemke->ib );
+  printf( "tableau: " );      zMatPrint( lemke->tab );
+  printf( "answer: " );       zVecPrint( lemke->p );
+  printf( "base lex.: " );    zIndexPrint( lemke->ib );
   printf( "nonbase lex.: " ); zIndexPrint( lemke->in );
   printf( "active var.: %d\n", lemke->act );
 }
@@ -36,7 +36,7 @@ static void _zLemkeDestroy(_zLemke *lemke)
 }
 
 /* create Lemke tableau and lexicon. */
-static _zLemke *_zLemkeCreate(_zLemke *lemke, zMat m, zVec q)
+static _zLemke *_zLemkeCreate(_zLemke *lemke, const zMat m, const zVec q)
 {
   int i, j, n;
 
@@ -170,20 +170,20 @@ static bool _zLemkeInit(_zLemke *lemke)
 }
 
 /* solve linear complementarity problem by Lemke's method. */
-bool zLCPSolveLemke(zMat m, zVec p, zVec w, zVec z)
+bool zLCPSolveLemke(const zMat m, const zVec p, zVec w, zVec z)
 {
   _zLemke lemke;
   bool ret = true;
 
-  if( !zMatIsSqr(m) ){
+  if( !zMatIsSqr( m ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return false;
   }
-  if( !zMatRowVecSizeEqual(m,p) ){
+  if( !zMatRowVecSizeEqual( m, p ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }
-  if( ( w && ( !zVecSizeEqual(w,p) || !zVecSizeEqual(w,z) ) ) ){
+  if( ( w && ( !zVecSizeEqual( w, p ) || !zVecSizeEqual( w, z ) ) ) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return false;
   }

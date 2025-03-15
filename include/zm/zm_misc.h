@@ -137,9 +137,11 @@ __ZM_EXPORT double zFactorial(int n);
 /*! \brief combination.
  *
  * zCombi() computes \a n_C_i.
+ * zCombiRecursive() also computes \a n_C_i but in a recursive way.
  * The result is returned as a double-precision floating-point value.
  */
 __ZM_EXPORT double zCombi(int n, int i);
+__ZM_EXPORT double zCombiRecursive(int n, int i);
 
 /*! \brief series of combination.
  *

@@ -10,7 +10,7 @@
 
 int main(void)
 {
-  register int i;
+  int i;
   double x;
 
   for( i=0; i<=20; i++ ){

@@ -11,9 +11,9 @@
 
 __BEGIN_DECLS
 
-/* Akima's interpolation, which connects the sections in a similar
-   way to a handwriting. It was proposed by H. Akima in 1970. */
-__ZM_EXPORT bool zIPCreateAkima(zIP *ip, zSeq *seq);
+/* Akima's interpolation connects the sections in a similar way to a handwriting.
+ * It was proposed by H. Akima in 1970. */
+__ZM_EXPORT bool zIPCreateAkima(zIP *ip, const zSeq *seq);
 
 __END_DECLS
 

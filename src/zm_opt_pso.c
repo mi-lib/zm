@@ -20,13 +20,13 @@ typedef struct{
 #define ZOPT_PSO_INERTIA_MAX 0.9
 
 /* free memory for a particle */
-void _zOptPSOParticleFree(zOptPSOParticle *p)
+static void _zOptPSOParticleFree(zOptPSOParticle *p)
 {
   zVecFreeAtOnce( 5, p->x, p->v, p->mybest, p->dmybest, p->dbest );
 }
 
 /* create a particle */
-zOptPSOParticle *_zOptPSOParticleCreate(zOptPSOParticle *p, zVec min, zVec max, zVec vmin, zVec vmax, double (* f)(zVec,void*), void *util)
+static zOptPSOParticle *_zOptPSOParticleCreate(zOptPSOParticle *p, const zVec min, const zVec max, const zVec vmin, const zVec vmax, double (* f)(const zVec,void*), void *util)
 {
   p->x       = zVecAlloc( zVecSizeNC(min) );
   p->v       = zVecAlloc( zVecSizeNC(min) );
@@ -46,7 +46,7 @@ zOptPSOParticle *_zOptPSOParticleCreate(zOptPSOParticle *p, zVec min, zVec max, 
 }
 
 /* update a particle */
-bool _zOptPSOParticleUpdate(zOptPSOParticle *p, zVec min, zVec max, zVec vmin, zVec vmax, zVec best, double c1, double c2, double (* f)(zVec,void*), void *util)
+static bool _zOptPSOParticleUpdate(zOptPSOParticle *p, const zVec min, const zVec max, const zVec vmin, const zVec vmax, const zVec best, double c1, double c2, double (* f)(const zVec,void*), void *util)
 {
   int i;
   double eval;
@@ -90,7 +90,7 @@ typedef struct{
 #define _zOptPSOSwarmSetC2(swarm,val) ( (swarm)->c2 = (val) )
 
 /* find the best evaluation value of a swarm of particles */
-double _zOptPSOSwarmFindBest(zOptPSOSwarm *swarm)
+static double _zOptPSOSwarmFindBest(zOptPSOSwarm *swarm)
 {
   int i;
 
@@ -106,7 +106,7 @@ double _zOptPSOSwarmFindBest(zOptPSOSwarm *swarm)
 }
 
 /* destroy a swarm of particles */
-void _zOptPSOSwarmDestroy(zOptPSOSwarm *swarm)
+static void _zOptPSOSwarmDestroy(zOptPSOSwarm *swarm)
 {
   int i;
 
@@ -116,7 +116,7 @@ void _zOptPSOSwarmDestroy(zOptPSOSwarm *swarm)
 }
 
 /* create a swarm of particles */
-bool _zOptPSOSwarmCreate(zOptPSOSwarm *swarm, int num, zVec min, zVec max, zVec vmin, zVec vmax, double (* f)(zVec,void*), void *util, double c1, double c2)
+static bool _zOptPSOSwarmCreate(zOptPSOSwarm *swarm, int num, const zVec min, const zVec max, const zVec vmin, const zVec vmax, double (* f)(const zVec,void*), void *util, double c1, double c2)
 {
   int i;
 
@@ -135,7 +135,7 @@ bool _zOptPSOSwarmCreate(zOptPSOSwarm *swarm, int num, zVec min, zVec max, zVec 
 }
 
 /* update a swarm of particles */
-bool _zOptPSOSwarmUpdate(zOptPSOSwarm *swarm, zVec min, zVec max, zVec vmin, zVec vmax, double (* f)(zVec,void*), void *util)
+static bool _zOptPSOSwarmUpdate(zOptPSOSwarm *swarm, const zVec min, const zVec max, const zVec vmin, const zVec vmax, double (* f)(const zVec,void*), void *util)
 {
   int i;
   bool is_converged = true;
@@ -149,7 +149,7 @@ bool _zOptPSOSwarmUpdate(zOptPSOSwarm *swarm, zVec min, zVec max, zVec vmin, zVe
 
 /* print out particles in a swarm */
 #ifdef DEBUG
-void zOptPSOSwarmFPrint(FILE *fp, zOptPSOSwarm *swarm)
+static void _zOptPSOSwarmFPrint(FILE *fp, const zOptPSOSwarm *swarm)
 {
   int i;
 
@@ -161,7 +161,7 @@ void zOptPSOSwarmFPrint(FILE *fp, zOptPSOSwarm *swarm)
 #endif
 
 /* solve an optimization problem by Particle Swarm Optimization method. */
-int zOptSolvePSO(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, int num, double c1, double c2, double vel_rate, zVec ans, double *eval)
+int zOptSolvePSO(double (* f)(const zVec,void*), void *util, const zVec min, const zVec max, int iter, double tol, int num, double c1, double c2, double vel_rate, zVec ans, double *eval)
 {
   zOptPSOSwarm swarm;
   zVec vmin, vmax;
@@ -192,7 +192,7 @@ int zOptSolvePSO(double (* f)(zVec,void*), void *util, zVec min, zVec max, int i
 }
 
 /* solve an optimization problem by Particle Swarm Optimization method. */
-int zOptSolvePSODefault(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval)
+int zOptSolvePSODefault(double (* f)(const zVec,void*), void *util, const zVec min, const zVec max, int iter, double tol, zVec ans, double *eval)
 {
   return zOptSolvePSO( f, util, min, max, iter, tol, ZOPT_PSO_DEFAULT_NUM, ZOPT_PSO_DEFAULT_C1, ZOPT_PSO_DEFAULT_C2, ZOPT_PSO_DEFAULT_VEL_RATE, ans, eval );
 }

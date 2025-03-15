@@ -26,7 +26,7 @@ double zFergusonVal(double t, double term, double x0, double v0, double x1, doub
 }
 
 /* vector on PCHIP interpolation */
-static zVec _zIPVecPCHIP(zIPData *dat, double t, zVec v)
+static zVec _zIPVecPCHIP(const zIPData *dat, double t, zVec v)
 {
   int i;
   double dt, dt1, dt2;
@@ -44,7 +44,7 @@ static zVec _zIPVecPCHIP(zIPData *dat, double t, zVec v)
 }
 
 /* velocity on PCHIP interpolation */
-static zVec _zIPVelPCHIP(zIPData *dat, double t, zVec v)
+static zVec _zIPVelPCHIP(const zIPData *dat, double t, zVec v)
 {
   int i;
   double dt, dt1, dt2;
@@ -62,7 +62,7 @@ static zVec _zIPVelPCHIP(zIPData *dat, double t, zVec v)
 }
 
 /* acceleration on PCHIP interpolation */
-static zVec _zIPAccPCHIP(zIPData *dat, double t, zVec v)
+static zVec _zIPAccPCHIP(const zIPData *dat, double t, zVec v)
 {
   int i;
   double dt, dt1, dt2;
@@ -80,13 +80,13 @@ static zVec _zIPAccPCHIP(zIPData *dat, double t, zVec v)
 }
 
 /* velocity at section on PCHIP interpolation */
-static zVec _zIPSecVelPCHIP(zIPData *dat, int i, zVec v)
+static zVec _zIPSecVelPCHIP(const zIPData *dat, int i, zVec v)
 {
   return zVecCopy( *zArrayElem(&dat->va,i), v );
 }
 
 /* acceleration at section on PCHIP interpolation */
-static zVec _zIPSecAccPCHIP(zIPData *dat, int i, zVec v)
+static zVec _zIPSecAccPCHIP(const zIPData *dat, int i, zVec v)
 {
   zVecMul( zIPSecVec(dat,i), -6, v );
   return zVecCatDRC( v, -zIPDelta(dat,i+1)*4, *zArrayElem(&dat->va,i) );
@@ -159,7 +159,7 @@ static void _zIPModifyPCHIP(zIP *ip)
 }
 
 /* create a PCHIP interpolator */
-bool zIPCreatePCHIP(zIP *ip, zSeq *seq)
+bool zIPCreatePCHIP(zIP *ip, const zSeq *seq)
 {
   if( !zIPDataAlloc( &ip->dat, seq ) ) return false;
   _zIPInitPCHIP( ip );

@@ -17,7 +17,7 @@ __BEGIN_DECLS
  * the Lipschitz Constant, Journal of Optimization Theory and Application, Vol. 79,
  * No. 1, pp. 157--181, 1993.
  */
-__ZM_EXPORT int zOptSolveDIRECT(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval);
+__ZM_EXPORT int zOptSolveDIRECT(double (* f)(const zVec,void*), void *util, const zVec min, const zVec max, int iter, double tol, zVec ans, double *eval);
 
 #define ZOPT_DIRECT_MAX_ITER_NUM 1000
 

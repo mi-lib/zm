@@ -25,7 +25,7 @@ __BEGIN_DECLS
  * \return
  * a pointer \a x is returned.
  */
-__ZM_EXPORT zVec zSSSolve(zVec (* f)(zVec,zVec,void*) ,zVec x, void *util, int iter);
+__ZM_EXPORT zVec zSSSolve(zVec (* f)(const zVec,zVec,void*) ,zVec x, void *util, int iter);
 
 __END_DECLS
 

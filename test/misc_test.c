@@ -32,6 +32,36 @@ void assert_combi(void)
     zCombi( 5, 5 ) == 1 );
 }
 
+void assert_combi_recursive(void)
+{
+  int n, i, k;
+  const int testnum = 100;
+  bool result = true;
+
+  for( k=0; k<testnum; k++ ){
+    n = zRandI( 1, 20 );
+    i = zRandI( 0, n );
+    if( !zEqual( zCombi( n, i ), zCombiRecursive( n, i ), zTOL ) ) result = false;
+  }
+  zAssert( zCombi & zCombiRecursive, result );
+}
+
+#define COMBI_MAX_N 100
+void assert_combi_series(void)
+{
+  int n, i;
+  double c1[COMBI_MAX_N], c2[COMBI_MAX_N];
+  bool result = true;
+
+  n = 20;
+  for( i=0; i<=n; i++ )
+    c1[i] = zCombi( n, i );
+  zCombiSeries( n, COMBI_MAX_N, c2 );
+  for( i=0; i<=n; i++ )
+    if( !zEqual( c1[i], c2[i], zTOL ) ) result = false;
+  zAssert( zCombiSeries, result );
+}
+
 int main(void)
 {
   double val;
@@ -65,5 +95,7 @@ int main(void)
 
   assert_permut();
   assert_combi();
+  assert_combi_recursive();
+  assert_combi_series();
   return EXIT_SUCCESS;
 }

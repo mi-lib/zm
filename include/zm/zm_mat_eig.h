@@ -25,7 +25,7 @@ __BEGIN_DECLS
  * \return
  * zMatToHessenberg() returns a pointer \a h.
  */
-__ZM_EXPORT zMat zMatToHessenberg(zMat m, zMat h, zMat p);
+__ZM_EXPORT zMat zMatToHessenberg(const zMat m, zMat h, zMat p);
 
 /*! \brief eigensystem of a matrix by double QR method.
  *
@@ -40,7 +40,7 @@ __ZM_EXPORT zMat zMatToHessenberg(zMat m, zMat h, zMat p);
  * \sa
  * zMatEig
  */
-__ZM_EXPORT bool zMatEigDQR(zMat m, zCVec eigval, int iter);
+__ZM_EXPORT bool zMatEigDQR(const zMat m, zCVec eigval, int iter);
 
 /*! \brief the greatest and least eigenvalue of a matrix.
  *
@@ -53,8 +53,8 @@ __ZM_EXPORT bool zMatEigDQR(zMat m, zCVec eigval, int iter);
  * \return
  * zMatEigPower() and zMatEigPowerInv() return the computed eigenvalues.
  */
-__ZM_EXPORT double zMatEigPower(zMat a, zVec eigvec, int iter);
-__ZM_EXPORT double zMatEigPowerInv(zMat a, zVec eigvec, int iter);
+__ZM_EXPORT double zMatEigPower(const zMat a, zVec eigvec, int iter);
+__ZM_EXPORT double zMatEigPowerInv(const zMat a, zVec eigvec, int iter);
 
 /*! \brief eigenvalues and eigenvectors of a real square matrix.
  *
@@ -74,7 +74,7 @@ __ZM_EXPORT double zMatEigPowerInv(zMat a, zVec eigvec, int iter);
  * \sa
  * zMatEigDQR
  */
-__ZM_EXPORT bool zMatEig(zMat m, zCVec eigval, zCMat eigbase, int iter);
+__ZM_EXPORT bool zMatEig(const zMat m, zCVec eigval, zCMat eigbase, int iter);
 
 /*! \brief diagonalize a symmetric matrix.
  *
@@ -94,8 +94,8 @@ __ZM_EXPORT bool zMatEig(zMat m, zCVec eigval, zCMat eigbase, int iter);
  * \notes
  * When \a m is not symmetric, those functions do not work as expected.
  */
-__ZM_EXPORT bool zMatSymEigBisec(zMat m, zVec eigval, zMat eigbase);
-__ZM_EXPORT bool zMatSymEigJacobi(zMat m, zVec eigval, zMat eigbase);
+__ZM_EXPORT bool zMatSymEigBisec(const zMat m, zVec eigval, zMat eigbase);
+__ZM_EXPORT bool zMatSymEigJacobi(const zMat m, zVec eigval, zMat eigbase);
 
 /* singular value decomposition */
 
@@ -117,19 +117,19 @@ __ZM_EXPORT bool zMatSymEigJacobi(zMat m, zVec eigval, zMat eigbase);
  * \return
  * zMatSVD() returns the rank of \a m, namely, the number of non-zero singular values of \a m.
  */
-__ZM_EXPORT int zMatSVD(zMat m, zMat u, zVec sv, zMat v);
+__ZM_EXPORT int zMatSVD(const zMat m, zMat u, zVec sv, zMat v);
 
 /*! \brief maximum singular value of a matrix.
  */
-__ZM_EXPORT double zMatSingularValueMax(zMat m);
+__ZM_EXPORT double zMatSingularValueMax(const zMat m);
 
 /*! \brief minimum singular value of a matrix.
  */
-__ZM_EXPORT double zMatSingularValueMin(zMat m);
+__ZM_EXPORT double zMatSingularValueMin(const zMat m);
 
 /*! \brief condition number of a matrix.
  */
-__ZM_EXPORT double zMatCondNum(zMat m);
+__ZM_EXPORT double zMatCondNum(const zMat m);
 
 __END_DECLS
 

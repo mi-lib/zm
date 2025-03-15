@@ -53,7 +53,7 @@ zClothoid *zClothoidCreateSegment(zClothoid *cl, double x0, double y0, double f0
 }
 
 /* x-y values of a clothoid curve. */
-bool zClothoidXY(zClothoid *cl, double s, double *x, double *y)
+bool zClothoidXY(const zClothoid *cl, double s, double *x, double *y)
 {
   double dx, dy;
 

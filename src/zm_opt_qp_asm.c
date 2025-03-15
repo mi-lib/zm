@@ -23,7 +23,7 @@ typedef struct{
 } zQPASM;
 
 /* initialize working space. */
-static bool _zQPASMInit(zQPASM *qpasm, zMat q, zVec c, zMat a, zVec b)
+static bool _zQPASMInit(zQPASM *qpasm, const zMat q, const zVec c, const zMat a, const zVec b)
 {
   qpasm->qinv = zMatAllocSqr( zVecSizeNC(c) );
   qpasm->aqinvat = zMatAllocSqr( zMatRowSizeNC(a) );
@@ -68,7 +68,7 @@ static void _zQPASMDestroy(zQPASM *qpasm)
 }
 
 /* get initial feasible solution and active set by simplex method. */
-static bool _zQPASMInitBase(zQPASM *qpasm, zMat a, zVec b)
+static bool _zQPASMInitBase(zQPASM *qpasm, const zMat a, const zVec b)
 {
   zLPTableau tab;
   int i, n;
@@ -138,7 +138,7 @@ static bool _zQPASMInitBase(zQPASM *qpasm, zMat a, zVec b)
 }
 
 /* solve an equation to find temporary solution and adjoint variables. */
-static bool _zQPASMSolveEq(zQPASM *qpasm, zMat a, zVec b, zVec x)
+static bool _zQPASMSolveEq(zQPASM *qpasm, const zMat a, const zVec b, zVec x)
 {
   int i, j;
 
@@ -167,7 +167,7 @@ static bool _zQPASMSolveEq(zQPASM *qpasm, zMat a, zVec b, zVec x)
 }
 
 /* add an equality constraint to active set. */
-static bool _zQPASMAddEq(zQPASM *qpasm, zMat a, zVec b, zVec x)
+static bool _zQPASMAddEq(zQPASM *qpasm, const zMat a, const zVec b, const zVec x)
 {
   int i, imin;
   double ax, axtmp, d, dmin;
@@ -192,7 +192,7 @@ static bool _zQPASMAddEq(zQPASM *qpasm, zMat a, zVec b, zVec x)
 }
 
 /* delete an equality constraint from active set. */
-static bool _zQPASMDelEq(zQPASM *qpasm, zMat a)
+static bool _zQPASMDelEq(zQPASM *qpasm, const zMat a)
 {
   int i, ia;
   bool is_violated = false;
@@ -209,7 +209,7 @@ static bool _zQPASMDelEq(zQPASM *qpasm, zMat a)
 }
 
 /* check if vector/matrix sizes are consistent and the quadratic term matrix is positive-definite. */
-static bool _zQPASMCheck(zMat q, zVec c, zMat a, zVec b, zVec ans)
+static bool _zQPASMCheck(const zMat q, const zVec c, const zMat a, const zVec b, zVec ans)
 {
   zMat l;
   zIndex ic;
@@ -232,7 +232,7 @@ static bool _zQPASMCheck(zMat q, zVec c, zMat a, zVec b, zVec ans)
 }
 
 /* solve quadratic programming by active set method. */
-bool zQPSolveASM(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
+bool zQPSolveASM(const zMat q, const zVec c, const zMat a, const zVec b, zVec ans, double *cost)
 {
   zQPASM qpasm;
   bool ret = false;

@@ -7,7 +7,7 @@
 #include <zm/zm_nle.h>
 
 /* successive substitution method to solve equation x=f(x). */
-zVec zSSSolve(zVec (* f)(zVec,zVec,void*), zVec x, void *util, int iter)
+zVec zSSSolve(zVec (* f)(const zVec,zVec,void*), zVec x, void *util, int iter)
 {
   int i;
   zVec y, e;

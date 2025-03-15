@@ -18,13 +18,10 @@ __BEGIN_DECLS
 /*! \defgroup descent method for simultaneous nonlinear equations
  * \{ *//* ************************************************** */
 
-/* ********************************************************** */
 /*! \struct zNLE
  * \brief descent method for simultaneous nonlinear equations
  *
- * zNLE is simultatneous nonlinear equation solver class based
- * on descent method.
- *
+ * zNLE is simultaneous nonlinear equation solver class based on descent method.
  * Available methods include
  * 1. steepest descent method,
  * 2. Levenberg-Marquardt's method,
@@ -32,10 +29,10 @@ __BEGIN_DECLS
  * 4. conjugate gradient method (Fletcher-Reeves' method).
  * 5. Newton-Raphson's method, and
  * 6. Broyden's method.
- *//* ******************************************************* */
+ */
 typedef struct _zNLE{
-  zVec (*f)(zVec,zVec,void*);
-  zMat (*jac)(zVec,zMat,void*);
+  zVec (*f)(const zVec,zVec,void*);
+  zMat (*jac)(const zVec,zMat,void*);
   void *util;
   zVec wn;
   zVec we;
@@ -52,21 +49,21 @@ typedef struct _zNLE{
 
 /*! \brief create simultaneous nonlinear equations solver.
  *
- * zNLECreate() creates a simultaneous nonlinear equation
- * solver \a nle. \a nv is the size of the answer vector.
- * \a ne is the number of equations.
- * \a f is a pointer to the equation function to be solved,
- * '\a f(x)=0'.
- * \return a pointer \a nle if succeed. Otherwise, the
- * null pointer.
- * \sa zNLEAssign
+ * zNLECreate() creates a simultaneous nonlinear equation solver \a nle. \a nv is the size of the
+ * answer vector. \a ne is the number of equations. \a f is a pointer to the equation function to
+ * be solved, '\a f(x)=0'.
+ * \return
+ * zNLECreate() returns a pointer \a nle if it succeeds. Otherwise, it returns the null pointer.
+ * \sa
+ * zNLEAssign
  */
-__ZM_EXPORT zNLE *zNLECreate(zNLE *nle, int nv, int ne, double scale, zVec (*f)(zVec,zVec,void*), zMat (*jac)(zVec,zMat,void*));
+__ZM_EXPORT zNLE *zNLECreate(zNLE *nle, int nv, int ne, double scale, zVec (*f)(const zVec,zVec,void*), zMat (*jac)(const zVec,zMat,void*));
 
 /*! \brief destroy a simultaneous nonlinear equation solver.
  *
  * zNLEDestroy() destroys a solver instance \a nle.
- * \sa zNLECreate
+ * \sa
+ * zNLECreate
  */
 __ZM_EXPORT void zNLEDestroy(zNLE *nle);
 

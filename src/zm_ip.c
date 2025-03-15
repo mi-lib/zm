@@ -12,7 +12,7 @@
  * ********************************************************** */
 
 /* assign a sequence to an interpolator and allocate the internal workspace. */
-bool zIPDataAlloc(zIPData *dat, zSeq *seq)
+bool zIPDataAlloc(zIPData *dat, const zSeq *seq)
 {
   zSeqCell *cp;
   zIPKnotCell *kp;
@@ -48,7 +48,7 @@ void zIPDataFree(zIPData *dat)
 }
 
 /* find a segment in which the absessi is included. */
-int zIPSeg(zIPData *dat, double t)
+int zIPSeg(const zIPData *dat, double t)
 {
   int i, j, k;
 

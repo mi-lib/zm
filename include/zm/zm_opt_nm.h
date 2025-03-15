@@ -17,7 +17,7 @@ __BEGIN_DECLS
  * is also known as the downhill simplex/polytope method proposed by Nelder
  * and Mead (1965).
  */
-__ZM_EXPORT int zOptSolveNM(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval);
+__ZM_EXPORT int zOptSolveNM(double (* f)(const zVec,void*), void *util, const zVec min, const zVec max, int iter, double tol, zVec ans, double *eval);
 
 __END_DECLS
 

@@ -27,14 +27,14 @@ __BEGIN_DECLS
  * zOptSolvePSO() solves an optimization problem by Particle Swarm Optimization
  * method proposed by Kennedy and Eberhart (1995).
  */
-__ZM_EXPORT int zOptSolvePSO(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, int num, double c1, double c2, double vel_rate, zVec ans, double *eval);
+__ZM_EXPORT int zOptSolvePSO(double (* f)(const zVec,void*), void *util, const zVec min, const zVec max, int iter, double tol, int num, double c1, double c2, double vel_rate, zVec ans, double *eval);
 
 /*! \brief solve an optimization problem by Particle Swarm Optimization method.
  *
  * zOptSolvePSODefault() solves an optimization problem by Particle Swarm
  * Optimization method with default parameters.
  */
-__ZM_EXPORT int zOptSolvePSODefault(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval);
+__ZM_EXPORT int zOptSolvePSODefault(double (* f)(const zVec,void*), void *util, const zVec min, const zVec max, int iter, double tol, zVec ans, double *eval);
 
 __END_DECLS
 

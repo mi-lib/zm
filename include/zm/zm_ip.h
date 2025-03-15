@@ -21,7 +21,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPKnotCell ){
 zArrayClass( zIPKnotArray, zIPKnotCell );
 
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPData ){
-  zSeq *seq;         /*!< sequence to be interpolated */
+  const zSeq *seq;         /*!< sequence to be interpolated */
   /*! \cond */
   zIPKnotArray knot; /* an array of time stamps and sequence cells */
   zVecArray va;      /* workspace */
@@ -36,7 +36,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPData ){
 #define zIPSecVal(dat,i,j) zVecElemNC( zIPSecVec(dat,i), j )
 
 /* allocate and free the internal workspace of an interpolator. */
-__ZM_EXPORT bool zIPDataAlloc(zIPData *dat, zSeq *seq);
+__ZM_EXPORT bool zIPDataAlloc(zIPData *dat, const zSeq *seq);
 __ZM_EXPORT void zIPDataFree(zIPData *dat);
 
 /* get segment of a sequence to be interpolated.
@@ -46,14 +46,14 @@ __ZM_EXPORT void zIPDataFree(zIPData *dat);
  * \return
  * zIPSeg() returns an integer value \a i when t_i <= t < t_i+1.
  */
-__ZM_EXPORT int zIPSeg(zIPData *dat, double t);
+__ZM_EXPORT int zIPSeg(const zIPData *dat, double t);
 
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPCom ){
-  zVec (*vec)(zIPData*,double,zVec);
-  zVec (*vel)(zIPData*,double,zVec);
-  zVec (*acc)(zIPData*,double,zVec);
-  zVec (*sec_vel)(zIPData*,int,zVec);
-  zVec (*sec_acc)(zIPData*,int,zVec);
+  zVec (*vec)(const zIPData*,double,zVec);
+  zVec (*vel)(const zIPData*,double,zVec);
+  zVec (*acc)(const zIPData*,double,zVec);
+  zVec (*sec_vel)(const zIPData*,int,zVec);
+  zVec (*sec_acc)(const zIPData*,int,zVec);
 };
 
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIP ){

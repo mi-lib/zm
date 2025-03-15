@@ -7,16 +7,16 @@
 
 #include <zm/zm_nle.h>
 
-static zMat _zNLEJacobi(zNLE *nle, zVec var, zMat j, void *util){
+static zMat _zNLEJacobi(zNLE *nle, const zVec var, zMat j, void *util){
   return nle->jac( var, j, util );
 }
-static zMat _zNLEJacobiNG(zNLE *nle, zVec var, zMat j, void *util)
+static zMat _zNLEJacobiNG(zNLE *nle, const zVec var, zMat j, void *util)
 {
   int i;
   double org;
 
   for( i=0; i<zVecSizeNC(var); i++ ){
-    org = zVecElem(var,i);
+    org = zVecElemNC(var,i);
     zVecSetElemNC( var, i, org+Z_OPT_EPS );
     nle->f( var, nle->_adg, util );
     zVecSetElemNC( var, i, org-Z_OPT_EPS );
@@ -31,20 +31,20 @@ static zMat _zNLEJacobiNG(zNLE *nle, zVec var, zMat j, void *util)
 
 #define _zm_nle(u) ( (zNLE *)u )
 
-static double _zNLEEval(zVec var, void *util)
+static double _zNLEEval(const zVec var, void *util)
 {
   _zm_nle(util)->f( var, _zm_nle(util)->_f, _zm_nle(util)->util );
   zVecAmpNC( _zm_nle(util)->_f, _zm_nle(util)->we, _zm_nle(util)->_fw );
   return 0.5 * zVecInnerProd( _zm_nle(util)->_f, _zm_nle(util)->_fw );
 }
 
-static zVec _zNLEGrad(zVec var, zVec grad, void *util)
+static zVec _zNLEGrad(const zVec var, zVec grad, void *util)
 {
   _zm_nle(util)->_jac( _zm_nle(util), var, _zm_nle(util)->_j, _zm_nle(util)->util );
   return zMulMatTVecNC( _zm_nle(util)->_j, _zm_nle(util)->_fw, grad );
 }
 
-static zMat _zNLEHess(zVec var, zMat h, void *util)
+static zMat _zNLEHess(const zVec var, zMat h, void *util)
 {
   return zMatTQuadNC( _zm_nle(util)->_j, _zm_nle(util)->we, h );
 }
@@ -67,12 +67,11 @@ static zVec _zNLEStep(zNLE *nle, zVec var, void *util)
   return NULL;
 }
 
-static void _zNLEEvalRes(zNLE *nle, zVec var, void *util, double *err)
+static void _zNLEEvalRes(zNLE *nle, const zVec var, void *util, double *err)
 {
-  if( err ){
-    nle->util = util;
-    *err = _zNLEEval( var, nle );
-  }
+  if( !err ) return;
+  nle->util = util;
+  *err = _zNLEEval( var, nle );
 }
 
 static int _zNLESolveDM(zNLE *nle, zVec var, void *util, double tol, int iter, double *err)
@@ -106,9 +105,7 @@ static int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol, int iter, d
   }
   ZITERWARN( iter );
  TERMINATE:
-eprintf("eheraehera.\n");
   zLEWorkspaceFree( &workspace );
-eprintf("ungyaasu.\n");
   return ret;
 }
 
@@ -146,7 +143,7 @@ static int _zNLESolveBroyden(zNLE *nle, zVec var, void *util, double tol, int it
 }
 
 #define Z_NLE_WN_DEFAULT ( 1.0e-4 )
-zNLE *zNLECreate(zNLE *nle, int nv, int ne, double scale, zVec (*f)(zVec,zVec,void*), zMat (*jac)(zVec,zMat,void*))
+zNLE *zNLECreate(zNLE *nle, int nv, int ne, double scale, zVec (* f)(const zVec,zVec,void*), zMat (* jac)(const zVec,zMat,void*))
 {
   nle->util = NULL;
   nle->wn = zVecAlloc( nv );

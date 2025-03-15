@@ -51,7 +51,7 @@ static bool _zLCPIP_PCAlloc(_zLCPIP_PC *wm, int n)
 }
 
 /* heuristicly initialize vectors for LCP-IP-PC. */
-static bool _zLCPIP_PCIni(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z)
+static bool _zLCPIP_PCIni(_zLCPIP_PC *wm, const zMat m, const zVec q, zVec w, zVec z)
 {
   zVecSetAll( z, _Z_LCPIP_PC_R / zVecSizeNC(z) );
   zVecSetAll( w, _Z_LCPIP_PC_R / zVecSizeNC(w) );
@@ -61,7 +61,7 @@ static bool _zLCPIP_PCIni(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z)
 }
 
 /* compute residual vector and complementarity gap for LCP-IP-PC. */
-static void _zLCPIP_PCErr(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z)
+static void _zLCPIP_PCErr(_zLCPIP_PC *wm, const zMat m, const zVec q, zVec w, zVec z)
 {
   /* residual vector */
   zMulMatVecNC( m, z, wm->r );
@@ -72,7 +72,7 @@ static void _zLCPIP_PCErr(_zLCPIP_PC *wm, zMat m, zVec q, zVec w, zVec z)
 }
 
 /* gradient matrix and its inverse for LCP-IP-PC. */
-static bool _zLCPIP_PCGrad(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
+static bool _zLCPIP_PCGrad(_zLCPIP_PC *wm, const zMat m, zVec w, zVec z)
 {
   int i;
 
@@ -84,7 +84,7 @@ static bool _zLCPIP_PCGrad(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
 }
 
 /* predictor direction vector for LCP-IP-PC. */
-static bool _zLCPIP_PCPred(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
+static bool _zLCPIP_PCPred(_zLCPIP_PC *wm, const zMat m, zVec w, zVec z)
 {
   zVecAddNC( w, wm->r, wm->b );
   zVecAmpNCDRC( wm->b, z );
@@ -96,7 +96,7 @@ static bool _zLCPIP_PCPred(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
 }
 
 /* corrector (centering) direction vector for LCP-IP-PC. */
-static bool _zLCPIP_PCCorr(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
+static bool _zLCPIP_PCCorr(_zLCPIP_PC *wm, const zMat m, zVec w, zVec z)
 {
   int i;
 
@@ -109,7 +109,7 @@ static bool _zLCPIP_PCCorr(_zLCPIP_PC *wm, zMat m, zVec w, zVec z)
 }
 
 /* updating step of LCP-IP-PC. */
-static bool _zLCPIP_PCStep(_zLCPIP_PC *wm, zVec w, zVec z, double *step)
+static bool _zLCPIP_PCStep(_zLCPIP_PC *wm, const zVec w, zVec z, double *step)
 {
   double k1, k2, a;
   int i;
@@ -132,7 +132,7 @@ static bool _zLCPIP_PCStep(_zLCPIP_PC *wm, zVec w, zVec z, double *step)
 
 /* solve linear complementarity problem by Potra's predictor-corrector algorithm
  * on infeasible-interior-point method. */
-bool zLCPSolveIP(zMat m, zVec q, zVec w, zVec z)
+bool zLCPSolveIP(const zMat m, const zVec q, zVec w, zVec z)
 {
   _zLCPIP_PC wm;
   zVec worg;
@@ -141,15 +141,15 @@ bool zLCPSolveIP(zMat m, zVec q, zVec w, zVec z)
   bool ret = false;
   int i;
 
-  if( !zMatIsSqr(m) ){
+  if( !zMatIsSqr( m ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return false;
   }
-  if( !zMatRowVecSizeEqual(m,q) ){
+  if( !zMatRowVecSizeEqual( m, q ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }
-  if( ( w && ( !zVecSizeEqual(w,q) || !zVecSizeEqual(w,z) ) ) ){
+  if( ( w && ( !zVecSizeEqual( w, q ) || !zVecSizeEqual( w, z ) ) ) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return false;
   }

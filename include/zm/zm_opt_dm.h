@@ -29,15 +29,15 @@ __BEGIN_DECLS
  * 4. conjugate gradient method (Fletcher-Reeves' method).
  *//* ******************************************************* */
 typedef struct _zOptDM{
-  double (*eval)(zVec,void*);
-  zVec (*grad)(zVec,zVec,void*);
-  zMat (*hess)(zVec,zMat,void*);
+  double (* eval)(const zVec,void*);
+  zVec (* grad)(const zVec,zVec,void*);
+  zMat (* hess)(const zVec,zMat,void*);
   /*!< cond */
-  zVec (*_grad)(struct _zOptDM*,zVec,zVec,void*);
-  zMat (*_hess)(struct _zOptDM*,zVec,zMat,void*);
-  zVec (*_vec)(struct _zOptDM*,zVec,zVec,void*);
-  zVec (*_step)(struct _zOptDM*,zVec,void*,double,double*);
-  zMat (*_update_h)(struct _zOptDM*, int count);
+  zVec (* _grad)(struct _zOptDM*,const zVec,zVec,void*);
+  zMat (* _hess)(struct _zOptDM*,const zVec,zMat,void*);
+  zVec (* _vec)(struct _zOptDM*,const zVec,zVec,void*);
+  zVec (* _step)(struct _zOptDM*,const zVec,void*,double,double*);
+  zMat (* _update_h)(struct _zOptDM*, int count);
   double _scale;
   zVec _x, _d, _g;
   zVec _p, _q, _r;
@@ -48,7 +48,7 @@ typedef struct _zOptDM{
   double _cf; /* curvature factor */
 } zOptDM;
 
-__ZM_EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double scale, double (*eval)(zVec,void*), zVec (*grad)(zVec,zVec,void*), zMat (*hess)(zVec,zMat,void*));
+__ZM_EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double scale, double (* eval)(const zVec,void*), zVec (* grad)(const zVec,zVec,void*), zMat (* hess)(const zVec,zMat,void*));
 __ZM_EXPORT zOptDM *zOptDMAssignSD(zOptDM *opt, const char *stepmethod);
 __ZM_EXPORT zOptDM *zOptDMAssignLM(zOptDM *opt, const char *stepmethod);
 __ZM_EXPORT zOptDM *zOptDMAssignVM(zOptDM *opt, const char *stepmethod, const char *updatemethod);

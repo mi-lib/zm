@@ -7,13 +7,13 @@
 #include <zm/zm_opt.h>
 
 /* calculation of a quadratic value. */
-double zQuadraticValue(zMat q, zVec c, zVec x)
+double zQuadraticValue(const zMat q, const zVec c, const zVec x)
 {
   int i, j, n;
   double val;
 
-  n = zVecSize( x );
-  if( !zMatIsSqr(q) ){
+  n = zVecSize(x);
+  if( !zMatIsSqr( q ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return 0;
   }
@@ -36,7 +36,7 @@ double zQuadraticValue(zMat q, zVec c, zVec x)
 #if 0
 /* quadratic programming solver. */
 /* NOTE: this function is to be deleted due to mathematical illegality. */
-bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
+bool zQPSolve(const zMat q, const zVec c, const zMat a, const zVec b, zVec ans, double *cost)
 {
   int i, j, m, n;
   zMat d;
@@ -87,7 +87,7 @@ bool zQPSolve(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)
 #endif
 
 /* transform a quadratic programming problem to a linear complementary problem. */
-static bool _zQP2LCP(zMat q, zVec c, zMat a, zVec b, zMat *lm, zVec *lq, zVec *z)
+static bool _zQP2LCP(const zMat q, const zVec c, const zMat a, const zVec b, zMat *lm, zVec *lq, zVec *z)
 {
   int i, j;
 
@@ -114,7 +114,7 @@ static bool _zQP2LCP(zMat q, zVec c, zMat a, zVec b, zMat *lm, zVec *lq, zVec *z
 
 /* define quadratic programming problem solver */
 #define zQPSolverDef( name ) \
-bool zQPSolve##name(zMat q, zVec c, zMat a, zVec b, zVec ans, double *cost)\
+bool zQPSolve##name(const zMat q, const zVec c, const zMat a, const zVec b, zVec ans, double *cost)\
 {\
   zMat lm;\
   zVec lq, z;\
@@ -140,7 +140,7 @@ zQPSolverDef( Lemke )
 zQPSolverDef( IP )
 
 /* quadratic programming solver by conjugate gradient method. */
-double zCGSolve(zMat q, zVec c, zVec ans, int iter)
+double zCGSolve(const zMat q, const zVec c, zVec ans, int iter)
 {
   zVec d, g, qd;
   double a, b, s, result;

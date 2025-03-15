@@ -40,7 +40,7 @@ __ZM_EXPORT zClothoid *zClothoidCreateSegment(zClothoid *cl, double x0, double y
  * zClothoidXY() returns the true value if it succeeds to compute the values.
  * Otherwise, the false value is returned.
  */
-__ZM_EXPORT bool zClothoidXY(zClothoid *cl, double s, double *x, double *y);
+__ZM_EXPORT bool zClothoidXY(const zClothoid *cl, double s, double *x, double *y);
 
 __END_DECLS
 

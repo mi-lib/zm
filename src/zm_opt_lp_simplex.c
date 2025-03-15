@@ -9,7 +9,7 @@
 
 #ifdef DEBUG
 /* print out tableau contents to a file (for debug). */
-static void _zLPTableauFPrint(FILE *fp, zLPTableau *tab)
+static void _zLPTableauFPrint(FILE *fp, const zLPTableau *tab)
 {
   fprintf( fp, "A: " ); zMatFPrint( fp, tab->a );
   fprintf( fp, "b: " ); zVecFPrint( fp, tab->b );
@@ -23,7 +23,7 @@ static void _zLPTableauFPrint(FILE *fp, zLPTableau *tab)
 #endif /* DEBUG */
 
 /* create initial simplex tableau with slack variables. */
-bool zLPTableauCreate(zLPTableau *tab, zMat a, zVec b)
+bool zLPTableauCreate(zLPTableau *tab, const zMat a, const zVec b)
 {
   int i;
 
@@ -235,7 +235,7 @@ bool zLPTableauFindBase(zLPTableau *tab)
   return true;
 }
 
-static void _zLTableauSetC(zLPTableau *tab, zVec c)
+static void _zLTableauSetC(zLPTableau *tab, const zVec c)
 {
   zVecSetSize( tab->c, zVecSizeNC(c) );
   zVecCopyNC( c, tab->c );
@@ -252,7 +252,7 @@ static void _zLPTableauAns(zLPTableau *tab, zVec ans)
 }
 
 /* dual-phase simplex method for linear programming. */
-bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost)
+bool zLPSolveSimplex(const zMat a, const zVec b, const zVec c, zVec ans, double *cost)
 {
   zLPTableau tab;
   bool ret = false;
@@ -290,7 +290,7 @@ bool zLPSolveSimplex(zMat a, zVec b, zVec c, zVec ans, double *cost)
 }
 
 /* find a feasible base under Ax=b and x>=0 based on simplex method. */
-bool zLPFeasibleBase(zMat a, zVec b, zVec base)
+bool zLPFeasibleBase(const zMat a, const zVec b, zVec base)
 {
   zLPTableau tab;
   bool ret = false;

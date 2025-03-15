@@ -11,9 +11,8 @@
 
 __BEGIN_DECLS
 
-/* Chebyshev's interpolation, which interpolates n points by
- * a combination of Chebyshev base functions. */
-__ZM_EXPORT bool zIPCreateChebyshev(zIP *ip, zSeq *seq);
+/* Chebyshev's interpolation interpolates n points by a combination of Chebyshev base functions. */
+__ZM_EXPORT bool zIPCreateChebyshev(zIP *ip, const zSeq *seq);
 
 __END_DECLS
 

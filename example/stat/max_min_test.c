@@ -4,7 +4,7 @@
 int main(void)
 {
   double data[N];
-  register int i;
+  int i;
 
   zRandInit();
   for( i=0; i<N; i++ ){

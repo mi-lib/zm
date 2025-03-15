@@ -26,7 +26,7 @@ void zPexIPFree(zPexIP *pc)
 }
 
 /* allocate a polynomial function from the boundary condition. */
-bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, zVec v)
+bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, const zVec v)
 {
   double k1, k2, k3; /* internal working variables */
   int i, n1, n2, n3, n;
@@ -56,7 +56,7 @@ bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double 
 }
 
 /* create a polynomial function that fits a sequence of points based on the least square method. */
-bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, zVec t, zVec x)
+bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, const zVec t, const zVec x)
 {
   int i, j, k, n, m;
   zMat a;
@@ -94,7 +94,7 @@ bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, zVec t, zVec x)
 }
 
 /* create a polynomial function from the boundary condition and a sequence of points to fit. */
-bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, zVec t, zVec x)
+bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, const zVec t, const zVec x)
 {
   int i, j, k, n, m;
   zMat a;
@@ -152,25 +152,25 @@ bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, doub
 }
 
 /* value of a polynomial function. */
-double zPexIPVal(zPexIP *pc, double t)
+double zPexIPVal(const zPexIP *pc, double t)
 {
   return zPexVal( pc->c, t/zPexIPTerm(pc) );
 }
 
 /* velocity of a polynomial function. */
-double zPexIPVel(zPexIP *pc, double t)
+double zPexIPVel(const zPexIP *pc, double t)
 {
   return zPexDifVal( pc->c, 1, t/zPexIPTerm(pc) ) / zPexIPTerm(pc);
 }
 
 /* acceleration of a polynomial function. */
-double zPexIPAcc(zPexIP *pc, double t)
+double zPexIPAcc(const zPexIP *pc, double t)
 {
   return zPexDifVal( pc->c, 2, t/zPexIPTerm(pc) ) / zSqr( zPexIPTerm(pc) );
 }
 
 /* print expression of a polynomial function. */
-void zPexIPFPrint(FILE *fp, zPexIP *pc)
+void zPexIPFPrint(FILE *fp, const zPexIP *pc)
 {
   int i;
 

@@ -32,7 +32,7 @@ __ZM_EXPORT double zFergusonVal(double t, double term, double x0, double v0, dou
  * \a ip is a pointer to an instance interpolator.
  * \a seq is a sequence of points to be interpolated.
  */
-__ZM_EXPORT bool zIPCreatePCHIP(zIP *ip, zSeq *seq);
+__ZM_EXPORT bool zIPCreatePCHIP(zIP *ip, const zSeq *seq);
 
 __END_DECLS
 

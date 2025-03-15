@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-  register int i;
+  int i;
   double x;
 
   for( i=-17; i<=20; i++ ){

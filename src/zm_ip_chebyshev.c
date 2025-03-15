@@ -13,7 +13,7 @@ static double _zIPScaleChebyshev(double t, double tmin, double tmax)
 }
 
 /* vector on Chebyshev interpolation. */
-static zVec _zIPVecChebyshev(zIPData *dat, double t, zVec v)
+static zVec _zIPVecChebyshev(const zIPData *dat, double t, zVec v)
 {
   int i;
   double x, f1, f2, f;
@@ -33,7 +33,7 @@ static zVec _zIPVecChebyshev(zIPData *dat, double t, zVec v)
 }
 
 /* velocity on Chebyshev interpolation. */
-static zVec _zIPVelChebyshev(zIPData *dat, double t, zVec v)
+static zVec _zIPVelChebyshev(const zIPData *dat, double t, zVec v)
 {
   int i;
   double x, f1, f2, f;
@@ -58,7 +58,7 @@ static zVec _zIPVelChebyshev(zIPData *dat, double t, zVec v)
 }
 
 /* acceleration on Chebyshev interpolation. */
-static zVec _zIPAccChebyshev(zIPData *dat, double t, zVec v)
+static zVec _zIPAccChebyshev(const zIPData *dat, double t, zVec v)
 {
   int i;
   double x, f1, f2, f;
@@ -87,13 +87,13 @@ static zVec _zIPAccChebyshev(zIPData *dat, double t, zVec v)
 }
 
 /* velocity at section on Chebyshev interpolation. */
-static zVec _zIPSecVelChebyshev(zIPData *dat, int i, zVec v)
+static zVec _zIPSecVelChebyshev(const zIPData *dat, int i, zVec v)
 {
   return _zIPVelChebyshev( dat, zIPTime(dat,i), v );
 }
 
 /* acceleration at section on Chebyshev interpolation. */
-static zVec _zIPSecAccChebyshev(zIPData *dat, int i, zVec v)
+static zVec _zIPSecAccChebyshev(const zIPData *dat, int i, zVec v)
 {
   return _zIPAccChebyshev( dat, zIPTime(dat,i), v );
 }
@@ -108,7 +108,7 @@ static zIPCom _zm_ip_com_chebyshev = {
 };
 
 /* create Chebyshev interpolator. */
-bool zIPCreateChebyshev(zIP *ip, zSeq *seq)
+bool zIPCreateChebyshev(zIP *ip, const zSeq *seq)
 {
   int i, j;
   zSeqCell *cp;

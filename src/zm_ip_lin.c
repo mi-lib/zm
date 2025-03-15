@@ -7,7 +7,7 @@
 #include <zm/zm_ip.h>
 
 /* value on linear interpolation */
-static zVec _zIPVecLinear(zIPData *dat, double t, zVec v)
+static zVec _zIPVecLinear(const zIPData *dat, double t, zVec v)
 {
   int i;
 
@@ -16,14 +16,14 @@ static zVec _zIPVecLinear(zIPData *dat, double t, zVec v)
 }
 
 /* velocity at section on linear interpolation */
-static zVec _zIPSecVelLinear(zIPData *dat, int i, zVec v)
+static zVec _zIPSecVelLinear(const zIPData *dat, int i, zVec v)
 {
   return i < 0 || i + 1 >= zIPSize(dat) ?
     zVecZero(v) : zVecCopyNC( *zArrayElem(&dat->va,i), v );
 }
 
 /* acceleration at section on linear interpolation */
-static zVec _zIPSecAccLinear(zIPData *dat, int i, zVec v)
+static zVec _zIPSecAccLinear(const zIPData *dat, int i, zVec v)
 {
   int j;
 
@@ -36,13 +36,13 @@ static zVec _zIPSecAccLinear(zIPData *dat, int i, zVec v)
 }
 
 /* velocity on linear interpolation */
-static zVec _zIPVelLinear(zIPData *dat, double t, zVec v)
+static zVec _zIPVelLinear(const zIPData *dat, double t, zVec v)
 {
   return _zIPSecVelLinear( dat, zIPSeg(dat,t), v );
 }
 
 /* acceleration on linear interpolation */
-static zVec _zIPAccLinear(zIPData *dat, double t, zVec v)
+static zVec _zIPAccLinear(const zIPData *dat, double t, zVec v)
 {
   int i;
 
@@ -60,7 +60,7 @@ static zIPCom _zm_ip_com_linear = {
 };
 
 /* create linear interpolator */
-bool zIPCreateLinear(zIP *ip, zSeq *seq)
+bool zIPCreateLinear(zIP *ip, const zSeq *seq)
 {
   int i;
 

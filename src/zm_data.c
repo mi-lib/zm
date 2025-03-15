@@ -42,7 +42,7 @@ zIndex zDataPeak(double src[], size_t n, uint w)
 }
 
 /* internal function for smoothing a data sequence based on Savitzky-Golay's method */
-static bool _zDataSmoothSG(double src[], size_t n, size_t w, uint dim, double dest[], double (*pexip_func)(zPexIP*,double))
+static bool _zDataSmoothSG(double src[], size_t n, size_t w, uint dim, double dest[], double (*pexip_func)(const zPexIP*,double))
 {
   zPexIP pc;
   zVec ts; /* timestamp */

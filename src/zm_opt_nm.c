@@ -54,7 +54,7 @@ static void _zOptNMDestroy(zOptNM *opt)
 }
 
 /* initialize internal workspace. */
-static void _zOptNMInit(zOptNM *opt, zVec min, zVec max)
+static void _zOptNMInit(zOptNM *opt, const zVec min, const zVec max)
 {
   int i;
 
@@ -66,7 +66,7 @@ static void _zOptNMInit(zOptNM *opt, zVec min, zVec max)
 }
 
 /* evaluate all vertices. */
-static void _zOptNMEvalAll(zOptNM *opt, double (* f)(zVec,void*), void *util)
+static void _zOptNMEvalAll(zOptNM *opt, double (* f)(const zVec,void*), void *util)
 {
   int i;
 
@@ -144,7 +144,7 @@ static bool _zOptNMCheck(zOptNM *opt, double tol)
 }
 
 /* amoeba-like iteration procedure of polytope method. */
-static int _zOptNMTry(zOptNM *opt, zVec var, double (* f)(zVec,void*), void *util, int iter, double tol, double *eval)
+static int _zOptNMTry(zOptNM *opt, zVec var, double (* f)(const zVec,void*), void *util, int iter, double tol, double *eval)
 {
   int i;
   double newval, bestval;
@@ -189,7 +189,7 @@ static int _zOptNMTry(zOptNM *opt, zVec var, double (* f)(zVec,void*), void *uti
 }
 
 /* solve an optimization problem by Nelder-Mead method. */
-int zOptSolveNM(double (* f)(zVec,void*), void *util, zVec min, zVec max, int iter, double tol, zVec ans, double *eval)
+int zOptSolveNM(double (* f)(const zVec,void*), void *util, const zVec min, const zVec max, int iter, double tol, zVec ans, double *eval)
 {
   zOptNM opt;
   int ret;
