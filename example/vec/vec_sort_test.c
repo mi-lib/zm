@@ -4,7 +4,7 @@
 
 int main(void)
 {
-  register int i;
+  int i;
   zVec v;
   zIndex idx;
 

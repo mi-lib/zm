@@ -62,7 +62,7 @@ void output(int i, zVec x)
 
 int main(int argc, char *argv[])
 {
-  register int i;
+  int i;
   zVec x;
   double u = 0;
   zODE ode;

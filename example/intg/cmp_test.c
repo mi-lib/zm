@@ -36,7 +36,7 @@ void output(double t, double s_true, zIntg intg[], int n)
 
 int main(void)
 {
-  register int i;
+  int i;
   zIntg intg[INTG_N];
   double s, x, t, dt;
 

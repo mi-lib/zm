@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
   double x;
   FILE *fp;
-  register int i;
+  int i;
   double n;
   int d;
 

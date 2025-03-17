@@ -5,7 +5,7 @@
 int main(void)
 {
   double x, y, t;
-  register int i;
+  int i;
 
   for( i=0; i<=DIV; i++ ){
     t = (double)i / DIV;

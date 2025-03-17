@@ -141,7 +141,7 @@ __END_DECLS
 #include <zm/zm_le_pivot.h>   /* pivoting */
 #include <zm/zm_le_lu.h>      /* LU decomposition */
 #include <zm/zm_le_lq.h>      /* LQ/QR decomposition */
-#include <zm/zm_le_minv.h>    /* determinant and inverse matrix */
+#include <zm/zm_le_mat_inv.h> /* determinant and inverse matrix */
 #include <zm/zm_le_mpinv.h>   /* Moore-Penrose inverse matrix */
 #include <zm/zm_le_tridiag.h> /* tridiagonal equation */
 #include <zm/zm_le_gen.h>     /* generalized linear equation */

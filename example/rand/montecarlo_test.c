@@ -6,7 +6,7 @@ int test_glibc(int n)
 {
   double x, y;
   int nc;
-  register int i;
+  int i;
 
   zRandInit();
   for( nc=0, i=0; i<n; i++ ){
@@ -21,7 +21,7 @@ int test_mt(int n)
 {
   double x, y;
   int nc;
-  register int i;
+  int i;
 
   zRandInitMT( NULL );
   for( nc=0, i=0; i<n; i++ ){

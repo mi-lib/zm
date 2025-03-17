@@ -160,7 +160,7 @@ bool zIPCreateSpline(zIP *ip, const zSeq *seq, int etype1, const zVec v1, int et
       goto TERMINATE;
     }
     /* solving tridiagonal equation */
-    zTridiagSolveDST( a, b, c, d, v );
+    zLETridiagSolveDST( a, b, c, d, v );
     for( j=0; j<zIPSize(&ip->dat); j++ )
       zVecArrayElem(&ip->dat.va,j,i) = zVecElemNC(v,j);
   }

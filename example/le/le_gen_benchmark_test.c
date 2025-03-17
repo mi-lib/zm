@@ -9,7 +9,7 @@
 
 void test(zMat a, zVec b, zVec w, zVec w2, zVec x, zVec _b)
 {
-  register int i, j;
+  int i, j;
   clock_t c1, c2;
 
 #if 1

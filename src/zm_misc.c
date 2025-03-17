@@ -85,7 +85,7 @@ double zCbrt(double x)
 }
 
 /* permutation. */
-double zPermut(int n, int i)
+double zPermutation(int n, int i)
 {
   double result = 1.0;
 
@@ -97,11 +97,11 @@ double zPermut(int n, int i)
 /* factorial. */
 double zFactorial(int n)
 {
-  return zPermut( n, n );
+  return zPermutation( n, n );
 }
 
 /* combination. */
-double zCombi(int n, int i)
+double zCombination(int n, int i)
 {
   double val;
   int j;
@@ -115,16 +115,16 @@ double zCombi(int n, int i)
 }
 
 /* combination (recursive version). */
-double zCombiRecursive(int n, int i)
+double zCombinationRecursive(int n, int i)
 {
   if( n <= 0 ) return 1;
   if( i == 0 || i == n ) return 1;
   if( i < 0 || i > n ) return NAN;
-  return zCombiRecursive( n-1, i-1 ) + zCombiRecursive( n-1, i );
+  return zCombinationRecursive( n-1, i-1 ) + zCombinationRecursive( n-1, i );
 }
 
 /* series of combination. */
-double *zCombiSeries(uint n, size_t size, double c[])
+double *zCombinationSeries(uint n, size_t size, double c[])
 {
   int i, j;
 
@@ -149,7 +149,7 @@ double zSmoothStep(double x, uint order)
   if( x <= 0 ) return 0;
   if( x >= 1 ) return 1;
   for( val=0, k=0; k<=order; k++ ){
-    c = zCombi( order+k, k ) * zCombi( 2*order+1, order-k ) * pow( x, k );
+    c = zCombination( order+k, k ) * zCombination( 2*order+1, order-k ) * pow( x, k );
     val += k % 2 ? -c : c;
   }
   return val * pow( x, order+1 );
@@ -163,7 +163,7 @@ double zSmoothStepDif(double x, uint order)
 
   if( x <= 0 || x >= 1 ) return 0;
   for( val=0, k=0; k<=order; k++ ){
-    c = ( order + k + 1 ) * zCombi( order+k, k ) * zCombi( 2*order+1, order-k ) * pow( x, k );
+    c = ( order + k + 1 ) * zCombination( order+k, k ) * zCombination( 2*order+1, order-k ) * pow( x, k );
     val += k % 2 ? -c : c;
   }
   return val * pow( x, order );

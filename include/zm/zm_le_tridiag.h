@@ -11,28 +11,29 @@
 
 __BEGIN_DECLS
 
-/*! \brief tridiag equation solver.
+/*! \brief tridiagonal equation solver.
  *
- * zTridiagSolve() solves the tridiagonal equation 'm x = d', where,
- * 'm' = | b0 c0  0  .  .  0 |
- *       | a1 b1 c1  .  .  0 |
- *       |  0 a2 b2 c2  .  0 |
- *       |  0  0 a3  .     . |
- *       |     .        .  . |
- *       |     .           . |
- *       |  0  0  .  . an bn |
- * (Thus, the first component of \a a and the last component of \a c
- *  does not have any meanings.)
- * The answer will be set on \a ans.
+ * zLETridiagSolve() solves a linear tridiagonal equation m x = d, where
+ *  m = | b0 c0  0  .    .      0   |
+ *      | a1 b1 c1  .    .      0   |
+ *      |  0 a2 b2 c2    .      0   |
+ *      |  0  0 a3  .    .      .   |
+ *      |     .          .      .   |
+ *      |     .          .      .   |
+ *      |  0  0  .  . a(n-1) b(n-1) |
+ *  d = [ d0 d1 ... d(n-1) ]^T
+ * Vectors \a a, \a b, \a c, and \a d store the above (a0, ..., a(n-1)), (b0, ..., b(n-1)), (c0, ..., c(n-1)),
+ * and (d0, ..., d(n-1)), respectively. Note that the first component of \a a and the last component of
+ * \a c does not have any meanings.
+ * The answer will be set in \a ans.
  *
- * zTridiagSolveDST() destructively modifies \a a, \a b, \a c and \a d
- * while the calculation.
+ * zLETridiagSolveDST() destructively modifies \a a, \a b, \a c and \a d during solving the equation.
  * \return
- * zTridiagSolve() and zTridiagSolveDST() return a pointer to \a ans
- * in successful cases, or the null pointer otherwise.
+ * zLETridiagSolve() and zLETridiagSolveDST() return a pointer \a ans if they succeed. Otherwise, they
+ * return the null pointer.
  */
-__ZM_EXPORT zVec zTridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans);
-__ZM_EXPORT zVec zTridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans);
+__ZM_EXPORT zVec zLETridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans);
+__ZM_EXPORT zVec zLETridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans);
 
 __END_DECLS
 

@@ -17,6 +17,46 @@ void assert_clone(void)
   zMatFree( dest );
 }
 
+void assert_mat_is_diag(void)
+{
+  zMat m;
+  const int size = 5;
+  int i;
+  bool result = true;
+
+  m = zMatAllocSqr( size );
+  zMatZero( m );
+  for( i=0; i<size; i++ )
+    zMatSetElem( m, i, i, zRandF(-10,10) );
+
+  if( !zMatIsDiag( m ) ) result = false;
+  zMatElemNC(m,1,0) = 1;
+  if( zMatIsDiag( m ) ) result = false;
+  zMatElemNC(m,1,0) = 0;
+  zMatElemNC(m,0,0) = 0;
+  if( !zMatIsDiag( m ) ) result = false;
+  zMatFree( m );
+  zAssert( zMatIsDiag, result );
+}
+
+void assert_mat_is_ident(void)
+{
+  zMat m;
+  const int size = 5;
+  bool result = true;
+
+  m = zMatAllocSqr( size );
+  zMatIdent( m );
+  if( !zMatIsIdent( m ) ) result = false;
+  zMatElemNC(m,1,0) = 1;
+  if( zMatIsIdent( m ) ) result = false;
+  zMatElemNC(m,1,0) = 0;
+  zMatElemNC(m,0,0) = 0;
+  if( zMatIsIdent( m ) ) result = false;
+  zMatFree( m );
+  zAssert( zMatIsIdent, result );
+}
+
 void assert_is_symmetric(void)
 {
   zMat m, mt;
@@ -414,6 +454,8 @@ int main(void)
 {
   zRandInit();
   assert_clone();
+  assert_mat_is_diag();
+  assert_mat_is_ident();
   assert_is_symmetric();
   assert_get_put();
   assert_arith();

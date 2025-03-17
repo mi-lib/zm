@@ -14,7 +14,7 @@ zMat mat_create_rand(int row, int col)
 
 zMat mat_create_ut_rand(int row, int col)
 {
-  register int i, j;
+  int i, j;
   zMat m;
 
   m = zMatAlloc( ROW, COL );
@@ -26,7 +26,7 @@ zMat mat_create_ut_rand(int row, int col)
 
 zMat mat_create_tri_rand(int row, int col)
 {
-  register int i, j;
+  int i, j;
   zMat m;
 
   m = zMatAlloc( ROW, COL );
@@ -38,7 +38,7 @@ zMat mat_create_tri_rand(int row, int col)
 
 zMat mat_create_sym_rand(int row, int col)
 {
-  register int i, j;
+  int i, j;
   zMat m;
 
   m = zMatAlloc( ROW, COL );

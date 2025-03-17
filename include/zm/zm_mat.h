@@ -280,6 +280,22 @@ __ZM_EXPORT bool zMatMatch(const zMat m1, const zMat m2);
 __ZM_EXPORT bool zMatIsTol(const zMat m, double tol);
 #define zMatIsTiny(m) zMatIsTol( (m), zTOL )
 
+/*! \brief check if a matrix is diagonal.
+ *
+ * zMatIsDiag() checks if a matrix \a m is diagonal.
+ * \return
+ * zMatIsDiag() returns the true value if \a m is diagonal. Otherwise, it returns the false value.
+ */
+__ZM_EXPORT bool zMatIsDiag(zMat m);
+
+/*! \brief check if a matrix is the identity matrix.
+ *
+ * zMatIsIdent() checks if a matrix \a m is the identity matrix.
+ * \return
+ * zMatIsIdent() returns the true value if \a m is the identity matrix. Otherwise, it returns the false value.
+ */
+__ZM_EXPORT bool zMatIsIdent(zMat m);
+
 /*! \brief check if a matrix is square and symmetric.
  *
  * zMatIsSymmetric() checks if a matrix \a m is square and symmetric.

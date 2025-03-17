@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
   zOsc osc;
   double x;
-  register int i, n;
+  int i, n;
 
   n = T / DT;
   if( !zOscCreateKura( &osc, zPI, 100, zPI/2 ) ) return 1;

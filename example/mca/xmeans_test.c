@@ -3,7 +3,7 @@
 
 void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax, double ymax)
 {
-  register int i, j;
+  int i, j;
   zVec vc;
   double xc, yc, rmax;
   double r, t;

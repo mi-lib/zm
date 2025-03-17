@@ -427,6 +427,34 @@ bool zMatIsTol(const zMat m, double tol)
   return zRawMatIsTol( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), tol );
 }
 
+/* test if a matrix is diagonal. */
+bool zMatIsDiag(zMat m)
+{
+  int i, j;
+
+  for( i=0; i<zMatRowSizeNC(m); i++ )
+    for( j=0; j<zMatColSizeNC(m); j++ ){
+      if( j == i ) continue;
+      if( !zIsTiny( zMatElemNC(m,i,j) ) ) return false;
+    }
+  return true;
+}
+
+/* test if a matrix is the identity matrix. */
+bool zMatIsIdent(zMat m)
+{
+  int i, j;
+
+  for( i=0; i<zMatRowSizeNC(m); i++ )
+    for( j=0; j<zMatColSizeNC(m); j++ ){
+      if( j == i ){
+        if( !zEqual( zMatElemNC(m,i,j), 1.0, zTOL ) ) return false;
+      } else
+        if( !zIsTiny( zMatElemNC(m,i,j) ) ) return false;
+    }
+  return true;
+}
+
 /* check if a matrix is square and symmetric. */
 bool zMatIsSymmetric(const zMat m)
 {

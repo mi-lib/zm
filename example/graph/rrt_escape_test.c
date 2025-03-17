@@ -30,7 +30,7 @@ bool testchk(zVec v, void *util)
 
 void output_box(FILE *fp, box_t box[])
 {
-  register int i;
+  int i;
 
   for( i=0; i<4; i++ ){
     fprintf( fp, "%g %g\n", box[i][0], box[i][1] );

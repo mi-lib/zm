@@ -54,7 +54,7 @@ static void _zODESetWeight_Adams(zVec w, int step, double g0)
   }
   for( i=0; i<step; i++ ){
     for( j=i; j<step; j++ )
-      zVecElemNC(w,i) += zCombi(j,i) * zVecElemNC(g,j);
+      zVecElemNC(w,i) += zCombination(j,i) * zVecElemNC(g,j);
     if( zIsOdd(i) ) zVecElemNC(w,i) = -zVecElemNC(w,i);
   }
   zVecFree( g );

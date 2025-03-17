@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
   zFourier fourier;
   double sample[SAMPLE_N];
   double smooth[SAMPLE_N];
-  register int i;
+  int i;
 
   zRandInit();
   zFourierAlloc( &fourier, FOURIER_DIM );

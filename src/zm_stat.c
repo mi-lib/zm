@@ -39,7 +39,7 @@ double zPoissonDistrib(int x, double lambda)
 /* binomial distribution. */
 double zBinDistrib(int x, int n, double p)
 {
-  return zCombi( n, x ) * pow( p, x ) * pow( 1-p, n-x );
+  return zCombination( n, x ) * pow( p, x ) * pow( 1-p, n-x );
 }
 
 /* chi-squared distribution. */

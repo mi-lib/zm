@@ -20,7 +20,7 @@ int main(void)
 {
   zMat a;
   zVec b, w, x, d, y;
-  register int i;
+  int i;
 
   zRandInit();
   a = zMatAlloc( N, M ); zMatRandUniform( a, -10, 10 );

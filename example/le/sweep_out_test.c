@@ -2,7 +2,7 @@
 
 void invmat(void)
 {
-  register int i;
+  int i;
   zMat m1, m2, m3, m;
   zIndex index;
   double marray[] = {
@@ -42,7 +42,7 @@ void invmat(void)
 
 void leq(void)
 {
-  register int i;
+  int i;
   zMat m;
   zVec v, x;
   zIndex index;

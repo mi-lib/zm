@@ -45,7 +45,7 @@ zVec coreLSM(zClusterMethod *cm, zVecList *pl, void *dummy, zVec core)
 
 void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double zmin, double xmax, double ymax, double zmax)
 {
-  register int i, j;
+  int i, j;
   zVec vc;
   double xc, yc, zc, a, b, c, e;
   double x, y, z;

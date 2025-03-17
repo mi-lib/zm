@@ -45,7 +45,7 @@ void test(zMat a, zVec b, zVec w, zVec w2, zVec x, zVec e, zVec aux)
 
 int main(int argc, char *argv[])
 {
-  register int i, j;
+  int i, j;
   zMat a;
   zVec b, w, x, e, w2, aux;
   int turn;

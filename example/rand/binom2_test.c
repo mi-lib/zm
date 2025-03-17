@@ -7,7 +7,7 @@ int count_x[DIV], count_y[DIV];
 int main(int argc, char *argv[])
 {
   FILE *fp;
-  register int i;
+  int i;
   double x, y;
   double r;
 

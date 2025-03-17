@@ -2,7 +2,7 @@
 
 int main(void)
 {
-  register int i;
+  int i;
   double v;
 
   for( i=-45; i<=45; i++ ){

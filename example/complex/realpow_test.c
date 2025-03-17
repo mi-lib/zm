@@ -7,7 +7,7 @@ int main(void)
 {
   zComplex c1, c2, c3;
   double theta;
-  register int i;
+  int i;
 
   zComplexZero( &c3 );
   for( i=0; i<=N; i++ ){

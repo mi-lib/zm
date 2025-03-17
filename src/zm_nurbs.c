@@ -229,7 +229,7 @@ zVec zNURBSVecDiff(const zNURBS *nurbs, double t, int diff, zVec v)
   }
   for( i=1; i<diff+1; i++ ){
     if( !zNURBSVecDiff( nurbs, t, diff-i, tmp ) ) break;
-    zVecCatNCDRC( v, -zCombi(diff,i)*_zNURBSDenDiff(nurbs,t,s,i), tmp );
+    zVecCatNCDRC( v, -zCombination(diff,i)*_zNURBSDenDiff(nurbs,t,s,i), tmp );
   }
   zVecFree( tmp );
   return zIsTiny(den) ?

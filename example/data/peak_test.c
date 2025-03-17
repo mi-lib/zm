@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
   double sample[SAMPLE_N];
   double smooth[SAMPLE_N];
   zIndex peakidx, peakidx_sg;
-  register int i;
+  int i;
   FILE *fp;
 
   zRandInit();

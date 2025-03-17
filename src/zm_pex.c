@@ -317,7 +317,7 @@ double zPexDifVal(zPex p, int dim, double arg)
   double c, result;
 
   i = zPexDim( p );
-  c = zPermut( i, dim );
+  c = zPermutation( i, dim );
   result = c * zPexCoeff( p, i );
   for( ; i>dim; i-- ){
     c *= (double)( i - dim ) / i;

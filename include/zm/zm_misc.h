@@ -122,10 +122,10 @@ __ZM_EXPORT double zCbrt(double x);
 
 /*! \brief permutation.
  *
- * zPermut() computes \a n_P_\a i.
+ * zPermutation() computes \a n_P_\a i.
  * The result is returned as a double-precision floating-point value.
  */
-__ZM_EXPORT double zPermut(int n, int i);
+__ZM_EXPORT double zPermutation(int n, int i);
 
 /*! \brief factorial.
  *
@@ -136,24 +136,22 @@ __ZM_EXPORT double zFactorial(int n);
 
 /*! \brief combination.
  *
- * zCombi() computes \a n_C_i.
- * zCombiRecursive() also computes \a n_C_i but in a recursive way.
+ * zCombination() computes \a n_C_i.
+ * zCombinationRecursive() also computes \a n_C_i but in a recursive way.
  * The result is returned as a double-precision floating-point value.
  */
-__ZM_EXPORT double zCombi(int n, int i);
-__ZM_EXPORT double zCombiRecursive(int n, int i);
+__ZM_EXPORT double zCombination(int n, int i);
+__ZM_EXPORT double zCombinationRecursive(int n, int i);
 
 /*! \brief series of combination.
  *
- * zCombiSeries() computes a series of combination \a n_C_i where
- * \a i is from 0 to \a n. The result is stored in the array of
- * double-precision floating-point values \a c. \a size is the size
- * of \a c.
- * If \a n is more than \a size, equal to \a size or less than 0,
- * it fails to compute the series and the null pointer is returned.
- * Otherwise, a pointer to \a c is returned.
+ * zCombinationSeries() computes a series of combination \a n_C_i where \a i is from 0 to \a n.
+ * The result is stored in the array of double-precision floating-point values \a c. \a size is
+ * the size of \a c.
+ * If \a n is more than \a size, equal to \a size or less than 0, it fails to compute the series
+ * and the null pointer is returned. Otherwise, a pointer to \a c is returned.
  */
-__ZM_EXPORT double *zCombiSeries(uint n, size_t size, double c[]);
+__ZM_EXPORT double *zCombinationSeries(uint n, size_t size, double c[]);
 
 /*! \brief smoothstep function. */
 __ZM_EXPORT double zSmoothStep(double x, uint order);

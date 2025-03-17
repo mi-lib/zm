@@ -5,7 +5,7 @@ int main(void)
   double x, y, z;
   long long n;
   FILE *fp;
-  register int i;
+  int i;
 
   n = 2 << 10;
   printf( "%lld\n", n );

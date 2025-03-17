@@ -2,7 +2,7 @@
 
 zMat hilbert_mat(zMat m)
 {
-  register int i, j;
+  int i, j;
 
   for( i=0; i<zMatRowSizeNC(m); i++ )
     for( j=0; j<zMatColSizeNC(m); j++ )

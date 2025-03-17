@@ -1,3 +1,8 @@
+2025.03.17. Renamed zm_le_minv to zm_le_mat_inv. [zm_le, zm_le_mat_inv]
+2025.03.17. Added zMatIsDiag and zMatIsIdent. [zm_mat]
+2025.03.17. Renamed zTridiagSolveDST and zTridiagSolve to zLETridiagSolveDST and zLETridiagSolve, respectively. [zm_le_tridiag, zm_ip_spline]
+2025.03.17. Removed register qualifiers in examples. [example]
+2025.03.17. Renamed zPermut, zCombi, zCombiRecursive, and zCombiSeries to zPermutation, zCombination, zCombinationRecursive, and zCombinationSeries, respectively. [zm_misc, zm_stat, zm_pex, zm_nurbs, zm_ode_adams]
 2025.03.15. Added zCombiRecursive. [zm_misc]
 2025.03.14. Added const qualifiers to some functions. [zm_data, zm_mat_eig, zm_ip, zm_ip_lin, zm_ip_lagrange, zm_ip_chebyshev, zm_ip_spline, zm_ip_akima, zm_ip_pchip, zm_ip_pex, zm_ip_clothoid, zm_ip_trvelprof, zm_opt_lp, zm_opt_lp_stdcnv, zm_opt_lp_simplex, zm_opt_lp_pdip, zm_opt_lcp, zm_opt_lcp_lemke, zm_opt_lcp_ip, zm_opt_qp, zm_opt_qp_asm, zm_opt_dm, zm_opt_direct, zm_opt_nm, zm_opt_ga, zm_opt_pso, zm_nle, zm_nle_dm, zm_nle_ss]
 2025.03.08. Renamed zPCA to zVecListPCA. [zm_mca]

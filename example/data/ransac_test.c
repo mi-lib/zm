@@ -106,7 +106,7 @@ void sample_list(zVecList *sample, int n, double r, double nl)
 {
   zVec v;
   double x, y;
-  register int i;
+  int i;
   FILE *fp;
 
   zListInit( sample );

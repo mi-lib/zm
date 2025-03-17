@@ -2,7 +2,7 @@
 
 int main(void)
 {
-  register int i;
+  int i;
   double x;
 
   for( i=-5000; i<=5000; i++ ){

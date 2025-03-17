@@ -5,7 +5,7 @@
 
 void nn_test(zNURBS *nurbs)
 {
-  register int i;
+  int i;
   FILE *fp;
   zVec v, n, nn;
 

@@ -7,7 +7,7 @@ int main(void)
   long long n;
   FILE *fp;
   char filename[BUFSIZ];
-  register int i, j;
+  int i, j;
 
   n = 2 << 10;
   zRandInit();

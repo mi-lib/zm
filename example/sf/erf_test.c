@@ -48,7 +48,7 @@ double erf_wy(double x)
 
 int main(int argc, char *argv[])
 {
-  register int i;
+  int i;
   double x, f, f0, f1, f2, f3;
 
   for( i=0; i<=DIV; i++ ){

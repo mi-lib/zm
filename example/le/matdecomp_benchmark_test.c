@@ -50,7 +50,7 @@ void test_cholesky(int r, int c, int n)
 
 bool test_qqt(zMat m)
 {
-  register int i, j;
+  int i, j;
 
   if( !zMatIsSqr( m ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );

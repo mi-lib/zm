@@ -7,7 +7,7 @@
 #include <zm/zm_le.h>
 
 /* tridiagonal equation solver (destructive). */
-zVec zTridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans)
+zVec zLETridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans)
 {
   int i;
   int n;
@@ -30,7 +30,7 @@ zVec zTridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans)
 }
 
 /* tridiagonal equation solver. */
-zVec zTridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans)
+zVec zLETridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans)
 {
   zVec acp, bcp, dcp;
 
@@ -43,7 +43,7 @@ zVec zTridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans)
   bcp = zVecClone( b );
   dcp = zVecClone( d );
   if( acp && bcp && dcp )
-    ans = zTridiagSolveDST( acp, bcp, c, dcp, ans );
+    ans = zLETridiagSolveDST( acp, bcp, c, dcp, ans );
   zVecFreeAtOnce( 3, acp, bcp, dcp );
   return ans;
 }

@@ -7,7 +7,7 @@ int main(void)
 {
   zVec s, k;
   zVecRing v;
-  register int i;
+  int i;
   double val;
 
   s = zVecAlloc( DIM );

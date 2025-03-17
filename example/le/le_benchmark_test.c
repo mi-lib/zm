@@ -10,7 +10,7 @@ int main(void)
   zVec b, x, ans;
   zIndex index;
   int count_cramel, count_gauss, count_lu, count_ri, count_gs;
-  register int i;
+  int i;
 
   zRandInit();
   a = zMatAllocSqr( SIZE );

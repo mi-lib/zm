@@ -7,7 +7,7 @@ int count[2*DIV+1];
 int main(int argc, char *argv[])
 {
   FILE *fp;
-  register int i;
+  int i;
   double x;
 
   zRandInitMT( NULL );

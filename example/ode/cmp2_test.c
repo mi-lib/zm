@@ -17,7 +17,7 @@ zVec dp(double t, zVec p, void *dummy, zVec dp)
 
 void output(double t, zVec *x)
 {
-  register int i;
+  int i;
   double a;
 
   a = A0*exp(-A*t);
@@ -39,7 +39,7 @@ int main(void)
   zODE ode[ODES];
   zVec x[ODES];
   double t;
-  register int i, j;
+  int i, j;
 
   zODEAssign(&ode[0],Euler,NULL,NULL);  zODEInit(&ode[0],1,0,dp);
   zODEAssign(&ode[1],Heun,NULL,NULL);   zODEInit(&ode[1],1,0,dp);
