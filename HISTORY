@@ -1,3 +1,5 @@
+2025.03.20. Renamed _zBalancingMatDST to _zMatBalancingDST. [zm_le_mat_inv]
+2025.03.20. Added const qualifires to some arguments. [zm_le_mat_inv, zm_le_mat_mpinv]
 2025.03.20. Added const qualifires to some arguments. [zm_le, zm_le_lu, zm_le_lq, zm_le_gen, zm_le_tridiag, zm_le_lyapnov]
 2025.03.20. Added zVecReorder and zVecReorderDRC. [zm_vec]
 2025.03.20. Modified zMatImg. [zm_mat]

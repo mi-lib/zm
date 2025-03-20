@@ -7,7 +7,7 @@
 #include <zm/zm_le.h>
 
 /* initialization: LQ decomposition */
-static int _zMatMPInvAllocWork1(zMat m, zMat *l, zMat *q, zIndex *idx)
+static int _zMatMPInvAllocWork1(const zMat m, zMat *l, zMat *q, zIndex *idx)
 {
   int rank;
 
@@ -33,7 +33,7 @@ static int _zMatMPInvAllocWork2(int rank, int row, zMat *tmp1, zMat *tmp2, zMat 
 }
 
 /* Moore-Penrose's inverse matrix. */
-int zMatMPInv(zMat m, zMat mp)
+int zMatMPInv(const zMat m, zMat mp)
 {
   int rank;
   zMat l, q, tmp1, tmp2, tmp3;
@@ -56,7 +56,7 @@ int zMatMPInv(zMat m, zMat mp)
 }
 
 /* Moore-Penrose's inverse matrix with its null space. */
-int zMatMPInvNull(zMat m, zMat mp, zMat mn)
+int zMatMPInvNull(const zMat m, zMat mp, zMat mn)
 {
   int i, rank;
   zMat l, q, tmp1, tmp2, tmp3;
@@ -82,7 +82,7 @@ int zMatMPInvNull(zMat m, zMat mp, zMat mn)
 }
 
 /* multiply Moore-Penrose's inverse matrix from the left side to another matrix. */
-zMat zMulMPInvMatMat(zMat m1, zMat m2, zMat m)
+zMat zMulMPInvMatMat(const zMat m1, const zMat m2, zMat m)
 {
   int rank;
   zMat l, q, tmp1, tmp2, tmp3;
@@ -107,7 +107,7 @@ zMat zMulMPInvMatMat(zMat m1, zMat m2, zMat m)
 /* Penrose's iterative algorithm */
 
 /* internal call of Moore-Penrose inverse matrix based on Penrose's iterative algorithm. */
-static int _zMatMPInvPenrose(zMat m, zMat mp)
+static int _zMatMPInvPenrose(const zMat m, zMat mp)
 {
   zMat b, c, c2, cb;
   double trace = 0;
@@ -138,7 +138,7 @@ static int _zMatMPInvPenrose(zMat m, zMat mp)
 }
 
 /* Moore-Penrose inverse matrix based on Penrose's iterative algorithm. */
-int zMatMPInvPenrose(zMat m, zMat mp)
+int zMatMPInvPenrose(const zMat m, zMat mp)
 {
   int rank;
 

@@ -31,7 +31,7 @@ double zMatDetDST(zMat m, zIndex idx)
 }
 
 /* determinant of matrix. */
-double zMatDet(zMat m)
+double zMatDet(const zMat m)
 {
   double det = 0;
   zMat mcp;
@@ -52,17 +52,17 @@ double zMatDet(zMat m)
 }
 
 /* adjoint matrix. */
-zMat zMatAdj(zMat m, zMat adj)
+zMat zMatAdj(const zMat m, zMat adj)
 {
   int i, j, k, l, u, v;
   zMat smat;
   zIndex idx;
 
-  if( !zMatIsSqr(m) || !zMatIsSqr(adj) ){
+  if( !zMatIsSqr( m ) || !zMatIsSqr( adj ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( !zMatSizeEqual(m,adj) ){
+  if( !zMatSizeEqual( m, adj ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
@@ -95,7 +95,7 @@ zMat zMatAdj(zMat m, zMat adj)
 }
 
 /* directly make a matrix row-balanced and column-balanced. */
-static void _zBalancingMatDST(zMat m1, zMat m2, zVec s)
+static void _zMatBalancingDST(zMat m1, zMat m2, zVec s)
 {
   int i, j;
   double *mp1, *mp2, tmp;
@@ -124,7 +124,7 @@ static void _zBalancingMatDST(zMat m1, zMat m2, zVec s)
 }
 
 /* inner operation of zMulInvMatMat and zMulMatInvMat. */
-static zMat _zMulInvMat(zMat m1, zMat m2, zMat m, zIndex idx, zVec s)
+static zMat _zMulInvMat(const zMat m1, const zMat m2, zMat m, zIndex idx, zVec s)
 {
   int i, j, k;
   int n, p, q;
@@ -132,7 +132,7 @@ static zMat _zMulInvMat(zMat m1, zMat m2, zMat m, zIndex idx, zVec s)
   double x;
 
   n = zMatRowSizeNC( m );
-  _zBalancingMatDST( m1, m2, s );
+  _zMatBalancingDST( m1, m2, s );
   /* forward elimination */
   for( i=0; i<n; i++ ){
     p = zMatPivoting( m1, idx, i, i );
@@ -174,7 +174,7 @@ static zMat _zMulInvMat(zMat m1, zMat m2, zMat m, zIndex idx, zVec s)
 }
 
 /* multiplication of inverse matrix and matrix without checking sizes. */
-zMat _zMulInvMatMatNC(zMat m1, zMat m2, zMat m)
+zMat _zMulInvMatMatNC(const zMat m1, const zMat m2, zMat m)
 /* m = m1^-1 m2 */
 {
   zMat mcp1, mcp2;
@@ -196,7 +196,7 @@ zMat _zMulInvMatMatNC(zMat m1, zMat m2, zMat m)
 }
 
 /* multiplication of inverse matrix and matrix. */
-zMat zMulInvMatMat(zMat m1, zMat m2, zMat m)
+zMat zMulInvMatMat(const zMat m1, const zMat m2, zMat m)
 /* m = m1^-1 m2 */
 {
   if( !zMatIsSqr(m1) ){
@@ -211,7 +211,7 @@ zMat zMulInvMatMat(zMat m1, zMat m2, zMat m)
 }
 
 /* multiplication of matrix and inverse matrix. */
-zMat zMulMatInvMat(zMat m1, zMat m2, zMat m)
+zMat zMulMatInvMat(const zMat m1, const zMat m2, zMat m)
 /* m = m1 m2^-1 */
 {
   zMat mcp1, mcp2, mcp;
@@ -249,7 +249,7 @@ zMat zMulMatInvMat(zMat m1, zMat m2, zMat m)
 }
 
 /* inverse matrix. */
-zMat zMatInv(zMat m, zMat im)
+zMat zMatInv(const zMat m, zMat im)
 {
   if( !zMatIsSqr(m) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
@@ -269,7 +269,7 @@ zMat zMatInv(zMat m, zMat im)
 }
 
 /* inverse matrix by Hotelling's method. */
-zMat zMatInvHotelling(zMat m, zMat im, double tol, int iter)
+zMat zMatInvHotelling(const zMat m, zMat im, double tol, int iter)
 {
   int i, j;
   zMat im2, tmp, mc, mn;
