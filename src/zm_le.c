@@ -7,7 +7,7 @@
 #include <zm/zm_le.h>
 
 /* directly make a matrix column-balanced. */
-void zBalancingColDST(zMat m, zVec s)
+void zMatBalancingColDST(zMat m, zVec s)
 {
   int i, j;
   double tmp;
@@ -27,13 +27,13 @@ void zBalancingColDST(zMat m, zVec s)
 }
 
 /* directly make a pair of matrix and vector balanced. */
-void zBalancingDST(zMat m, zVec v, zVec s)
+void zMatBalancingDST(zMat m, zVec v, zVec s)
 {
   int i;
   double *mp, max;
 
   if( s ) /* if necessary for column-balancing */
-    zBalancingColDST( m, s );
+    zMatBalancingColDST( m, s );
   for( mp=zMatBuf(m), i=0; i<zMatRowSizeNC(m); mp+=zMatColSizeNC(m), i++ ){
     if( ( max = zDataAbsMax( mp, zMatColSizeNC(m), NULL ) ) == 0 )
       continue;
@@ -43,7 +43,7 @@ void zBalancingDST(zMat m, zVec v, zVec s)
 }
 
 /* make a pair of matrix and vector balanced. */
-bool zBalancing(zMat morg, zVec vorg, zMat m, zVec v, zVec s)
+bool zMatBalancing(const zMat morg, const zVec vorg, zMat m, zVec v, zVec s)
 {
   if( !zMatSizeEqual( morg, m ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -60,12 +60,12 @@ bool zBalancing(zMat morg, zVec vorg, zMat m, zVec v, zVec s)
   }
   zMatCopyNC( morg, m );
   zVecCopyNC( vorg, v );
-  zBalancingDST( m, v, s );
+  zMatBalancingDST( m, v, s );
   return true;
 }
 
 /* residual b - a x. */
-zVec zLEResidual(zMat a, zVec b, zVec x, zVec res)
+zVec zLEResidual(const zMat a, const zVec b, const zVec x, zVec res)
 {
   zMulMatVecNC( a, x, res );
   return zVecSubNC( b, res, res );
@@ -79,10 +79,10 @@ zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
   double x;
 
   n = zVecSizeNC( b );
-  zBalancingDST( a, b, s );
+  zMatBalancingDST( a, b, s );
   /* forward elimination */
   for( i=0; i<n; i++ ){
-    p = zPivoting( a, idx, i, i );
+    p = zMatPivoting( a, idx, i, i );
     if( ( ahead = zMatElemNC(a,p,i) ) == 0 ){
       ZRUNERROR( ZM_ERR_MAT_SINGULAR );
       return NULL;
@@ -113,7 +113,7 @@ zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
 }
 
 /* linear equation solver based on Gauss's elimination method. */
-zVec zLESolveGauss(zMat a, zVec b, zVec ans)
+zVec zLESolveGauss(const zMat a, const zVec b, zVec ans)
 {
   zMat acp;
   zVec bcp, s;
@@ -143,7 +143,7 @@ zVec zLESolveGauss(zMat a, zVec b, zVec ans)
 }
 
 /* a solver for Ly=b. */
-zVec zLESolveL(zMat l, zVec b, zVec ans, zIndex idx)
+zVec zLESolveL(const zMat l, const zVec b, zVec ans, const zIndex idx)
 {
   int i, j, p;
   double x;
@@ -158,7 +158,7 @@ zVec zLESolveL(zMat l, zVec b, zVec ans, zIndex idx)
 }
 
 /* a solver for Ux=y. */
-zVec zLESolveU(zMat u, zVec b, zVec ans)
+zVec zLESolveU(const zMat u, const zVec b, zVec ans)
 {
   int i, j;
   double x;
@@ -173,7 +173,7 @@ zVec zLESolveU(zMat u, zVec b, zVec ans)
 }
 
 /* a solver for LUx=b. */
-zVec zLESolveLU(zMat l, zMat u, zVec b, zVec ans, zIndex idx)
+zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, const zIndex idx)
 {
   zVec c;
 
@@ -196,7 +196,7 @@ zVec zLESolveLU(zMat l, zMat u, zVec b, zVec ans, zIndex idx)
 }
 
 /* linear equation solver: Residual iteration on LU decomposition. */
-zVec zLESolveRI(zMat a, zVec b, zVec ans)
+zVec zLESolveRI(const zMat a, const zVec b, zVec ans)
 {
   int i;
   zMat l, u;
@@ -237,7 +237,7 @@ zVec zLESolveRI(zMat a, zVec b, zVec ans)
 }
 
 /* linear equation solver: Gauss-Seidel's method. */
-zVec zLESolveGS(zMat a, zVec b, zVec ans)
+zVec zLESolveGS(const zMat a, const zVec b, zVec ans)
 {
   int i, j, k, p, count;
   double x;
@@ -254,7 +254,7 @@ zVec zLESolveGS(zMat a, zVec b, zVec ans)
   }
   if( !( idx = zIndexCreate(zVecSizeNC(ans)) ) ) return NULL;
   for( i=0; i<zIndexSizeNC(idx); i++ )
-    zPivoting( a, idx, i, i );
+    zMatPivoting( a, idx, i, i );
 
   for( i=0; ; i++ ){
     for( count=0, j=0; j<zVecSizeNC(b); j++ ){

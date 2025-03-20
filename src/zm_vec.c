@@ -67,14 +67,14 @@ void zVecFree(zVec v)
 }
 
 /* free memory for multiple vectors at once. */
-void zVecFreeAtOnce(int n, ...)
+void zVecFreeAtOnce(int num, ...)
 {
   va_list arg;
   zVec v;
   int i;
 
-  va_start( arg, n );
-  for( i=0; i<n; i++ ){
+  va_start( arg, num );
+  for( i=0; i<num; i++ ){
     v = va_arg( arg, zVec );
     zVecFree( v );
   }
@@ -89,9 +89,9 @@ zVec zVecZero(zVec v)
 }
 
 /* touchup a vector. */
-zVec zVecTouchup(zVec v)
+zVec zVecTouchup(zVec v, double tol)
 {
-  zRawVecTouchup( zVecBufNC(v), zVecSizeNC(v) );
+  zRawVecTouchup( zVecBufNC(v), zVecSizeNC(v), tol );
   return v;
 }
 
@@ -245,20 +245,45 @@ void zVecSort(zVec v, zIndex idx)
   zQuickSort( zIndexBufNC(idx), zIndexSizeNC(idx), sizeof(int), _zVecSortCmp, zVecBufNC(v) );
 }
 
+/* reorder components of a vector along with a given index. */
+zVec zVecReorder(const zVec src, const zIndex idx, zVec dest)
+{
+  int i;
+
+  if( !zVecSizeEqual( src, dest ) || zVecSizeNC(src) != zIndexSizeNC(idx) ){
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
+    return NULL;
+  }
+  for( i=0; i<zIndexSizeNC(idx); i++ )
+    zVecSetElemNC( dest, i, zVecElemNC(src,zIndexElemNC(idx,i)) );
+  return dest;
+}
+
+/* reorder components of a vector directly along with a given index. */
+zVec zVecReorderDRC(zVec v, const zIndex idx)
+{
+  zVec tmp;
+
+  if( !( tmp = zVecClone( v ) ) ) return NULL;
+  zVecReorder( tmp, idx, v );
+  zVecFree( tmp );
+  return v;
+}
+
 /* maximum of vector elements. */
-double zVecMax(const zVec v, int *im){ return _zVecMax( v, im ); }
+double zVecMaxElem(const zVec v, int *im){ return _zVecMaxElem( v, im ); }
 /* minimum of vector elements. */
-double zVecMin(const zVec v, int *im){ return _zVecMin( v, im ); }
+double zVecMinElem(const zVec v, int *im){ return _zVecMinElem( v, im ); }
 /* absolute maximum of vector elements. */
-double zVecAbsMax(const zVec v, int *im){ return _zVecAbsMax( v, im ); }
+double zVecAbsMaxElem(const zVec v, int *im){ return _zVecAbsMaxElem( v, im ); }
 /* absolute minimum of vector elements. */
-double zVecAbsMin(const zVec v, int *im){ return _zVecAbsMin( v, im ); }
+double zVecAbsMinElem(const zVec v, int *im){ return _zVecAbsMinElem( v, im ); }
 /* summation of vector elements. */
-double zVecSum(const zVec v){ return _zVecSum( v ); }
+double zVecSumElem(const zVec v){ return _zVecSumElem( v ); }
 /* mean of vector elements. */
-double zVecMean(const zVec v){ return _zVecMean( v ); }
+double zVecMeanElem(const zVec v){ return _zVecMeanElem( v ); }
 /* variance of vector elements. */
-double zVecVar(const zVec v){ return _zVecVar( v ); }
+double zVecVarElem(const zVec v){ return _zVecVarElem( v ); }
 
 /* check if two vectors are equal. */
 bool zVecEqual(const zVec v1, const zVec v2, double tol)
@@ -541,7 +566,7 @@ double zVecWSqrNorm(const zVec v, const zVec w)
 /* infinity norm of a vector. */
 double zVecInfNorm(const zVec v)
 {
-  return zDataAbsMax( zVecBufNC(v), zVecSizeNC(v), NULL );
+  return zVecAbsMaxElem( v, NULL );
 }
 
 /* normalize a vector. */

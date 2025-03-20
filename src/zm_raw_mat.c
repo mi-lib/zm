@@ -142,7 +142,7 @@ void zRawMatTDRC(double *mat, int row, int col)
 }
 
 /* calculate the trace of a raw matrix. */
-double zRawMatTr(const double *m, int row, int col)
+double zRawMatTrace(const double *m, int row, int col)
 {
   double result = 0;
   int n;

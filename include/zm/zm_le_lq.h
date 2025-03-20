@@ -35,14 +35,14 @@ __BEGIN_DECLS
  * functions fail to decompose the given matrix into an orthogonal space.
  */
 __ZM_EXPORT int zMatDecompLQDST(zMat m, zMat l, zMat q, zIndex idx);
-__ZM_EXPORT int zMatDecompLQ(zMat m, zMat l, zMat q, zIndex idx);
-__ZM_EXPORT int zMatDecompLQReg(zMat m, zMat l, zMat q, zIndex idx);
+__ZM_EXPORT int zMatDecompLQ(const zMat m, zMat l, zMat q, zIndex idx);
+__ZM_EXPORT int zMatDecompLQReg(const zMat m, zMat l, zMat q, zIndex idx);
 
 /*! \brief LQ decomposition with an automatic matrix allocation and resize.
  */
-__ZM_EXPORT int zMatDecompLQAlloc(zMat m, zMat *l, zMat *q, zIndex *idx);
+__ZM_EXPORT int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q, zIndex *idx);
 
-__ZM_EXPORT int zMatDecompQR(zMat m, zMat q, zMat r, zIndex idx);
+__ZM_EXPORT int zMatDecompQR(const zMat m, zMat q, zMat r, zIndex idx);
 
 __END_DECLS
 

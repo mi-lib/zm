@@ -30,7 +30,7 @@ zVec zLETridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans)
 }
 
 /* tridiagonal equation solver. */
-zVec zLETridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans)
+zVec zLETridiagSolve(const zVec a, const zVec b, const zVec c, const zVec d, zVec ans)
 {
   zVec acp, bcp, dcp;
 

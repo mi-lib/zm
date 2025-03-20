@@ -15,7 +15,7 @@ double zMatDetDST(zMat m, zIndex idx)
   zIndexOrder( idx, 0 );
   for( i=0; i<zMatRowSizeNC(m); i++ ){
     p = zIndexElemNC( idx, i );
-    if( p != zPivoting( m, idx, i, i ) ){
+    if( p != zMatPivoting( m, idx, i, i ) ){
       det = -det;
       p = zIndexElemNC( idx, i );
     }
@@ -135,7 +135,7 @@ static zMat _zMulInvMat(zMat m1, zMat m2, zMat m, zIndex idx, zVec s)
   _zBalancingMatDST( m1, m2, s );
   /* forward elimination */
   for( i=0; i<n; i++ ){
-    p = zPivoting( m1, idx, i, i );
+    p = zMatPivoting( m1, idx, i, i );
     if( ( head = zMatElemNC(m1,p,i) ) == 0 ){
       ZRUNERROR( ZM_ERR_MAT_SINGULAR );
       return NULL;

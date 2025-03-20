@@ -75,9 +75,9 @@ static bool _zLP_PDIPInit(_zLP_PDIP *dat)
   zVecSetAll( dat->y, 1.0 );
   zMulMatTVecNC( dat->a, dat->y, dat->z );
   zVecSubNC( dat->c, dat->z, dat->z );
-  if( ( m = zVecMin(dat->x,NULL) ) <= zTOL )
+  if( ( m = zVecMinElem(dat->x,NULL) ) <= zTOL )
     zVecShiftDRC( dat->x, -m+zTOL );
-  if( ( m = zVecMin(dat->z,NULL) ) <= zTOL )
+  if( ( m = zVecMinElem(dat->z,NULL) ) <= zTOL )
     zVecShiftDRC( dat->z, -m+zTOL );
   return true;
 }
@@ -169,7 +169,7 @@ static double _zLP_PDIP_PCErr(_zLP_PDIP *dat)
   zVecAddNCDRC( dat->v2, dat->z );
   zVecSubNCDRC( dat->v2, dat->c );       /* v2 = A^T y + z - c */
   zVecAmpNC( dat->x, dat->z, dat->v3 );  /* v3 = x * z */
-  return zVecSum( dat->v3 );             /* x^T z */
+  return zVecSumElem( dat->v3 );             /* x^T z */
 }
 
 /* updating step of PD-IP-PC. */
@@ -259,7 +259,7 @@ bool zLPSolvePDIP_PC(const zMat a, const zVec b, const zVec c, zVec x, double *c
   }
   ZITERWARN( iter );
  TERMINATE0:
-  zVecTouchup( x );
+  zVecTouchup( x, zTOL );
   ret = true;
  TERMINATE1:
   _zLP_PDIP_PCFree( &pc );

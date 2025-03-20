@@ -33,7 +33,7 @@ int zMatDecompLQDST(zMat m, zMat l, zMat q, zIndex idx)
 }
 
 /* LQ decomposition based on Gram=Schmidt's method. */
-int zMatDecompLQ(zMat m, zMat l, zMat q, zIndex idx)
+int zMatDecompLQ(const zMat m, zMat l, zMat q, zIndex idx)
 {
   zMat mcp;
   int rank;
@@ -48,7 +48,7 @@ int zMatDecompLQ(zMat m, zMat l, zMat q, zIndex idx)
 }
 
 /* LQ decomposition and regression. */
-int zMatDecompLQReg(zMat m, zMat l, zMat q, zIndex idx)
+int zMatDecompLQReg(const zMat m, zMat l, zMat q, zIndex idx)
 {
   int rank;
 
@@ -61,7 +61,7 @@ int zMatDecompLQReg(zMat m, zMat l, zMat q, zIndex idx)
 }
 
 /* LQ decomposition with an automatic matrix allocation and resize. */
-int zMatDecompLQAlloc(zMat m, zMat *l, zMat *q, zIndex *idx)
+int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q, zIndex *idx)
 {
   *l = zMatAllocSqr( zMatRowSizeNC(m) );
   *q = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
@@ -76,7 +76,7 @@ int zMatDecompLQAlloc(zMat m, zMat *l, zMat *q, zIndex *idx)
 }
 
 /* QR decomposition based on Gram=Schmidt's method. */
-int zMatDecompQR(zMat m, zMat q, zMat r, zIndex idx)
+int zMatDecompQR(const zMat m, zMat q, zMat r, zIndex idx)
 {
   zMat mcp, qcp, rcp;
   int rank = -1;

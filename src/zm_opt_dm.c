@@ -75,7 +75,7 @@ static bool _zOptDMStepTest(zOptDM *opt, const zVec var, void *util, double *a, 
     if( zIsInf(*e) || zIsNan(*e) )
       *a *= 0.1;
     else
-    if( ( max = zVecAbsMax( opt->_p, NULL ) ) > opt->_scale )
+    if( ( max = zVecAbsMaxElem( opt->_p, NULL ) ) > opt->_scale )
       *a *= opt->_scale / max;
     else
       break;

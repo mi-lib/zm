@@ -13,11 +13,9 @@ __BEGIN_DECLS
 
 /*! \brief zero a raw vector.
  *
- * zRawVecZero() sets all components of a raw vector \a v for
- * zeros.
+ * zRawVecZero() sets all components of a raw vector \a v for zeros.
  *
- * zRawVecTouchup() replaces all components less than zTOL of
- * a raw vector \a v for zeros.
+ * zRawVecTouchup() replaces all components less than \a tol of a raw vector \a v for zeros.
  *
  * \a size is the size of the vector.
  * \return
@@ -25,7 +23,7 @@ __BEGIN_DECLS
  * zRawVecTouchup() returns no value.
  */
 #define zRawVecZero(v,s) memset( v, 0, sizeof(double)*(s) )
-__ZM_EXPORT void zRawVecTouchup(double *v, int size);
+__ZM_EXPORT void zRawVecTouchup(double *v, int size, double tol);
 
 /*! \brief copy a raw vector.
  *
@@ -38,12 +36,9 @@ __ZM_EXPORT void zRawVecTouchup(double *v, int size);
 
 /*! \brief get/put a part of a raw vector.
  *
- * zRawVecGet() partly copies \a src to \a dest from
- * the \a pos'th component.
- * zRawVecPut() copies \a dest to a part of \a src from
- * the \a pos'th component.
- * For both functions, \a size is the number of components
- * to be copied.
+ * zRawVecGet() partly copies \a src to \a dest from the \a pos'th component.
+ * zRawVecPut() copies \a dest to a part of \a src from the \a pos'th component.
+ * For both functions, \a size is the number of components to be copied.
  * \return
  * zRawVecGet() and zRawVecPut() return a pointer to \a dest.
  */
@@ -52,21 +47,17 @@ __ZM_EXPORT void zRawVecTouchup(double *v, int size);
 
 /*! \brief create uniform vector, linear space vector and random vector.
  *
- * zRawVecSetAll() sets all components of a raw vector \a v
- * for \a val.
+ * zRawVecSetAll() sets all components of a raw vector \a v for \a val.
  *
- * zRawVecLinSpace() divides the range \a from-\a to into
- * the values (the number of values is the same with the size
- * of \a v), and sets them as components of \a v.
- * Each space between the components are the same.
+ * zRawVecLinSpace() divides the range \a from-\a to into the values (the number of values is the
+ * same with the size of \a v), and sets them as components of \a v.
+ * Spaces between the components are equal.
  *
- * zRawVecRand() sets all components of \a v randomly
- * within the range from \a min to \a max.
+ * zRawVecRand() sets all components of \a v randomly within the range from \a min to \a max.
  *
  * \a size is the size of the raw vector.
  * \return
- * zRawVecSetAll(), zRawVecLinSpace() and zRawVecRand() return
- * no values.
+ * zRawVecSetAll(), zRawVecLinSpace() and zRawVecRand() return no values.
  */
 __ZM_EXPORT void zRawVecSetAll(double *v, int size, double val);
 __ZM_EXPORT void zRawVecLinSpace(double *v, int size, double from, double to);
@@ -89,8 +80,7 @@ __ZM_EXPORT void zRawVecShift(const double *src, int size, double shift, double 
 
 /*! \brief swap raw vector components.
  *
- * zRawVecSwap() swaps \a i1'th value and \a i2'th value
- * of a raw vector \a v.
+ * zRawVecSwap() swaps \a i1'th value and \a i2'th value of a raw vector \a v.
  * \a size is the size of the raw vector.
  * \return
  * zRawVecSwap() returns a pointer \a v.
@@ -99,17 +89,14 @@ __ZM_EXPORT double *zRawVecSwap(double *v, int i1, int i2);
 
 /*! \brief check if a raw vector is tiny.
  *
- * zRawVecIsTol() returns the true value if all components
- * of a raw vector \a v are smaller than \a tol, or the
- * false value, otherwise.
- * zRawVecIsTiny() returns the true value if all components
- * of \a v are smaller than zTOL, which is defined in zm_misc.h,
- * or the false value, otherwise.
+ * zRawVecIsTol() returns the true value if all components of a raw vector \a v are smaller than
+ * \a tol, or the false value, otherwise.
+ * zRawVecIsTiny() returns the true value if all components of \a v are smaller than zTOL, which is
+ * defined in zm_misc.h, or the false value, otherwise.
  *
  * \a size is the size of the raw vector.
  * \return
- * zRawVecIsTol(), zRawVecIsTiny() return results as
- * boolean values.
+ * zRawVecIsTol(), zRawVecIsTiny() return results as boolean values.
  */
 __ZM_EXPORT bool zRawVecIsTol(const double *v, int size, double tol);
 #define zRawVecIsTiny(v,siz)  zRawVecIsTol( v, siz, zTOL )
@@ -117,10 +104,8 @@ __ZM_EXPORT bool zRawVecIsTol(const double *v, int size, double tol);
 /*! \brief check if a raw vector contains NaN.
  *
  * \return
- * zRawVecIsNan() returns the true value if at least one of
- * elements of a raw vector \a v is NaN, or the false value,
- * otherwise.
- * \a size is the size of the raw vector.
+ * zRawVecIsNan() returns the true value if at least one of elements of a raw vector \a v is NAN,
+ * or the false value, otherwise. \a size is the size of the raw vector.
  */
 __ZM_EXPORT bool zRawVecIsNan(const double *v, int size);
 
@@ -131,26 +116,19 @@ __ZM_EXPORT bool zRawVecIsNan(const double *v, int size);
  * zRawVecRev() reverses the sign of \a v1.
  * zRawVecMul() multiplies \a v1 by a scalar value \a k.
  * zRawVecDiv() divides \a v1 by \a k.
- * zRawVecAmp() amplifies \a v1 by another vector \a amp.
- * Namely, each component of \a v1 is multiplied by the
- * corresponding component of \a amp.
- * zRawVecDem() demagnifies \a v1 by another vector \a dem.
- * Namely, each component of \a v1 is divided by the
- * corresponding component of \a dem.
- * zRawVecCat() concatenates \a v1 with \a v2 multiplied
- * by \a k.
+ * zRawVecAmp() amplifies \a v1 by another vector \a amp. Namely, each component of \a v1 is multiplied
+ * by the corresponding component of \a amp.
+ * zRawVecDem() demagnifies \a v1 by another vector \a dem. Namely, each component of \a v1 is divided
+ * by the corresponding component of \a dem.
+ * zRawVecCat() concatenates \a v1 with \a v2 multiplied by \a k.
  * These functions put the result into \a v.
  *
- * zRawVecAddDRC(), zRawVecSubDRC(), zRawVecRevDRC(),
- * zRawVecMulDRC(), zRawVecDivDRC(), zRawVecAmpDRC(),
- * zRawVecDemDRC() and zRawVecCatDRC() directly modify
- * the vector given as the first argument.
+ * zRawVecAddDRC(), zRawVecSubDRC(), zRawVecRevDRC(), zRawVecMulDRC(), zRawVecDivDRC(), zRawVecAmpDRC(),
+ * zRawVecDemDRC() and zRawVecCatDRC() directly modify the vector given as the first argument.
  *
- * zRawVecCats() concatenates \a n vectors directly
- * to \a v. Arguments follow \a n as:
+ * zRawVecCats() concatenates \a n vectors directly to \a v. Arguments follow \a n as:
  *   \a k1, \a v1, \a k2, \a v2, ...
- * where \a kx s are scalar values and \a vx s are vectors.
- * Then, the resultant \a v will be:
+ * where \a kx s are scalar values and \a vx s are vectors. Then, the resultant \a v will be:
  *   \a v + \a k1*\a v1 + \a k2*\a v2 + ...
  * zRawVecLS() computes linear summation of vectors.
  * Arguments follow \a n as:
@@ -183,13 +161,10 @@ __ZM_EXPORT void zRawVecLinearSum(double *v, int size, int n, ...);
 
 /*! \brief interior division of two raw vectors.
  *
- * zRawVecInterDiv() calculates the interior division of two raw vectors
- * \a v1 and \a v2 with a division ratio \a ratio.
- * The result is put into \a v,
- * i.e. \a v = (1-\a ratio)* \a v1 + \a ratio * \a v2.
+ * zRawVecInterDiv() calculates the interior division of two raw vectors \a v1 and \a v2 with a
+ * division ratio \a ratio. The result is put into \a v, i.e. \a v = (1-\a ratio)* \a v1 + \a ratio * \a v2.
  *
- * zRawVecInterDivDRC() replaces a raw vector \a v with the interior
- * division with another \a v2,
+ * zRawVecInterDivDRC() replaces a raw vector \a v with the interior division with another \a v2,
  * i.e. \a v = (1-\a ratio)* \a v + \a ratio * \a v2.
  * \return
  * zRawVecInterDiv() and zRawVecInterDivDRC() return no value.
@@ -199,9 +174,7 @@ __ZM_EXPORT void zRawVecInterDivDRC(double *v, const double *v2, double ratio, i
 
 /*! \brief midpoint of two raw vectors.
  *
- * zRawVecMid() calculates the midpoint of two raw vectors \a v1 and
- * \a v2. The result is put into \a v.
- *
+ * zRawVecMid() calculates the midpoint of two raw vectors \a v1 and \a v2. The result is put into \a v.
  * i.e. \a v = ( \a v1 + \a v2 ) / 2.
  * \return
  * zRawVecMid() does not return any value.
@@ -211,9 +184,9 @@ __ZM_EXPORT void zRawVecMid(const double *v1, const double *v2, double *v, int s
 /*! \brief scale a raw vector with two boundary vectors.
  *
  * zRawVecScale() scales a raw vector \a src with the minimum and maximum boundary vectors \a min
- * and \a max, respectively, and puts the result into \a dest. Namely, each component of \a dest
- * is the corresponding component of \a src multipied by the corresponding components of
- * \a max - \a min and offset by that of \a min.
+ * and \a max, respectively, and puts the result into \a dest. Namely, each component of \a dest is
+ * the corresponding component of \a src multipied by the corresponding components of \a max - \a min
+ * and offset by that of \a min.
  *
  * zRawVecScaleUniform() uniformly scales a raw vector \a src with the minimum and maximum boundary
  * values \a min and \a max, respectively, and puts the result into \a dest.
@@ -228,35 +201,28 @@ __ZM_EXPORT void zRawVecScaleUniform(const double *src, double min, double max, 
 /*! \brief inner product of raw vector.
  *
  * \return
- * zRawVecInnerProd() returns the inner product of
- * two raw vectors \a v1 and \a v2.
+ * zRawVecInnerProd() returns the inner product of two raw vectors \a v1 and \a v2.
  * \a size is the size of the vectors.
  */
 __ZM_EXPORT double zRawVecInnerProd(const double *v1, const double *v2, int size);
 
 /*! \brief normalize a raw vector.
  *
- * zRawVecSqrNorm() returns the squared norm of a raw
- * vector \a v.
+ * zRawVecSqrNorm() returns the squared norm of a raw vector \a v.
  * zRawVecNorm() returns the norm of \a v.
  *
- * zRawVecNormalize() normalizes a raw vector \a src,
- * namely, \a src is divided by the norm of itself.
+ * zRawVecNormalize() normalizes a raw vector \a src, namely, \a src is divided by the norm of itself.
  * The result is put into \a dest.
  * zRawVecNormalizeDRC() directly normalizes \a v.
  *
- * zRawVecSqrDist() returns the squared distance between
- * \a v1 and \a v2.
- * zRawVecDist() returns the distance between \a v1 and
- * \a v2.
+ * zRawVecSqrDist() returns the squared distance between \a v1 and \a v2.
+ * zRawVecDist() returns the distance between \a v1 and \a v2.
  *
  * \a size is the size of the vector(s).
  * \return
- * zRawVecSqrNorm(), zRawVecNorm(), zRawVecSqrDist()
- * and zRawVecDist() return the value calculated.
+ * zRawVecSqrNorm(), zRawVecNorm(), zRawVecSqrDist() and zRawVecDist() return the value calculated.
  *
- * zRawVecNormalize() and zRawVecNormalizeDRC() return
- * a pointer to the result.
+ * zRawVecNormalize() and zRawVecNormalizeDRC() return a pointer to the result.
  */
 __ZM_EXPORT double zRawVecSqrNorm(const double *v, int size);
 #define zRawVecNorm(v,siz)         sqrt( zRawVecSqrNorm(v,siz) )
@@ -269,11 +235,9 @@ __ZM_EXPORT double zRawVecSqrDist(const double *v1, const double *v2, int size);
 
 /*! \brief print a raw vector.
  *
- * zRawVecFPrint() prints all components of a raw vector
- * \a v to the current position of a file \a fp.
+ * zRawVecFPrint() prints all components of a raw vector \a v to the current position of a file \a fp.
  * \a size is the size of the vector.
- * zRawVecPrint() prints all components of \a v out to
- * the standard output.
+ * zRawVecPrint() prints all components of \a v out to the standard output.
  * \return
  * zRawVecFPrint() and zRawVecPrint() return no values.
  */

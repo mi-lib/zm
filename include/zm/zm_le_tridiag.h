@@ -33,7 +33,7 @@ __BEGIN_DECLS
  * return the null pointer.
  */
 __ZM_EXPORT zVec zLETridiagSolveDST(zVec a, zVec b, zVec c, zVec d, zVec ans);
-__ZM_EXPORT zVec zLETridiagSolve(zVec a, zVec b, zVec c, zVec d, zVec ans);
+__ZM_EXPORT zVec zLETridiagSolve(const zVec a, const zVec b, const zVec c, const zVec d, zVec ans);
 
 __END_DECLS
 

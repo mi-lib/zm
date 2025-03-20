@@ -29,12 +29,12 @@ void assert_mat_is_diag(void)
   for( i=0; i<size; i++ )
     zMatSetElem( m, i, i, zRandF(-10,10) );
 
-  if( !zMatIsDiag( m ) ) result = false;
+  if( !zMatIsDiag( m, zTOL ) ) result = false;
   zMatElemNC(m,1,0) = 1;
-  if( zMatIsDiag( m ) ) result = false;
+  if( zMatIsDiag( m, zTOL ) ) result = false;
   zMatElemNC(m,1,0) = 0;
   zMatElemNC(m,0,0) = 0;
-  if( !zMatIsDiag( m ) ) result = false;
+  if( !zMatIsDiag( m, zTOL ) ) result = false;
   zMatFree( m );
   zAssert( zMatIsDiag, result );
 }
@@ -47,12 +47,12 @@ void assert_mat_is_ident(void)
 
   m = zMatAllocSqr( size );
   zMatIdent( m );
-  if( !zMatIsIdent( m ) ) result = false;
+  if( !zMatIsIdent( m, zTOL ) ) result = false;
   zMatElemNC(m,1,0) = 1;
-  if( zMatIsIdent( m ) ) result = false;
+  if( zMatIsIdent( m, zTOL ) ) result = false;
   zMatElemNC(m,1,0) = 0;
   zMatElemNC(m,0,0) = 0;
-  if( zMatIsIdent( m ) ) result = false;
+  if( zMatIsIdent( m, zTOL ) ) result = false;
   zMatFree( m );
   zAssert( zMatIsIdent, result );
 }
@@ -248,7 +248,7 @@ void assert_transpose(void)
   zAssert( zMatTDRC, result );
   for( tr=0, i=0; i<zMin(rowsize,colsize); i++ )
     tr += zMatElem(mat_test2,i,i);
-  zAssert( zMatTrNC, zIsTiny( tr - zMatTrNC( mat_test2 ) ) );
+  zAssert( zMatTraceNC, zIsTiny( tr - zMatTraceNC( mat_test2 ) ) );
   zMatFreeAtOnce( 2, mat_test1, mat_test2 );
 }
 

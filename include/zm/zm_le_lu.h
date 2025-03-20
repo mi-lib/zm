@@ -28,9 +28,9 @@ __BEGIN_DECLS
  * the row and column size of \a m when \a m is full rank.
  */
 __ZM_EXPORT int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx);
-__ZM_EXPORT int zMatDecompLU(zMat m, zMat l, zMat u, zIndex idx);
-__ZM_EXPORT int zMatDecompLUReg(zMat m, zMat l, zMat u, zIndex idx);
-__ZM_EXPORT int zMatDecompLUAlloc(zMat m, zMat *l, zMat *u, zIndex *idx);
+__ZM_EXPORT int zMatDecompLU(const zMat m, zMat l, zMat u, zIndex idx);
+__ZM_EXPORT int zMatDecompLUReg(const zMat m, zMat l, zMat u, zIndex idx);
+__ZM_EXPORT int zMatDecompLUAlloc(const zMat m, zMat *l, zMat *u, zIndex *idx);
 
 /* Cholesky decomposition.
  *
@@ -44,9 +44,9 @@ __ZM_EXPORT int zMatDecompLUAlloc(zMat m, zMat *l, zMat *u, zIndex *idx);
  * the computation, -1 is returned.
  */
 __ZM_EXPORT int zMatDecompCholeskyDST(zMat m, zMat l, zIndex index);
-__ZM_EXPORT int zMatDecompCholesky(zMat m, zMat l, zIndex index);
-__ZM_EXPORT int zMatDecompCholeskyReg(zMat m, zMat l, zIndex idx);
-__ZM_EXPORT int zMatDecompCholeskyAlloc(zMat m, zMat *l, zIndex *idx);
+__ZM_EXPORT int zMatDecompCholesky(const zMat m, zMat l, zIndex index);
+__ZM_EXPORT int zMatDecompCholeskyReg(const zMat m, zMat l, zIndex idx);
+__ZM_EXPORT int zMatDecompCholeskyAlloc(const zMat m, zMat *l, zIndex *idx);
 
 __END_DECLS
 

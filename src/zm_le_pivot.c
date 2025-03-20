@@ -7,7 +7,7 @@
 #include <zm/zm_le.h>
 
 /* matrix pivoting. */
-int zPivoting(zMat m, zIndex idx, int r, int c)
+int zMatPivoting(zMat m, zIndex idx, int r, int c)
 {
   int i, pi;
   double tmp, max;
@@ -25,7 +25,7 @@ int zPivoting(zMat m, zIndex idx, int r, int c)
 }
 
 /* matrix pivoting in diagonal values. */
-int zPivotingDiag(zMat m, zIndex idx, int i)
+int zMatPivotingDiag(zMat m, zIndex idx, int i)
 {
   int j, pi;
   double tmp, max;
@@ -42,8 +42,8 @@ int zPivotingDiag(zMat m, zIndex idx, int i)
   return zIndexSwap( idx, pi, i );
 }
 
-/* sweep out matrix column. */
-double zSweepOutMat(zMat m1, zMat m2, int r, int c)
+/* sweep out a column of a matrix. */
+double zMatMatSweepOut(zMat m1, zMat m2, int r, int c)
 {
   int i, j;
   double value, d, ratio;
@@ -74,8 +74,8 @@ double zSweepOutMat(zMat m1, zMat m2, int r, int c)
   return value;
 }
 
-/* sweep out vector. */
-double zSweepOutVec(zMat m, zVec v, int r, int c)
+/* sweep out a vector. */
+double zMatVecSweepOut(zMat m, zVec v, int r, int c)
 {
   int i, j;
   double value, d, ratio;

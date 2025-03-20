@@ -126,7 +126,7 @@ int zVecListPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loading
     goto TERMINATE;
   }
   /* contribution ratio */
-  score_th = cr * zVecSum( score );
+  score_th = cr * zVecSumElem( score );
   for( score_sum=0, n=0; n<s; n++ ){
     score_sum += zVecElem(score,n);
     if( score_sum > score_th ) break;

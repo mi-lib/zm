@@ -16,7 +16,7 @@ void zLEWorkspaceInit(zLEWorkspace *workspace)
 }
 
 /* allocate workspace for generalized linear equation solvers. */
-bool zLEWorkspaceAlloc(zLEWorkspace *workspace, zVec b, int size)
+bool zLEWorkspaceAlloc(zLEWorkspace *workspace, const zVec b, int size)
 {
   workspace->m = zMatAllocSqr( size );
   workspace->b = b ? zVecClone( b ) : NULL;
@@ -56,7 +56,7 @@ void zLEWorkspaceFree(zLEWorkspace *workspace)
 }
 
 /* allocate workspace for generalized linear equation solvers with reference. */
-static bool _zLEWorkspaceAllocRef(zLEWorkspace *workspace, zVec b, int size)
+static bool _zLEWorkspaceAllocRef(zLEWorkspace *workspace, const zVec b, int size)
 {
   workspace->v2 = zVecAlloc( size );
   return zLEWorkspaceAlloc( workspace, b, size ) && workspace->v2;
@@ -70,7 +70,7 @@ static void _zLEWorkspaceFreeRef(zLEWorkspace *workspace)
 }
 
 /* allocate workspace for generalized linear equation solvers based on MP inverse. */
-static bool _zLEWorkspaceAllocMP(zLEWorkspace *workspace, zVec b, int size)
+static bool _zLEWorkspaceAllocMP(zLEWorkspace *workspace, const zVec b, int size)
 {
   workspace->c = zVecAlloc( size );
   return zLEWorkspaceAlloc( workspace, b, size ) && workspace->c;
@@ -84,7 +84,7 @@ static void _zLEWorkspaceFreeMP(zLEWorkspace *workspace)
 }
 
 /* allocate workspace for a lienar equation solver with matrix decomposition. */
-static bool _zLEWorkspaceAllocLR(zLEWorkspace *workspace, zMat a)
+static bool _zLEWorkspaceAllocLR(zLEWorkspace *workspace, const zMat a)
 {
   workspace->l = zMatAllocSqr( zMatRowSizeNC(a) );
   workspace->r = zMatAlloc( zMatRowSizeNC(a), zMatColSizeNC(a) );
@@ -100,7 +100,7 @@ static void _zLEWorkspaceFreeLR(zLEWorkspace *workspace)
 }
 
 /* weighted-norm-minimizing redundant linear equation solver without checking size consistency. */
-zVec zLESolveNormMinDST(zMat a, zVec b, zVec w, zVec ans, zLEWorkspace *workspace)
+zVec zLESolveNormMinDST(const zMat a, const zVec b, const zVec w, zVec ans, zLEWorkspace *workspace)
 {
   w ? zMatQuadNC( a, w, workspace->m ) : zMulMatMatTNC( a, a, workspace->m );
   if( !zLESolveGaussDST( workspace->m, b, workspace->v1, workspace->idx1, workspace->s ) ) return NULL;
@@ -109,7 +109,7 @@ zVec zLESolveNormMinDST(zMat a, zVec b, zVec w, zVec ans, zLEWorkspace *workspac
 }
 
 /* norm-minimizing redundant linear equation solver. */
-zVec zLESolveNormMin(zMat a, zVec b, zVec w, zVec ans)
+zVec zLESolveNormMin(const zMat a, const zVec b, const zVec w, zVec ans)
 {
   zLEWorkspace workspace;
 
@@ -138,7 +138,7 @@ zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLEWorkspace *workspa
 }
 
 /* error-minimizing inferior linear equation solver. */
-zVec zLESolveErrorMin(zMat a, zVec b, zVec w, zVec ans)
+zVec zLESolveErrorMin(const zMat a, const zVec b, const zVec w, zVec ans)
 {
   zLEWorkspace workspace;
 
@@ -159,7 +159,7 @@ zVec zLESolveErrorMin(zMat a, zVec b, zVec w, zVec ans)
 
 /* weighted-referred-norm-minimizing redundant linear
  * equation solver without checking size consistency. */
-zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLEWorkspace *workspace)
+zVec zLESolveRefMinDST(const zMat a, const zVec b, const zVec w, const zVec ref, zVec ans, zLEWorkspace *workspace)
 {
   w ? zMatQuadNC( a, w, workspace->m ) : zMulMatMatTNC( a, a, workspace->m );
   zLEResidual( a, b, ref, workspace->v1 );
@@ -170,7 +170,7 @@ zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLEWorkspace 
 }
 
 /* referred-norm-minimizing redundant linear equation solver. */
-zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans)
+zVec zLESolveRefMin(const zMat a, const zVec b, const zVec w, const zVec ref, zVec ans)
 {
   zLEWorkspace workspace;
 
@@ -191,7 +191,7 @@ zVec zLESolveRefMin(zMat a, zVec b, zVec w, zVec ref, zVec ans)
 }
 
 /* compute left-lower part of the linear equation. */
-static void _zLESolveMP1(zLEWorkspace *workspace, zVec we, int rank)
+static void _zLESolveMP1(zLEWorkspace *workspace, const zVec we, int rank)
 {
   if( rank < (int)zMatColSizeNC(workspace->l) ){
     zMatColReg( workspace->l, rank );
@@ -203,7 +203,7 @@ static void _zLESolveMP1(zLEWorkspace *workspace, zVec we, int rank)
 
 /* generalized linear equation solver using Moore-Penrose's
  * inverse (MP-inverse, pseudoinverse) based on LQ decomposition. */
-zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans)
+zVec zLESolveMP(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans)
 {
   int rank;
   zLEWorkspace workspace;
@@ -227,7 +227,7 @@ zVec zLESolveMP(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 
 /* generalized linear equation solver with MP-inverse
  * based on LU decomposition. */
-zVec zLESolveMPLU(zMat a, zVec b, zVec wn, zVec we, zVec ans)
+zVec zLESolveMPLU(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans)
 {
   int rank;
   zLEWorkspace workspace;
@@ -251,7 +251,7 @@ zVec zLESolveMPLU(zMat a, zVec b, zVec wn, zVec we, zVec ans)
 
 /* generalized linear equation solver with MP-inverse
  * based on singular value decomposition. */
-zVec zLESolveMPSVD(zMat a, zVec b, zVec ans)
+zVec zLESolveMPSVD(const zMat a, const zVec b, zVec ans)
 {
   int rank;
   zMat u, v;
@@ -282,7 +282,7 @@ zVec zLESolveMPSVD(zMat a, zVec b, zVec ans)
 
 /* generalized linear equation solver using Moore-Penrose's inverse
  * (MP-inverse, pseudoinverse) based on LQ decomposition with the null space. */
-zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn)
+zVec zLESolveMPNull(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, zMat mn)
 {
   int i, rank;
   zLEWorkspace workspace;
@@ -312,7 +312,7 @@ zVec zLESolveMPNull(zMat a, zVec b, zVec wn, zVec we, zVec ans, zMat mn)
 
 /* generalized linear equation solver using MP-inverse
  * biasing a vector in the null space. */
-zVec zLESolveMPAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
+zVec zLESolveMPAux(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, const zVec aux)
 {
   zVec bb;
 
@@ -327,7 +327,7 @@ zVec zLESolveMPAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
 }
 
 /* check sizes of vectors and matrices for a linear equation solver with SR-inverse matrix. */
-static bool _zLESolveSRSizeEqual(zMat a, zVec b, zVec wn, zVec we, zVec ans)
+static bool _zLESolveSRSizeEqual(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans)
 {
   if( !zMatRowVecSizeEqual( a, b ) ||
       !zMatColVecSizeEqual( a, ans ) ){
@@ -356,7 +356,7 @@ zVec zLESolveSRBiasDST(zMat a, zVec b, zVec wn, zVec we, double bias, zVec ans, 
 }
 
 /* linear equation solver using singularity-robust inverse matrix. */
-zVec zLESolveSRBias(zMat a, zVec b, zVec wn, zVec we, double bias, zVec ans)
+zVec zLESolveSRBias(const zMat a, const zVec b, const zVec wn, const zVec we, double bias, zVec ans)
 {
   zLEWorkspace workspace;
 
@@ -368,7 +368,7 @@ zVec zLESolveSRBias(zMat a, zVec b, zVec wn, zVec we, double bias, zVec ans)
 }
 
 /* generalized linear equation solver using SR-inverse biasing a vector in the null space (destructive). */
-zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zLEWorkspace *workspace, zVec bb)
+zVec zLESolveSRAuxDST(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, const zVec aux, zLEWorkspace *workspace, zVec bb)
 {
   zLEResidual( a, b, aux, bb );
   zLESolveSRDST( a, bb, wn, we, ans, workspace );
@@ -376,7 +376,7 @@ zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zLEW
 }
 
 /* generalized linear equation solver using SR-inverse biasing a vector in the null space. */
-zVec zLESolveSRAux(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux)
+zVec zLESolveSRAux(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, const zVec aux)
 {
   zVec bb;
 
@@ -406,7 +406,7 @@ zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLEWor
 }
 
 /* linear equation solver using referred singularity robust inverse matrix. */
-zVec zLESolveRSR(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans)
+zVec zLESolveRSR(const zMat a, const zVec b, const zVec wn, const zVec we, const zVec ref, zVec ans)
 {
   zLEWorkspace workspace;
 

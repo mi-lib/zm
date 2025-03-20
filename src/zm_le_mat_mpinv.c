@@ -7,7 +7,7 @@
 #include <zm/zm_le.h>
 
 /* initialization: LQ decomposition */
-static int _zMPInvAllocWork1(zMat m, zMat *l, zMat *q, zIndex *idx)
+static int _zMatMPInvAllocWork1(zMat m, zMat *l, zMat *q, zIndex *idx)
 {
   int rank;
 
@@ -20,7 +20,7 @@ static int _zMPInvAllocWork1(zMat m, zMat *l, zMat *q, zIndex *idx)
 }
 
 /* initialization: workspace for matrix computation */
-static int _zMPInvAllocWork2(int rank, int row, zMat *tmp1, zMat *tmp2, zMat *tmp3)
+static int _zMatMPInvAllocWork2(int rank, int row, zMat *tmp1, zMat *tmp2, zMat *tmp3)
 {
   *tmp1 = zMatAlloc( rank, row );
   *tmp2 = zMatAllocSqr( rank );
@@ -33,15 +33,15 @@ static int _zMPInvAllocWork2(int rank, int row, zMat *tmp1, zMat *tmp2, zMat *tm
 }
 
 /* Moore-Penrose's inverse matrix. */
-int zMPInv(zMat m, zMat mp)
+int zMatMPInv(zMat m, zMat mp)
 {
   int rank;
   zMat l, q, tmp1, tmp2, tmp3;
   zIndex idx;
 
-  if( ( rank = _zMPInvAllocWork1( m, &l, &q, &idx ) ) < 0 ) return -1;
-  if( _zMPInvAllocWork2( rank, zMatRowSizeNC(l), &tmp1, &tmp2, &tmp3 ) < 0 ) return -1;
-  if( zMatIsSqr(l) )
+  if( ( rank = _zMatMPInvAllocWork1( m, &l, &q, &idx ) ) < 0 ) return -1;
+  if( _zMatMPInvAllocWork2( rank, zMatRowSizeNC(l), &tmp1, &tmp2, &tmp3 ) < 0 ) return -1;
+  if( zMatIsSqr( l ) )
     zMatInv( l, tmp3 );
   else{
     zMatT( l, tmp1 );
@@ -56,15 +56,15 @@ int zMPInv(zMat m, zMat mp)
 }
 
 /* Moore-Penrose's inverse matrix with its null space. */
-int zMPInvNull(zMat m, zMat mp, zMat mn)
+int zMatMPInvNull(zMat m, zMat mp, zMat mn)
 {
   int i, rank;
   zMat l, q, tmp1, tmp2, tmp3;
   zIndex idx;
 
-  if( ( rank = _zMPInvAllocWork1( m, &l, &q, &idx ) ) < 0 ) return -1;
-  if( _zMPInvAllocWork2( rank, zMatRowSizeNC(l), &tmp1, &tmp2, &tmp3 ) < 0 ) return -1;
-  if( zMatIsSqr(l) ){
+  if( ( rank = _zMatMPInvAllocWork1( m, &l, &q, &idx ) ) < 0 ) return -1;
+  if( _zMatMPInvAllocWork2( rank, zMatRowSizeNC(l), &tmp1, &tmp2, &tmp3 ) < 0 ) return -1;
+  if( zMatIsSqr( l ) ){
     zMatInv( l, tmp3 );
   } else{
     zMatT( l, tmp1 );
@@ -88,9 +88,9 @@ zMat zMulMPInvMatMat(zMat m1, zMat m2, zMat m)
   zMat l, q, tmp1, tmp2, tmp3;
   zIndex idx;
 
-  if( ( rank = _zMPInvAllocWork1( m1, &l, &q, &idx ) ) < 0 ) return NULL;
-  if( _zMPInvAllocWork2( rank, zMatColSizeNC(m2), &tmp1, &tmp2, &tmp3 ) < 0 ) return NULL;
-  if( zMatIsSqr(l) )
+  if( ( rank = _zMatMPInvAllocWork1( m1, &l, &q, &idx ) ) < 0 ) return NULL;
+  if( _zMatMPInvAllocWork2( rank, zMatColSizeNC(m2), &tmp1, &tmp2, &tmp3 ) < 0 ) return NULL;
+  if( zMatIsSqr( l ) )
     zMulInvMatMat( l, m2, tmp3 );
   else{
     zMulMatTMat( l, m2, tmp1 );
@@ -107,7 +107,7 @@ zMat zMulMPInvMatMat(zMat m1, zMat m2, zMat m)
 /* Penrose's iterative algorithm */
 
 /* internal call of Moore-Penrose inverse matrix based on Penrose's iterative algorithm. */
-static int _zMPInvPenrose(zMat m, zMat mp)
+static int _zMatMPInvPenrose(zMat m, zMat mp)
 {
   zMat b, c, c2, cb;
   double trace = 0;
@@ -124,7 +124,7 @@ static int _zMPInvPenrose(zMat m, zMat mp)
   zMatCopyNC( b, cb );
   for( rank=1; !zMatIsTiny(cb); rank++ ){
     zMatCopyNC( c2, c );
-    trace = zMatTrNC( cb );
+    trace = zMatTraceNC( cb );
     zMatIdentNC( c2 );
     zMatMulNCDRC( c2, trace / rank );
     zMatSubNCDRC( c2, cb );
@@ -138,17 +138,17 @@ static int _zMPInvPenrose(zMat m, zMat mp)
 }
 
 /* Moore-Penrose inverse matrix based on Penrose's iterative algorithm. */
-int zMPInvPenrose(zMat m, zMat mp)
+int zMatMPInvPenrose(zMat m, zMat mp)
 {
   int rank;
 
   if( zMatColSizeNC(m) > zMatRowSizeNC(m) ){
     zMatTDRC( m );
     zMatTDRC( mp );
-    rank = _zMPInvPenrose( m, mp );
+    rank = _zMatMPInvPenrose( m, mp );
     zMatTDRC( m );
     zMatTDRC( mp );
   } else
-    rank = _zMPInvPenrose( m, mp );
+    rank = _zMatMPInvPenrose( m, mp );
   return rank;
 }

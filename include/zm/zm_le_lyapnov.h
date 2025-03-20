@@ -29,7 +29,7 @@ __BEGIN_DECLS
  * \sa
  * zGaussianSolveDST
  */
-__ZM_EXPORT zMat zLyapnovSolve(zMat a, zMat b, zMat ans);
+__ZM_EXPORT zMat zLyapnovSolve(const zMat a, const zMat b, zMat ans);
 
 __END_DECLS
 

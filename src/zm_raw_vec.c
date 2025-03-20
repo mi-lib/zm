@@ -7,10 +7,10 @@
 #include <zm/zm_raw.h>
 
 /* touchup a raw vector. */
-void zRawVecTouchup(double *v, int size)
+void zRawVecTouchup(double *v, int size, double tol)
 {
   for( ; size>0; v++, size-- )
-    if( zIsTiny( *v ) ) *v = 0;
+    if( zIsTol( *v, tol ) ) *v = 0;
 }
 
 /* create a uniform raw vector. */

@@ -15,7 +15,7 @@ __BEGIN_DECLS
  *
  * zRawMatZero() sets all components of a raw matrix \a m for zeros.
  *
- * zRawMatTouchup() replaces all components less than zTOL (defined in zm_misc.h) of a raw matrix
+ * zRawMatTouchup() replaces all components less than \a tol of a raw matrix
  * \a m for zeros.
  *
  * \a r and \a c are the row and column sizes of the matrices, respectively.
@@ -23,8 +23,8 @@ __BEGIN_DECLS
  * zRawMatZero() returns a pointer \a m.
  * zRawMatTouchup() returns no value.
  */
-#define zRawMatZero(m,r,c)    zRawVecZero( m, (r)*(c) )
-#define zRawMatTouchup(m,r,c) zRawVecTouchup( m, (r)*(c) )
+#define zRawMatZero(m,r,c)        zRawVecZero( m, (r)*(c) )
+#define zRawMatTouchup(m,r,c,tol) zRawVecTouchup( m, (r)*(c), tol )
 
 /*! \brief copy a raw matrix.
  *
@@ -163,14 +163,14 @@ __ZM_EXPORT void zRawMatSwapCol(double *m, int row, int col, int c1, int c2);
  *
  * zRawMatTDRC() directly transposes \a m. The size of \a m must be \a row x \a col.
  *
- * zRawMatTr() calculates the trace value of \a m. The size of \a m must be \a row x \a col.
+ * zRawMatTrace() calculates the trace value of \a m. The size of \a m must be \a row x \a col.
  * \return
  * zRawMatT() and zRawMatTDRC() return no values.
- * zRawMatTr() returns the value calculated.
+ * zRawMatTrace() returns the value calculated.
  */
 __ZM_EXPORT void zRawMatT(const double *m, double *tm, int row, int col);
 __ZM_EXPORT void zRawMatTDRC(double *m, int row, int col);
-__ZM_EXPORT double zRawMatTr(const double *m, int row, int col);
+__ZM_EXPORT double zRawMatTrace(const double *m, int row, int col);
 
 /*! \brief multiply a raw vector by a raw matrix.
  *

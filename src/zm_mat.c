@@ -69,14 +69,14 @@ void zMatFree(zMat m)
 }
 
 /* free matrices at once. */
-void zMatFreeAtOnce(int n, ...)
+void zMatFreeAtOnce(int num, ...)
 {
   va_list arg;
   zMat m;
   int i;
 
-  va_start( arg, n );
-  for( i=0; i<n; i++ ){
+  va_start( arg, num );
+  for( i=0; i<num; i++ ){
     m = va_arg( arg, zMat );
     zMatFree( m );
   }
@@ -91,9 +91,9 @@ zMat zMatZero(zMat m)
 }
 
 /* touchup matrix. */
-zMat zMatTouchup(zMat m)
+zMat zMatTouchup(zMat m, double tol)
 {
-  zRawMatTouchup( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
+  zRawMatTouchup( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m), tol );
   return m;
 }
 
@@ -397,6 +397,15 @@ void zMatShift(zMat m, double shift)
     zMatElemNC( m, i, i ) += shift;
 }
 
+/* maximum of matrix elements. */
+double zMatMaxElem(const zMat m, int *im){ return _zMatMaxElem( m, im ); }
+/* minimum of vector elements. */
+double zMatMinElem(const zMat m, int *im){ return _zMatMinElem( m, im ); }
+/* absolute maximum of vector elements. */
+double zMatAbsMaxElem(const zMat m, int *im){ return _zMatAbsMaxElem( m, im ); }
+/* absolute minimum of vector elements. */
+double zMatAbsMinElem(const zMat m, int *im){ return _zMatAbsMinElem( m, im ); }
+
 /* check if two matrices are equal. */
 bool zMatEqual(const zMat m1, const zMat m2, double tol)
 {
@@ -428,29 +437,29 @@ bool zMatIsTol(const zMat m, double tol)
 }
 
 /* test if a matrix is diagonal. */
-bool zMatIsDiag(zMat m)
+bool zMatIsDiag(zMat m, double tol)
 {
   int i, j;
 
   for( i=0; i<zMatRowSizeNC(m); i++ )
     for( j=0; j<zMatColSizeNC(m); j++ ){
       if( j == i ) continue;
-      if( !zIsTiny( zMatElemNC(m,i,j) ) ) return false;
+      if( !zIsTol( zMatElemNC(m,i,j), tol ) ) return false;
     }
   return true;
 }
 
 /* test if a matrix is the identity matrix. */
-bool zMatIsIdent(zMat m)
+bool zMatIsIdent(zMat m, double tol)
 {
   int i, j;
 
   for( i=0; i<zMatRowSizeNC(m); i++ )
     for( j=0; j<zMatColSizeNC(m); j++ ){
       if( j == i ){
-        if( !zEqual( zMatElemNC(m,i,j), 1.0, zTOL ) ) return false;
+        if( !zEqual( zMatElemNC(m,i,j), 1.0, tol ) ) return false;
       } else
-        if( !zIsTiny( zMatElemNC(m,i,j) ) ) return false;
+        if( !zIsTol( zMatElemNC(m,i,j), tol ) ) return false;
     }
   return true;
 }
@@ -724,19 +733,19 @@ zMat zMatCatDyad(zMat m, double k, const zVec v1, const zVec v2)
 }
 
 /* trace of a matrix without checking size consistency. */
-double zMatTrNC(const zMat m)
+double zMatTraceNC(const zMat m)
 {
-  return zRawMatTr( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
+  return zRawMatTrace( zMatBufNC(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
 }
 
 /* trace of a matrix. */
-double zMatTr(const zMat m)
+double zMatTrace(const zMat m)
 {
   if( !zMatIsSqr( m ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return 0;
   }
-  return zMatTrNC( m );
+  return zMatTraceNC( m );
 }
 
 /* multiply a vector by a matrix from the left side without checking size consistency. */
@@ -1059,15 +1068,13 @@ void zMatFPrint(FILE *fp, const zMat m)
 /* visualize a matrix using one-charactor collage for debug. */
 void zMatImg(const zMat m)
 {
-  double max, min, d;
+  double d;
   const char pat_pos[] = ",x*M";
   const char pat_neg[] = ".oO@";
   int i, j;
   int c;
 
-  max = fabs( zDataMax( zMatBufNC(m), zMatRowSizeNC(m)*zMatColSizeNC(m), NULL ) );
-  min = fabs( zDataMin( zMatBufNC(m), zMatRowSizeNC(m)*zMatColSizeNC(m), NULL ) );
-  d = _zMax( max, min ) / 4;
+  d = 0.25 * zMatAbsMaxElem( m, NULL );
   for( i=0; i<zMatRowSizeNC(m); i++ ){
     for( j=0; j<zMatColSizeNC(m); j++ ){
       if( zIsTiny( zMatElemNC(m,i,j) ) )

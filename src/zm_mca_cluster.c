@@ -492,7 +492,7 @@ static bool _zMClusterKMeansInitPP(zMCluster *mc, zVecAddrList *points)
       }
       zVecSetElemNC( score, i++, zSqr(dmin) );
     }
-    zVecDivDRC( score, zVecSum( score ));
+    zVecDivDRC( score, zVecSumElem( score ));
     /* roulette */
     p = zRandF( 0, 1 );
     rate = 0;

@@ -179,7 +179,7 @@ bool zLCPSolveIP(const zMat m, const zVec q, zVec w, zVec z)
     zVecAddNCDRC( w, wm.dw );
     zVecAddNCDRC( z, wm.dz );
   }
-  zVecTouchup( z );
+  zVecTouchup( z, zTOL );
   if( i == iter ) ZITERWARN( iter );
   ret = true;
 

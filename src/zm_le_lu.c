@@ -15,9 +15,8 @@ int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx)
   zMatZero( l );
   zMatZero( u );
   for( r=c=0; r<zMatRowSizeNC(m) && c<zMatColSizeNC(m); c++ ){
-    p = zPivoting( m, idx, r, c );
+    p = zMatPivoting( m, idx, r, c );
     if( zIsTiny( ( ahead = zMatElemNC( m, p, c ) ) ) ) continue;
-
     zMatSetElemNC( l, p, r, ahead );
     zMatSetElemNC( u, r, c, 1 );
     for( i=r+1; i<zMatRowSizeNC(l); i++ ){ /* L column */
@@ -37,12 +36,12 @@ int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx)
 }
 
 /* LU decomposition of a matrix. */
-int zMatDecompLU(zMat m, zMat l, zMat u, zIndex idx)
+int zMatDecompLU(const zMat m, zMat l, zMat u, zIndex idx)
 {
   int rank;
   zMat mc;
 
-  if( !zMatIsSqr(l) ){
+  if( !zMatIsSqr( l ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return -1;
   }
@@ -63,7 +62,7 @@ int zMatDecompLU(zMat m, zMat l, zMat u, zIndex idx)
 }
 
 /* LU decomposition and regression of a matrix. */
-int zMatDecompLUReg(zMat m, zMat l, zMat u, zIndex idx)
+int zMatDecompLUReg(const zMat m, zMat l, zMat u, zIndex idx)
 {
   int rank;
 
@@ -76,7 +75,7 @@ int zMatDecompLUReg(zMat m, zMat l, zMat u, zIndex idx)
 }
 
 /* LU decomposition with an automatic matrix allocation and resize. */
-int zMatDecompLUAlloc(zMat m, zMat *l, zMat *u, zIndex *idx)
+int zMatDecompLUAlloc(const zMat m, zMat *l, zMat *u, zIndex *idx)
 {
   *l = zMatAllocSqr( zMatRowSizeNC(m) );
   *u = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
@@ -99,9 +98,8 @@ int zMatDecompCholeskyDST(zMat m, zMat l, zIndex idx)
   n = zIndexSizeNC(idx);
   zMatZero( l );
   for( rank=0, i=0; i<n; i++ ){
-    p = zPivotingDiag( m, idx, i );
+    p = zMatPivotingDiag( m, idx, i );
     if( zIsTiny( ( a = zMatElemNC(m,p,p) ) ) ){
-      ZRUNWARN( ZM_ERR_MAT_SINGULAR );
       a = 0;
     } else
     if( a < 0 ){
@@ -120,28 +118,28 @@ int zMatDecompCholeskyDST(zMat m, zMat l, zIndex idx)
     for( j=i+1; j<n; j++ )
       for( k=i+1; k<n; k++ )
         zMatElemNC(m,zIndexElemNC(idx,j),zIndexElemNC(idx,k))
-          -= zMatElemNC(m,zIndexElemNC(idx,j),p)
-            * zMatElemNC(m,p,zIndexElemNC(idx,k));
+          -= zMatElemNC(m,zIndexElemNC(idx,j),p) * zMatElemNC(m,p,zIndexElemNC(idx,k));
   }
   for( i=0; i<n; i++ )
     for( j=0; j<=i; j++ )
       zMatSetElemNC( l, zIndexElemNC(idx,i), j,
         zMatElemNC( m, zIndexElemNC(idx,i), zIndexElemNC(idx,j) ) );
+  if( rank < n )
+    ZRUNWARN( ZM_ERR_MAT_SINGULAR );
   return rank;
 }
 
 /* Cholesky decomposition of a matrix */
-int zMatDecompCholesky(zMat m, zMat l, zIndex idx)
+int zMatDecompCholesky(const zMat m, zMat l, zIndex idx)
 {
   int rank;
   zMat mc;
 
-  if( !zMatIsSqr(m) || !zMatIsSqr(l) ){
+  if( !zMatIsSqr( m ) || !zMatIsSqr( l ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return -1;
   }
-  if( zMatRowSize(m) != zIndexSizeNC(idx) ||
-      zMatRowSize(l) != zIndexSizeNC(idx) ){
+  if( zMatRowSize(m) != zIndexSizeNC(idx) || zMatRowSize(l) != zIndexSizeNC(idx) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return -1;
   }
@@ -153,7 +151,7 @@ int zMatDecompCholesky(zMat m, zMat l, zIndex idx)
 }
 
 /* Cholesky decomposition and regression of a matrix. */
-int zMatDecompCholeskyReg(zMat m, zMat l, zIndex idx)
+int zMatDecompCholeskyReg(const zMat m, zMat l, zIndex idx)
 {
   int rank;
 
@@ -164,7 +162,7 @@ int zMatDecompCholeskyReg(zMat m, zMat l, zIndex idx)
 }
 
 /* Cholesky decomposition with an automatic matrix allocation and resize. */
-int zMatDecompCholeskyAlloc(zMat m, zMat *l, zIndex *idx)
+int zMatDecompCholeskyAlloc(const zMat m, zMat *l, zIndex *idx)
 {
   *l = zMatAllocSqr( zMatRowSizeNC(m) );
   *idx = zIndexCreate( zMatRowSizeNC(m) );

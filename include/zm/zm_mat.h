@@ -98,7 +98,7 @@ __ZM_EXPORT zMat zMatSetElemList(zMat m, ... );
  *
  * zMatZero() sets all components of a matrix \a m for zeros.
  *
- * zMatTouchup() replaces all components less than zTOL of \a m for zeros.
+ * zMatTouchup() replaces all components less than \a tol of \a m for zeros.
  * \return
  * zMatAlloc() and zMatAllocSqr() return a pointer to the newly allocated memory.
  *
@@ -115,9 +115,9 @@ __ZM_EXPORT zMat zMatAlloc(int row, int col);
 #define zMatAllocSqr(s) zMatAlloc( (s), (s) )
 __ZM_EXPORT zMat zMatCreateList(int row, int col, ...);
 __ZM_EXPORT void zMatFree(zMat m);
-__ZM_EXPORT void zMatFreeAtOnce(int n, ...);
+__ZM_EXPORT void zMatFreeAtOnce(int num, ...);
 __ZM_EXPORT zMat zMatZero(zMat m);
-__ZM_EXPORT zMat zMatTouchup(zMat m);
+__ZM_EXPORT zMat zMatTouchup(zMat m, double tol);
 
 /*! \brief identity matrix, diagonal matrix and random matrix.
  *
@@ -256,6 +256,26 @@ __ZM_EXPORT zMat zMatSwapCol(zMat m, int c1, int c2);
  */
 __ZM_EXPORT void zMatShift(zMat m, double shift);
 
+/*! \brief maximum and minimum of matrix elements.
+ *
+ * zMatMaxElem() and zMatMinElem() find the maximum and minimum component of all components of a matrix
+ * \a m, respectively.
+ * zMatAbsMaxElem() and zMatAbsMinElem() find the component of \a m whose absolute value is the maximum
+ * and minimum, respectively.
+ * For those four functions, the index that gives the maximum/minimum is stored where pointed by \a im,
+ * unless it is the null pointer.
+ * \return
+ * zMatMaxElem(), zMatMinElem(), zMatAbsMaxElem(), and zMatAbsMinElem() return the results.
+ */
+#define _zMatMaxElem(m,im)    zDataMax( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
+#define _zMatMinElem(m,im)    zDataMin( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
+#define _zMatAbsMaxElem(m,im) zDataAbsMax( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
+#define _zMatAbsMinElem(m,im) zDataAbsMin( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
+__ZM_EXPORT double zMatMaxElem(const zMat m, int *im);
+__ZM_EXPORT double zMatMinElem(const zMat m, int *im);
+__ZM_EXPORT double zMatAbsMaxElem(const zMat m, int *im);
+__ZM_EXPORT double zMatAbsMinElem(const zMat m, int *im);
+
 /*! \brief check if two matrices are equal.
  *
  * zMatEqual() checks if the given two matrices \a m1 and \a m2 are equal to each other.
@@ -282,19 +302,22 @@ __ZM_EXPORT bool zMatIsTol(const zMat m, double tol);
 
 /*! \brief check if a matrix is diagonal.
  *
- * zMatIsDiag() checks if a matrix \a m is diagonal.
+ * zMatIsDiag() checks if a matrix \a m is diagonal, mamely, the absolute values of all non-diagonal
+ * components of \a m are smaller than \a tol.
  * \return
  * zMatIsDiag() returns the true value if \a m is diagonal. Otherwise, it returns the false value.
  */
-__ZM_EXPORT bool zMatIsDiag(zMat m);
+__ZM_EXPORT bool zMatIsDiag(zMat m, double tol);
 
 /*! \brief check if a matrix is the identity matrix.
  *
- * zMatIsIdent() checks if a matrix \a m is the identity matrix.
+ * zMatIsIdent() checks if a matrix \a m is the identity matrix, namely, all diagonal components of \a m
+ * are 1 and all non-diagonal components of \a m are 0.
+ * \a tol is the tolerance.
  * \return
  * zMatIsIdent() returns the true value if \a m is the identity matrix. Otherwise, it returns the false value.
  */
-__ZM_EXPORT bool zMatIsIdent(zMat m);
+__ZM_EXPORT bool zMatIsIdent(zMat m, double tol);
 
 /*! \brief check if a matrix is square and symmetric.
  *
@@ -436,14 +459,14 @@ __ZM_EXPORT zMat zMatCatDyad(zMat m, double k, const zVec v1, const zVec v2);
 /*! \brief trace of a matrix.
  *
  * \return
- * zMatTrNC() and zMatTr() return the trace value of a matrix \a m, i.e., the sum of diagonal components.
- * zMatTr() returns 0 if \a m is not square.
+ * zMatTraceNC() and zMatTrace() return the trace value of a matrix \a m, i.e., the sum of diagonal components.
+ * zMatTrace() returns 0 if \a m is not square.
  * \notes
  * \a m must be a square matrix.
- * zMatTrNC() does not check if \a m is square.
+ * zMatTraceNC() does not check if \a m is square.
  */
-__ZM_EXPORT double zMatTrNC(const zMat m);
-__ZM_EXPORT double zMatTr(const zMat m);
+__ZM_EXPORT double zMatTraceNC(const zMat m);
+__ZM_EXPORT double zMatTrace(const zMat m);
 
 /*! \brief multiplication of a matrix and a vector, or of two matrices.
  *

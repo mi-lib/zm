@@ -167,7 +167,7 @@ void assert_transpose(void)
   zAssert( zRawMatTDRC, result );
   for( tr=0, i=0; i<zMin(rowsize,colsize); i++ )
     tr += mat_test2[i*colsize+i];
-  zAssert( zRawMatTr, zIsTiny( tr - zRawMatTr( mat_test2, rowsize, colsize ) ) );
+  zAssert( zRawMatTrace, zIsTiny( tr - zRawMatTrace( mat_test2, rowsize, colsize ) ) );
 }
 
 void assert_mul_mat_vec(void)

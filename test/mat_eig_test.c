@@ -247,14 +247,14 @@ void assert_mat_sym_eig_power(void)
     s = zMatEigPower( m, v, 0 );
     zMulMatVec( m, v, error );
     zVecCatDRC( error, -s, v );
-    if( !zEqual( s, ( s_ref = zVecMax(eigval,NULL) ), tol ) ){
+    if( !zEqual( s, ( s_ref = zVecMaxElem(eigval,NULL) ), tol ) ){
       eprintf( "mistamch the greatest eigenvalue: %g / %g\n", s, s_ref );
       result_max = false;
     }
     s = zMatEigPowerInv( m, v, 0 );
     zMulMatVec( m, v, error );
     zVecCatDRC( error, -s, v );
-    if( !zEqual( s, ( s_ref = zVecMin(eigval,NULL) ), tol ) ){
+    if( !zEqual( s, ( s_ref = zVecMinElem(eigval,NULL) ), tol ) ){
       eprintf( "mistamch the least eigenvalue: %g / %g\n", s, s_ref );
       result_min = false;
     }

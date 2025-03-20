@@ -1,3 +1,16 @@
+2025.03.20. Added const qualifires to some arguments. [zm_le, zm_le_lu, zm_le_lq, zm_le_gen, zm_le_tridiag, zm_le_lyapnov]
+2025.03.20. Added zVecReorder and zVecReorderDRC. [zm_vec]
+2025.03.20. Modified zMatImg. [zm_mat]
+2025.03.20. Added zMatMaxElem, zMatMinElem, zMatAbsMaxElem, and zMatAbsMinElem. [zm_mat]
+2025.03.20. Renamed _zVecMax, _zVecMin, _zVecAbsMax, _zVecAbsMin, _zVecSum, _zVecMean, _zVecVar, zVecMax, zVecMin, zVecAbsMax, zVecAbsMin, zVecSum, zVecMean, and zVecVar to _zVecMaxElem, _zVecMinElem, _zVecAbsMaxElem, _zVecAbsMinElem, _zVecSumElem, _zVecMeanElem, _zVecVarElem, zVecMaxElem, zVecMinElem, zVecAbsMaxElem, zVecAbsMinElem, zVecSumElem, zVecMeanElem, and zVecVarElem, respectively. [zm_vec, zm_mca, zm_mca_cluster, zm_opt_lp_pdio, zm_opt_lcp_lemke, zm_opt_dm]
+2025.03.20. Modified zMatIsDiag and zMatIsIdent to accept tolerance. [zm_mat]
+2025.03.20. Modified zRawVecTouchup, zRawMatTouchup, zVecTouchup, and zMatToucup to accept tolerance of components to be replaced with zeros. [zm_raw_vec, zm_raw_mat, zm_vec, zm_mat, zm_opt_lp_pdip, zm_opt_lcp_ip]
+2025.03.20. Renamed zPivoting, zPivotingDiag, zSweepOutMat, and zSweepOutVec to zMatPivoting, zMatPivotingDiag, zMatMatSweepOut, and zMatVecSweepOut, respectively. [zm_le, zm_le_pivoting, zm_le_lu, zm_le_mat_inv]
+2025.03.20. Renamed zRawMatTr, zMatTrNC, and zMatTr to zRawMatTrace, zMatTraceNC, and zMatTrace, respectively. [zm_raw_mat, zm_mat, zm_le_mat_mpinv]
+2025.03.20. Renamed zBalancingColDST, zBalancingDST, and zBalancing to zMatBalancingColDST, zMatBalancingDST, and zMatBalancing, respectively. [zm_le]
+2025.03.20. Renamed zMPInv, zMPInvPenrose, zMPInvNull, _zMPInvAllocWork1, _zMPInvAllocWork2, and _zMPInvPenrose to zMatMPInv, zMatMPInvPenrose, zMatMPInvNull, _zMatMPInvAllocWork1, _zMatMPInvAllocWork2, and _zMatMPInvPenrose, respectively. [zm_le_mat_mpinv]
+2025.03.20. Renamed zm_le_mpinv to zm_le_mat_mpinv. [zm_le, zm_le_mat_mpinv]
+2025.03.20. Modified zMatDecompCholeskyDST not to repeat same warnings in a loop. [zm_le_lu]
 2025.03.17. Renamed zm_le_minv to zm_le_mat_inv. [zm_le, zm_le_mat_inv]
 2025.03.17. Added zMatIsDiag and zMatIsIdent. [zm_mat]
 2025.03.17. Renamed zTridiagSolveDST and zTridiagSolve to zLETridiagSolveDST and zLETridiagSolve, respectively. [zm_le_tridiag, zm_ip_spline]
@@ -532,8 +545,8 @@
 2011.04.15. Renamed zMPInv to zMPInvPenrose and added zMPInv and zMulMPInvMatMat. [zm_le_mpinv]
 2011.04.15. Added zLQDecompAlloc. [zm_eiq_lq]
 2011.04.14. Debugged zMatColReg. [zm_mat]
-2011.03.30. Reimplemented embedded Runge-Kutta method family.
-            Added Cash-Karp method and Dormand-Prince method. [zm_ode, zm_ode_erk]
+2011.03.30. Reimplemented embedded Runge-Kutta method family. [zm_ode, zm_ode_erk]
+2011.03.30. Added Cash-Karp method and Dormand-Prince method. [zm_ode, zm_ode_erk]
 2011.02.23. Renamed zComplexCat to zComplexMul and zComplexRed to zComplexDiv. [zm_complex*, zm_cvec, zm_cmat]
 2011.02.23. Renamed zComplexMul to zComplexCMul and zComplexDiv to zComplexCDiv. [zm_complex*, zm_cvec, zm_cmat, zm_pex, zm_pex_eq]
 2011.02.23. Abolished macros zComplexRe and zComplexIm. [zm_complex*, zm_cvec, zm_eig, zm_pex, zm_pex_eq]
@@ -625,7 +638,7 @@
 2008.03.21. Applied new ZALLOCERROR. [all]
 2008.03.21. Modified zCompexRed to return the null pointer for zero-division. [zm_complex_arith]
 2008.03.21. Added zm_errmsg.h and defined error messages as macros. [zm_errmsg]
-            Replaced all error messages to the macros.
+2008.03.21. Replaced all error messages to the macros.
 2008.03.06. Added zLESolveMPAux and zLESolveSRAux. [zm_le_gen]
 2008.03.06. Renamed zLESolveSVD to zLESolveMP_SVD. [zm_le_gen]
 2008.03.06. Debugged zLESolveMP_* not to break a vector. [zm_le_gen]
@@ -674,8 +687,7 @@
 2007.12.03. Debugged zSeqListCellDestroy. [zm_seq]
 2007.11.29. Modified zSeq class. [zm_seq]
 2007.11.15. Applied zFInt and zFDouble. [zm_vec_vec, zm_vec_mat, zm_seq]
-2007.11.11. Abolished zIndexSize and zIndexSetSize according to a specification of zIndex.
-            [zm_vec_vec, zm_le, zm_le_pivot, zm_le_lu, zm_opt_amoeba, zm_opt_lp_simplex, zm_opt_lcp_lemke]
+2007.11.11. Abolished zIndexSize and zIndexSetSize according to a specification of zIndex. [zm_vec_vec, zm_le, zm_le_pivot, zm_le_lu, zm_opt_amoeba, zm_opt_lp_simplex, zm_opt_lcp_lemke]
 2007.11.10. Reimplemented zBessel* functions (originated from Mr. Takuya Ooura's code). [zm_sf_bessel]
 2007.11.10. Defined HUGE_VAL and NAN for non-C99 environment. [zm_ieee]
 2007.11.09. Removed zm_nl_riccati.
@@ -692,35 +704,24 @@
 2007.06.18. Debugged _zVecSortCmp. [zm_vec_vec]
 2007.06.18. Added zNR class. [zm_nl_nr]
 2007.06.06. Added Bessel function family. [zm_sf_bessel]
-2007.06.06. Reimplemented zSqr, zCube, zLine, zCycroidX, zCycroidY
-            and zSigmoid as functions. [zm_misc]
+2007.06.06. Reimplemented zSqr, zCube, zLine, zCycroidX, zCycroidY and zSigmoid as functions. [zm_misc]
 2007.06.05. Added gamma and beta functions. [zm_sf_gamma]
 2007.03.09. Added zLCPSolveIP. [zm_opt_lcp_ip]
 2007.03.04. Added zVecAbsMax and zVecAbsMin. [zm_vec_vec]
 2007.03.04. Added zDataAbsMax and zDataAbsMin. [zm_stat]
-2007.03.02. Debugged zMatQuadNC, zMatQuad, zMatTQuadNC and zMatTQuad.
-            [zm_vec_mv]
+2007.03.02. Debugged zMatQuadNC, zMatQuad, zMatTQuadNC and zMatTQuad. [zm_vec_mv]
 2007.03.02. Treated zOptExecQNR. [zm_opt_qnr]
-2007.03.02. Added zQPSolveLemke, reimplementing Lemke's method.
-            [zm_opt_qp]
+2007.03.02. Added zQPSolveLemke, reimplementing Lemke's method. [zm_opt_qp]
 2007.03.02. Added zLCPSolveLemke. [zm_opt_lcp]
 2007.02.28. Debugged zDataMax and zDataMin. [zm_stat]
 2007.02.26. Defined zPIx2 and zPI_2. [zm_pi, zm_complex_pe, zm_pex_eq, zm_rand]
 2007.02.21. Debugged zLPSolveSimplex. [zm_lp_simplex]
-2007.02.09. Applied z*DestroyAO. [zm_eig, zm_eig_householder,
-            zm_ip_pex, zm_ip_spline, zm_le_gen, zm_le_tridiag,
-            zm_nl_qnr, zm_ode_beuler, zm_ode_bk4, zm_ode_dc2,
-            zm_ode_gear, zm_ode_heun, zm_ode_lm, zm_ode_rk4,
-            zm_ode_rkf45, zm_ode_rkg, zm_opt_amoeba, zm_ode_lp_pdip,
-            zm_opt_qp, zm_opt_sdm]
+2007.02.09. Applied z*DestroyAO. [zm_eig, zm_eig_householder, zm_ip_pex, zm_ip_spline, zm_le_gen, zm_le_tridiag, zm_nl_qnr, zm_ode_beuler, zm_ode_bk4, zm_ode_dc2, zm_ode_gear, zm_ode_heun, zm_ode_lm, zm_ode_rk4, zm_ode_rkf45, zm_ode_rkg, zm_opt_amoeba, zm_ode_lp_pdip, zm_opt_qp, zm_opt_sdm]
 2007.02.09. Added zVecDestroyAO and zMatDestroyAO. [zm_vec_vec, zm_vec_mat]
-2007.02.07. Renamed zRAD_DEG and zDEG_RAD to zRAD_PER_DEG and
-            zDEG_PER_RAD, respectively. [zm_pi]
+2007.02.07. Renamed zRAD_DEG and zDEG_RAD to zRAD_PER_DEG and zDEG_PER_RAD, respectively. [zm_pi]
 2007.01.18. Added zm_rand module. [zm_rand]
 2006.09.19. Added zLPIneq2Std and zLPUnb2Std. [zm_opt_lp_stdcnv]
-2006.09.19. Added zLPSolvePDIP_PC, which is an implementation of
-            primal-dual interior-point method with Mehrotra's
-            predictor-corrector for linear programming. [zm_opt_lp_pdip]
+2006.09.19. Added zLPSolvePDIP_PC, which is an implementation of primal-dual interior-point method with Mehrotra's predictor-corrector for linear programming. [zm_opt_lp_pdip]
 2006.09.19. Treated zLUDecomp. [zm_le_lu]
 2006.09.19. Added zRawVecShift and zVecShift. [zm_raw_vec, zm_vec_vec]
 2006.09.16. Modified zNLEQ_BISEC. [zm_nl_se]
@@ -743,48 +744,36 @@
 2006.07.23. Renamed zm_pex_bairstow to zm_pex_eq. [zm_pex_eq]
 2006.07.23. Added zComplexIsEps and zComplexIsTiny. [zm_complex]
 2006.07.23. Added zPexCVal. [zm_pex]
-2006.07.23. Renamed zPexValue and zPexDifValue to zPexVal and zPexDifVal,
-            respectively. [zm_pex]
+2006.07.23. Renamed zPexValue and zPexDifValue to zPexVal and zPexDifVal, respectively. [zm_pex]
 2006.07.23. Added zPexCreateList and zPexSetCoeffList. [zm_pex]
 2006.07.23. Separated zm_pi.h. [zm_misc, zm_pi]
 2006.07.23. Renamed zPexExpandFactor to zPexExp. [zm_pex]
 2006.07.23. Renamed zPexRegulate to zPexRgl. [zm_pex]
 2006.07.23. Added zPexClone and zPexCloneArray. [zm_pex]
-2006.07.19. Modified specification of zLQDecomp and zQRDecomp.
-            Separated zm_eig_lq. [zm_eig, zm_eig_lq]
-2006.07.19. Modified specification of zJacobi and separated zm_eig_jacobi.
-            [zm_eig, zm_eig_jacobi]
-2006.07.19. Debugged zHouseholder and separated zm_eig_householder.
-            [zm_eig, zm_eig_householder]
+2006.07.19. Modified specification of zLQDecomp and zQRDecomp. [zm_eig, zm_eig_lq]
+2006.07.19. Separated zm_eig_lq. [zm_eig, zm_eig_lq]
+2006.07.19. Modified specification of zJacobi and separated zm_eig_jacobi. [zm_eig, zm_eig_jacobi]
+2006.07.19. Debugged zHouseholder and separated zm_eig_householder. [zm_eig, zm_eig_householder]
 2006.07.17. Renamed zSign to zSgn. [zm_misc, zm_nl_se, zm_eig]
 2006.07.17. Debugged zMatImg. [zm_vec_mat]
-2006.07.09. Added zRawVecRand, zRawMatRand, zVecRand and zMatRand.
-            [zm_raw_vec, zm_raw_mat, zm_vec_vec, zm_vec_mat]
+2006.07.09. Added zRawVecRand, zRawMatRand, zVecRand and zMatRand. [zm_raw_vec, zm_raw_mat, zm_vec_vec, zm_vec_mat]
 2006.07.09. Debugged zCGSolve. [zm_opt_qp]
 2006.07.07. Added zMatImg. [zm_vec_mat]
 2006.06.05. Modified specification of zPexDiv to return boolean. [zm_pex]
-2006.06.05. Renamed _zVecSetElemList to zVecSetElemVList and exported it.
-            [zm_vec_vec]
+2006.06.05. Renamed _zVecSetElemList to zVecSetElemVList and exported it. [zm_vec_vec]
 2006.05.19. Treated. [zm_nl_se]
-2006.04.28. Renamed zRawVec{Max,Min,Sum,Ave,Var} to zData{} and
-            moved them to zm_stat. [zm_raw_vec, zm_stat]
+2006.04.28. Renamed zRawVec{Max,Min,Sum,Ave,Var} to zData{} and moved them to zm_stat. [zm_raw_vec, zm_stat]
 2006.04.18. Debugged zMatDet. [zm_le_minv]
 2006.04.06. Renamed zLESolve*SRI* to zLESolve*SR*. [zm_le_gen]
 2006.04.06. Added zRawVecAmp* and zVecAmp*. [zm_raw, zm_vec_vec]
 2006.04.06. Added zPhaseNormalize. [zm_misc]
 2006.03.29. Treated. [all]
 2006.03.14. Added zSCSet. [zm_misc]
-2006.03.13. Renamed zMatTranspose and zMatTrace to zMatT and
-            zMatTr, respectively. [zm_vec_mat and affected]
-2006.03.11. Modified some functions to accept epsilon value
-            and maximum iteration number. [zm_opt_amoeba,
-            zm_opt_qnr, zm_opt_sdm, zm_nl_se, zm_nl_qnr,
-            zm_nl_riccati, zm_pex_bairstow, zm_ode_beuler,
-            zm_ode_bk4]
+2006.03.13. Renamed zMatTranspose and zMatTrace to zMatT and zMatTr, respectively. [zm_vec_mat and affected]
+2006.03.11. Modified some functions to accept epsilon value and maximum iteration number. [zm_opt_amoeba, zm_opt_qnr, zm_opt_sdm, zm_nl_se, zm_nl_qnr, zm_nl_riccati, zm_pex_bairstow, zm_ode_beuler, zm_ode_bk4]
 2006.03.10. Added ZITERWARN. [zm_misc]
 2006.03.10. Modified initial value reflection of zOptExecAmoeba. [zm_opt_amoeba]
-2006.03.04. Implemented quasi Newton-Raphson method for
-            multidimension optimization, utilizing zQNR. [zm_opt_qnr]
+2006.03.04. Implemented quasi Newton-Raphson method for multidimension optimization, utilizing zQNR. [zm_opt_qnr]
 2006.03.04. Reimplemented steepest descendant method. [zm_opt_sdm]
 2006.03.04. Implemented downhill simplex/polytope method. [zm_opt_amoeba]
 2006.03.03. Renamed *Direct to *DRC. [all]
@@ -810,53 +799,42 @@
 2006.02.21. Reimplemanted linear, Lagrange and spline method. [zm_ip_*]
 2006.02.21. Renamed zIP to zIPData, and redefined zIP class. [zm_ip]
 2006.02.15. Assigned priv argument to zODESolve. [zm_ode]
-2006.02.10. Modified simultaneous nonlinear equation solver.
-            Abolished zm_nl_bfgs.
-            Implemented zQNR class, BFS, DFP and BFGS. [zm_nl_qnr]
-2006.02.10. Modified zVecDyad, and added zMatAddDyad and
-            zMatExtDyad. [zm_vec]
-2006.02.10. Added zRawVecDyad, zRawMatAddDyad and
-            zRawMatExtDyad. [zm_raw]
+2006.02.10. Modified simultaneous nonlinear equation solver. [zm_nl_qnr]
+2006.02.10. Abolished zm_nl_bfgs. [zm_nl_qnr]
+2006.02.10. Implemented zQNR class, BFS, DFP and BFGS. [zm_nl_qnr]
+2006.02.10. Modified zVecDyad, and added zMatAddDyad and zMatExtDyad. [zm_vec]
+2006.02.10. Added zRawVecDyad, zRawMatAddDyad and zRawMatExtDyad. [zm_raw]
 2006.02.05. Renamed zDEQ to zODE. [zm_ode*]
 2006.01.28. Added zNLEQ_VDB. [zm_nl_se]
 2006.01.27. Added zNLEQ_Secant. [zm_nl_se]
 2006.01.26. Added zNLEQAssign, zNLEQ_BISEC and zNLEQ_RF. [zm_nl_se]
 2006.01.25. Added zVecSetElemList and zMatSetElemList. [zm_vec]
-2006.01.25. Modified an implementation of line search; assigned
-            zLineOpt class. [zm_opt_line]
-2006.01.25. Added zDEQ_RKF45 to implement Runge-Kutta-Fehlberg
-            method. [zm_deq_dc2]
-2006.01.25. Added zRawVecSqrDist, zRawVecDist, [zm_raw]
-            zVecSqrDist and zVecDist. [zm_raw]
+2006.01.25. Modified an implementation of line search; assigned zLineOpt class. [zm_opt_line]
+2006.01.25. Added zDEQ_RKF45 to implement Runge-Kutta-Fehlberg method. [zm_deq_dc2]
+2006.01.25. Added zRawVecSqrDist, zRawVecDist, zVecSqrDist and zVecDist. [zm_raw, zm_raw]
 2006.01.24. Added zDEQ_DC2 to implement deferred correction. [zm_deq_dc2]
 2006.01.22. Added zDEQ2 class. [zm_deq]
 2006.01.22. Added zDEQ_Heun to implement Heun's method. [zm_deq_heun]
 2006.01.18. Redesinged zDEQ class to unitize DEQ solvers. [zm_deq]
 2006.01.12. Added zDEQ_RKG to implement Runge-Kutta-Gill method. [zm_deq_rkg]
 2006.01.11. Added zMatAdj and treated zMatDet. [zm_le]
-2006.01.10. Added zDEQ_RK4 to implement classical Runge-Kutta method.
-            [zm_deq_rk4]
-2006.01.09. Added zDEQ_Euler and zDEQ_LM to implement Euler method,
-            linear multistep method and predictor-corrector method
-            as differential equation solvers. [zm_deq_lm, zm_deq_euler]
+2006.01.10. Added zDEQ_RK4 to implement classical Runge-Kutta method. [zm_deq_rk4]
+2006.01.09. Added zDEQ_Euler and zDEQ_LM to implement Euler method, linear multistep method and predictor-corrector method as differential equation solvers. [zm_deq_lm, zm_deq_euler]
 2006.01.08. Shortened names of functions in zm_stat. [zm_stat, zm_pex]
 2006.01.04. Added zKleinmanSolve. [zm_nl]
-2006.01.04. Added zRawMatExt*, [zm_raw]
-            and zMatExt*. [zm_vec]
+2006.01.04. Added zRawMatExt* and zMatExt* [zm_raw, zm_vec]
 2006.01.04. Modified specification of zLyapnovSolve. [zm_le]
 2006.01.03. Debugged zMatDetDST. [zm_le]
 2005.12.31. Exported zMatShift and zMatShiftInv. [zm_eig]
-2005.12.25. Renamed zPexIntegrate to zPexIntg and
-            zPexDifferentiate to zPexDif. [zm_pex]
+2005.12.25. Renamed zPexIntegrate to zPexIntg and zPexDifferentiate to zPexDif. [zm_pex]
 2005.12.25. Debugged zMatTriangulateDST and modified zSVD. [zm_eig]
-            zSVD still has a bug caused by pivotting.
 2005.12.24. Added zMatRowReg and zMatColReg, [zm_vec]
-            and modified zLUDecompReg. [zm_le]
+2005.12.24. Modified zLUDecompReg. [zm_le]
 2005.12.24. Added zVecTouchup and zMatTouchup. [zm_vec]
 2005.12.24. Added zRawVecTouchup and zRawMatTouchup. [zm_raw]
 2005.12.21. Modified argument specification of zVecMax and zVecMin. [zm_vec]
 2005.12.21. Added zRawVecNormalize and zRawVecNormalizeDirect. [zm_raw]
-            Treated zVecNormalize. [zm_vec]
+2005.12.21. Treated zVecNormalize. [zm_vec]
 2005.12.16. Added zLESolveMP and abolished zLESolveRobust. [zm_le]
 2005.12.15. Added zLUInnerSolveL and zLUInnerSolveU. [zm_le]
 2005.12.14. Renamed from ZML to ZM. [all]
