@@ -26,7 +26,7 @@ void assert_mat_mat_sweep_out(void)
       zMatMatSweepOut( m1, m2, zIndexElemNC(index,i), i );
     zMulMatMat( m, m2, m3 );
     if( !zMatIsIdent( m3, tol ) ){
-      eprintf( "maximum error = %g\n", zMatAbsMaxElem( m3, NULL ) );
+      eprintf( "maximum error = %g\n", zMatElemAbsMax( m3, NULL ) );
       result = false;
     }
   }
@@ -60,7 +60,7 @@ void assert_mat_vec_sweep_out(void)
     zVecReorderDRC( v, index );
     zVecSubDRC( v, x );
     if( !zVecIsTol( v, tol ) ){
-      eprintf( "maximum error = %g\n", zVecAbsMaxElem( v, NULL ) );
+      eprintf( "maximum error = %g\n", zVecElemAbsMax( v, NULL ) );
       result = false;
     }
   }
@@ -112,7 +112,7 @@ void assert_mat_mul_inv(void)
     zMulInvMatMat( m, m2, m3 );
     zMatSub( m1, m3, m2 );
     if( !zMatIsTol( m2, tol ) ){
-      eprintf( "case #%d: maximum error = %g\n", k, zMatAbsMaxElem(m2,NULL) );
+      eprintf( "case #%d: maximum error = %g\n", k, zMatElemAbsMax(m2,NULL) );
       result = false;
     }
   }
@@ -354,7 +354,7 @@ void assert_lyapnov_equation(void)
     zMatAddDRC( tmp1, tmp2 );
     zMatSubDRC( tmp1, b );
     if( !zMatIsTol( tmp1, tol ) ){
-      eprintf( "case #%d: maximum error = %g\n", k, zMatAbsMaxElem(tmp1,NULL) );
+      eprintf( "case #%d: maximum error = %g\n", k, zMatElemAbsMax(tmp1,NULL) );
       result = false;
     }
   }

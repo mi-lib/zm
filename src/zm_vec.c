@@ -271,19 +271,19 @@ zVec zVecReorderDRC(zVec v, const zIndex idx)
 }
 
 /* maximum of vector elements. */
-double zVecMaxElem(const zVec v, int *im){ return _zVecMaxElem( v, im ); }
+double zVecElemMax(const zVec v, int *im){ return _zVecElemMax( v, im ); }
 /* minimum of vector elements. */
-double zVecMinElem(const zVec v, int *im){ return _zVecMinElem( v, im ); }
+double zVecElemMin(const zVec v, int *im){ return _zVecElemMin( v, im ); }
 /* absolute maximum of vector elements. */
-double zVecAbsMaxElem(const zVec v, int *im){ return _zVecAbsMaxElem( v, im ); }
+double zVecElemAbsMax(const zVec v, int *im){ return _zVecElemAbsMax( v, im ); }
 /* absolute minimum of vector elements. */
-double zVecAbsMinElem(const zVec v, int *im){ return _zVecAbsMinElem( v, im ); }
+double zVecElemAbsMin(const zVec v, int *im){ return _zVecElemAbsMin( v, im ); }
 /* summation of vector elements. */
-double zVecSumElem(const zVec v){ return _zVecSumElem( v ); }
+double zVecElemSum(const zVec v){ return _zVecElemSum( v ); }
 /* mean of vector elements. */
-double zVecMeanElem(const zVec v){ return _zVecMeanElem( v ); }
+double zVecElemMean(const zVec v){ return _zVecElemMean( v ); }
 /* variance of vector elements. */
-double zVecVarElem(const zVec v){ return _zVecVarElem( v ); }
+double zVecElemVar(const zVec v){ return _zVecElemVar( v ); }
 
 /* check if two vectors are equal. */
 bool zVecEqual(const zVec v1, const zVec v2, double tol)
@@ -566,7 +566,7 @@ double zVecWSqrNorm(const zVec v, const zVec w)
 /* infinity norm of a vector. */
 double zVecInfNorm(const zVec v)
 {
-  return zVecAbsMaxElem( v, NULL );
+  return zVecElemAbsMax( v, NULL );
 }
 
 /* normalize a vector. */

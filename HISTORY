@@ -1,3 +1,5 @@
+2025.03.20. Renamed _zVecMaxElem, _zVecMinElem, _zVecAbsMaxElem, _zVecAbsMinElem, _zVecSumElem, _zVecMeanElem, _zVecVarElem, zVecMaxElem, zVecMinElem, zVecAbsMaxElem, zVecAbsMinElem, zVecSumElem, zVecMeanElem, zVecVarElem, zMatMaxElem, zMatMinElem, zMatAbsMaxElem, and zMatAbsMinElem to _zVecElemMax, _zVecElemMin, _zVecElemAbsMax, _zVecElemAbsMin, _zVecElemSum, _zVecElemMean, _zVecElemVar, zVecElemMax, zVecElemMin, zVecElemAbsMax, zVecElemAbsMin, zVecElemSum, zVecElemMean, zVecElemVar, _zMatElemMax, _zMatElemMin, _zMatElemAbsMax, _zMatElemAbsMin, zMatElemMax, zMatElemMin, zMatElemAbsMax, and zMatElemAbsMin, respectively. [zm_vec, zm_mca, zm_mca_cluster, zm_opt_lp_pdio, zm_opt_lcp_lemke, zm_opt_dm]
+2025.03.21. Modified zCombinationSeries for consistent signedness. [zm_misc]
 2025.03.20. Renamed _zBalancingMatDST to _zMatBalancingDST. [zm_le_mat_inv]
 2025.03.20. Added const qualifires to some arguments. [zm_le_mat_inv, zm_le_mat_mpinv]
 2025.03.20. Added const qualifires to some arguments. [zm_le, zm_le_lu, zm_le_lq, zm_le_gen, zm_le_tridiag, zm_le_lyapnov]

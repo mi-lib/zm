@@ -75,7 +75,7 @@ static bool _zOptDMStepTest(zOptDM *opt, const zVec var, void *util, double *a, 
     if( zIsInf(*e) || zIsNan(*e) )
       *a *= 0.1;
     else
-    if( ( max = zVecAbsMaxElem( opt->_p, NULL ) ) > opt->_scale )
+    if( ( max = zVecElemAbsMax( opt->_p, NULL ) ) > opt->_scale )
       *a *= opt->_scale / max;
     else
       break;
@@ -286,11 +286,11 @@ static zMat _zOptDMUpdateBFGS(zOptDM *opt, int count) /* Broyden-Fletcher-Goldfa
   k = 1.0 / zVecInnerProdNC( opt->_p, opt->_q );
   l = zVecInnerProdNC( opt->_q, opt->_r )*k + 1.0;
   for( i=0; i<zVecSizeNC(opt->_p); i++ ){
-    pi = zVecElem( opt->_p, i );
-    ri = zVecElem( opt->_r, i );
+    pi = zVecElemNC( opt->_p, i );
+    ri = zVecElemNC( opt->_r, i );
     for( j=0; j<zVecSizeNC(opt->_p); j++ ){
-      pj = zVecElem( opt->_p, j );
-      rj = zVecElem( opt->_r, j );
+      pj = zVecElemNC( opt->_p, j );
+      rj = zVecElemNC( opt->_r, j );
       zMatElemNC(opt->_h,i,j) += ( l*pi*pj - ri*pj - rj*pi ) * k;
     }
   }

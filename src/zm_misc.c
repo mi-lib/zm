@@ -126,7 +126,8 @@ double zCombinationRecursive(int n, int i)
 /* series of combination. */
 double *zCombinationSeries(uint n, size_t size, double c[])
 {
-  int i, j;
+  uint i;
+  int j;
 
   if( n >= size ){
     ZRUNERROR( ZM_ERR_OUTOFRANGE );

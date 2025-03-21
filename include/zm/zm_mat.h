@@ -258,23 +258,23 @@ __ZM_EXPORT void zMatShift(zMat m, double shift);
 
 /*! \brief maximum and minimum of matrix elements.
  *
- * zMatMaxElem() and zMatMinElem() find the maximum and minimum component of all components of a matrix
+ * zMatElemMax() and zMatElemMin() find the maximum and minimum component of all components of a matrix
  * \a m, respectively.
- * zMatAbsMaxElem() and zMatAbsMinElem() find the component of \a m whose absolute value is the maximum
+ * zMatElemAbsMax() and zMatElemAbsMin() find the component of \a m whose absolute value is the maximum
  * and minimum, respectively.
  * For those four functions, the index that gives the maximum/minimum is stored where pointed by \a im,
  * unless it is the null pointer.
  * \return
- * zMatMaxElem(), zMatMinElem(), zMatAbsMaxElem(), and zMatAbsMinElem() return the results.
+ * zMatElemMax(), zMatElemMin(), zMatElemAbsMax(), and zMatElemAbsMin() return the results.
  */
-#define _zMatMaxElem(m,im)    zDataMax( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
-#define _zMatMinElem(m,im)    zDataMin( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
-#define _zMatAbsMaxElem(m,im) zDataAbsMax( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
-#define _zMatAbsMinElem(m,im) zDataAbsMin( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
-__ZM_EXPORT double zMatMaxElem(const zMat m, int *im);
-__ZM_EXPORT double zMatMinElem(const zMat m, int *im);
-__ZM_EXPORT double zMatAbsMaxElem(const zMat m, int *im);
-__ZM_EXPORT double zMatAbsMinElem(const zMat m, int *im);
+#define _zMatElemMax(m,im)    zDataMax( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
+#define _zMatElemMin(m,im)    zDataMin( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
+#define _zMatElemAbsMax(m,im) zDataAbsMax( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
+#define _zMatElemAbsMin(m,im) zDataAbsMin( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
+__ZM_EXPORT double zMatElemMax(const zMat m, int *im);
+__ZM_EXPORT double zMatElemMin(const zMat m, int *im);
+__ZM_EXPORT double zMatElemAbsMax(const zMat m, int *im);
+__ZM_EXPORT double zMatElemAbsMin(const zMat m, int *im);
 
 /*! \brief check if two matrices are equal.
  *

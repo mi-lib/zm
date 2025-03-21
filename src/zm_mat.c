@@ -398,13 +398,13 @@ void zMatShift(zMat m, double shift)
 }
 
 /* maximum of matrix elements. */
-double zMatMaxElem(const zMat m, int *im){ return _zMatMaxElem( m, im ); }
+double zMatElemMax(const zMat m, int *im){ return _zMatElemMax( m, im ); }
 /* minimum of vector elements. */
-double zMatMinElem(const zMat m, int *im){ return _zMatMinElem( m, im ); }
+double zMatElemMin(const zMat m, int *im){ return _zMatElemMin( m, im ); }
 /* absolute maximum of vector elements. */
-double zMatAbsMaxElem(const zMat m, int *im){ return _zMatAbsMaxElem( m, im ); }
+double zMatElemAbsMax(const zMat m, int *im){ return _zMatElemAbsMax( m, im ); }
 /* absolute minimum of vector elements. */
-double zMatAbsMinElem(const zMat m, int *im){ return _zMatAbsMinElem( m, im ); }
+double zMatElemAbsMin(const zMat m, int *im){ return _zMatElemAbsMin( m, im ); }
 
 /* check if two matrices are equal. */
 bool zMatEqual(const zMat m1, const zMat m2, double tol)
@@ -1074,7 +1074,7 @@ void zMatImg(const zMat m)
   int i, j;
   int c;
 
-  d = 0.25 * zMatAbsMaxElem( m, NULL );
+  d = 0.25 * zMatElemAbsMax( m, NULL );
   for( i=0; i<zMatRowSizeNC(m); i++ ){
     for( j=0; j<zMatColSizeNC(m); j++ ){
       if( zIsTiny( zMatElemNC(m,i,j) ) )

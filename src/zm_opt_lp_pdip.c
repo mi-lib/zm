@@ -75,9 +75,9 @@ static bool _zLP_PDIPInit(_zLP_PDIP *dat)
   zVecSetAll( dat->y, 1.0 );
   zMulMatTVecNC( dat->a, dat->y, dat->z );
   zVecSubNC( dat->c, dat->z, dat->z );
-  if( ( m = zVecMinElem(dat->x,NULL) ) <= zTOL )
+  if( ( m = zVecElemMin(dat->x,NULL) ) <= zTOL )
     zVecShiftDRC( dat->x, -m+zTOL );
-  if( ( m = zVecMinElem(dat->z,NULL) ) <= zTOL )
+  if( ( m = zVecElemMin(dat->z,NULL) ) <= zTOL )
     zVecShiftDRC( dat->z, -m+zTOL );
   return true;
 }
@@ -169,7 +169,7 @@ static double _zLP_PDIP_PCErr(_zLP_PDIP *dat)
   zVecAddNCDRC( dat->v2, dat->z );
   zVecSubNCDRC( dat->v2, dat->c );       /* v2 = A^T y + z - c */
   zVecAmpNC( dat->x, dat->z, dat->v3 );  /* v3 = x * z */
-  return zVecSumElem( dat->v3 );             /* x^T z */
+  return zVecElemSum( dat->v3 );             /* x^T z */
 }
 
 /* updating step of PD-IP-PC. */
@@ -180,12 +180,12 @@ static double _zLP_PDIP_PCStep(const zVec x, zVec dx)
   double max, min, val, d;
 
   for( max=min=0, i=0; i<zVecSizeNC(dx); i++ ){
-    d = zVecElem(dx,i);
-    if( zIsTiny(d) && zVecElem(x,i) < -zTOL ){
+    d = zVecElemNC(dx,i);
+    if( zIsTiny(d) && zVecElemNC(x,i) < -zTOL ){
       ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
       return 0;
     }
-    val = -zVecElem(x,i)/d;
+    val = -zVecElemNC(x,i) / d;
     if( d < -zTOL ){
       if( !max_ok || val < max ){
         max = val;

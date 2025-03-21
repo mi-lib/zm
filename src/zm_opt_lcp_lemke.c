@@ -163,7 +163,7 @@ static bool _zLemkeInit(_zLemke *lemke)
   int p;
   double qmin;
 
-  if( ( qmin = zVecMinElem( lemke->p, &p ) ) >= 0 ) return true;
+  if( ( qmin = zVecElemMin( lemke->p, &p ) ) >= 0 ) return true;
   _zLemkeSweep( lemke, p );
   _zLemkeSwap( lemke, p );
   return false;
