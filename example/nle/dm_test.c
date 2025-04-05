@@ -135,10 +135,10 @@ void check(const char *label, zNLE *nle, int id, zVec var, zVec r, void *util)
 {
   zNLESolve( nle, var, util, zTOL, 0, NULL );
   printf( "(%s) answer: ", label );
-  zVecTouchup( var );
+  zVecTouchup( var, zTOL );
   zVecPrint( var );
   f[id]( var, r, util );
-  zVecTouchup( r );
+  zVecTouchup( r, zTOL );
   printf( "   residual: " );
   zVecPrint( r );
 }
