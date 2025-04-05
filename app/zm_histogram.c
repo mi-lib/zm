@@ -25,7 +25,8 @@ FILE *zm_histogram_read_option(char *argv[])
   zStrAddrList arglist;
   FILE *fp;
 
-  if( !zOptionRead( option, argv+1, &arglist ) ) return false;
+  if( !zOptionRead( option, argv+1, &arglist ) )
+    exit( EXIT_FAILURE );
   if( option[HISTOGRAM_HELP].flag )
     zm_histogram_usage( argv[0] );
   if( zListIsEmpty( &arglist ) )
