@@ -1,47 +1,4 @@
-#include <zm/zm_mca.h>
-
-zVec errorLSM(zClusterMethod *cm, zVec p, zVec core, void *dummy, zVec err)
-{
-  double xm, e;
-
-  xm = zVecElem(p,zVecSizeNC(p)-1);
-  zVecSetElem( p, zVecSizeNC(p)-1, 1 );
-  e = zVecInnerProd(core,p) - xm;
-  zVecSetElem( p, zVecSizeNC(p)-1, xm );
-  zVecSetElem( err, 0, e );
-  return err;
-}
-
-zVec coreLSM(zClusterMethod *cm, zVecList *pl, void *dummy, zVec core)
-{
-  zVecListCell *vc;
-  zMat c;
-  zVec b;
-  double xm;
-
-  c = zMatAllocSqr( zVecSizeNC(zListTail(pl)->data) );
-  b = zVecAlloc( zVecSizeNC(zListTail(pl)->data) );
-  if( c == NULL || b == NULL ){
-    ZALLOCERROR();
-    core = NULL;
-    goto TERMINATE;
-  }
-  zListForEach( pl, vc ){
-    xm = zVecElem(vc->data,zVecSizeNC(vc->data)-1);
-    zVecSetElem( vc->data, zVecSizeNC(vc->data)-1, 1 );
-    zMatAddDyadNC( c, vc->data, vc->data );
-    zVecCatNCDRC( b, xm, vc->data );
-    zVecSetElem( vc->data, zVecSizeNC(vc->data)-1, xm );
-  }
-  zLESolveGauss( c, b, core );
- TERMINATE:
-  zMatFree( c );
-  zVecFree( b );
-  return core;
-}
-
-
-
+#include <zm/zm_mva.h>
 
 void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double zmin, double xmax, double ymax, double zmax)
 {
@@ -84,16 +41,16 @@ void vec_output(zVecList *points)
   fclose( fp );
 }
 
-void plane_output(zMCluster *mc)
+void plane_output(zVecMCluster *mc)
 {
   FILE *fp;
-  zClusterListCell *c;
+  zVecClusterListCell *c;
 
   fp = fopen( "mc", "w" );
   fprintf( fp, "set isosamples 20\n" );
   fprintf( fp, "unset key\n" );
   fprintf( fp, "splot 'src'" );
-  zListForEach( zMClusterClusterList(mc), c ){
+  zListForEach( zVecMClusterClusterList(mc), c ){
     fprintf( fp, ", %g*x+%g*y+%g",
       zVecElem(c->data.core,0),
       zVecElem(c->data.core,1),
@@ -108,7 +65,7 @@ void plane_output(zMCluster *mc)
 
 int main(int argc, char *argv[])
 {
-  zMCluster mc;
+  zVecMCluster mc;
   zVecList points;
   int np, nc;
 
@@ -118,13 +75,12 @@ int main(int argc, char *argv[])
   gen_vec( &points, np, nc, 0, 0, 0, 10, 10, 10 );
   vec_output( &points );
 
-  zMClusterInit( &mc, 3 );
-  zMClusterSetErrorFunc( &mc, 1, errorLSM, NULL );
-  zMClusterSetCoreFunc( &mc, 3, coreLSM, NULL );
-  printf( "K-means completed in %d times of iteration.\n", zMClusterKMeans( &mc, &points, nc ) );
+  zVecMClusterInit( &mc, 3 );
+  zVecMClusterSetLS( &mc, NULL );
+  printf( "K-means completed in %d times of iteration.\n", zVecMClusterKMeans( &mc, &points, nc ) );
   plane_output( &mc );
 
-  zMClusterDestroy( &mc );
+  zVecMClusterDestroy( &mc );
   zVecListDestroy( &points );
   return 0;
 }

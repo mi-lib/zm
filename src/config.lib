@@ -7,12 +7,12 @@ OBJ=zm_ieee.o zm_misc.o\
 	zm_cvec.o zm_cmat.o\
 	zm_le.o zm_le_pivot.o zm_le_lu.o zm_le_lq.o zm_le_mat_inv.o zm_le_mat_mpinv.o zm_le_tridiag.o zm_le_gen.o zm_le_lyapnov.o\
 	zm_mat_eig.o\
-	zm_mca.o zm_mca_cluster.o zm_mca_gmm.o\
+	zm_mva.o zm_mva_ransac.o zm_mva_cluster.o zm_mva_gmm.o\
 	zm_seq.o\
 	zm_pex.o zm_pex_eq.o zm_fourier.o\
 	zm_ip.o zm_ip_lin.o zm_ip_lagrange.o zm_ip_chebyshev.o zm_ip_spline.o zm_ip_akima.o zm_ip_pchip.o zm_ip_pex.o zm_ip_clothoid.o zm_ip_trvelprof.o\
 	zm_nurbs.o\
-	zm_data.o zm_data_fft.o zm_data_ransac.o\
+	zm_data.o zm_data_fft.o\
 	zm_opt_line.o\
 	zm_opt_lp_stdcnv.o zm_opt_lp_simplex.o zm_opt_lp_pdip.o\
 	zm_opt_lcp_lemke.o zm_opt_lcp_ip.o\

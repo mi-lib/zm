@@ -30,7 +30,7 @@
    (Runge-Kutta family, embedded Runge-Kutta family, Adams, Gear,
    backward Euler, Butcher-Kuntzmann family, deferred correction,
    Leapflog)
- - multiple classification analysis (K-means, GMM)
+ - multivariate analysis (RANSAC, K-means, GMM)
  - nonlinear oscillator
  - parser of mathematical expression
  */
@@ -40,7 +40,7 @@
 
 #include <zm/zm_rand.h>
 #include <zm/zm_sf.h>
-#include <zm/zm_mca.h>
+#include <zm/zm_mva.h>
 #include <zm/zm_pex.h>
 #include <zm/zm_fourier.h>
 #include <zm/zm_nle.h>

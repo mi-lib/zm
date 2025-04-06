@@ -1,10 +1,10 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_data_ransac - data analysis: random sample consensus.
+ * zm_mva_ransac - multivariate analysis analysis: random sample consensus.
  */
 
-#include <zm/zm_data.h>
+#include <zm/zm_mva.h>
 
 /* randomly select test data from original data set. */
 static bool _zRANSACSelectRandom(zVecList *sample, zVecList *va, int n)
@@ -27,7 +27,7 @@ static bool _zRANSACSelectRandom(zVecList *sample, zVecList *va, int n)
 }
 
 /* count number of inliers with respect to a guess. */
-static int _zRANSACCountInlier(zVec q, zVecList *sample, double (* error_fp)(zVec,zVec,void*), void *util, double th)
+static int _zRANSACCountInlier(zVec q, const zVecList *sample, double (* error_fp)(const zVec,const zVec,void*), void *util, double th)
 {
   zVecListCell *sp;
   int count = 0;
@@ -39,7 +39,7 @@ static int _zRANSACCountInlier(zVec q, zVecList *sample, double (* error_fp)(zVe
 }
 
 /* resample test data for model refinement from original data set. */
-static int _zRANSACSelectInlier(zVecList *va, zVec q, zVecList *sample, double (* error_fp)(zVec,zVec,void*), void *util, double th)
+static int _zRANSACSelectInlier(zVecList *va, zVec q, zVecList *sample, double (* error_fp)(const zVec,const zVec,void*), void *util, double th)
 {
   zVecListCell *sp, *sp_prev;
 
@@ -56,7 +56,7 @@ static int _zRANSACSelectInlier(zVecList *va, zVec q, zVecList *sample, double (
 }
 
 /* RANSAC: random sample consensus. */
-zVec zRANSAC(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,zVecList*,void*), double (* error_fp)(zVec,zVec,void*), void *util, int ns, int nt, double th)
+zVec zRANSAC(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,const zVecList*,void*), double (* error_fp)(const zVec,const zVec,void*), void *util, int ns, int nt, double th)
 {
   zVec qt;
   zVecList va;
@@ -89,7 +89,7 @@ zVec zRANSAC(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,zVecList*,void*), do
 #define Z_RANSAC_THRESHOLD_RATE  0.1
 
 /* RANSAC with an automatic setting of parameters */
-zVec zRANSACAuto(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,zVecList*,void*), double (* error_fp)(zVec,zVec,void*), void *util, double r, double nl)
+zVec zRANSACAuto(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,const zVecList*,void*), double (* error_fp)(const zVec,const zVec,void*), void *util, double r, double nl)
 {
   int ns;
 

@@ -1,4 +1,4 @@
-#include <zm/zm_mca.h>
+#include <zm/zm_mva.h>
 #include <zm/zm_rand.h>
 
 void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax, double ymax)

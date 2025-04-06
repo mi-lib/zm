@@ -1,4 +1,4 @@
-#include <zm/zm_mca.h>
+#include <zm/zm_mva.h>
 
 void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax, double ymax)
 {
@@ -21,15 +21,6 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
       zVecListInsertHead( vl, vc );
     }
   }
-  /* outliers */
-  zVecSetElemList( vc, 2, xmin, ymin );
-  zVecListInsertHead( vl, vc );
-  zVecSetElemList( vc, 2, xmax, ymax );
-  zVecListInsertHead( vl, vc );
-  zVecSetElemList( vc, 2, xmax, ymin );
-  zVecListInsertHead( vl, vc );
-  zVecSetElemList( vc, 2, xmin, ymax);
-  zVecListInsertHead( vl, vc );
   zVecFree( vc );
 }
 
@@ -38,18 +29,23 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
 
 int main(int argc, char *argv[])
 {
-  zMCluster mc;
+  zVecMCluster mc;
   zVecList points;
   int np, nc;
+  double score;
 
   zRandInit();
   nc = argc > 1 ? atoi( argv[1] ) : NC;
   np = argc > 2 ? atoi( argv[2] ) : NP;
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
-  zMClusterInit( &mc, 2 );
-  printf( "K-medoids completed in %d times of iteration.\n", zMClusterKMedoids( &mc, &points, nc ) );
-  zMClusterValuePrintFile( &mc, "" );
-  zMClusterDestroy( &mc );
+  zVecMClusterInit( &mc, 2 );
+  printf( "K-means completed in %d times of iteration.\n", zVecMClusterKMeans( &mc, &points, nc ) );
+  zVecMClusterValuePrintFile( &mc, "" );
+  score = zVecMClusterMeanSilhouette( &mc );
+  zVecMClusterSilhouettePrintFile( &mc, "s" );
+  printf( "mean silhouette = %.10g\n", score );
+
+  zVecMClusterDestroy( &mc );
   zVecListDestroy( &points );
   return 0;
 }

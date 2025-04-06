@@ -1,14 +1,14 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_mca - multiple classification analysis.
+ * zm_mva - multivariate analysis analysis.
  */
 
-#include <zm/zm_mca.h>
+#include <zm/zm_mva.h>
 #include <zm/zm_rand.h>
 
 /* minimum and maximum of all vectors in a list. */
-bool zVecListMinMax(zVecList *list, zVec min, zVec max)
+bool zVecListMinMax(const zVecList *list, zVec min, zVec max)
 {
   zVecListCell *vc;
   int i;
@@ -32,7 +32,7 @@ bool zVecListMinMax(zVecList *list, zVec min, zVec max)
 }
 
 /* sum up all vectors in a list. */
-zVec zVecListSum(zVecList *list, zVec sum)
+zVec zVecListSum(const zVecList *list, zVec sum)
 {
   zVecListCell *vc;
 
@@ -43,14 +43,14 @@ zVec zVecListSum(zVecList *list, zVec sum)
 }
 
 /* mean of all vectors in a list. */
-zVec zVecListMean(zVecList *list, zVec mean)
+zVec zVecListMean(const zVecList *list, zVec mean)
 {
   zVecListSum( list, mean );
   return zVecDivDRC( mean, zListSize(list) );
 }
 
 /* variance of all vectors in a list. */
-double zVecListVar(zVecList *list, zVec mean)
+double zVecListVar(const zVecList *list, zVec mean)
 {
   zVecListCell *vc;
   double var = 0;
@@ -65,14 +65,14 @@ double zVecListVar(zVecList *list, zVec mean)
 }
 
 /* mean and variance of all vectors in a list. */
-double zVecListMeanVar(zVecList *list, zVec mean)
+double zVecListMeanVar(const zVecList *list, zVec mean)
 {
   zVecListMean( list, mean );
   return zVecListVar( list, mean );
 }
 
 /* variance-covariance matrix of all vectors in a list. */
-zMat zVecListCov(zVecList *list, zVec mean, zMat cov)
+zMat zVecListCov(const zVecList *list, zVec mean, zMat cov)
 {
   zVec v;
   zVecListCell *vc;
@@ -101,14 +101,14 @@ zMat zVecListCov(zVecList *list, zVec mean, zMat cov)
 }
 
 /* mean and variance-covariance matrix of all vectors in a list. */
-zMat zVecListMeanCov(zVecList *list, zVec mean, zMat cov)
+zMat zVecListMeanCov(const zVecList *list, zVec mean, zMat cov)
 {
   zVecListMean( list, mean );
   return zVecListCov( list, mean, cov );
 }
 
 /* principal component analysis. */
-int zVecListPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loading)
+int zVecListPCA(const zVecList *points, double cr, zVec mean, zVec score, zMat loading)
 {
   zMat cov;
   int s, n;

@@ -43,7 +43,7 @@
 #define ZM_WARN_GRAPH_DUPNODE              "duplicate specification of a node"
 #define ZM_WARN_GRAPH_DUPCONNECTION        "duplicate node connection, overwritten"
 
-#define ZM_WARN_MCA_NOSILHOUETTE           "silhouette score not computed, need to call zMClusterSilhouetteScore()"
+#define ZM_WARN_MVA_NOSILHOUETTE           "silhouette score not computed, need to call zMClusterSilhouetteScore()"
 
 /* error messages */
 
@@ -107,11 +107,11 @@
 #define ZM_ERR_OPT_INF                     "infinite solution exists"
 #define ZM_ERR_OPT_NONCONVEX               "cannot solve non-convex QP programs"
 
-#define ZM_ERR_MCA_INVALID_SIZE            "invalid size of vector for clustering: %d"
-#define ZM_ERR_MCA_EMPTYSET                "empty set assigned"
-#define ZM_ERR_MCA_NOCOREFUNC              "method not assigned to find core of a cluster"
-#define ZM_ERR_MCA_NOERRORFUNC             "method not assigned to compute error between samples"
-#define ZM_ERR_MCA_NODISTFUNC              "method not assigned to compute distance between samples"
+#define ZM_ERR_MVA_INVALID_SIZE            "invalid size of vector for clustering: %d"
+#define ZM_ERR_MVA_EMPTYSET                "empty set assigned"
+#define ZM_ERR_MVA_NOCOREFUNC              "method not assigned to find core of a cluster"
+#define ZM_ERR_MVA_NOERRORFUNC             "method not assigned to compute error between samples"
+#define ZM_ERR_MVA_NODISTFUNC              "method not assigned to compute distance between samples"
 
 #define ZM_ERR_GNG_NONEMPTY_UNIT           "not an empty GNG unit"
 

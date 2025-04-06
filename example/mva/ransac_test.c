@@ -1,5 +1,4 @@
-#include <zm/zm_data.h>
-#include <zm/zm_le.h>
+#include <zm/zm_mva.h>
 
 /* TEST 1: plane, 2: parabola */
 #define TEST 2
@@ -15,12 +14,12 @@ double y_test(double x)
   return 5 * ( x - 2 );
 }
 
-double error_case(zVec q, zVec sample, void *util)
+double error_case(const zVec q, const zVec sample, void *util)
 {
   return zVecInnerProd( q, sample ) - 1;
 }
 
-zVec fit_case(zVec q, zVecList *list, void *util)
+zVec fit_case(zVec q, const zVecList *list, void *util)
 {
   zMat m;
   zVec p;
@@ -61,14 +60,14 @@ double y_test(double x)
   return zSqr( x - 0.5 ) - 1;
 }
 
-double error_case(zVec q, zVec sample, void *util)
+double error_case(const zVec q, const zVec sample, void *util)
 {
   return zVecElemNC(q,0)*zSqr(zVecElemNC(sample,0)) +
          zVecElemNC(q,1)*zVecElemNC(sample,0) +
          zVecElemNC(q,2) - zVecElemNC(sample,1);
 }
 
-zVec fit_case(zVec q, zVecList *list, void *util)
+zVec fit_case(zVec q, const zVecList *list, void *util)
 {
   zMat m;
   zVec p, pi;
@@ -95,7 +94,7 @@ zVec fit_case(zVec q, zVecList *list, void *util)
   return q;
 }
 
-void print_case(zVec q)
+void print_case(const zVec q)
 {
   printf( "plot [-10:10] 's' u 1:2 w p lt 2, (%.10g)*x*x+(%.10g)*x+(%.10g) w l lt 7\n", zVecElemNC(q,0), zVecElemNC(q,1), zVecElemNC(q,2) );
 }

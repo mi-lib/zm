@@ -1,7 +1,7 @@
-#include <zm/zm_mca.h>
+#include <zm/zm.h>
 
 zVecList sample;
-zMCluster mc;
+zVecMCluster mc;
 
 enum{
   ZM_KMEANS_HELP = 0,
@@ -53,14 +53,14 @@ bool zm_kmeans_init(int argc, char *argv[])
   return true;
 }
 
-double kmeans_try_k(zMCluster *mc, zVecList *sample, int k, int testnum)
+double kmeans_try_k(zVecMCluster *mc, zVecList *sample, int k, int testnum)
 {
-  zMCluster *test_mc;
+  zVecMCluster *test_mc;
   double *score = NULL;
   int i, selected;
   double score_min = -HUGE_VAL;
 
-  if( !( test_mc = zAlloc( zMCluster, testnum ) ) ){
+  if( !( test_mc = zAlloc( zVecMCluster, testnum ) ) ){
     ZALLOCERROR();
     goto TERMINATE;
   }
@@ -69,39 +69,39 @@ double kmeans_try_k(zMCluster *mc, zVecList *sample, int k, int testnum)
     goto TERMINATE;
   }
   for( i=0; i<testnum; i++ ){
-    zMClusterInit( &test_mc[i], zVecSizeNC(zListTail(sample)->data) );
-    zMClusterKMeans( &test_mc[i], sample, k );
-    score[i] = zMClusterMeanSilhouette( &test_mc[i] );
+    zVecMClusterInit( &test_mc[i], zVecSizeNC(zListTail(sample)->data) );
+    zVecMClusterKMeans( &test_mc[i], sample, k );
+    score[i] = zVecMClusterMeanSilhouette( &test_mc[i] );
   }
   score_min = zDataMax( score, testnum, &selected );
-  zMClusterMove( &test_mc[selected], mc );
+  zVecMClusterMove( &test_mc[selected], mc );
 
  TERMINATE:
   for( i=0; i<testnum; i++ )
-    zMClusterDestroy( &test_mc[i] );
+    zVecMClusterDestroy( &test_mc[i] );
   free( test_mc );
   free( score );
   return score_min;
 }
 
-bool kmeans_check_silhouette(zMCluster *mc, double score)
+bool kmeans_check_silhouette(zVecMCluster *mc, double score)
 {
-  zClusterListCell *cp;
+  zVecClusterListCell *cp;
 
-  zListForEach( zMClusterClusterList(mc), cp )
-    if( zClusterMaxSilhouette(&cp->data) < score ) return false;
+  zListForEach( zVecMClusterClusterList(mc), cp )
+    if( zVecClusterMaxSilhouette(&cp->data) < score ) return false;
   return true;
 }
 
-int kmeans_try(zMCluster *mc, zVecList *sample, int kmin, int kmax, int testnum)
+int kmeans_try(zVecMCluster *mc, zVecList *sample, int kmin, int kmax, int testnum)
 {
-  zMCluster *test_mc;
+  zVecMCluster *test_mc;
   double score;
   double evenness, evenness_min = HUGE_VAL;
   int n, i, ik = -1;
 
   n = kmax - kmin + 1;
-  if( !( test_mc = zAlloc( zMCluster, n ) ) ){
+  if( !( test_mc = zAlloc( zVecMCluster, n ) ) ){
     ZALLOCERROR();
     goto TERMINATE;
   }
@@ -113,17 +113,17 @@ int kmeans_try(zMCluster *mc, zVecList *sample, int kmin, int kmax, int testnum)
       if( option[ZM_KMEANS_VERBOSE].flag ) printf( "omitted.\n" );
       continue;
     }
-    if( ( evenness = zMClusterEvenness( &test_mc[i] ) ) < evenness_min ){
+    if( ( evenness = zVecMClusterEvenness( &test_mc[i] ) ) < evenness_min ){
       evenness_min = evenness;
       ik = i;
     }
     if( option[ZM_KMEANS_VERBOSE].flag ) printf( "evenness = %g\n", evenness );
   }
-  zMClusterMove( &test_mc[ik], mc );
+  zVecMClusterMove( &test_mc[ik], mc );
 
  TERMINATE:
   for( i=0; i<testnum; i++ )
-    zMClusterDestroy( &test_mc[i] );
+    zVecMClusterDestroy( &test_mc[i] );
   free( test_mc );
   return kmin + ik;
 }
@@ -140,9 +140,9 @@ int main(int argc, char *argv[])
   k = kmeans_try( &mc, &sample, kmin, kmax, n );
   if( option[ZM_KMEANS_VERBOSE].flag )
     printf( "determined number of clusters = %d\n", k );
-  zMClusterValuePrintFile( &mc, option[ZM_KMEANS_CLUSTER_FILENAME].arg );
-  zMClusterSilhouettePrintFile( &mc, option[ZM_KMEANS_SILHOUETTE_FILENAME].arg );
-  zMClusterDestroy( &mc );
+  zVecMClusterValuePrintFile( &mc, option[ZM_KMEANS_CLUSTER_FILENAME].arg );
+  zVecMClusterSilhouettePrintFile( &mc, option[ZM_KMEANS_SILHOUETTE_FILENAME].arg );
+  zVecMClusterDestroy( &mc );
   zVecListDestroy( &sample );
   return EXIT_SUCCESS;
 }

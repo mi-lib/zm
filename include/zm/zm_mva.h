@@ -1,13 +1,13 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  */
-/*! \file zm_mca.h
- * \brief multiple classification analysis.
+/*! \file zm_mva.h
+ * \brief multivariate analysis analysis.
  * \author Zhidao
  */
 
-#ifndef __ZM_MCA_H__
-#define __ZM_MCA_H__
+#ifndef __ZM_MVA_H__
+#define __ZM_MVA_H__
 
 #include <zm/zm_data.h>
 #include <zm/zm_mat_eig.h>
@@ -24,7 +24,7 @@ __BEGIN_DECLS
  * zVecListMinMax() returns the true value if the sizes of \a min, \a max and vectors in \a list have
  * the same size. Otherwise, it returns the false value.
  */
-__ZM_EXPORT bool zVecListMinMax(zVecList *list, zVec min, zVec max);
+__ZM_EXPORT bool zVecListMinMax(const zVecList *list, zVec min, zVec max);
 
 /*! \brief sum up all vectors in a list.
  *
@@ -32,7 +32,7 @@ __ZM_EXPORT bool zVecListMinMax(zVecList *list, zVec min, zVec max);
  * \return
  * zVecListSum() returns a pointer \a sum.
  */
-__ZM_EXPORT zVec zVecListSum(zVecList *list, zVec sum);
+__ZM_EXPORT zVec zVecListSum(const zVecList *list, zVec sum);
 
 /*! \brief mean of all vectors in a list.
  *
@@ -40,7 +40,7 @@ __ZM_EXPORT zVec zVecListSum(zVecList *list, zVec sum);
  * \return
  * zVecListMean() returns a pointer \a mean.
  */
-__ZM_EXPORT zVec zVecListMean(zVecList *list, zVec mean);
+__ZM_EXPORT zVec zVecListMean(const zVecList *list, zVec mean);
 
 /*! \brief variance of all vectors in a list.
  *
@@ -49,7 +49,7 @@ __ZM_EXPORT zVec zVecListMean(zVecList *list, zVec mean);
  * \return
  * zVecListVar() returns the computed variance.
  */
-__ZM_EXPORT double zVecListVar(zVecList *list, zVec mean);
+__ZM_EXPORT double zVecListVar(const zVecList *list, zVec mean);
 
 /*! \brief mean and variance of all vectors in a list.
  *
@@ -58,7 +58,7 @@ __ZM_EXPORT double zVecListVar(zVecList *list, zVec mean);
  * \return
  * zVecListMeanVar() returns the computed variance.
  */
-__ZM_EXPORT double zVecListMeanVar(zVecList *list, zVec mean);
+__ZM_EXPORT double zVecListMeanVar(const zVecList *list, zVec mean);
 
 /*! \brief variance-covariance matrix of all vectors in a list.
  *
@@ -67,7 +67,7 @@ __ZM_EXPORT double zVecListMeanVar(zVecList *list, zVec mean);
  * \return
  * zVecListCov() returns a pointer \a cov.
  */
-__ZM_EXPORT zMat zVecListCov(zVecList *list, zVec mean, zMat cov);
+__ZM_EXPORT zMat zVecListCov(const zVecList *list, zVec mean, zMat cov);
 
 /*! \brief mean and variance-covariance matrix of all vectors in a list.
  *
@@ -76,7 +76,7 @@ __ZM_EXPORT zMat zVecListCov(zVecList *list, zVec mean, zMat cov);
  * \return
  * zVecListMeanCov() returns a pointer \a cov.
  */
-__ZM_EXPORT zMat zVecListMeanCov(zVecList *list, zVec mean, zMat cov);
+__ZM_EXPORT zMat zVecListMeanCov(const zVecList *list, zVec mean, zMat cov);
 
 /*! \brief principal component analysis.
  *
@@ -88,7 +88,7 @@ __ZM_EXPORT zMat zVecListMeanCov(zVecList *list, zVec mean, zMat cov);
  * \return
  * zVecListPCA() returns the number of significant (i.e., unignored) components.
  */
-__ZM_EXPORT int zVecListPCA(zVecList *points, double cr, zVec mean, zVec score, zMat loading);
+__ZM_EXPORT int zVecListPCA(const zVecList *points, double cr, zVec mean, zVec score, zMat loading);
 
 /*! \brief generate vectors from normal distribution.
  *
@@ -104,7 +104,8 @@ __ZM_EXPORT int zVecListGenRandND(zVecList *vl, int n, zVec mean, zMat cov);
 
 __END_DECLS
 
-#include <zm/zm_mca_cluster.h>
-#include <zm/zm_mca_gmm.h>
+#include <zm/zm_mva_ransac.h>
+#include <zm/zm_mva_cluster.h>
+#include <zm/zm_mva_gmm.h>
 
-#endif /* __ZM_MCA_H__ */
+#endif /* __ZM_MVA_H__ */

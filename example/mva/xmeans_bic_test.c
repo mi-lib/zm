@@ -1,4 +1,5 @@
-#include <zm/zm_mca.h>
+#include <zm/zm_mva.h>
+#include <zm/zm_rand.h>
 
 void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax, double ymax)
 {
@@ -14,8 +15,8 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
     xc = zRandF( xmin, xmax );
     yc = zRandF( ymin, ymax );
     for( j=0; j<np; j++ ){
-      r = zRandF(0,rmax);
-      t = zRandF(0,zPIx2);
+      r = zRandND( NULL, 0, 0.5*rmax );
+      t = zRandF( 0, zPIx2 );
       zVecSetElem( vc, 0, xc + r * cos(t) );
       zVecSetElem( vc, 1, yc + r * sin(t) );
       zVecListInsertHead( vl, vc );
@@ -25,27 +26,32 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
 }
 
 #define NP 1000
-#define NC 6
+#define NC 10
 
 int main(int argc, char *argv[])
 {
-  zMCluster mc;
+  zVecMCluster mc;
+  zVecClusterListCell *vcc;
   zVecList points;
-  int np, nc;
-  double score;
+  FILE *fp;
+  char filename[BUFSIZ];
+  int np, nc, i = 0;
 
   zRandInit();
-  nc = argc > 1 ? atoi( argv[1] ) : NC;
-  np = argc > 2 ? atoi( argv[2] ) : NP;
+  np = argc > 1 ? atoi( argv[1] ) : NP;
+  nc = argc > 2 ? atoi( argv[2] ) : NC;
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
-  zMClusterInit( &mc, 2 );
-  printf( "K-means completed in %d times of iteration.\n", zMClusterKMeans( &mc, &points, nc ) );
-  zMClusterValuePrintFile( &mc, "" );
-  score = zMClusterMeanSilhouette( &mc );
-  zMClusterSilhouettePrintFile( &mc, "s" );
-  printf( "mean silhouette = %.10g\n", score );
+  zVecMClusterInit( &mc, 2 );
+  printf( "X-means completed in %d times of iteration.\n",
+    zVecMClusterXMeansBIC( &mc, &points ) );
 
-  zMClusterDestroy( &mc );
+  zListForEach( zVecMClusterClusterList(&mc), vcc ){
+    sprintf( filename, "%d", i++ );
+    fp = fopen( filename, "w" );
+    zVecClusterValueFPrint( fp, &vcc->data );
+    fclose( fp );
+  }
+  zVecMClusterDestroy( &mc );
   zVecListDestroy( &points );
   return 0;
 }
