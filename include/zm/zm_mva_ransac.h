@@ -25,13 +25,20 @@ __BEGIN_DECLS
  * \a nt is the number of trials to find a candidate of the best parameter.
  * \a th is a threshold to distinguish inliers and outliers with respect to the current guess.
  *
- * zRANSACAuto() automatically sets parameters for RANSAC from the rate of outliers and the level of noises.
+ * zRANSACSaveInlier() works in the same way with zRANSAC() except that it saves the candidate samples of
+ * inliers to a list of vectors \a inlier from \a sample.
+ *
+ * zRANSACAuto() and zRANSACSaveInlierAuto() automatically set parameters for RANSAC from the rate of
+ * outliers \a rate and the level of noises \a nl. Their arguments have the same meanings with zRANSAC()
+ * and zRANSACSaveInlier(), respectively.
  * \return
  * zRANSAC() and zRANSACAuto() return the null pointer if they fail to allocate memory for internal vector
  * computations. Otherwise, a pointer \a q is returned.
  */
 __ZM_EXPORT zVec zRANSAC(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,const zVecList*,void*), double (* error_fp)(const zVec,const zVec,void*), void *util, int ns, int nt, double th);
-__ZM_EXPORT zVec zRANSACAuto(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,const zVecList*,void*), double (* error_fp)(const zVec,const zVec,void*), void *util, double r, double nl);
+__ZM_EXPORT zVec zRANSACSaveInlier(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,const zVecList*,void*), double (* error_fp)(const zVec,const zVec,void*), void *util, int ns, int nt, double th, zVecList *inlier);
+__ZM_EXPORT zVec zRANSACAuto(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,const zVecList*,void*), double (* error_fp)(const zVec,const zVec,void*), void *util, double rate, double nl);
+__ZM_EXPORT zVec zRANSACSaveInlierAuto(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,const zVecList*,void*), double (* error_fp)(const zVec,const zVec,void*), void *util, double rate, double nl, zVecList *inlier);
 
 __END_DECLS
 
