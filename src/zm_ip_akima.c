@@ -12,14 +12,14 @@ static zVec _zIPVecAkima(const zIPData *dat, double t, zVec v)
   int i;
   double d, dt, d2, dt2;
 
-  i = zIPSeg( dat, t );
-  d2 = zSqr( ( d = zIPDelta(dat,i+1) ) );
-  dt2 = zSqr( ( dt = t - zIPTime(dat,i) ) );
-  zVecSubNC( zIPSecVec(dat,i+1), zIPSecVec(dat,i), v );
+  i = zIPDataSeg( dat, t );
+  d2 = zSqr( ( d = zIPDataDeltaTime(dat,i+1) ) );
+  dt2 = zSqr( ( dt = t - zIPDataTime(dat,i) ) );
+  zVecSubNC( zIPDataSecVec(dat,i+1), zIPDataSecVec(dat,i), v );
   zVecMulDRC( v, dt2*(3-2*dt/d)/d2 );
   zVecCatNCDRC( v, dt*(1-2*dt/d+dt2/d2), *zArrayElem(&dat->va,i) );
   zVecCatNCDRC( v, dt2*(dt/d-1)/d, *zArrayElem(&dat->va,i+1) );
-  return zVecAddNCDRC( v, zIPSecVec(dat,i) );
+  return zVecAddNCDRC( v, zIPDataSecVec(dat,i) );
 }
 
 /* velocity on Akima interpolation */
@@ -28,12 +28,12 @@ static zVec _zIPVelAkima(const zIPData *dat, double t, zVec v)
   int i;
   double d, dt;
 
-  i = zIPSeg( dat, t );
-  d = zIPDelta(dat,i+1);
-  dt = ( t - zIPTime(dat,i) ) / d;
-  zVecSubNC( zIPSecVec(dat,i+1), zIPSecVec(dat,i), v );
+  i = zIPDataSeg( dat, t );
+  d = zIPDataDeltaTime(dat,i+1);
+  dt = ( t - zIPDataTime(dat,i) ) / d;
+  zVecSubNC( zIPDataSecVec(dat,i+1), zIPDataSecVec(dat,i), v );
   zVecMulDRC( v, 6*dt*(1-dt)/d );
-  zVecCatNCDRC( v, 1-4*dt+3*zSqr(dt), *zArrayElem(&dat->va,i) );
+  zVecCatNCDRC( v, 1-4*dt+3*_zSqr(dt), *zArrayElem(&dat->va,i) );
   zVecCatNCDRC( v, dt*(3*dt-2), *zArrayElem(&dat->va,i+1) );
   return v;
 }
@@ -44,10 +44,10 @@ static zVec _zIPAccAkima(const zIPData *dat, double t, zVec v)
   int i;
   double d, dt, d2;
 
-  i = zIPSeg( dat, t );
-  d2 = zSqr( ( d = zIPDelta(dat,i+1) ) );
-  dt = t - zIPTime(dat,i);
-  zVecSubNC( zIPSecVec(dat,i+1), zIPSecVec(dat,i), v );
+  i = zIPDataSeg( dat, t );
+  d2 = zSqr( ( d = zIPDataDeltaTime(dat,i+1) ) );
+  dt = t - zIPDataTime(dat,i);
+  zVecSubNC( zIPDataSecVec(dat,i+1), zIPDataSecVec(dat,i), v );
   zVecMulDRC( v, 6*(1-2/d*dt)/d2 );
   zVecCatNCDRC( v, 6/d2*dt-4/d, *zArrayElem(&dat->va,i) );
   zVecCatNCDRC( v, 6/d2*dt-2/d, *zArrayElem(&dat->va,i+1) );
@@ -57,7 +57,7 @@ static zVec _zIPAccAkima(const zIPData *dat, double t, zVec v)
 /* velocity at a section on Akima interpolation */
 static zVec _zIPSecVelAkima(const zIPData *dat, int i, zVec v)
 {
-  if( i>=zIPSize(dat) || i==0 ) return zVecZero( v );
+  if( i>=zIPDataSize(dat) || i==0 ) return zVecZero( v );
   return zVecCopyNC( *zArrayElem(&dat->va,i), v );
 }
 
@@ -73,11 +73,11 @@ static zVec _zIPSecAccAkima(const zIPData *dat, int i, zVec v)
     v = NULL;
     goto TERMINATE;
   }
-  if( i >= zIPSize(dat) ) return zVecZero( v );
-  if( i < zIPSize(dat)-1 ){
-    d = zIPDelta(dat,i+1);
-    zVecSubNC( zIPSecVec(dat,i+1), zIPSecVec(dat,i), a1 );
-    zVecMulNCDRC( a1, 6/zSqr(d) );
+  if( i >= zIPDataSize(dat) ) return zVecZero( v );
+  if( i < zIPDataSize(dat)-1 ){
+    d = zIPDataDeltaTime(dat,i+1);
+    zVecSubNC( zIPDataSecVec(dat,i+1), zIPDataSecVec(dat,i), a1 );
+    zVecMulNCDRC( a1, 6/_zSqr(d) );
     zVecCatNCDRC( a1,-4/d, *zArrayElem(&dat->va,i) );
     zVecCatNCDRC( a1,-2/d, *zArrayElem(&dat->va,i+1) );
     if( i == 0 ){
@@ -86,9 +86,9 @@ static zVec _zIPSecAccAkima(const zIPData *dat, int i, zVec v)
     }
     i--;
   }
-  d = zIPDelta(dat,i+1);
-  zVecSubNC( zIPSecVec(dat,i+1), zIPSecVec(dat,i), a2 );
-  zVecMulNCDRC( a2, -6/zSqr(d) );
+  d = zIPDataDeltaTime(dat,i+1);
+  zVecSubNC( zIPDataSecVec(dat,i+1), zIPDataSecVec(dat,i), a2 );
+  zVecMulNCDRC( a2, -6/_zSqr(d) );
   zVecCatNCDRC( a2, 4/d, *zArrayElem(&dat->va,i) );
   zVecCatNCDRC( a2, 2/d, *zArrayElem(&dat->va,i+1) );
   zVecAddNC( a1, a2, v );
@@ -117,7 +117,7 @@ bool zIPCreateAkima(zIP *ip, const zSeq *seq)
   double dm1, dm2;
 
   if( !zIPDataAlloc( &ip->dat, seq ) ) return false;
-  n = zIPSize(&ip->dat);
+  n = zIPSize(ip);
   if( !( m = zVecAlloc( n+3 ) ) ){
     ZALLOCERROR();
     return false;
@@ -125,7 +125,7 @@ bool zIPCreateAkima(zIP *ip, const zSeq *seq)
   for( i=0; i<zVecSizeNC(zListHead(seq)->data.v); i++ ){
     for( j=2; j<=n; j++ )
       zVecSetElemNC( m, j,
-        ( zIPSecVal(&ip->dat,j-1,i)-zIPSecVal(&ip->dat,j-2,i) ) / zIPDelta(&ip->dat,j-1) );
+        ( zIPSecVal(ip,j-1,i)-zIPSecVal(ip,j-2,i) ) / zIPDeltaTime(ip,j-1) );
     zVecSetElemNC( m,   0, 3*zVecElem(m,2)-2*zVecElem(m,3) );
     zVecSetElemNC( m,   1, 2*zVecElem(m,2)-  zVecElem(m,3) );
     zVecSetElemNC( m, n+1, 2*zVecElem(m,n)-2*zVecElem(m,n-1) );

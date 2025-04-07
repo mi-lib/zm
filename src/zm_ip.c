@@ -32,7 +32,7 @@ bool zIPDataAlloc(zIPData *dat, const zSeq *seq)
   }
   dat->seq = seq;
   zListForEachRew( dat->seq, cp ){
-    kp = zIPKnot(dat,i++);
+    kp = zIPDataKnot(dat,i++);
     kp->t = ( t += cp->data.dt );
     kp->cp = cp;
   }
@@ -48,13 +48,13 @@ void zIPDataFree(zIPData *dat)
 }
 
 /* find a segment in which the absessi is included. */
-int zIPSeg(const zIPData *dat, double t)
+int zIPDataSeg(const zIPData *dat, double t)
 {
   int i, j, k;
 
-  for( i=0, j=zIPSize(dat)-1; ; ){
+  for( i=0, j=zIPDataSize(dat)-1; ; ){
     if( ( k = ( i + j ) / 2 ) == i ) break;
-    if( zIPTime(dat,k) > t ) j = k;
+    if( zIPDataTime(dat,k) > t ) j = k;
     else i = k;
   }
   return i;

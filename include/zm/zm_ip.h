@@ -28,12 +28,12 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPData ){
   /*! \endcond */
 };
 
-#define zIPSize(dat)       zListSize((dat)->seq)
-#define zIPKnot(dat,i)     zArrayElemNC(&(dat)->knot,i)
-#define zIPTime(dat,i)     ( zIPKnot(dat,i)->t )
-#define zIPDelta(dat,i)    ( zIPKnot(dat,i)->cp->data.dt )
-#define zIPSecVec(dat,i)   ( zIPKnot(dat,i)->cp->data.v )
-#define zIPSecVal(dat,i,j) zVecElemNC( zIPSecVec(dat,i), j )
+#define zIPDataSize(dat)         zListSize((dat)->seq)
+#define zIPDataKnot(dat,i)       zArrayElemNC(&(dat)->knot,i)
+#define zIPDataTime(dat,i)       ( zIPDataKnot(dat,i)->t )
+#define zIPDataDeltaTime(dat,i)  ( zIPDataKnot(dat,i)->cp->data.dt )
+#define zIPDataSecVec(dat,i)     ( zIPDataKnot(dat,i)->cp->data.v )
+#define zIPDataSecVal(dat,i,j)   zVecElemNC( zIPDataSecVec(dat,i), j )
 
 /* allocate and free the internal workspace of an interpolator. */
 __ZM_EXPORT bool zIPDataAlloc(zIPData *dat, const zSeq *seq);
@@ -41,12 +41,12 @@ __ZM_EXPORT void zIPDataFree(zIPData *dat);
 
 /* get segment of a sequence to be interpolated.
  *
- * zIPSeg() finds the segment which the given point corresponding
- * to \a t belongs to in an interpolation data \a dat.
+ * zIPDataSeg() finds the segment which includes the given point corresponding to \a t in an
+ * interpolation data \a dat.
  * \return
- * zIPSeg() returns an integer value \a i when t_i <= t < t_i+1.
+ * zIPDataSeg() returns an integer value \a i when t_i <= t < t_i+1.
  */
-__ZM_EXPORT int zIPSeg(const zIPData *dat, double t);
+__ZM_EXPORT int zIPDataSeg(const zIPData *dat, double t);
 
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPCom ){
   zVec (*vec)(const zIPData*,double,zVec);
@@ -60,6 +60,13 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIP ){
   zIPData dat;
   zIPCom *com;
 };
+
+#define zIPSize(ip)        zIPDataSize( &(ip)->dat )
+#define zIPKnot(ip,i)      zIPDataKnot( &(ip)->dat, i )
+#define zIPTime(ip,i)      zIPDataTime( &(ip)->dat, i )
+#define zIPDeltaTime(ip,i) zIPDataDeltaTime( &(ip)->dat, i )
+#define zIPSecVec(ip,i)    zIPDataSecVec( &(ip)->dat, i )
+#define zIPSecVal(ip,i,j)  zIPDataSecVal( &(ip)->dat, i, j )
 
 /*! \brief interpolation values.
  *

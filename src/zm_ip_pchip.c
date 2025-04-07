@@ -31,13 +31,13 @@ static zVec _zIPVecPCHIP(const zIPData *dat, double t, zVec v)
   int i;
   double dt, dt1, dt2;
 
+  i = zIPDataSeg( dat, t );
+  dt = zIPDataDeltaTime(dat,i+1);
+  dt1 = ( zIPDataTime(dat,i+1) - t ) / dt;
+  dt2 = ( t - zIPDataTime(dat,i) ) / dt;
   zVecZero( v );
-  i = zIPSeg( dat, t );
-  dt = zIPDelta(dat,i+1);
-  dt1 = ( zIPTime(dat,i+1) - t ) / dt;
-  dt2 = ( t - zIPTime(dat,i) ) / dt;
-  zVecCatDRC( v, _zPCHIPBase1(dt1), zIPSecVec(dat,i  ) );
-  zVecCatDRC( v, _zPCHIPBase1(dt2), zIPSecVec(dat,i+1) );
+  zVecCatDRC( v, _zPCHIPBase1(dt1), zIPDataSecVec(dat,i  ) );
+  zVecCatDRC( v, _zPCHIPBase1(dt2), zIPDataSecVec(dat,i+1) );
   zVecCatDRC( v,-dt*_zPCHIPBase2(dt1), *zArrayElem(&dat->va,i  ) );
   zVecCatDRC( v, dt*_zPCHIPBase2(dt2), *zArrayElem(&dat->va,i+1) );
   return v;
@@ -49,13 +49,13 @@ static zVec _zIPVelPCHIP(const zIPData *dat, double t, zVec v)
   int i;
   double dt, dt1, dt2;
 
+  i = zIPDataSeg( dat, t );
+  dt = zIPDataDeltaTime(dat,i+1);
+  dt1 = ( zIPDataTime(dat,i+1) - t ) / dt;
+  dt2 = ( t - zIPDataTime(dat,i) ) / dt;
   zVecZero( v );
-  i = zIPSeg( dat, t );
-  dt = zIPDelta(dat,i+1);
-  dt1 = ( zIPTime(dat,i+1) - t ) / dt;
-  dt2 = ( t - zIPTime(dat,i) ) / dt;
-  zVecCatDRC( v, _zPCHIPBaseVel1(dt1), zIPSecVec(dat,i  ) );
-  zVecCatDRC( v, _zPCHIPBaseVel1(dt2), zIPSecVec(dat,i+1) );
+  zVecCatDRC( v, _zPCHIPBaseVel1(dt1), zIPDataSecVec(dat,i  ) );
+  zVecCatDRC( v, _zPCHIPBaseVel1(dt2), zIPDataSecVec(dat,i+1) );
   zVecCatDRC( v,-dt*_zPCHIPBaseVel2(dt1), *zArrayElem(&dat->va,i  ) );
   zVecCatDRC( v, dt*_zPCHIPBaseVel2(dt2), *zArrayElem(&dat->va,i+1) );
   return v;
@@ -67,13 +67,13 @@ static zVec _zIPAccPCHIP(const zIPData *dat, double t, zVec v)
   int i;
   double dt, dt1, dt2;
 
+  i = zIPDataSeg( dat, t );
+  dt = zIPDataDeltaTime(dat,i+1);
+  dt1 = ( zIPDataTime(dat,i+1) - t ) / dt;
+  dt2 = ( t - zIPDataTime(dat,i) ) / dt;
   zVecZero( v );
-  i = zIPSeg( dat, t );
-  dt = zIPDelta(dat,i+1);
-  dt1 = ( zIPTime(dat,i+1) - t ) / dt;
-  dt2 = ( t - zIPTime(dat,i) ) / dt;
-  zVecCatDRC( v, _zPCHIPBaseAcc1(dt1), zIPSecVec(dat,i  ) );
-  zVecCatDRC( v, _zPCHIPBaseAcc1(dt2), zIPSecVec(dat,i+1) );
+  zVecCatDRC( v, _zPCHIPBaseAcc1(dt1), zIPDataSecVec(dat,i  ) );
+  zVecCatDRC( v, _zPCHIPBaseAcc1(dt2), zIPDataSecVec(dat,i+1) );
   zVecCatDRC( v,-dt*_zPCHIPBaseAcc2(dt1), *zArrayElem(&dat->va,i  ) );
   zVecCatDRC( v, dt*_zPCHIPBaseAcc2(dt2), *zArrayElem(&dat->va,i+1) );
   return v;
@@ -82,14 +82,15 @@ static zVec _zIPAccPCHIP(const zIPData *dat, double t, zVec v)
 /* velocity at section on PCHIP interpolation */
 static zVec _zIPSecVelPCHIP(const zIPData *dat, int i, zVec v)
 {
-  return zVecCopy( *zArrayElem(&dat->va,i), v );
+  return i >= zIPDataSize(dat) ?
+    zVecZero( v ) :  zVecCopyNC( *zArrayElem(&dat->va,i), v );
 }
 
 /* acceleration at section on PCHIP interpolation */
 static zVec _zIPSecAccPCHIP(const zIPData *dat, int i, zVec v)
 {
-  zVecMul( zIPSecVec(dat,i), -6, v );
-  return zVecCatDRC( v, -zIPDelta(dat,i+1)*4, *zArrayElem(&dat->va,i) );
+  zVecMul( zIPDataSecVec(dat,i), -6, v );
+  return zVecCatDRC( v, -zIPDataDeltaTime(dat,i+1)*4, *zArrayElem(&dat->va,i) );
 }
 
 /* methods */
@@ -107,30 +108,30 @@ static void _zIPInitPCHIP(zIP *ip)
   int i, n;
   double dt1, dt2, dt3;
 
-  dt1 = zIPDelta(&ip->dat,1);
-  dt2 = zIPDelta(&ip->dat,2);
+  dt1 = zIPDeltaTime(ip,1);
+  dt2 = zIPDeltaTime(ip,2);
   dt3 = dt1 + dt2;
   zVecZero( *zArrayElem(&ip->dat.va,0) );
-  zVecCatDRC( *zArrayElem(&ip->dat.va,0),-(dt1+dt3)/(dt1*dt3), zIPSecVec(&ip->dat,0) );
-  zVecCatDRC( *zArrayElem(&ip->dat.va,0),      dt3 /(dt1*dt2), zIPSecVec(&ip->dat,1) );
-  zVecCatDRC( *zArrayElem(&ip->dat.va,0),     -dt1 /(dt2*dt3), zIPSecVec(&ip->dat,2) );
-  n = zIPSize(&ip->dat) - 1;
+  zVecCatDRC( *zArrayElem(&ip->dat.va,0),-(dt1+dt3)/(dt1*dt3), zIPSecVec(ip,0) );
+  zVecCatDRC( *zArrayElem(&ip->dat.va,0),      dt3 /(dt1*dt2), zIPSecVec(ip,1) );
+  zVecCatDRC( *zArrayElem(&ip->dat.va,0),     -dt1 /(dt2*dt3), zIPSecVec(ip,2) );
+  n = zIPSize(ip) - 1;
   for( i=1; i<n; i++ ){
-    dt1 = zIPDelta(&ip->dat,i  );
-    dt2 = zIPDelta(&ip->dat,i+1);
+    dt1 = zIPDeltaTime(ip,i  );
+    dt2 = zIPDeltaTime(ip,i+1);
     dt3 = dt1 + dt2;
     zVecZero( *zArrayElem(&ip->dat.va,i) );
-    zVecCatDRC( *zArrayElem(&ip->dat.va,i),     -dt2 /(dt1*dt3), zIPSecVec(&ip->dat,i-1) );
-    zVecCatDRC( *zArrayElem(&ip->dat.va,i), (dt2-dt1)/(dt1*dt2), zIPSecVec(&ip->dat,i  ) );
-    zVecCatDRC( *zArrayElem(&ip->dat.va,i),      dt1 /(dt2*dt3), zIPSecVec(&ip->dat,i+1) );
+    zVecCatDRC( *zArrayElem(&ip->dat.va,i),     -dt2 /(dt1*dt3), zIPSecVec(ip,i-1) );
+    zVecCatDRC( *zArrayElem(&ip->dat.va,i), (dt2-dt1)/(dt1*dt2), zIPSecVec(ip,i  ) );
+    zVecCatDRC( *zArrayElem(&ip->dat.va,i),      dt1 /(dt2*dt3), zIPSecVec(ip,i+1) );
   }
-  dt1 = zIPDelta(&ip->dat,n-1);
-  dt2 = zIPDelta(&ip->dat,n  );
+  dt1 = zIPDeltaTime(ip,n-1);
+  dt2 = zIPDeltaTime(ip,n  );
   dt3 = dt1 + dt2;
   zVecZero( *zArrayElem(&ip->dat.va,n) );
-  zVecCatDRC( *zArrayElem(&ip->dat.va,n),      dt2 /(dt1*dt3), zIPSecVec(&ip->dat,n-2) );
-  zVecCatDRC( *zArrayElem(&ip->dat.va,n),     -dt3 /(dt1*dt2), zIPSecVec(&ip->dat,n-2) );
-  zVecCatDRC( *zArrayElem(&ip->dat.va,n), (dt2+dt3)/(dt2*dt3), zIPSecVec(&ip->dat,n  ) );
+  zVecCatDRC( *zArrayElem(&ip->dat.va,n),      dt2 /(dt1*dt3), zIPSecVec(ip,n-2) );
+  zVecCatDRC( *zArrayElem(&ip->dat.va,n),     -dt3 /(dt1*dt2), zIPSecVec(ip,n-2) );
+  zVecCatDRC( *zArrayElem(&ip->dat.va,n), (dt2+dt3)/(dt2*dt3), zIPSecVec(ip,n  ) );
 }
 
 /* modify gradient vectors */
@@ -139,10 +140,10 @@ static void _zIPModifyPCHIP(zIP *ip)
   int i, j, m;
   double d, a, b, l;
 
-  m = zVecSizeNC( zIPSecVec(&ip->dat,0) );
-  for( i=0; i<zIPSize(&ip->dat)-1; i++ ){
+  m = zVecSizeNC( zIPSecVec(ip,0) );
+  for( i=0; i<zIPSize(ip)-1; i++ ){
     for( j=0; j<m; j++ ){
-      d = ( zIPSecVal(&ip->dat,i+1,j) - zIPSecVal(&ip->dat,i,j) ) / zIPDelta(&ip->dat,i+1);
+      d = ( zIPSecVal(ip,i+1,j) - zIPSecVal(ip,i,j) ) / zIPDeltaTime(ip,i+1);
       if( zIsTiny( d ) ){
         zVecSetElemNC( *zArrayElem(&ip->dat.va,i  ), j, 0 );
         zVecSetElemNC( *zArrayElem(&ip->dat.va,i+1), j, 0 );

@@ -1,3 +1,7 @@
+2025.04.07. Added _zIPDataSplineCoeff and zIPSplineCoeff. [zm_ip_spline]
+2025.04.07. Renamed zIPSeg to zIPDataSeg. [zm_ip, zm_ip_lin, zm_ip_spline, zm_ip_akima, zm_ip_pchip]
+2025.04.07. Renamed zIPSize, zIPKnot, zIPTime, zIPDelta, zIPSecVec, and zIPSecVal to zIPDataSize, zIPDataKnot, zIPDataTime, zIPDataDeltaTime, zIPDataSecVec, and zIPDataSecVal, respectively, and redefined zIPSize, zIPKnot, zIPTime, zIPDeltaTime, zIPSecVec, and zIPSecVal. [zm_ip, zm_ip_lin, zm_ip_lagrange, zm_ip_chebyshev, zm_ip_spline, zm_ip_akima, zm_ip_pchip]
+2025.04.07. Modified _zIPVecSpline to improve computation efficiency. [zm_ip_spline]
 2025.04.06. Added _zRANSACAutoSelectionNumber and zRANSACSaveInlierAuto. [zm_mva_ransac]
 2025.04.06. Added zRANSACSaveInlier and reimplemented zRANSAC. [zm_mva_ransac]
 2025.04.06. Added zVecMClusterSetLS. [zm_mva_cluster]

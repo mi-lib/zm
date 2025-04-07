@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
   for( i=0; ; i++ ){
     t = tp[0] + 0.1 * i;
-    printf( "%g %d\n", t, zIPSeg(&dat,t) );
+    printf( "%g %d\n", t, zIPDataSeg(&dat,t) );
     if( t > tmax ) break;
   }
 
