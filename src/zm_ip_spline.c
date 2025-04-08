@@ -1,28 +1,46 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_ip_spline - interpolation: spline interpolation.
+ * zm_ip_spline - interpolation: cubic spline interpolation.
  */
 
 #include <zm/zm_ip.h>
 #include <zm/zm_le.h>
 
+/* cubic Hermite base functions and derivatives */
+
+static double _zFergusonBase1(double t){ return ( 3 - 2*t )*t*t; }
+static double _zFergusonBase2(double t){ return ( t - 1 )*t*t; }
+static double _zFergusonBaseVel1(double t){ return 6*t*( 1 - t ); }
+static double _zFergusonBaseVel2(double t){ return ( 3*t - 2 )*t; }
+static double _zFergusonBaseAcc1(double t){ return 6*( 1 - 2*t ); }
+static double _zFergusonBaseAcc2(double t){ return 2*( 3*t - 1 ); }
+
+/* value on Ferguson curve. */
+double zFergusonVal(double t, double term, double x0, double v0, double x1, double v1)
+{
+  double dt1, dt2;
+
+  dt1 = 1 - ( dt2 = t / term );
+  return _zFergusonBase1(dt1) * x0 + _zFergusonBase1(dt2) * x1
+         + term * ( -_zFergusonBase2(dt1) * v0 + _zFergusonBase2(dt2) * v1 );
+}
+
 /* vector on spline interpolation */
 static zVec _zIPVecSpline(const zIPData *dat, double t, zVec v)
 {
   int i;
-  double r1, r2, r12, r22;
+  double dt, dt1, dt2;
 
   i = zIPDataSeg( dat, t );
-  r1 = ( zIPDataTime(dat,i  ) - t ) / zIPDataDeltaTime(dat,i+1);
-  r2 = ( zIPDataTime(dat,i+1) - t ) / zIPDataDeltaTime(dat,i+1);
-  r12 = _zSqr( r1 );
-  r22 = _zSqr( r2 );
+  dt = zIPDataDeltaTime(dat,i+1);
+  dt1 = ( zIPDataTime(dat,i+1) - t ) / dt;
+  dt2 = ( t - zIPDataTime(dat,i) ) / dt;
   zVecZero( v );
-  zVecCatNCDRC( v, r22*(3-2*r2), zIPDataSecVec( dat, i ) );
-  zVecCatNCDRC( v, r12*(3+2*r1), zIPDataSecVec( dat, i+1 ) );
-  zVecCatNCDRC( v,-zIPDataDeltaTime(dat,i+1)*r22*(r2-1), *zArrayElem(&dat->va,i) );
-  zVecCatNCDRC( v,-zIPDataDeltaTime(dat,i+1)*r12*(r1+1), *zArrayElem(&dat->va,i+1) );
+  zVecCatDRC( v, _zFergusonBase1(dt1), zIPDataSecVec(dat,i  ) );
+  zVecCatDRC( v, _zFergusonBase1(dt2), zIPDataSecVec(dat,i+1) );
+  zVecCatDRC( v,-dt*_zFergusonBase2(dt1), *zArrayElem(&dat->va,i  ) );
+  zVecCatDRC( v, dt*_zFergusonBase2(dt2), *zArrayElem(&dat->va,i+1) );
   return v;
 }
 
@@ -30,16 +48,17 @@ static zVec _zIPVecSpline(const zIPData *dat, double t, zVec v)
 static zVec _zIPVelSpline(const zIPData *dat, double t, zVec v)
 {
   int i;
-  double r1, r2;
+  double dt, dt1, dt2;
 
   i = zIPDataSeg( dat, t );
-  r1 = ( zIPDataTime(dat,i  ) - t ) / zIPDataDeltaTime(dat,i+1);
-  r2 = ( zIPDataTime(dat,i+1) - t ) / zIPDataDeltaTime(dat,i+1);
+  dt = zIPDataDeltaTime(dat,i+1);
+  dt1 = ( zIPDataTime(dat,i+1) - t ) / dt;
+  dt2 = ( t - zIPDataTime(dat,i) ) / dt;
   zVecZero( v );
-  zVecCatNCDRC( v,-6*r2*(1-r2)/zIPDataDeltaTime(dat,i+1), zIPDataSecVec( dat, i ) );
-  zVecCatNCDRC( v,-6*r1*(1+r1)/zIPDataDeltaTime(dat,i+1), zIPDataSecVec( dat, i+1 ) );
-  zVecCatNCDRC( v, r2*(3*r2-2), *zArrayElem(&dat->va,i) );
-  zVecCatNCDRC( v, r1*(3*r1+2), *zArrayElem(&dat->va,i+1) );
+  zVecCatDRC( v,-_zFergusonBaseVel1(dt1)/dt, zIPDataSecVec(dat,i  ) );
+  zVecCatDRC( v, _zFergusonBaseVel1(dt2)/dt, zIPDataSecVec(dat,i+1) );
+  zVecCatDRC( v, _zFergusonBaseVel2(dt1), *zArrayElem(&dat->va,i  ) );
+  zVecCatDRC( v, _zFergusonBaseVel2(dt2), *zArrayElem(&dat->va,i+1) );
   return v;
 }
 
@@ -47,17 +66,18 @@ static zVec _zIPVelSpline(const zIPData *dat, double t, zVec v)
 static zVec _zIPAccSpline(const zIPData *dat, double t, zVec v)
 {
   int i;
-  double t1, t2;
+  double dt, dt1, dt2;
 
   i = zIPDataSeg( dat, t );
-  t1 = t - zIPDataTime(dat,i);
-  t2 = t - zIPDataTime(dat,i+1);
+  dt = zIPDataDeltaTime(dat,i+1);
+  dt1 = ( zIPDataTime(dat,i+1) - t ) / dt;
+  dt2 = ( t - zIPDataTime(dat,i) ) / dt;
   zVecZero( v );
-  zVecCatNCDRC( v, 6+12*t2/zIPDataDeltaTime(dat,i+1), zIPDataSecVec(dat,i) );
-  zVecCatNCDRC( v, 2*zIPDataDeltaTime(dat,i+1)+6*t2, *zArrayElem(&dat->va,i) );
-  zVecCatNCDRC( v, 6-12*t1/zIPDataDeltaTime(dat,i+1), zIPDataSecVec(dat,i+1) );
-  zVecCatNCDRC( v,-2*zIPDataDeltaTime(dat,i+1)+6*t1, *zArrayElem(&dat->va,i+1) );
-  return zVecDivDRC( v, zSqr(zIPDataDeltaTime(dat,i+1)) );
+  zVecCatDRC( v, _zFergusonBaseAcc1(dt1)/_zSqr(dt), zIPDataSecVec(dat,i  ) );
+  zVecCatDRC( v, _zFergusonBaseAcc1(dt2)/_zSqr(dt), zIPDataSecVec(dat,i+1) );
+  zVecCatDRC( v,-_zFergusonBaseAcc2(dt1)/dt, *zArrayElem(&dat->va,i  ) );
+  zVecCatDRC( v, _zFergusonBaseAcc2(dt2)/dt, *zArrayElem(&dat->va,i+1) );
+  return v;
 }
 
 /* velocity at a section on spline interpolation */
@@ -210,4 +230,89 @@ bool zIPCreateSpline(zIP *ip, const zSeq *seq, int etype1, const zVec v1, int et
 bool zIPSplineCoeff(const zIP *ip, int i, zVec a, zVec b, zVec c, zVec d)
 {
   return _zIPDataSplineCoeff( &ip->dat, i, a, b, c, d );
+}
+
+/* PCHIP: Piecewise Cubic Hermite Interporating Polynomial interpolator */
+
+/* acceleration at section on PCHIP interpolation */
+static zVec _zIPSecAccPCHIP(const zIPData *dat, int i, zVec v)
+{
+  zVecMul( zIPDataSecVec(dat,i), -6, v );
+  return zVecCatDRC( v, -zIPDataDeltaTime(dat,i+1)*4, *zArrayElem(&dat->va,i) );
+}
+
+/* methods */
+static zIPCom _zm_ip_com_pchip = {
+  _zIPVecSpline,
+  _zIPVelSpline,
+  _zIPAccSpline,
+  _zIPSecVelSpline,
+  _zIPSecAccPCHIP,
+};
+
+/* initialize gradient vectors by three-point cubic interpolation */
+static void _zIPInitPCHIP(zIP *ip)
+{
+  int i, n;
+  double dt1, dt2, dt3;
+
+  dt1 = zIPDeltaTime(ip,1);
+  dt2 = zIPDeltaTime(ip,2);
+  dt3 = dt1 + dt2;
+  zVecZero( *zArrayElem(&ip->dat.va,0) );
+  zVecCatDRC( *zArrayElem(&ip->dat.va,0),-(dt1+dt3)/(dt1*dt3), zIPSecVec(ip,0) );
+  zVecCatDRC( *zArrayElem(&ip->dat.va,0),      dt3 /(dt1*dt2), zIPSecVec(ip,1) );
+  zVecCatDRC( *zArrayElem(&ip->dat.va,0),     -dt1 /(dt2*dt3), zIPSecVec(ip,2) );
+  n = zIPSize(ip) - 1;
+  for( i=1; i<n; i++ ){
+    dt1 = zIPDeltaTime(ip,i  );
+    dt2 = zIPDeltaTime(ip,i+1);
+    dt3 = dt1 + dt2;
+    zVecZero( *zArrayElem(&ip->dat.va,i) );
+    zVecCatDRC( *zArrayElem(&ip->dat.va,i),     -dt2 /(dt1*dt3), zIPSecVec(ip,i-1) );
+    zVecCatDRC( *zArrayElem(&ip->dat.va,i), (dt2-dt1)/(dt1*dt2), zIPSecVec(ip,i  ) );
+    zVecCatDRC( *zArrayElem(&ip->dat.va,i),      dt1 /(dt2*dt3), zIPSecVec(ip,i+1) );
+  }
+  dt1 = zIPDeltaTime(ip,n-1);
+  dt2 = zIPDeltaTime(ip,n  );
+  dt3 = dt1 + dt2;
+  zVecZero( *zArrayElem(&ip->dat.va,n) );
+  zVecCatDRC( *zArrayElem(&ip->dat.va,n),      dt2 /(dt1*dt3), zIPSecVec(ip,n-2) );
+  zVecCatDRC( *zArrayElem(&ip->dat.va,n),     -dt3 /(dt1*dt2), zIPSecVec(ip,n-2) );
+  zVecCatDRC( *zArrayElem(&ip->dat.va,n), (dt2+dt3)/(dt2*dt3), zIPSecVec(ip,n  ) );
+}
+
+/* modify gradient vectors */
+static void _zIPModifyPCHIP(zIP *ip)
+{
+  int i, j, m;
+  double d, a, b, l;
+
+  m = zVecSizeNC( zIPSecVec(ip,0) );
+  for( i=0; i<zIPSize(ip)-1; i++ ){
+    for( j=0; j<m; j++ ){
+      d = ( zIPSecVal(ip,i+1,j) - zIPSecVal(ip,i,j) ) / zIPDeltaTime(ip,i+1);
+      if( zIsTiny( d ) ){
+        zVecSetElemNC( *zArrayElem(&ip->dat.va,i  ), j, 0 );
+        zVecSetElemNC( *zArrayElem(&ip->dat.va,i+1), j, 0 );
+        continue;
+      }
+      a = zVecElemNC( *zArrayElem(&ip->dat.va,i  ), j ) / d;
+      b = zVecElemNC( *zArrayElem(&ip->dat.va,i+1), j ) / d;
+      if( ( l = sqrt( a*a + b*b ) ) >= 3 ){
+        zVecSetElemNC( *zArrayElem(&ip->dat.va,i  ), j, a * d * 3 / l );
+        zVecSetElemNC( *zArrayElem(&ip->dat.va,i+1), j, b * d * 3 / l );
+      }
+    }
+  }
+}
+
+/* create a PCHIP interpolator */
+bool zIPCreatePCHIP(zIP *ip, const zSeq *seq)
+{
+  if( !zIPDataAlloc( &ip->dat, seq ) ) return false;
+  _zIPInitPCHIP( ip );
+  _zIPModifyPCHIP( ip );
+  ip->com = &_zm_ip_com_pchip;
+  return true;
 }

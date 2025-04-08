@@ -11,6 +11,16 @@
 
 __BEGIN_DECLS
 
+/*! \brief value on Ferguson curve.
+ *
+ * zFergusonVal() returns a value on a Ferguson curve, which connects two boundary values \a x0 and \a x1
+ * with specified gradients \a v0 and \a v1, respectively, by a cubic Hermite functions. \a term is the
+ * interval between the boundaries. \a t is the current time, which should be between 0 and \a term.
+ * \return
+ * zFergusonVal() returns the computed value on a Ferguson curve corresponding to \a t/\a term.
+ */
+__ZM_EXPORT double zFergusonVal(double t, double term, double x0, double v0, double x1, double v1);
+
 /* spline interpolation, which expresses each segment divided by the sections for a third-order polynomial
  * curve with keeping the continuity of velocity at every sections.
  *
@@ -41,6 +51,19 @@ __ZM_EXPORT bool zIPCreateSpline(zIP *ip, const zSeq *seq, int etype1, const zVe
  * of \a ip are not equal. Otherwise, it returns the true value.
  */
 __ZM_EXPORT bool zIPSplineCoeff(const zIP *ip, int i, zVec a, zVec b, zVec c, zVec d);
+
+/*! \brief create a Piecewise Cubic Hermite Interporating Polynomial interpolator.
+ *
+ * zIPCreatePCHIP() creates a Piecewise Cubic Hermite Interporating Polynomial
+ * interpolator. It connects a series of monotonously increasing/decreasing points
+ * by monotonously increasing/decreasing continuous curve.
+ * The algorithm to create the interpolator was proposed by
+ * F. N. Fritsch and R. E. Carlson in 1980.
+ *
+ * \a ip is a pointer to an instance interpolator.
+ * \a seq is a sequence of points to be interpolated.
+ */
+__ZM_EXPORT bool zIPCreatePCHIP(zIP *ip, const zSeq *seq);
 
 __END_DECLS
 

@@ -1,6 +1,6 @@
 #include <zm/zm_ip.h>
 
-#define TEST 0
+#define TEST 3
 #define DT   0.01
 
 int enqueue(zSeq *seq, int point_num, double tp[], double vp[])
@@ -61,6 +61,7 @@ void output_plotscript(double tmin, double tmax)
   output_plotscript_one( "sp2", tmin, tmax );
   output_plotscript_one( "aki", tmin, tmax );
   output_plotscript_one( "pch", tmin, tmax );
+  printf( "!montage -tile 4x3 -geometry 60%% ip_lag_p.png ip_sp2_p.png ip_aki_p.png ip_pch_p.png ip_lag_v.png ip_sp2_v.png ip_aki_v.png ip_pch_v.png ip_lag_a.png ip_sp2_a.png ip_aki_a.png ip_pch_a.png ip.png\n" );
 }
 
 int main(int argc, char *argv[])
