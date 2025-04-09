@@ -7,7 +7,7 @@
 #include <zm/zm_le.h>
 
 /* Lyapnov equation solver. */
-zMat zLyapnovSolve(const zMat a, const zMat b, zMat ans)
+zMat zLELyapnovSolve(const zMat a, const zMat b, zMat ans)
 {
   zVecStruct bvec, ansvec;
   zVec s;

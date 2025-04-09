@@ -348,7 +348,7 @@ void assert_lyapnov_equation(void)
   for( k=0; k<testnum; k++ ){
     zMatRandUniform( a, -10, 10 );
     zMatRandUniform( b, -10, 10 );
-    zLyapnovSolve( a, b, x );
+    zLELyapnovSolve( a, b, x );
     zMulMatMat( x, a, tmp1 );
     zMulMatTMat( a, x, tmp2 );
     zMatAddDRC( tmp1, tmp2 );
@@ -359,7 +359,7 @@ void assert_lyapnov_equation(void)
     }
   }
   zMatFreeAtOnce( 5, a, b, x, tmp1, tmp2 );
-  zAssert( zLyapnovSolve, result );
+  zAssert( zLELyapnovSolve, result );
 }
 
 int main(void)
