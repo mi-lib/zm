@@ -109,8 +109,8 @@ static zIPCom _zm_ip_com_akima = {
   _zIPSecAccAkima,
 };
 
-/* create an Akima interpolator */
-bool zIPCreateAkima(zIP *ip, const zSeq *seq)
+/* create an Akima/modified-Akima interpolator */
+static bool _zIPCreateAkima(zIP *ip, const zSeq *seq, double (* akima_weight)(zVec,int))
 {
   int i, j, n;
   zVec m;
@@ -131,8 +131,8 @@ bool zIPCreateAkima(zIP *ip, const zSeq *seq)
     zVecSetElemNC( m, n+1, 2*zVecElem(m,n)-2*zVecElem(m,n-1) );
     zVecSetElemNC( m, n+2, 3*zVecElem(m,n)-  zVecElem(m,n-1) );
     for( j=0; j<n; j++ ){
-      dm1 = fabs( zVecElem(m,j+1) - zVecElem(m,j) );
-      dm2 = fabs( zVecElem(m,j+3) - zVecElem(m,j+2) );
+      dm1 = akima_weight( m, j );
+      dm2 = akima_weight( m, j+2 );
       zVecArrayElem(&ip->dat.va,j,i) = zIsTiny(dm1) && zIsTiny(dm2) ?
         0.5*(dm1+dm2) : ( dm2*zVecElem(m,j+1) + dm1*zVecElem(m,j+2) ) / ( dm1 + dm2 );
     }
@@ -141,4 +141,28 @@ bool zIPCreateAkima(zIP *ip, const zSeq *seq)
 
   ip->com = &_zm_ip_com_akima;
   return true;
+}
+
+/* weight function for Akima interpolator. */
+static double _zIPAkimaWeight(zVec m, int j)
+{
+  return fabs( zVecElem(m,j+1) - zVecElem(m,j) );
+}
+
+/* weight function for modified Akima interpolator. */
+static double _zIPModifiedAkimaWeight(zVec m, int j)
+{
+  return fabs( zVecElem(m,j+1) - zVecElem(m,j) ) + 0.5 * fabs( zVecElem(m,j+1) + zVecElem(m,j) );
+}
+
+/* create an Akima interpolator */
+bool zIPCreateAkima(zIP *ip, const zSeq *seq)
+{
+  return _zIPCreateAkima( ip, seq, _zIPAkimaWeight );
+}
+
+/* create a modified Akima interpolator */
+bool zIPCreateModifiedAkima(zIP *ip, const zSeq *seq)
+{
+  return _zIPCreateAkima( ip, seq, _zIPModifiedAkimaWeight );
 }

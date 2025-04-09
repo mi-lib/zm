@@ -11,7 +11,15 @@
 
 __BEGIN_DECLS
 
-/* linear interpolation connects sections by segmented lines. */
+/* \brief linear interpolator.
+ *
+ * zIPCreateLinear() creates a linear interpolator \a ip.
+ * It connects given n points by segmented lines.
+ * \a seq is a sequence of points to be interpolated.
+ * \return
+ * zIPCreateLinear() returns a pointer \a ip when it succeeds to create the interpolator. Otherwise, it
+ * returns the null pointer.
+ */
 __ZM_EXPORT bool zIPCreateLinear(zIP *ip, const zSeq *seq);
 
 __END_DECLS

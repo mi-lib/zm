@@ -30,9 +30,12 @@ enum{ ZSPLINE_INVALID, ZSPLINE_FIX_EDGE, ZSPLINE_FREE_EDGE };
 
 /* \brief create spline interpolator.
  *
- * zIPCreateSpline() creates a 3rd-order spline interpolator \a ip. \a etype1 and \a etype2 are the types
- * of edges at the beginning point and the termination point, respectively. They should be chosen from
- * ZSPLINE_FIX_EDGE and ZSPLINE_FREE_EDGE, which are for fixed-edge and free-edge, respectively.
+ * zIPCreateSpline() creates a 3rd-order spline interpolator \a ip.
+ * \a seq is a sequence of points to be interpolated.
+ *
+ * \a etype1 and \a etype2 are the types of edges at the beginning point and the termination point,
+ * respectively. They should be chosen from ZSPLINE_FIX_EDGE and ZSPLINE_FREE_EDGE, which are for
+ * fixed-edge and free-edge, respectively.
  * One can set the velocity at each endpoint for \a v1 (or \a v2) by choosing ZSPLINE_FIX_EDGE. When
  * ZSPLINE_FREE_EDGE is specified, \a v1 (or \a v2) is ignored.
  * \return
@@ -54,14 +57,14 @@ __ZM_EXPORT bool zIPSplineCoeff(const zIP *ip, int i, zVec a, zVec b, zVec c, zV
 
 /*! \brief create a Piecewise Cubic Hermite Interporating Polynomial interpolator.
  *
- * zIPCreatePCHIP() creates a Piecewise Cubic Hermite Interporating Polynomial
- * interpolator. It connects a series of monotonously increasing/decreasing points
- * by monotonously increasing/decreasing continuous curve.
- * The algorithm to create the interpolator was proposed by
- * F. N. Fritsch and R. E. Carlson in 1980.
- *
- * \a ip is a pointer to an instance interpolator.
+ * zIPCreatePCHIP() creates a Piecewise Cubic Hermite Interporating Polynomial interpolator \a ip.
  * \a seq is a sequence of points to be interpolated.
+ * It connects a series of monotonously increasing/decreasing points by monotonously increasing/decreasing
+ * continuous curve.
+ * The algorithm to create the interpolator was proposed by F. N. Fritsch and R. E. Carlson in 1980.
+ * \return
+ * zIPCreatePCHIP() returns a pointer \a ip when it succeeds to create the interpolator. Otherwise, it
+ * returns the null pointer.
  */
 __ZM_EXPORT bool zIPCreatePCHIP(zIP *ip, const zSeq *seq);
 

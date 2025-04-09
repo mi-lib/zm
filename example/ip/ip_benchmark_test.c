@@ -1,6 +1,6 @@
 #include <zm/zm_ip.h>
 
-#define TEST 3
+#define TEST 0
 #define DT   0.01
 
 int enqueue(zSeq *seq, int point_num, double tp[], double vp[])
@@ -60,8 +60,9 @@ void output_plotscript(double tmin, double tmax)
   output_plotscript_one( "lag", tmin, tmax );
   output_plotscript_one( "sp2", tmin, tmax );
   output_plotscript_one( "aki", tmin, tmax );
+  output_plotscript_one( "mak", tmin, tmax );
   output_plotscript_one( "pch", tmin, tmax );
-  printf( "!montage -tile 4x3 -geometry 60%% ip_lag_p.png ip_sp2_p.png ip_aki_p.png ip_pch_p.png ip_lag_v.png ip_sp2_v.png ip_aki_v.png ip_pch_v.png ip_lag_a.png ip_sp2_a.png ip_aki_a.png ip_pch_a.png ip.png\n" );
+  printf( "!montage -tile 5x3 -geometry 60%% ip_lag_p.png ip_sp2_p.png ip_aki_p.png ip_mak_p.png ip_pch_p.png ip_lag_v.png ip_sp2_v.png ip_aki_v.png ip_mak_v.png ip_pch_v.png ip_lag_a.png ip_sp2_a.png ip_aki_a.png ip_mak_a.png ip_pch_a.png ip.png\n" );
 }
 
 int main(int argc, char *argv[])
@@ -81,7 +82,12 @@ int main(int argc, char *argv[])
   /* Cauchy-Lorentz function */
   double tp[] = { -1.0, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1.0 };
   double vp[] = { 1.0/26.0, 16.0/241.0, 4.0/29.0, 16.0/41.0, 1.0, 16.0/41.0, 4.0/29.0, 16.0/241.0, 1.0/26.0 };
+#elif TEST == 4
+  /* modified Akima testcase */
+  double tp[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+  double vp[] = {-1,-1,-1, 0, 1, 1, 1, 1 };
 #else
+  /* PCHIP testcase */
   double tp[]  = { 0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15 };
   double vp[] = { 10, 10, 10, 10, 10, 10, 10.5, 15, 50, 60, 85 };
 #endif
@@ -117,6 +123,11 @@ int main(int argc, char *argv[])
   /* Akima spline interpolator */
   zIPCreateAkima( &ip, &seq );
   output( &ip, point_num, tp, DT, "aki" );
+  zIPDestroy( &ip );
+
+  /* Akima spline interpolator */
+  zIPCreateModifiedAkima( &ip, &seq );
+  output( &ip, point_num, tp, DT, "mak" );
   zIPDestroy( &ip );
 
   /* PCHIP */

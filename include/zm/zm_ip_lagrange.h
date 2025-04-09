@@ -11,7 +11,15 @@
 
 __BEGIN_DECLS
 
-/* Lagrange interpolation interpolates n points by n-1 th order polynomial curve. */
+/* \brief create Lagrange interpolator.
+ *
+ * zIPCreateLagrange() creates a Lagrange interpolator \a ip.
+ * It connects given n points by n-1 th order polynomial curve.
+ * \a seq is a sequence of points to be interpolated.
+ * \return
+ * zIPCreateLagrange() returns a pointer \a ip when it succeeds to create the interpolator. Otherwise, it
+ * returns the null pointer.
+ */
 __ZM_EXPORT bool zIPCreateLagrange(zIP *ip, const zSeq *seq);
 
 __END_DECLS

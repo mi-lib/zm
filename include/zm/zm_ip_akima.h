@@ -11,9 +11,20 @@
 
 __BEGIN_DECLS
 
-/* Akima's interpolation connects the sections in a similar way to a handwriting.
- * It was proposed by H. Akima in 1970. */
+/*! \brief create Akima interpolator.
+ *
+ * zIPCreateAkima() creates an Akima interpolator \a ip proposed by H. Akima in 1970.
+ * \a seq is a sequence of points to be interpolated.
+ * It connects the points in a similar way to a handwriting.
+ *
+ * zIPCreateModifiedAkima() creates a modified Akima interporator \a ip from a sequence of points \a seq
+ * to be interpolated.
+ * \return
+ * zIPCreateAkima() and zIPCreateModifiedAkima() return a pointer \a ip when they succeed to create the
+ * interpolator. Otherwise, the null pointer is returned.
+ */
 __ZM_EXPORT bool zIPCreateAkima(zIP *ip, const zSeq *seq);
+__ZM_EXPORT bool zIPCreateModifiedAkima(zIP *ip, const zSeq *seq);
 
 __END_DECLS
 
