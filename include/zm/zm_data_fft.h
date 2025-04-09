@@ -11,7 +11,7 @@
 
 /* NOTE: never include this header file in user programs. */
 
-#include <zm/zm_complex.h>
+#include <zm/zm_cmat.h>
 
 __BEGIN_DECLS
 
@@ -19,41 +19,36 @@ __BEGIN_DECLS
 /*! \defgroup Fast Fourier Transformation.
  * \{ *//* ************************************************** */
 
-/*! \brief Fast Fourier Transformation.
+/*! \brief fast Fourier transformation.
  *
- * zFFT() is an implementation of the fast Fourier transformation
- * proposed by J.W.Cooley and J.W.Tukey(1965).
- * \a data is an array of sampled data with size \a size.
- * The result will be put into \a res as a series of complex
- * values. \a res[i] is the amplitude of the components with
- * frequency i/\a n[Hz]. The real part is the amplitude of
- * cosine components, while the imagenary part to that of sine
- * components.
+ * zFFT() is an implementation of the fast Fourier transformation proposed by J. W. Cooley and J. W. Tukey
+ * (1965). \a data is a vector of sampled data.
+ * The result spectrum will be put into a complex vector \a result. \a result[\a i] is the amplitude of the
+ * components with frequency \a i/\a n[Hz]. The real part is the amplitude of cosine components, while the
+ * imagenary part to that of sine components.
+ *
+ * zFFTInv() is an implementation of the inverse fast Fourier transformation. \a data is a complex spectrum
+ * vector. The result time series will be put into a vector \a result.
+ * Quantized time step between each component of \a result is 1/\a n.
+ *
+ * zFFT2() is an implementation of the two-dimensional fast Fourier transformation based on the Cooley-
+ * Tukey algorithm. \a data is a matrix of sampled data. The result two-dimensional spectrum will be put
+ * into a complex matrix \a result.
+ *
+ * zFFT2Inv() is an implementation of the two-dimensional inverse fast Fourier transformation. \a data is
+ * a complex spectrum matrix. The result two-dimensional spacial series will be put into a matrix \a result.
  *
  * (Acknowledgment)
  * This implementation is based on the code by Dr. Takuya Ooura
  * (in http://www.kurims.kyoto-u.ac.jp/~ooura/fftman/index.html).
- *
- * \retval the false value if failing to internaly allocate a
- * working memory. Otherwise, the true value.
+ * \return
+ * These functions return the false value if the sizes of \a data and \a result are not equal or they fail
+ * to allocate internal work space. Otherwise, the true value is returned.
  */
-__ZM_EXPORT bool zFFT(double data[], size_t n, zComplex res[]);
-
-/*! \brief inverse fast Fourier transformation.
- *
- * zFFTInv() is an implementation of the inverse fast Fourier
- * transformation. \a data is an array of amplitudes with size \a n.
- * The result time series will be put into \a res.
- * Quantized time step between each component of \a res is 1/\a n.
- *
- * (Acknowledgement)
- * This implementation is based on the code by Dr. Takuya Ooura
- * (in http://www.kurims.kyoto-u.ac.jp/~ooura/fftman/index.html).
- *
- * \retval the false value if failing to internaly allocate
- * a working memory. Otherwise, the true value.
- */
-__ZM_EXPORT bool zFFTInv(zComplex data[], size_t n, double res[]);
+__ZM_EXPORT bool zFFT(zVec data, zCVec result);
+__ZM_EXPORT bool zFFTInv(zCVec data, zVec result);
+__ZM_EXPORT bool zFFT2(zMat data, zCMat result);
+__ZM_EXPORT bool zFFT2Inv(zCMat data, zMat result);
 
 __END_DECLS
 

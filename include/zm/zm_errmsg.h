@@ -74,6 +74,9 @@
 
 #define ZM_ERR_INVALID_LOGBASE             "invalid base of logarithm"
 
+#define ZM_ERR_FFT_SIZEMISMATCH_VEC        "size mismatch of data vectors %d and %d"
+#define ZM_ERR_FFT_SIZEMISMATCH_MAT        "size mismatch of data matrices %dx%d and %dx%d"
+
 #define ZM_ERR_PE_DEFLATED                 "equation deflated"
 
 #define ZM_ERR_SEQ_DT_NOTFOUND             "delta time not specified"

@@ -28,14 +28,14 @@ zComplex *zComplexCopy(const zComplex *src, zComplex *dest)
 }
 
 /* touchup a complex number. */
-zComplex *zComplexTouchup(zComplex *c)
+zComplex *zComplexTouchup(zComplex *c, double tol)
 {
   double ri, ir;
 
   ri = c->re / c->im;
   ir = c->im / c->re;
-  if( zIsTiny(ri) || zIsTiny(c->re) ) c->re = 0;
-  if( zIsTiny(ir) || zIsTiny(c->im) ) c->im = 0;
+  if( zIsTol(ri,tol) || zIsTol(c->re,tol) ) c->re = 0;
+  if( zIsTol(ir,tol) || zIsTol(c->im,tol) ) c->im = 0;
   return c;
 }
 

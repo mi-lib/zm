@@ -43,12 +43,12 @@ zCVec zCVecZero(zCVec v)
 }
 
 /* touchup a complex vector. */
-zCVec zCVecTouchup(zCVec v)
+zCVec zCVecTouchup(zCVec v, double tol)
 {
   int i;
 
   for( i=0; i<zCVecSizeNC(v); i++ )
-    zComplexTouchup( zCVecElemNC(v,i) );
+    zComplexTouchup( zCVecElemNC(v,i), tol );
   return v;
 }
 
@@ -153,7 +153,7 @@ bool zCVecIsTol(const zCVec v, double tol)
 }
 
 /* split a complex vector into real and imaginary vectors. */
-bool zCVecToReIm(const zCVec cvec, zVec *rvec, zCVec *ivec, double tol)
+bool zCVecToReImVec(const zCVec cvec, zVec *rvec, zCVec *ivec, double tol)
 {
   zIndex ridx, iidx;
   int i, rsize, isize;

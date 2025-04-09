@@ -202,7 +202,7 @@ void assert_cexp(void)
 
   ans = zCVecAlloc( zCVecSizeNC(fact) );
   zPexDKA( p, ans, zTOL, 0 );
-  zCVecTouchup( ans );
+  zCVecTouchup( ans, zTOL );
 
   for( i=0; i<zCVecSizeNC(fact); i++ ){
     zPexCVal( p, zCVecElemNC(fact,i), &c );

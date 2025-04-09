@@ -92,13 +92,12 @@ __ZM_EXPORT zCMat zCMatZero(zCMat m);
 
 /*! \brief touchup a complex matrix.
  *
- * zCMatTouchup() replaces tiny components of a complex matrix \a m with zeroes.
- * To be tiny in this context means that the absolute value of a component is less than zTOL, which is
- * defined in zm_misc.h.
+ * zCVecTouchup() replaces real part or imaginary part of all components of a complex matrix \a m
+ * with zero if either value relative to the other part is smaller than \a tol.
  * \return
  * zCMatTouchup() returns the pointer \a m.
  */
-__ZM_EXPORT zCMat zCMatTouchup(zCMat m);
+__ZM_EXPORT zCMat zCMatTouchup(zCMat m, double tol);
 
 /*! \brief create a random complex matrix with a uniform range. */
 __ZM_EXPORT zCMat zCMatRandUniform(zCMat m, double rmin, double rmax, double imin, double imax);

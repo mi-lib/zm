@@ -62,13 +62,12 @@ __ZM_EXPORT zComplex *zComplexCopy(const zComplex *src, zComplex *dest);
 
 /*! \brief touchup a complex number.
  *
- * zComplexTouchup() replaces real part or imaginary part of a
- * complex number \a c for zero if either value relative to the
- * other part is less than zTOL.
+ * zComplexTouchup() replaces real part or imaginary part of a complex number \a c for zero if either
+ * value relative to the other part is smaller than \a tol.
  * \return
  * zComplexTouchup() returns a pointer \a c.
  */
-__ZM_EXPORT zComplex *zComplexTouchup(zComplex *c);
+__ZM_EXPORT zComplex *zComplexTouchup(zComplex *c, double tol);
 
 /*! \brief test if a complex number is under the tolerance.
  *

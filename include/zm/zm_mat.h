@@ -98,7 +98,7 @@ __ZM_EXPORT zMat zMatSetElemList(zMat m, ... );
  *
  * zMatZero() sets all components of a matrix \a m for zeros.
  *
- * zMatTouchup() replaces all components less than \a tol of \a m for zeros.
+ * zMatTouchup() replaces all components smaller than \a tol of \a m with zeros.
  * \return
  * zMatAlloc() and zMatAllocSqr() return a pointer to the newly allocated memory.
  *

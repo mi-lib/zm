@@ -55,7 +55,7 @@ typedef zCVecStruct* zCVec;
  * zCVecZero() sets all components of a complex vector \a v for zeros.
  *
  * zCVecTouchup() replaces real part or imaginary part of all components of a complex vector \a v
- * for zero if either value relative to the other part is less than zTOL.
+ * with zero if either value relative to the other part is smaller than \a tol.
  *
  * zCVecCopyNC() copies a complex vector \a src to another \a dest without checking the size
  * consistency between them.
@@ -84,7 +84,7 @@ typedef zCVecStruct* zCVec;
 __ZM_EXPORT zCVec zCVecAlloc(int size);
 __ZM_EXPORT void zCVecFree(zCVec v);
 __ZM_EXPORT zCVec zCVecZero(zCVec v);
-__ZM_EXPORT zCVec zCVecTouchup(zCVec v);
+__ZM_EXPORT zCVec zCVecTouchup(zCVec v, double tol);
 __ZM_EXPORT zCVec zCVecCopyNC(const zCVec src, zCVec dest);
 __ZM_EXPORT zCVec zCVecCopy(const zCVec src, zCVec dest);
 __ZM_EXPORT zCVec zCVecClone(const zCVec src);
@@ -122,7 +122,7 @@ __ZM_EXPORT bool zCVecIsTol(const zCVec v, double tol);
 #define zCVecIsTiny(v) zCVecIsTol( v, zTOL )
 
 /*! \brief split a complex vector into real and imaginary vectors. */
-__ZM_EXPORT bool zCVecToReIm(const zCVec cvec, zVec *rvec, zCVec *ivec, double tol);
+__ZM_EXPORT bool zCVecToReImVec(const zCVec cvec, zVec *rvec, zCVec *ivec, double tol);
 
 /*! \brief reorder a complex vector as co-conjugate numbers are paired as adjacencies. */
 __ZM_EXPORT zCVec zCVecConjPair(zCVec v, double tol);

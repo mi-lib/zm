@@ -45,13 +45,13 @@ zCMat zCMatZero(zCMat m)
 }
 
 /* touchup a complex matrix. */
-zCMat zCMatTouchup(zCMat m)
+zCMat zCMatTouchup(zCMat m, double tol)
 {
   int i, j;
 
   for( i=0; i<zCMatRowSizeNC(m); i++ )
     for( j=0; j<zCMatColSizeNC(m); j++ )
-      zComplexTouchup( zCMatElemNC(m,i,j) );
+      zComplexTouchup( zCMatElemNC(m,i,j), tol );
   return m;
 }
 
