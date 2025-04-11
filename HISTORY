@@ -1,3 +1,6 @@
+2025.04.11. Modified zBSplineVecDiff to return the zero vector if the number of differentiation is out of range. [zm_nurbs]
+2025.04.11. Modified zBSplineParamBasisDiff to return zero if the number of differentiation is out of range. [zm_nurbs]
+2025.04.11. Renamed ZM_ERR_NURBS_INVALID_DIFFORDER to ZM_ERR_NURBS_INVALID_DIFFNUM. [zm_errmsg, zm_nurbs]
 2025.04.10. Added _zIPCreateAkima, modified zIPCreateAkima, and added zIPCreateModifiedAkima. [zm_ip_akima]
 2025.04.09. Renamed zLyapnovSolve to zLELyapnovSolve. [zm_le_lyapnov]
 2025.04.09. Added zFFT2 and zFFT2Inv. [zm_data_fft]

@@ -118,8 +118,8 @@ double zBSplineParamBasisDiff(const zBSplineParam *param, double t, int i, int r
   if( diff == 0 )
     return zBSplineParamBasis( param, t, i, r, seg );
   if( diff > param->order + 1 || diff < 0 ){
-    ZRUNERROR( ZM_ERR_NURBS_INVALID_DIFFORDER );
-    return NAN;
+    ZRUNERROR( ZM_ERR_NURBS_INVALID_DIFFNUM, diff, param->order + 1 );
+    return 0;
   }
   if( i >= seg - r && ( dt = zBSplineParamKnot(param,i+r) - zBSplineParamKnot(param,i) ) != 0 )
     b += zBSplineParamBasisDiff(param,t,i,r-1,seg,diff-1) / dt;
@@ -138,7 +138,7 @@ bool zNURBSCreate(zNURBS *nurbs, const zSeq *seq, int order)
   bool ret = true;
 
   if( zListSize(seq) <= order ){
-    ZRUNERROR( ZM_ERR_NURBS_INVALID_ORDER );
+    ZRUNERROR( ZM_ERR_NURBS_INVALID_ORDER, order, zListSize(seq) );
     return false;
   }
   if( !zBSplineParamAlloc( &nurbs->param, order, zListSize(seq), 0 ) )
@@ -180,8 +180,8 @@ zVec zNURBSVec(const zNURBS *nurbs, double t, zVec v)
   int s, i;
   double b, den;
 
-  s = zBSplineParamSeg( &nurbs->param, t );
   zVecZero( v );
+  s = zBSplineParamSeg( &nurbs->param, t );
   for( den=0, i=s-nurbs->param.order; i<=s; i++ ){
     b = zNURBSWeight(nurbs,i) * zBSplineParamBasis(&nurbs->param,t,i,nurbs->param.order,s);
     den += b;
@@ -212,7 +212,7 @@ zVec zNURBSVecDiff(const zNURBS *nurbs, double t, int diff, zVec v)
   if( diff == 0 )
     return zNURBSVec( nurbs, t, v );
   if( diff > nurbs->param.order + 1 || diff < 0 ){
-    ZRUNERROR( ZM_ERR_NURBS_INVALID_DIFFORDER );
+    ZRUNERROR( ZM_ERR_NURBS_INVALID_DIFFNUM, diff, nurbs->param.order + 1 );
     return NULL;
   }
   if( ( tmp = zVecAlloc( zVecSize(zNURBSCP(nurbs,0)) ) ) == NULL ){
@@ -221,7 +221,6 @@ zVec zNURBSVecDiff(const zNURBS *nurbs, double t, int diff, zVec v)
   }
   zVecZero( v );
   s = zBSplineParamSeg( &nurbs->param, t );
-
   for( den=0, i=s-nurbs->param.order; i<=s; i++ ){
     b = zNURBSWeight(nurbs,i) * zBSplineParamBasisDiff(&nurbs->param,t,i,nurbs->param.order,s,diff);
     den += zNURBSWeight(nurbs,i) * zBSplineParamBasis(&nurbs->param,t,i,nurbs->param.order,s);
@@ -296,8 +295,8 @@ zVec zBSplineVec(const zBSpline *bspline, double t, zVec v)
   int s, i;
   double b;
 
-  s = zBSplineParamSeg( &bspline->param, t );
   zVecZero( v );
+  s = zBSplineParamSeg( &bspline->param, t );
   for( i=s-bspline->param.order; i<=s; i++ ){
     b = zBSplineParamBasis(&bspline->param,t,i,bspline->param.order,s);
     zVecCatNCDRC( v, b, zBSplineCP(bspline,i) );
@@ -313,13 +312,10 @@ zVec zBSplineVecDiff(const zBSpline *bspline, double t, int diff, zVec v)
 
   if( diff == 0 )
     return zBSplineVec( bspline, t, v );
-  if( diff > bspline->param.order + 1 || diff < 0 ){
-    ZRUNERROR( ZM_ERR_NURBS_INVALID_DIFFORDER );
-    return NULL;
-  }
   zVecZero( v );
-  s = zBSplineParamSeg( &bspline->param, t );
+  if( diff > bspline->param.order + 1 || diff < 0 ) return v;
 
+  s = zBSplineParamSeg( &bspline->param, t );
   for( i=s-bspline->param.order; i<=s; i++ ){
     b = zBSplineParamBasisDiff( &bspline->param, t, i, bspline->param.order, s, diff );
     zVecCatNCDRC( v, b, zBSplineCP(bspline,i) );

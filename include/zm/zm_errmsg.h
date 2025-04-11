@@ -96,8 +96,8 @@
 #define ZM_ERR_IP_TRVELPROF_INVALID_TERMVEL    "terminal velocity %g larger than the maximum velocity %g"
 #define ZM_ERR_IP_TRVELPROF_NONPOSITIVEACC     "not positive acceleration %g"
 
-#define ZM_ERR_NURBS_INVALID_ORDER         "invalid order for NURBS"
-#define ZM_ERR_NURBS_INVALID_DIFFORDER     "invalid order of differentiation"
+#define ZM_ERR_NURBS_INVALID_ORDER         "invalid order for NURBS %d was specified, has to be less than %d"
+#define ZM_ERR_NURBS_INVALID_DIFFNUM       "invalid number of differentiation %d was specified, has to be within [0-%d]"
 #define ZM_ERR_NURBS_ORDERMISMATCH         "size mismatch of B-spline orders (%d - %d)"
 #define ZM_ERR_NURBS_KNOTNUMMISMATCH       "mismatch of number of knots of B-spline parameters (%d - %d)"
 
