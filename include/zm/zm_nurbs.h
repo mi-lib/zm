@@ -116,9 +116,19 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBS ){
 #define zNURBSWeight(nurbs,i)      ( zArrayElemNC(&(nurbs)->cparray,i)->w )
 #define zNURBSSetWeight(nurbs,i,v) ( zNURBSWeight(nurbs,i) = (v) )
 #define zNURBSCP(nurbs,i)          ( zArrayElemNC(&(nurbs)->cparray,i)->cp )
+#if 0
 #define zNURBSSetCP(nurbs,i,v)     zVecCopy( v, zNURBSCP(nurbs,i) )
+#endif
 
 #define ZM_NURBS_DEFAULT_CP_WEIGHT 1.0
+
+/*! \brief initialize a NURBS curve.
+ *
+ * zNURBSInit() initializes internal parameters of a NURBS curve \a nurbs.
+ * \return
+ * zNURBSInit() returns the pointer \a nurbs.
+ */
+__ZM_EXPORT zNURBS *zNURBSInit(zNURBS *nurbs);
 
 /*! \brief create a NURBS curve.
  *
@@ -194,6 +204,40 @@ __ZM_EXPORT double zNURBSVecNN(const zNURBS *nurbs, const zVec v, zVec nn);
 #define zNURBSKnotFPrint(fp,nurbs) zVecFPrint( fp, (nurbs)->knot )
 
 __ZM_EXPORT void zNURBSCPFPrint(FILE *fp, const zNURBS *nurbs);
+
+/* parse ZTK format */
+
+#define ZTK_KEY_ZM_NURBS_KNOT  "knot"
+#define ZTK_KEY_ZM_NURBS_SIZE  "size"
+#define ZTK_KEY_ZM_NURBS_CP    "cp"
+#define ZTK_KEY_ZM_NURBS_SLICE "slice"
+
+/*! \brief read a NURBS from a ZTK format processor.
+ *
+ * zNURBSFromZTK() creates a NURBS curve \a nurbs from a ZTK format processor \a ztk.
+ * It conforms to the following format:
+ *  knot: <number of knots> ( <knot values> )
+ *  size: <number of control points>
+ *  slice: <number of slices>
+ *  cp: <control point ID> <weight> <size of vector> ( <components of the control point> )
+ *  ...
+ * \return
+ * zNURBSFromZTK() returns the pointer \a nurbs if it succeeds. Otherwise, it returns the null pointer.
+ * \sa
+ * zNURBSFPrintZTK
+ */
+__ZM_EXPORT zNURBS *zNURBSFromZTK(zNURBS *nurbs, ZTK *ztk);
+
+/*! \brief print out a NURBS to a file.
+ *
+ * zNURBSFPrintZTK() outputs a NURBS curve \a nurbs to the current position of the file stream \a fp
+ * in the same format with zNURBSFromZTK().
+ * \return
+ * zNURBSFPrintZTK() does not return any value.
+ * \sa
+ * zNURBSFromZTK
+ */
+__ZM_EXPORT void zNURBSFPrintZTK(FILE *fp, const zNURBS *nurbs);
 
 /* ********************************************************** */
 /*! \struct zBSpline

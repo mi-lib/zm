@@ -100,6 +100,10 @@
 #define ZM_ERR_NURBS_INVALID_DIFFNUM       "invalid number of differentiation %d was specified, has to be within [0-%d]"
 #define ZM_ERR_NURBS_ORDERMISMATCH         "size mismatch of B-spline orders (%d - %d)"
 #define ZM_ERR_NURBS_KNOTNUMMISMATCH       "mismatch of number of knots of B-spline parameters (%d - %d)"
+#define ZM_ERR_NURBS_KNOTALREADY           "knot already allocated"
+#define ZM_ERR_NURBS_CPALREADY             "control point already allocated"
+#define ZM_ERR_NURBS_INVALID_CP            "invalid index of control point specified"
+#define ZM_ERR_NURBS_INVALID_KNOTSIZE      "the size of knot is %d, must be larger than %d"
 
 #define ZM_ERR_INVALID_NUMSAMP             "too many samples %d required out of %d"
 

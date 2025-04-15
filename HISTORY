@@ -1,3 +1,7 @@
+2025.04.15. Added _zNURBSKnotFromZTK, _zNURBSSliceFromZTK, _zNURBSSizeFromZTK, _zNURBSCPFromZTK, _zNURBSKnotFPrint, _zNURBSSliceFPrint, _zNURBSSizeFPrint, zNURBSFromZTK, and zNURBSFPrintZTK. [zm_nurbs]
+2025.04.15. Added zNURBSInit. [zm_nurbs]
+2025.04.15. Defined ZTK_KEY_ZM_NURBS_KNOT, ZTK_KEY_ZM_NURBS_SIZE, ZTK_KEY_ZM_NURBS_CP, and ZTK_KEY_ZM_NURBS_SLICE. [zm_nurbs]
+2025.04.15. Defined ZM_ERR_NURBS_KNOTALREADY, ZM_ERR_NURBS_CPALREADY, ZM_ERR_NURBS_INVALID_CP, and ZM_ERR_NURBS_INVALID_KNOTSIZE. [zm_errmsg]
 2025.04.11. Modified zBSplineVecDiff to return the zero vector if the number of differentiation is out of range. [zm_nurbs]
 2025.04.11. Modified zBSplineParamBasisDiff to return zero if the number of differentiation is out of range. [zm_nurbs]
 2025.04.11. Renamed ZM_ERR_NURBS_INVALID_DIFFORDER to ZM_ERR_NURBS_INVALID_DIFFNUM. [zm_errmsg, zm_nurbs]

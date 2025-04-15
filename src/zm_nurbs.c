@@ -130,6 +130,14 @@ double zBSplineParamBasisDiff(const zBSplineParam *param, double t, int i, int r
 
 /* NURBS */
 
+/* initialize a NURBS curve. */
+zNURBS *zNURBSInit(zNURBS *nurbs)
+{
+  zBSplineParamInit( &nurbs->param );
+  zArrayInit( &nurbs->cparray );
+  return nurbs;
+}
+
 /* create a NURBS curve. */
 bool zNURBSCreate(zNURBS *nurbs, const zSeq *seq, int order)
 {
@@ -168,9 +176,8 @@ void zNURBSDestroy(zNURBS *nurbs)
   int i;
 
   zBSplineParamFree( &nurbs->param );
-  for( i=0; i<zNURBSCPNum(nurbs); i++ ){
+  for( i=0; i<zNURBSCPNum(nurbs); i++ )
     zVecFree( zNURBSCP(nurbs,i) );
-  }
   zArrayFree( &nurbs->cparray );
 }
 
@@ -283,6 +290,85 @@ void zNURBSCPFPrint(FILE *fp, const zNURBS *nurbs)
 
   for( i=0; i<zNURBSCPNum(nurbs); i++ ){
     fprintf( fp, "[%03d] (%g) ", i, zNURBSWeight(nurbs,i) );
+    zVecFPrint( fp, zNURBSCP(nurbs,i) );
+  }
+}
+
+/* parse ZTK format */
+
+static void *_zNURBSKnotFromZTK(void *obj, int i, void *arg, ZTK *ztk){
+  if( ((zNURBS*)obj)->param.knot ){
+    ZRUNWARN( ZM_ERR_NURBS_KNOTALREADY );
+    zVecFree( ((zNURBS*)obj)->param.knot );
+  }
+  return ( ((zNURBS*)obj)->param.knot = zVecFromZTK( ztk ) ) ? obj : NULL;
+}
+static void *_zNURBSSliceFromZTK(void *obj, int i, void *arg, ZTK *ztk){
+  zNURBSSetSlice( (zNURBS*)obj, ZTKInt( ztk ) );
+  return obj;
+}
+static void *_zNURBSSizeFromZTK(void *obj, int i, void *arg, ZTK *ztk){
+  int size;
+  if( zNURBSCPNum((zNURBS*)obj) > 0 ){
+    ZRUNWARN( ZM_ERR_NURBS_CPALREADY );
+    zArrayFree( &((zNURBS*)obj)->cparray );
+  }
+  size = ZTKInt( ztk );
+  zArrayAlloc( &((zNURBS*)obj)->cparray, zNURBSCPCell, size );
+  return zArraySize(&((zNURBS*)obj)->cparray) == size ? obj : NULL;
+}
+static void *_zNURBSCPFromZTK(void *obj, int i, void *arg, ZTK *ztk){
+  int j;
+  j = ZTKInt( ztk );
+  if( !zArrayPosIsValid( &((zNURBS*)obj)->cparray, j ) ){
+    ZRUNERROR( ZM_ERR_NURBS_INVALID_CP );
+    return NULL;
+  }
+  zNURBSSetWeight( ((zNURBS*)obj), j, ZTKDouble(ztk) );
+  return ( zNURBSCP(((zNURBS*)obj),j) = zVecFromZTK( ztk ) ) ? obj : NULL;
+}
+
+static bool _zNURBSKnotFPrint(FILE *fp, int i, void *obj){
+  if( zVecSizeNC(((zNURBS*)obj)->param.knot) <= 0 ) return false;
+  zVecFPrint( fp, ((zNURBS*)obj)->param.knot );
+  return true;
+}
+static bool _zNURBSSliceFPrint(FILE *fp, int i, void *obj){
+  fprintf( fp, "%d\n", zNURBSSlice((zNURBS*)obj) );
+  return true;
+}
+static bool _zNURBSSizeFPrint(FILE *fp, int i, void *obj){
+  fprintf( fp, "%d\n", zNURBSCPNum((zNURBS*)obj) );
+  return true;
+}
+
+static const ZTKPrp __ztk_prp_nurbs[] = {
+  { ZTK_KEY_ZM_NURBS_KNOT,  1, _zNURBSKnotFromZTK, _zNURBSKnotFPrint },
+  { ZTK_KEY_ZM_NURBS_SIZE,  1, _zNURBSSizeFromZTK, _zNURBSSizeFPrint },
+  { ZTK_KEY_ZM_NURBS_CP,   -1, _zNURBSCPFromZTK, NULL },
+  { ZTK_KEY_ZM_NURBS_SLICE, 1, _zNURBSSliceFromZTK, _zNURBSSliceFPrint },
+};
+
+/* read a  NURBS from a ZTK format processor. */
+zNURBS *zNURBSFromZTK(zNURBS *nurbs, ZTK *ztk)
+{
+  zNURBSInit( nurbs );
+  if( !ZTKEvalKey( nurbs, NULL, ztk, __ztk_prp_nurbs ) ) return NULL;
+  if( ( nurbs->param.order = zNURBSKnotNum(nurbs) - zNURBSCPNum(nurbs) - 1 ) <= 0 ){
+    ZRUNERROR( ZM_ERR_NURBS_INVALID_KNOTSIZE, zNURBSKnotNum(nurbs), zNURBSCPNum(nurbs) + 1 );
+    return NULL;
+  }
+  return nurbs;
+}
+
+/* print out a NURBS to a file. */
+void zNURBSFPrintZTK(FILE *fp, const zNURBS *nurbs)
+{
+  int i;
+
+  ZTKPrpKeyFPrint( fp, (void*)nurbs, __ztk_prp_nurbs );
+  for( i=0; i<zNURBSCPNum(nurbs); i++ ){
+    fprintf( fp, "%s: %d %.12g ", ZTK_KEY_ZM_NURBS_CP, i, zNURBSWeight(nurbs,i) );
     zVecFPrint( fp, zNURBSCP(nurbs,i) );
   }
 }
