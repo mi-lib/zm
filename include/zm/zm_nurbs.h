@@ -116,9 +116,6 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBS ){
 #define zNURBSWeight(nurbs,i)      ( zArrayElemNC(&(nurbs)->cparray,i)->w )
 #define zNURBSSetWeight(nurbs,i,v) ( zNURBSWeight(nurbs,i) = (v) )
 #define zNURBSCP(nurbs,i)          ( zArrayElemNC(&(nurbs)->cparray,i)->cp )
-#if 0
-#define zNURBSSetCP(nurbs,i,v)     zVecCopy( v, zNURBSCP(nurbs,i) )
-#endif
 
 #define ZM_NURBS_DEFAULT_CP_WEIGHT 1.0
 

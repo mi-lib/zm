@@ -1,3 +1,4 @@
+2025.04.15. Abolished zNURBSSetCP. [zm_nurbs]
 2025.04.15. Added _zNURBSKnotFromZTK, _zNURBSSliceFromZTK, _zNURBSSizeFromZTK, _zNURBSCPFromZTK, _zNURBSKnotFPrint, _zNURBSSliceFPrint, _zNURBSSizeFPrint, zNURBSFromZTK, and zNURBSFPrintZTK. [zm_nurbs]
 2025.04.15. Added zNURBSInit. [zm_nurbs]
 2025.04.15. Defined ZTK_KEY_ZM_NURBS_KNOT, ZTK_KEY_ZM_NURBS_SIZE, ZTK_KEY_ZM_NURBS_CP, and ZTK_KEY_ZM_NURBS_SLICE. [zm_nurbs]
