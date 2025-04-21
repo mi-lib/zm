@@ -26,19 +26,28 @@ void zBSplineParamFree(zBSplineParam *param)
 }
 
 /* copy B-spline parameters. */
-bool zBSplineParamCopy(const zBSplineParam *src, zBSplineParam *dest)
+zBSplineParam *zBSplineParamCopy(const zBSplineParam *src, zBSplineParam *dest)
 {
   if( src->order != dest->order ){
     ZRUNERROR( ZM_ERR_NURBS_ORDERMISMATCH, src->order, dest->order );
-    return false;
+    return NULL;
   }
   if( !zVecSizeEqual( src->knot, dest->knot ) ){
     ZRUNERROR( ZM_ERR_NURBS_KNOTNUMMISMATCH, zVecSize(src->knot), zVecSize(dest->knot) );
-    return false;
+    return NULL;
   }
   zBSplineParamSetSlice( dest, src->slice );
   zVecCopyNC( src->knot, dest->knot );
-  return true;
+  return dest;
+}
+
+/* clone B-spline parameters. */
+zBSplineParam *zBSplineParamClone(const zBSplineParam *src, zBSplineParam *dest)
+{
+  if( !( dest->knot = zVecClone( src->knot ) ) ) return NULL;
+  dest->order = src->order;
+  dest->slice = src->slice;
+  return dest;
 }
 
 /* initialize knots of a B-spline parameter. */
@@ -182,20 +191,21 @@ void zNURBSDestroy(zNURBS *nurbs)
 }
 
 /* clone a NURBS curve. */
-void zNURBSClone(const zNURBS *src, zNURBS *dest)
+zNURBS *zNURBSClone(const zNURBS *src, zNURBS *dest)
 {
-  int i, cp_size;
+  int i;
 
-  zBSplineParamAlloc( &dest->param, src->param.order, zArraySize( &src->cparray ), 0 );
-  zArrayAlloc( &dest->cparray, zNURBSCPCell, zArraySize( &src->cparray ) );
-  zBSplineParamCopy( &src->param, &dest->param );
-  if( zNURBSCPNum( src ) > 0 )
-    cp_size = zVecSize( zNURBSCP( src, 0 ) );
-  for( i=0; i < zNURBSCPNum( src ); i++ ){
-    zNURBSSetWeight( dest, i, zNURBSWeight( src, i ) );
-    zNURBSCP( dest, i ) = zVecAlloc( cp_size );
-    zVecCopy( zNURBSCP( src, i ), zNURBSCP( dest, i ) );
+  zNURBSInit( dest );
+  if( !zBSplineParamClone( &src->param, &dest->param ) ) return NULL;
+  if( zNURBSCPNum(src) > 0 ){
+    zArrayAlloc( &dest->cparray, zNURBSCPCell, zNURBSCPNum(src) );
+    if( zNURBSCPNum(dest) != zNURBSCPNum(src) ) return NULL;
+    for( i=0; i<zNURBSCPNum(src); i++ ){
+      if( !( zNURBSCP(dest,i) = zVecClone( zNURBSCP(src,i) ) ) ) return NULL;
+      zNURBSSetWeight( dest, i, zNURBSWeight(src,i) );
+    }
   }
+  return dest;
 }
 
 /* compute a vector on a NURBS curve. */

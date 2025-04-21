@@ -49,7 +49,10 @@ __ZM_EXPORT zBSplineParam *zBSplineParamAlloc(zBSplineParam *param, int order, i
 __ZM_EXPORT void zBSplineParamFree(zBSplineParam *param);
 
 /*! \brief copy B-spline parameters. */
-__ZM_EXPORT bool zBSplineParamCopy(const zBSplineParam *src, zBSplineParam *dest);
+__ZM_EXPORT zBSplineParam *zBSplineParamCopy(const zBSplineParam *src, zBSplineParam *dest);
+
+/*! \brief clone B-spline parameters. */
+__ZM_EXPORT zBSplineParam *zBSplineParamClone(const zBSplineParam *src, zBSplineParam *dest);
 
 /*! \brief initialize knots of a B-spline parameter. */
 __ZM_EXPORT void zBSplineParamKnotInit(zBSplineParam *param);
@@ -150,15 +153,16 @@ __ZM_EXPORT void zNURBSDestroy(zNURBS *nurbs);
 
 /*! \brief clone a NURBS curve.
  *
- * zNURBSClone() clones \a src of NURBS curve into \a dest.
- * In previous, \a dest must be initialized by zNURBSInit().
+ * zNURBSClone() clones a NURBS curve \a src into another \a dest.
+ * \return
+ * zNURBSClone() returns the pointer \a dest.
  */
-__ZM_EXPORT void zNURBSClone(const zNURBS *src, zNURBS *dest)
+__ZM_EXPORT zNURBS *zNURBSClone(const zNURBS *src, zNURBS *dest);
 
 /*! \brief normalize the knot vector of a NURBS curve.
  *
- * zNURBSKnotNormalize() normalizes the knot vector of a
- * NURBS curve \a nurbs so that it starts from 0 and ends at 1.
+ * zNURBSKnotNormalize() normalizes the knot vector of a NURBS curve \a nurbs so that it starts from
+ * 0 and ends at 1.
  */
 #define zNURBSKnotNormalize(nurbs) zBSplineParamKnotNormalize( &(nurbs)->param )
 
