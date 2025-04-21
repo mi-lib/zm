@@ -148,6 +148,13 @@ __ZM_EXPORT bool zNURBSCreate(zNURBS *nurbs, const zSeq *seq, int order);
  */
 __ZM_EXPORT void zNURBSDestroy(zNURBS *nurbs);
 
+/*! \brief clone a NURBS curve.
+ *
+ * zNURBSClone() clones \a src of NURBS curve into \a dest.
+ * In previous, \a dest must be initialized by zNURBSInit().
+ */
+__ZM_EXPORT void zNURBSClone(const zNURBS *src, zNURBS *dest)
+
 /*! \brief normalize the knot vector of a NURBS curve.
  *
  * zNURBSKnotNormalize() normalizes the knot vector of a

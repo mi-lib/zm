@@ -181,6 +181,23 @@ void zNURBSDestroy(zNURBS *nurbs)
   zArrayFree( &nurbs->cparray );
 }
 
+/* clone a NURBS curve. */
+void zNURBSClone(const zNURBS *src, zNURBS *dest)
+{
+  int i, cp_size;
+
+  zBSplineParamAlloc( &dest->param, src->param.order, zArraySize( &src->cparray ), 0 );
+  zArrayAlloc( &dest->cparray, zNURBSCPCell, zArraySize( &src->cparray ) );
+  zBSplineParamCopy( &src->param, &dest->param );
+  if( zNURBSCPNum( src ) > 0 )
+    cp_size = zVecSize( zNURBSCP( src, 0 ) );
+  for( i=0; i < zNURBSCPNum( src ); i++ ){
+    zNURBSSetWeight( dest, i, zNURBSWeight( src, i ) );
+    zNURBSCP( dest, i ) = zVecAlloc( cp_size );
+    zVecCopy( zNURBSCP( src, i ), zNURBSCP( dest, i ) );
+  }
+}
+
 /* compute a vector on a NURBS curve. */
 zVec zNURBSVec(const zNURBS *nurbs, double t, zVec v)
 {
