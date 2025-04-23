@@ -4,7 +4,7 @@
 #define N 1000
 #define TOL  (1.0e-10)
 
-void assert_clone(void)
+void assert_vec_clone(void)
 {
   const int size = TEST_VEC_SIZE;
   zVec src, dest;
@@ -17,7 +17,7 @@ void assert_clone(void)
   zVecFree( dest );
 }
 
-void assert_get_put(void)
+void assert_vec_get_put(void)
 {
   const int size = TEST_VEC_SIZE;
   zVec test_vec1, test_vec2, test_vec3;
@@ -38,7 +38,7 @@ void assert_get_put(void)
   zVecFreeAtOnce( 3, test_vec1, test_vec2, test_vec3 );
 }
 
-void assert_misc(void)
+void assert_vec_misc(void)
 {
   const int size = TEST_VEC_SIZE;
   zVec test_vec1, test_vec2;
@@ -63,7 +63,7 @@ void assert_misc(void)
   zVecFreeAtOnce( 2, test_vec1, test_vec2 );
 }
 
-void assert_shift(void)
+void assert_vec_shift(void)
 {
   const int size = TEST_VEC_SIZE;
   zVec src, dest, error;
@@ -89,7 +89,7 @@ void assert_shift(void)
   zAssert( zVecShiftDRC, result2 );
 }
 
-void assert_arith(void)
+void assert_vec_arith(void)
 {
   const int size = TEST_VEC_SIZE;
   zVec test_vec1, test_vec2, test_vec3;
@@ -139,7 +139,7 @@ void assert_arith(void)
   zVecFreeAtOnce( 3, test_vec1, test_vec2, test_vec3 );
 }
 
-void assert_scale(void)
+void assert_vec_scale(void)
 {
   const int size = TEST_VEC_SIZE;
   zVec min, max, src, dest;
@@ -186,7 +186,7 @@ void assert_scale(void)
   zAssert( zVecScaleUniform, result2 );
 }
 
-void assert_normalize(void)
+void assert_vec_normalize(void)
 {
   const int size = TEST_VEC_SIZE;
   zVec test_vec1, test_vec2;
@@ -206,10 +206,79 @@ void assert_normalize(void)
   zVecFreeAtOnce( 2, test_vec1, test_vec2 );
 }
 
+void assert_vec_orthogonalize(void)
+{
+  zVec v, n, o;
+  const int size = 10, testnum = 100;
+  int i;
+  bool result1 = true, result2 = true;
+
+  v = zVecAlloc( size );
+  n = zVecAlloc( size );
+  o = zVecAlloc( size );
+  for( i=0; i<testnum; i++ ){
+    zVecRandUniform( v, -10, 10 );
+    zVecRandUniform( n, -10, 10 );
+    zVecOrthogonalize( v, n, o );
+    if( !zIsTiny( zVecInnerProd( n, o ) ) ){
+      eprintf( "[%d] error = %g\n", i, zVecInnerProd( n, o ) );
+      result1 = false;
+    }
+    zVecOrthogonalize( v, n, n );
+    if( !zVecEqual( o, n, zTOL ) ) result2 = false;
+  }
+  zVecFreeAtOnce( 3, v, n, o );
+  zAssert( zVecProj + zVecOrthogonalize, result1 );
+  zAssert( zVecOrthogonalize (override), result2 );
+}
+
+double vec_edge_dist2(const zVec v, const zVec v1, const zVec v2)
+{
+  zVec e, n, o;
+  double d = -1;
+
+  e = zVecAlloc( zVecSizeNC(v) );
+  n = zVecAlloc( zVecSizeNC(v) );
+  o = zVecAlloc( zVecSizeNC(v) );
+  if( e && n && o ){
+    zVecSubNC( v2, v1, n );
+    zVecSubNC( v,  v1, e );
+    d = zVecNorm( zVecOrthogonalize( e, n, o ) );
+  }
+  zVecFree( e );
+  zVecFree( n );
+  zVecFree( o );
+  return d;
+}
+
+void assert_vec_edge_dist(void)
+{
+  zVec v, v1, v2;
+  double d1, d2;
+  const int size = 10, testnum = 10;
+  int i;
+  bool result = true;
+
+  v  = zVecAlloc( size );
+  v1 = zVecAlloc( size );
+  v2 = zVecAlloc( size );
+  for( i=0; i<testnum; i++ ){
+    zVecRandUniform( v,  -10, 10 );
+    zVecRandUniform( v1, -10, 10 );
+    zVecRandUniform( v2, -10, 10 );
+    if( !zEqual( ( d1 = zVecEdgeDist( v, v1, v2 ) ), ( d2 = vec_edge_dist2( v, v1, v2 ) ), zTOL ) ){
+      eprintf( "%g  / %g\n", d1, d2 );
+      result = false;
+    }
+  }
+  zVecFreeAtOnce( 3, v, v1, v2 );
+  zAssert( zVecEdgeDist, result );
+}
+
 #define N_NODE 1000
 #define DIM 3
 
-void assert_nearest_neighbor(void)
+void assert_vec_nearest_neighbor(void)
 {
   zVecList list;
   zVecTree tree, *node;
@@ -241,14 +310,16 @@ void assert_nearest_neighbor(void)
 int main(void)
 {
   zRandInit();
-  assert_get_put();
-  assert_misc();
-  assert_shift();
-  assert_arith();
-  assert_scale();
-  assert_normalize();
+  assert_vec_get_put();
+  assert_vec_misc();
+  assert_vec_shift();
+  assert_vec_arith();
+  assert_vec_scale();
+  assert_vec_normalize();
+  assert_vec_orthogonalize();
+  assert_vec_edge_dist();
 
-  assert_nearest_neighbor();
+  assert_vec_nearest_neighbor();
 
   return EXIT_SUCCESS;
 }

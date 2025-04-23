@@ -61,6 +61,18 @@ __ZM_EXPORT zVec zVecListSelectRand(zVecList *vl);
  */
 __ZM_EXPORT double zVecListNN(const zVecList *list, const zVec v, zVec *nn);
 
+/* Ramer-Douglas-Peucker algorithm.
+ *
+ * zVecListRDP() directly thins-out elements of a list of vectors \a list based on the Ramer-Douglas-Peucker
+ * algorithm, where \a metric is a pointer to a metric function that computes the distance from a sample to
+ * a baseline edge, \a util is a pointer to utility data to compute the distance, and \a tol is the tolerance.
+ * Namely, an element of \a list is thinned-out if the distance from it to the baseline edge that connects
+ * adjacent elements is smaller than \a tol.
+ * \return
+ * zVecListRDP() does not return any value.
+ */
+__ZM_EXPORT void zVecListRDP(zVecList *list, double (* metric)(const zVec,const zVec,const zVec,void*), void *util, double tol);
+
 /*! \brief scan/print a list of vectors from/to a file.
  *
  * zVecListFScan() scans vectors from a file stream \a fp, and creates

@@ -575,6 +575,49 @@ zVec zVecNormalize(const zVec src, zVec dest)
   return zRawVecNormalize( zVecBufNC(src), zVecSizeNC(src), zVecBufNC(dest) ) ? dest : NULL;
 }
 
+/* project a vector onto another. */
+zVec zVecProj(const zVec v, const zVec n, zVec pv)
+{
+  if( !zVecSizeEqual( v, n ) || !zVecSizeEqual( v, pv ) ){
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
+    return NULL;
+  }
+  return zVecMul( n, zVecInnerProdNC( v, n ) / zVecSqrNorm( n ), pv );
+}
+
+/* create an orthonormal vector. */
+zVec zVecOrthogonalize(const zVec v, const zVec n, zVec ov)
+{
+  if( !zVecProj( v, n, ov ) ) return NULL;
+  return zVecSubNC( v, ov, ov );
+}
+
+/* distance from a vector to an edge. */
+double zVecEdgeDist(const zVec v, const zVec v1, const zVec v2)
+{
+  double e, num, den, s, d;
+  int i;
+
+  if( !zVecSizeEqual( v, v1 ) || !zVecSizeEqual( v, v2 ) ){
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
+    return -1;
+  }
+  for( num=den=0, i=0; i<zVecSizeNC(v); i++ ){
+    e = zVecElemNC(v2,i) - zVecElemNC(v1,i);
+    num += ( zVecElemNC(v,i) - zVecElemNC(v1,i) ) * e;
+    den += e * e;
+  }
+  if( zIsTiny( den ) ){
+    ZRUNWARN( ZM_WARN_EDGE_ZERO );
+    return zVecDist( v, v1 );
+  }
+  s = num / den;
+  for( d=0, i=0; i<zVecSizeNC(v); i++ ){
+    d += zSqr( s * ( zVecElemNC(v2,i) - zVecElemNC(v1,i) ) - ( zVecElemNC(v,i) - zVecElemNC(v1,i) ) );
+  }
+  return sqrt( d );
+}
+
 /* ********************************************************** */
 /* I/O
  * ********************************************************** */

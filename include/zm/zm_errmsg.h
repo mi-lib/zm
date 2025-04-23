@@ -22,6 +22,8 @@
 #define ZM_WARN_VEC_SIZEMISMATCH           "vector has only %d components, while specified size is %d"
 #define ZM_WARN_MAT_SIZEMISMATCH           "matrix has only %d components, while specified size is %d"
 
+#define ZM_WARN_EDGE_ZERO                  "identical ends of an edge"
+
 #define ZM_WARN_VECLIST_EMPTY              "empty vector list assigned"
 
 #define ZM_WARN_LE_ZEROPIVOT               "cannot sweep out by zero pivot"

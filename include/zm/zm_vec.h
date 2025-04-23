@@ -470,6 +470,34 @@ __ZM_EXPORT zVec zVecNormalize(const zVec src, zVec dest);
 #define zVecSqrDist(v1,v2)  zRawVecSqrDist(zVecBuf(v1),zVecBuf(v2),zVecSizeNC(v1))
 #define zVecDist(v1,v2)     sqrt( zVecSqrDist( v1, v2 ) )
 
+/*! \brief projection and orthogonalization of a vector.
+ *
+ * zVecProj() projects a vector \a v onto the line directed by \a n, and put the result into \a pv;
+ * \a pv is parallel to \a n.
+ *
+ * zVec3DOrthogonalize() orthogonalizes \a v with respect to \a n, and puts it into \a ov. Namely,
+ * \a ov is orthogonal to \a n.
+ * \return
+ * zVec3DProj() returns a pointer \a pv.
+ * zVec3DOrthogonalize() returns a pointer \a ov.
+ * Both functions return the null pointer if sizes of given vectors are not equal.
+ */
+__ZM_EXPORT zVec zVecProj(const zVec v, const zVec n, zVec pv);
+__ZM_EXPORT zVec zVecOrthogonalize(const zVec v, const zVec n, zVec ov);
+
+/*! \brief distance from a vector to an edge.
+ *
+ * zVecEdgeDist() computes the distance from a vector \a v to an edge that connects two ends \a v1 and \a v2,
+ * namely, the radius of a circle that centers \a v and is tangential to the edge.
+ * \return
+ * zVecEdgeDist() returns the computed distance from \a v to the edge \a v1 - \a v2.
+ */
+__ZM_EXPORT double zVecEdgeDist(const zVec v, const zVec v1, const zVec v2);
+
+/* ********************************************************** */
+/* I/O
+ * ********************************************************** */
+
 /*! \brief read a vector from a ZTK format processor. */
 __ZM_EXPORT zVec zVecFromZTK(ZTK *ztk);
 

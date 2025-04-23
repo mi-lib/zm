@@ -1,3 +1,7 @@
+2025.04.23. Added zVecListRDP for Ramer-Douglas-Peucker algorithm. [zm_vec_list]
+2025.04.23. Added zVecEdgeDist. [zm_vec]
+2025.04.23. Added zVecProj and zVecOrthogonalize. [zm_vec]
+2025.04.23. Include zm_graph.h, zm_rrt.h, zm_gng.h, and zm_parse.h from zm.h. [zm]
 2025.04.22. Added zBSplineParamClone and zNURBSClone. [zm_nurbs]
 2025.04.22. Modified specification of zBSplineParamCopy to return a pointer to dest. [zm_nurbs]
 2025.04.15. Abolished zNURBSSetCP. [zm_nurbs]

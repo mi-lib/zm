@@ -5,8 +5,7 @@
 /*!
  * \mainpage
 
- ZM is a collection of numerical computation and optimization
- tools including:
+ ZM is a collection of numerical computation and optimization tools including:
  - random number generator (Mersenne twister)
  - basic statistics tools
  - special functions (Gauss's error, gamma, beta, Bessel)
@@ -17,21 +16,17 @@
  - matrix decompositions (LU, Choresky, LQ/QR)
  - eigenvalue analysis
  - finite Fourier series and Fast Fourier Transform
- - graph search and rapidly-explored random tree.
  - kd-tree
- - vector sequence and interpolations (linear, Lagrange, spline,
-   Akima, PCHIP, polynomial fitting, NURBS)
+ - vector sequence and interpolations (linear, Lagrange, spline, Akima, PCHIP, polynomial fitting, NURBS)
  - numerical integrator
- - optimization solvers (line search, linear programming, linear
-   complementary programming, quadratic programming, nonlinear
-   programming based on descent/non-descent methods)
+ - optimization solvers (line search, linear programming, linear complementary programming, quadratic
+   programming, nonlinear programming based on descent/non-descent methods)
  - nonlinear equation solvers
- - first/second order ordinary differential equation quadratures
-   (Runge-Kutta family, embedded Runge-Kutta family, Adams, Gear,
-   backward Euler, Butcher-Kuntzmann family, deferred correction,
-   Leapflog)
+ - first/second order ordinary differential equation quadratures (Runge-Kutta family, embedded Runge-Kutta
+   family, Adams, Gear, backward Euler, Butcher-Kuntzmann family, deferred correction, Leapflog)
  - multivariate analysis (RANSAC, K-means, GMM)
  - nonlinear oscillator
+ - graph search (Dijkstra, A*, rapidly-explored random tree, growing neural gas).
  - parser of mathematical expression
  */
 
@@ -51,5 +46,10 @@
 #include <zm/zm_ode.h>
 #include <zm/zm_intg.h>
 #include <zm/zm_oscil.h>
+
+#include <zm/zm_graph.h>
+#include <zm/zm_rrt.h>
+#include <zm/zm_gng.h>
+#include <zm/zm_parse.h>
 
 #endif /* __ZM_H__ */
