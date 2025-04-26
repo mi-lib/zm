@@ -16,6 +16,8 @@
 
 #include <zm/zm_nurbs.h>
 
+__BEGIN_DECLS
+
 /* @param[in] ref_vec_array vector array of reference points */
 /* @param[in] order         order of zNURBS */
 /* @param[in] cp_num        the number of control point  */
@@ -43,17 +45,19 @@ __ZM_EXPORT void zNURBSFitFree(void **fit_data);
 __ZM_EXPORT int zNURBSFitting(void *fit_data, const int iter, const double tol, FILE *fp);
 
 /* print class */
-ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBSFitPrintFClass ){
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBSFitFPrintClass ){
   void (*header_label_of_fitted_curve)(FILE*);
   void (*fitted_curve)(FILE*, const double); /* 2nd argument is a knot to pop-out */
   void (*control_point_and_weight)(FILE*);
   void (*target_and_fitted_point)(FILE*);
 };
 /* @param[in] fit_data the main data to be filed out */
-__ZM_EXPORT const zNURBSFitPrintFClass *zNURBSFitPrintF(const void *fit_data);
+__ZM_EXPORT const zNURBSFitFPrintClass *zNURBSFitFPrint(const void *fit_data);
 
 /* @param[in] fit_data the main data to be print out */
 /* @param[in,out] fp   a FILE pointer (i.e. stdout) to print the internal fitting variables */
-__ZM_EXPORT void _zNURBSFitPrintFReport(const void *fit_data, FILE *fp);
+__ZM_EXPORT void _zNURBSFitFPrintReport(const void *fit_data, FILE *fp);
+
+__END_DECLS
 
 #endif

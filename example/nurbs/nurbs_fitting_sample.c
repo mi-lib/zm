@@ -5,8 +5,8 @@
 #define CP_NUM 10
 #define DATA_NUM 30
 #define SLICE_NUM 200
-#define ITER 200
-#define TOL 1.0e-6
+#define ITER 100
+#define TOL 5.0e-6
 
 /* out : ref_vec_array */
 void _create_ref_vec_array(zVecArray *ref_vec_array)
@@ -42,33 +42,36 @@ int main(int argc, char *argv[]){
   zNURBSFitCreate( &ref_vec_array, ORDER, CP_NUM, start_knot, end_knot, &nurbs, &fit );
   zVecArrayFree( &ref_vec_array );
   zNURBSFitInitialize( fit, NULL, NULL );
-  _zNURBSFitPrintFReport( fit, stdout );
-  FILE *iteration_logfp;
-  iteration_logfp = fopen( "fitting.csv", "w" );
-  iter_count = zNURBSFitting( fit, ITER, TOL, iteration_logfp );
-  fclose(iteration_logfp);
+  FILE *fp_param_report;
+  fp_param_report = fopen( "fitting_parameter_report.txt", "w" );
+  _zNURBSFitFPrintReport( fit, fp_param_report );
+  FILE *fp_iteration_log;
+  fp_iteration_log = fopen( "fitting.csv", "w" );
+  iter_count = zNURBSFitting( fit, ITER, TOL, fp_iteration_log );
+  fclose( fp_iteration_log );
   printf("end : iteration count = %d\n\n", iter_count);
-  _zNURBSFitPrintFReport( fit, stdout );
+  _zNURBSFitFPrintReport( fit, fp_param_report );
+  fclose( fp_param_report );
 
   FILE* fp_nurbs;
   fp_nurbs = fopen( "fitting_nurbs_curve.csv", "w" );
-  zNURBSFitPrintF( fit )->header_label_of_fitted_curve( fp_nurbs );
-  fprintf( fp_nurbs, "\n");
+  zNURBSFitFPrint( fit )->header_label_of_fitted_curve( fp_nurbs );
+  fprintf( fp_nurbs, "\n" );
   ds = (end_knot - start_knot) / SLICE_NUM;
   for( s=0; s < end_knot + ds; ){
-    zNURBSFitPrintF( fit )->fitted_curve( fp_nurbs, s );
+    zNURBSFitFPrint( fit )->fitted_curve( fp_nurbs, s );
     s += ds;
   }
   fclose( fp_nurbs );
 
   FILE* fp_cp_w;
   fp_cp_w = fopen( "fitting_nurbs_cp_and_weight.csv", "w" );
-  zNURBSFitPrintF( fit )->control_point_and_weight( fp_cp_w );
+  zNURBSFitFPrint( fit )->control_point_and_weight( fp_cp_w );
   fclose( fp_cp_w );
 
   FILE* fp_data;
   fp_data = fopen( "fitting_target_and_fitted_nurbs_point.csv", "w" );
-  zNURBSFitPrintF( fit )->target_and_fitted_point( fp_data );
+  zNURBSFitFPrint( fit )->target_and_fitted_point( fp_data );
   fclose( fp_data );
 
 

@@ -193,7 +193,7 @@ typedef struct{
   zMat J_w; /* jacobian of weight */
   zMat J; /* jacobian of fitting knot, control point, weight */
   leParam le; /* paramters of linear equation solver */
-  zNURBSFitPrintFClass *print; /* instance of print class */
+  zNURBSFitFPrintClass *print; /* instance of print class */
 } zNURBSFitData;
 
 
@@ -352,7 +352,7 @@ bool zNURBSFitCreate(const zVecArray *ref_vec_array, const int order, const int 
 
   _createLinearEquationParameter( zVecSize(fit->x), zVecSize(fit->fit_vec), &fit->le );
 
-  fit->print = zAlloc( zNURBSFitPrintFClass, 1 );
+  fit->print = zAlloc( zNURBSFitFPrintClass, 1 );
   fit->print->header_label_of_fitted_curve = _header_label_of_fitted_curve;
   fit->print->fitted_curve                 = _fitted_curve;
   fit->print->control_point_and_weight     = _control_point_and_weight;
@@ -514,6 +514,25 @@ double _zNURBSFittingOne(zNURBSFitData *fit)
   return le->eval_dist;
 }
 
+void _proc_fprint_header(FILE *fp)
+{
+  fprintf( fp, "cnt eval_eq eval_dist\n" );
+  fflush( fp );
+}
+
+void _proc_fprint(FILE *fp, const int cnt, const double eval_eq, const double eval_dist)
+{
+  fprintf( fp, "%d %g %g\n", cnt, eval_eq, eval_dist );
+  fflush( fp );
+}
+
+void _proc_report(FILE *fp, const int cnt, const int iter, const double eval_eq, const double eval_dist, const double converg)
+{
+  fprintf( fp, "%03d/%03d : ", cnt, iter);
+  fprintf( fp, "eval_eq=%g\t eval_dist=%g\t eval_dist-rest=%g\n", eval_eq, eval_dist, converg );
+  fflush(fp);
+}
+
 /* main Fitting loop */
 int zNURBSFitting(void *fit_data, const int iter, const double tol, FILE *fp)
 {
@@ -521,28 +540,23 @@ int zNURBSFitting(void *fit_data, const int iter, const double tol, FILE *fp)
   double rest, converg;
   zNURBSFitData *fit = (zNURBSFitData *)fit_data;
   if( fp != NULL )
-    fprintf( fp, "cnt eval_eq eval_dist\n" );
+    _proc_fprint_header( fp );
   converg = 0;
   for( rest=HUGE_VALUE, i=0; i<iter; i++ ){
     if( _zNURBSFittingOne( fit ) < 0.0 )
       return -1;
     converg = fit->le.eval_dist - rest;
     if( fp != NULL ){
-      fprintf(fp, "%d %g %g\n", i, fit->le.eval_eq, fit->le.eval_dist );
-      if( i%10 == 0 ){
-        printf("%03d/%03d : ", i, iter);
-        printf("eval_eq=%f\t eval_dist=%f\t eval_dist-rest=%f\r", fit->le.eval_eq, fit->le.eval_dist, converg ); fflush(stdout);
-      }  /* monitor */
+      _proc_fprint(fp, i, fit->le.eval_eq, fit->le.eval_dist );
+      if( i%10 == 0 )
+        _proc_report( stdout, i, iter, fit->le.eval_eq, fit->le.eval_dist, converg );
     }
-    if( zIsTol( converg, tol ) ){
+    if( zIsTol( converg, tol ) )
       break;
-    }
     rest = fit->le.eval_dist;
   }
-  if( fp != NULL ){
-    printf("\n%03d/%03d : ", i, iter);
-    printf("eval_eq=%f\t eval_dist=%f\t eval_dist-rest=%f\r", fit->le.eval_eq, fit->le.eval_dist, converg ); fflush(stdout);
-  }
+  if( fp != NULL )
+    _proc_report( stdout, i, iter, fit->le.eval_eq, fit->le.eval_dist, converg );
 
   return i;
 }
@@ -550,7 +564,7 @@ int zNURBSFitting(void *fit_data, const int iter, const double tol, FILE *fp)
 /***********************************************************************************************/
 
 static const zNURBSFitData *_g_fit;
-const zNURBSFitPrintFClass *zNURBSFitPrintF(const void* fit_data)
+const zNURBSFitFPrintClass *zNURBSFitFPrint(const void* fit_data)
 {
   const zNURBSFitData *fit = (const zNURBSFitData *)(fit_data);
   _g_fit = fit;
@@ -628,34 +642,34 @@ void _target_and_fitted_point(FILE *fp)
   zVecFree( vec );
 }
 
-void _zNURBSFitPrintFReport(const void *fit_data, FILE *fp)
+void _zNURBSFitFPrintReport(const void *fit_data, FILE *fp)
 {
   fprintf( fp, "\n----------------------------------------------\n");
   zNURBSFitData *fit = (zNURBSFitData *)fit_data;
   fprintf( fp, "J_knot =\n");
-  zMatPrint( fit->J_knot );
+  zMatFPrint( fp, fit->J_knot );
   fprintf( fp, "J_cp =\n");
-  zMatPrint( fit->J_cp );
+  zMatFPrint( fp, fit->J_cp );
   fprintf( fp, "J_w =\n");
-  zMatPrint( fit->J_w );
+  zMatFPrint( fp, fit->J_w );
   fprintf( fp, "J = \n");
-  zMatPrint( fit->J );
+  zMatFPrint( fp, fit->J );
   fprintf( fp, "x =\n");
-  zVecPrint(fit->x);
+  zVecFPrint(fp, fit->x);
   fprintf( fp, "dx =\n");
-  zVecPrint(fit->dx);
+  zVecFPrint(fp, fit->dx);
   fprintf( fp, "fit_knots=\n");
-  zVecPrint(fit->fit_knots);
+  zVecFPrint(fp, fit->fit_knots);
   fprintf( fp, "CP=\n");
-  zNURBSCPFPrint(stdout, fit->nurbs);
+  zNURBSCPFPrint( fp, fit->nurbs);
   fprintf( fp, "fit->le.err_vec =");
-  zVecPrint(fit->le.err_vec);
+  zVecFPrint(fp, fit->le.err_vec);
   fprintf( fp, "ref_vec=\n");
-  zVecPrint(fit->ref_vec);
+  zVecFPrint(fp, fit->ref_vec);
   fprintf( fp, "fit_vec=\n");
-  zVecPrint(fit->fit_vec);
+  zVecFPrint(fp, fit->fit_vec);
   fprintf( fp, "\n fit->le.err_vec =");
-  zVecPrint(fit->le.err_vec);
+  zVecFPrint(fp, fit->le.err_vec);
   fprintf( fp, "\n");
   fprintf( fp, "eval_eq = %f\n", fit->le.eval_eq );
   fprintf( fp, "eval_dist = %f\n", fit->le.eval_dist );
