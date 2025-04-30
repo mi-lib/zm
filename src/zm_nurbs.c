@@ -380,7 +380,7 @@ static const ZTKPrp __ztk_prp_nurbs[] = {
 zNURBS *zNURBSFromZTK(zNURBS *nurbs, ZTK *ztk)
 {
   zNURBSInit( nurbs );
-  if( !ZTKEvalKey( nurbs, NULL, ztk, __ztk_prp_nurbs ) ) return NULL;
+  if( !_ZTKEvalKey( nurbs, NULL, ztk, __ztk_prp_nurbs ) ) return NULL;
   if( ( nurbs->param.order = zNURBSKnotNum(nurbs) - zNURBSCPNum(nurbs) - 1 ) <= 0 ){
     ZRUNERROR( ZM_ERR_NURBS_INVALID_KNOTSIZE, zNURBSKnotNum(nurbs), zNURBSCPNum(nurbs) + 1 );
     return NULL;
@@ -393,7 +393,7 @@ void zNURBSFPrintZTK(FILE *fp, const zNURBS *nurbs)
 {
   int i;
 
-  ZTKPrpKeyFPrint( fp, (void*)nurbs, __ztk_prp_nurbs );
+  _ZTKPrpKeyFPrint( fp, (void*)nurbs, __ztk_prp_nurbs );
   for( i=0; i<zNURBSCPNum(nurbs); i++ ){
     fprintf( fp, "%s: %d %.12g ", ZTK_KEY_ZM_NURBS_CP, i, zNURBSWeight(nurbs,i) );
     zVecFPrint( fp, zNURBSCP(nurbs,i) );

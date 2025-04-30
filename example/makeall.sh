@@ -5,7 +5,7 @@ do
     if [ -d ${sampledir} ]; then
 	cd ${sampledir} > /dev/null
 	if [ -e makefile ]; then
-	    make clean
+	    make $1
 	fi
 	cd - > /dev/null
     fi

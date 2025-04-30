@@ -1,3 +1,7 @@
+2025.04.29. Debugged zm_histogram to conform to ISO C++. [app]
+2025.04.29. Modified makefile to conform to new specification of zeda-makefile-gen. [all]
+2025.04.29. Replaced example/allclean.sh with example/makeall.sh. [example]
+2025.04.28. Modified zNURBSFromZTK and zNURBSFPrintZTK to conform to new specifications of ZTKEvalKey and ZTKPrpKeyFPrint. [zm_nurbs]
 2025.04.23. Added zVecListRDP for Ramer-Douglas-Peucker algorithm. [zm_vec_list]
 2025.04.23. Added zVecEdgeDist. [zm_vec]
 2025.04.23. Added zVecProj and zVecOrthogonalize. [zm_vec]

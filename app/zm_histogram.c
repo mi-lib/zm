@@ -6,9 +6,9 @@ enum{
   HISTOGRAM_OUTPUT,
 };
 zOption option[] = {
-  { "h",    "help",     NULL, "display this messages",   NULL, false },
-  { "n",    "num", "<value>", "number of bins",          "10", false },
-  { "o", "output", "<name>",  "basename of output files", "h", false },
+  { "h",    "help",     NULL, "display this messages",    NULL, false },
+  { "n",    "num", "<value>", "number of bins",           (char *)"10", false },
+  { "o", "output", "<name>",  "basename of output files", (char *)"h", false },
   { NULL, NULL, NULL, NULL, NULL, false },
 };
 
