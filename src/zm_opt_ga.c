@@ -91,12 +91,12 @@ bool zOptGACreate(zOptGA *ga, double (* f)(const zVec,void*), void *util, const 
     return false;
   }
   for( i=0; i<population; i++ )
-    if( !zOptGAChromosomeAlloc( &ga->individual[i], zVecSizeNC(min) ) ) goto ERROR;
+    if( !zOptGAChromosomeAlloc( &ga->individual[i], zVecSizeNC(min) ) ) goto ZOPT_GA_CREATE_ERROR;
 
   ga->population = population;
   ga->min = zVecClone( min );
   ga->max = zVecClone( max );
-  if( !ga->min || !ga->max ) goto ERROR;
+  if( !ga->min || !ga->max ) goto ZOPT_GA_CREATE_ERROR;
 
   ga->rate_survival = rate_survival;
   ga->rate_mutation = rate_mutation;
@@ -105,7 +105,7 @@ bool zOptGACreate(zOptGA *ga, double (* f)(const zVec,void*), void *util, const 
   zOptGARand( ga, util );
   return true;
 
- ERROR:
+ ZOPT_GA_CREATE_ERROR:
   ZALLOCERROR();
   zOptGADestroy( ga );
   return false;

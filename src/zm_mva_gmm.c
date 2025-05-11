@@ -138,22 +138,22 @@ zGMM *zGMMInit(zGMM *gmm, int k, int size)
   for( i=0; i<k; i++ ){
     if( !( gc = zAlloc( zGMMListCell, 1 ) ) ){
       ZALLOCERROR();
-      goto ERROR;
+      goto ZGMM_INIT_ERROR;
     }
     zGMMUnitInit( &gc->data );
     if( !zGMMUnitAlloc( &gc->data, size, size ) ){
       ZALLOCERROR();
       free( gc );
-      goto ERROR;
+      goto ZGMM_INIT_ERROR;
     }
     zListInsertTail( &gmm->glist, gc );
   }
   gmm->log_likelihood = -HUGE_VAL;
   if( !zVecClusterMethodSetDefault( &gmm->method, size ) )
-    goto ERROR;
+    goto ZGMM_INIT_ERROR;
   return gmm;
 
- ERROR:
+ ZGMM_INIT_ERROR:
   zVecClusterMethodInit( &gmm->method );
   zGMMDestroy( gmm );
   return NULL;
