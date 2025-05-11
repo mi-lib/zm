@@ -59,7 +59,7 @@ void assert_pex_val(void)
 {
   zPex p;
   double x;
-  register int i, n;
+  int i, n;
   bool result = true;
 
   p = zPexCreateList( 3, zRandF(-1,1), zRandF(-1,1), zRandF(-1,1), zRandF(-1,1) );
@@ -124,7 +124,7 @@ void assert_peqsolve(void)
   zPex pex;
   zCVec ans;
   zComplex c;
-  register int i;
+  int i;
   bool ret = true;
 
   for( i=0; i<DIM; i++ ) a[i] = zRandF(-5,5);
@@ -160,7 +160,7 @@ void assert_exp(void)
   zPex p;
   zVec fact;
   zCVec ans;
-  register int i;
+  int i;
   bool ret = true;
 
   fact = zVecAlloc( NUM );
@@ -187,7 +187,7 @@ void assert_cexp(void)
   zPex p;
   zCVec fact, ans;
   zComplex c;
-  register int i;
+  int i;
   bool ret = true;
 
   zRandInit();

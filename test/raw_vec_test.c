@@ -25,7 +25,7 @@ void assert_misc(void)
   double test_vec1[TEST_VEC_BUFSIZ];
   double test_vec2[TEST_VEC_BUFSIZ];
   double val1, val2, dval;
-  register int i;
+  int i;
   bool result;
 
   val1 = zRandF( -10, 10 );
@@ -56,7 +56,7 @@ void assert_arith(void)
   double test_vec2[TEST_VEC_BUFSIZ];
   double test_vec3[TEST_VEC_BUFSIZ];
   double k;
-  register int i;
+  int i;
   bool result;
 
   zRawVecRandUniform( test_vec1, TEST_VEC_SIZE, -10, 10 );
@@ -102,7 +102,7 @@ void assert_normalize(void)
   double test_vec1[TEST_VEC_BUFSIZ];
   double test_vec2[TEST_VEC_BUFSIZ];
   double norm;
-  register int i;
+  int i;
   bool result;
 
   zRawVecRandUniform( test_vec1, TEST_VEC_SIZE, -10, 10 );

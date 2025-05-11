@@ -1,3 +1,4 @@
+2025.05.11. Removed register qualifiers from test and example codes. [test, example]
 2025.05.11. Modified zGMMInit and zOptGACreate to remove ERROR labels. [zm_mva_gmm, zm_opt_ga]
 2025.04.29. Debugged zm_histogram to conform to ISO C++. [app]
 2025.04.29. Modified makefile to conform to new specification of zeda-makefile-gen. [all]

@@ -10,7 +10,7 @@ void assert_get_put(void)
   double mat_test1[MAT_ROW_SIZE * MAT_COL_SIZE];
   double mat_test2[MAT_ROW_SIZE * MAT_COL_SIZE];
   double mat_test3[MAT_ROW_SIZE * MAT_COL_SIZE];
-  register int i, j;
+  int i, j;
   bool result;
 
   zRawMatRandUniform( mat_test1, rowsize, colsize, -10, 10 );
@@ -68,7 +68,7 @@ void assert_arith(void)
   double mat_test2[MAT_ROW_SIZE * MAT_COL_SIZE];
   double mat_test3[MAT_ROW_SIZE * MAT_COL_SIZE];
   double k;
-  register int i, j;
+  int i, j;
   bool result;
 
   zRawMatRandUniform( mat_test1, rowsize, colsize, -10, 10 );
@@ -150,7 +150,7 @@ void assert_transpose(void)
   double mat_test1[MAT_COL_SIZE * MAT_ROW_SIZE];
   double mat_test2[MAT_ROW_SIZE * MAT_COL_SIZE];
   double tr;
-  register int i, j;
+  int i, j;
   bool result;
 
   zRawMatRandUniform( mat_test1, colsize, rowsize, -10, 10 );

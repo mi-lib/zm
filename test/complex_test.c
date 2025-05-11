@@ -17,7 +17,7 @@ bool assert_qesolve_check(double a, double b, double c, zComplex *ans)
 
 bool assert_qesolve(void)
 {
-  register int i;
+  int i;
   double a, b, c;
   zComplex ans[2];
 
@@ -47,7 +47,7 @@ bool assert_cesolve_check(double a, double b, double c, double d, zComplex *ans)
 
 bool assert_cesolve(void)
 {
-  register int i;
+  int i;
   double a, b, c, d;
   zComplex ans[3];
 
@@ -66,7 +66,7 @@ bool assert_cesolve(void)
 
 bool assert_isincluded(void)
 {
-  register int i;
+  int i;
   zComplex c[NUM];
 
   for( i=0; i<NUM; i++ )
