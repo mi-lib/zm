@@ -1,3 +1,6 @@
+2025.07.19. Added an automatic problem generator for the quadratic programming solver. [test]
+2025.07.19. Added an automatic problem generator for the linear programming solver. [test]
+2025.07.19. Debugged _zQPASMDelEq. [zm_opt_qp_asm]
 2025.05.11. Removed register qualifiers from test and example codes. [test, example]
 2025.05.11. Modified zGMMInit and zOptGACreate to remove ERROR labels. [zm_mva_gmm, zm_opt_ga]
 2025.04.29. Debugged zm_histogram to conform to ISO C++. [app]

@@ -163,9 +163,6 @@ void gen_sample13(zMat *q, zVec *c, zMat *a, zVec *b, zVec *ans, zVec *x)
 
 
 
-
-
-
 void (* gen_sample[])(zMat*,zVec*,zMat*,zVec*,zVec*,zVec*) = {
   gen_sample1,
   gen_sample2,

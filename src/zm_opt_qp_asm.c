@@ -194,16 +194,17 @@ static bool _zQPASMAddEq(zQPASM *qpasm, const zMat a, const zVec b, const zVec x
 /* delete an equality constraint from active set. */
 static bool _zQPASMDelEq(zQPASM *qpasm, const zMat a)
 {
-  int i, ia;
+  int i, ic, i_to_active;
   bool is_violated = false;
 
-  for( i=0; i<zVecSizeNC(qpasm->_lambda); i++ ){
+  for( i=ic=0; i<zVecSizeNC(qpasm->_lambda); i++ ){
     if( zVecElemNC(qpasm->_lambda,i) < 0 ){
       is_violated = true;
-      ia = zIndexElemNC(qpasm->ia,i);
-      zIndexRemove( qpasm->ia, i );
-      zIndexInsertVal( qpasm->in, zMatRowSizeNC(a), ia );
-    }
+      i_to_active = zIndexElemNC(qpasm->ia,ic);
+      zIndexRemove( qpasm->ia, ic );
+      zIndexInsertVal( qpasm->in, zMatRowSizeNC(a), i_to_active );
+    } else
+      ic++;
   }
   return is_violated;
 }
