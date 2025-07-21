@@ -68,20 +68,18 @@ void assert_lp_simplex(void)
   double cost;
   const int n = 10, m = 6;
   const double tol = 1.0e-8;
-  const int num_trial = 100;
-  int i, num_success;
+  int num_trial = 100;
   bool result = true;
 
-  for( i=0, num_success=0; i<num_trial; i++ ){
+  for( ; num_trial>0; num_trial-- ){
     if( !generate_lp( n, m, &c, &a, &b, &ans ) ) return;
     x = zVecAlloc( n );
     zLPSolveSimplex( a, b, c, x, &cost );
-    num_success += check_answer( x, ans, tol, &result );
+    check_answer( x, ans, tol, &result );
     zMatFree( a );
     zVecFreeAtOnce( 4, c, b, x, ans );
   }
-  eprintf( "success rate %d / %d\n", num_success, num_trial );
-  zAssert( zLPSolveSimplex, result );
+  zAssert( zLPSolveSimplex (regular case), result );
 }
 
 int main(void)

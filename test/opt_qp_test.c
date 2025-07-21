@@ -76,7 +76,7 @@ void assert_qp_asm(void)
     zMatFreeAtOnce( 2, q, a );
     zVecFreeAtOnce( 4, c, b, x, ans );
   }
-  zAssert( zQPSolveASM, result );
+  zAssert( zQPSolveASM (regular case), result );
 }
 
 void assert_qp_lemke(void)
@@ -97,7 +97,7 @@ void assert_qp_lemke(void)
     zMatFreeAtOnce( 2, q, a );
     zVecFreeAtOnce( 4, c, b, x, ans );
   }
-  zAssert( zQPSolveLemke, result );
+  zAssert( zQPSolveLemke (regular case), result );
 }
 
 int main(void)
