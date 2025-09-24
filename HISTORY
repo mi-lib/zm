@@ -1,3 +1,4 @@
+2025.09.24. Added a test for zMatDet and zMatAdj in le_test. [test]
 2025.07.21. Added an automatic problem generator for the linear complementary problem solver. [test]
 2025.07.19. Added an automatic problem generator for the quadratic programming solver. [test]
 2025.07.19. Added an automatic problem generator for the linear programming solver. [test]

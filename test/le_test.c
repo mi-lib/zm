@@ -85,7 +85,7 @@ void assert_mat_inv(void)
     zMatInv( m1, m2 );
     zMulMatMat( m1, m2, m );
     if( !zMatIsIdent( m, zTOL ) ){
-      zMatPrint( m );
+      zMatFPrint( stderr, m );
       result = false;
     }
   }
@@ -362,6 +362,33 @@ void assert_lyapnov_equation(void)
   zAssert( zLELyapnovSolve, result );
 }
 
+void assert_mat_det_adj(void)
+{
+  zMat m, minv1, minv2;
+  double det;
+  const int size = 10, testnum = 100;
+  int k;
+  bool result = true;
+
+  m = zMatAllocSqr( size );
+  minv1 = zMatAllocSqr( size );
+  minv2 = zMatAllocSqr( size );
+  for( k=0; k<testnum; k++ ){
+    zMatRandUniform( m, -10, 10 );
+    zMatInv( m, minv1 );
+    det = zMatDet( m );
+    zMatAdj( m, minv2 );
+    zMatDivDRC( minv2, det );
+    if( !zMatEqual( minv1, minv2, zTOL ) ){
+      zMatSubDRC( minv1, minv2 );
+      eprintf( "case #%d: maximum error = %g\n", k, zMatElemAbsMax(minv1,NULL) );
+      result = false;
+    }
+  }
+  zMatFreeAtOnce( 3, m, minv1, minv2 );
+  zAssert( zMatAdj + zMatDet, result );
+}
+
 int main(void)
 {
   zRandInit();
@@ -374,5 +401,6 @@ int main(void)
   assert_mpnull();
   assert_tridiagonal_equation();
   assert_lyapnov_equation();
+  assert_mat_det_adj();
   return EXIT_SUCCESS;
 }
