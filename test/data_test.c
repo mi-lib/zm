@@ -1,21 +1,93 @@
 #include <zm/zm_data.h>
 #include <zm/zm_fourier.h>
 
-#define N 1000
-
 void assert_sort(void)
 {
-  double data[N];
+  const int n = 1000;
   int i;
+  double *data;
   bool result = true;
 
-  zRandInit();
-  for( i=0; i<N; i++ )
+  data = zAlloc( double, n );
+  for( i=0; i<n; i++ )
     data[i] = zRandF(-10,10);
-  zDataSort( data, N );
-  for( i=1; i<N; i++ )
+  zDataSort( data, n );
+  for( i=1; i<n; i++ )
     if( data[i-1] > data[i] ) result = false;
+  free( data );
   zAssert( zDataSort, result );
+}
+
+void assert_sort_index(void)
+{
+  const int n = 1000;
+  int i;
+  double *data_org, *data, *data_sorted;
+  zIndex index;
+  bool result1 = true, result2;
+
+  data_org = zAlloc( double, n );
+  data = zAlloc( double, n );
+  data_sorted = zAlloc( double, n );
+  index = zIndexCreate( n );
+  for( i=0; i<n; i++ )
+    data_org[i] = data[i] = data_sorted[i] = zRandF(-10,10);
+  zDataSort( data_sorted, n );
+  zDataSortIndex( data, n, index );
+  for( i=0; i<n; i++ ){
+    if( data[zIndexElem(index,i)] != data_sorted[i] ) result1 = false;
+  }
+  result2 = memcmp( data, data_org, n ) == 0;
+  free( data_org );
+  free( data );
+  free( data_sorted );
+  zIndexFree( index );
+  zAssert( zDataSortIndex, result1 && result2 );
+}
+
+void assert_data_select(void)
+{
+  const int n = 1000;
+  int i;
+  double *data_org, *data, *data_sorted, val;
+  bool result1 = true, result2;
+
+  data_org = zAlloc( double, n );
+  data = zAlloc( double, n );
+  data_sorted = zAlloc( double, n );
+  for( i=0; i<n; i++ )
+    data_org[i] = data[i] = data_sorted[i] = zRandF(-100,100);
+  zDataSort( data_sorted, n );
+  for( i=0; i<n; i++ ){
+    val = zDataSelect( data, n, i );
+    if( val != data_sorted[i] ) result1 = false;
+  }
+  result2 = memcmp( data, data_org, n ) == 0;
+  free( data_org );
+  free( data );
+  free( data_sorted );
+  zAssert( zDataSelect, result1 && result2 );
+}
+
+void assert_data_median(void)
+{
+  int i, n;
+  double *data;
+  bool result;
+
+  data = zAlloc( double, ( n = 11 ) );
+  for( i=0; i<n; i++ )
+    data[i] = i;
+  result = zDataMedian( data, n ) == 5;
+  free( data );
+  zAssert( zDataMedian (odd members case), result );
+
+  data = zAlloc( double, ( n = 10 ) );
+  for( i=0; i<n; i++ )
+    data[i] = i;
+  result = zDataMedian( data, n ) == 4.5;
+  free( data );
+  zAssert( zDataMedian (even members case), result );
 }
 
 #define FFT_TEST_N   100
@@ -113,6 +185,10 @@ int main(int argc, char *argv[])
 {
   zRandInit();
   assert_sort();
+  assert_sort_index();
+  assert_data_select();
+  assert_data_median();
+
   assert_fft();
   assert_fft2();
   return EXIT_SUCCESS;

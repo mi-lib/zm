@@ -1,3 +1,7 @@
+2025.10.28. Modified argument types of zDataPeak, zDataSort, zDataSortIndex, zDataSortAbsIndex, zDataSelect, zDataMedian, zDataSmoothSG, and zDataPeakSG from size_t to int. [zm_errmsg, zm_data]
+2025.10.25. Added zDataSelect and zDataMedian. [zm_data]
+2025.10.25. Modified _zDataSortIndexCmp and _zDataSortAbsIndexCmp to sort values in ascent order. [zm_data]
+2025.10.25. Modified zDataSortIndex and zDataSortAbsIndex to check sizes of the array and the index vector. [zeda_errmsg, zeda_data]
 2025.09.24. Added a test for zMatDet and zMatAdj in le_test. [test]
 2025.07.21. Added an automatic problem generator for the linear complementary problem solver. [test]
 2025.07.19. Added an automatic problem generator for the quadratic programming solver. [test]
