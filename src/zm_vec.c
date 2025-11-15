@@ -36,12 +36,11 @@ zVec zVecAlloc(int size)
     ZALLOCERROR();
     return NULL;
   }
-  if( !( zVecBufNC(v) = zAlloc( double, size ) ) ){
-    ZALLOCERROR();
+  zArrayAlloc( v, double, size );
+  if( !zVecBufNC(v) ){
     free( v );
     return NULL;
   }
-  zVecSetSize( v, size );
   return v;
 }
 
@@ -105,8 +104,7 @@ zVec zVecCopyNC(const zVec src, zVec dest)
 /* copy a vector. */
 zVec zVecCopy(const zVec src, zVec dest)
 {
-  return zVecSizeEqual( src, dest ) ?
-    zVecCopyNC( src, dest ) : NULL;
+  return zVecSizeEqual( src, dest ) ? zVecCopyNC( src, dest ) : NULL;
 }
 
 /* copy a vector from an array of double-precision floating-point values. */

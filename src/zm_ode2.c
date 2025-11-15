@@ -48,9 +48,9 @@ zVec _zODE2RegularFunc(double t, zVec y, void *ode, zVec dy)
   int size;
 
   size = zVecSizeNC(y) / 2;
-  zVecSetSizeNC( &x, size ); zVecBufNC(&x) = zVecBufNC(y);
-  zVecSetSizeNC( &v, size ); zVecBufNC(&v) = zVecBufNC(y)  + size;
-  zVecSetSizeNC( &a, size ); zVecBufNC(&a) = zVecBufNC(dy) + size;
+  zVecAssignArray( &x, size, zVecBufNC(y) );
+  zVecAssignArray( &v, size, zVecBufNC(y)  + size );
+  zVecAssignArray( &a, size, zVecBufNC(dy) + size );
   zRawVecCopy( zVecBufNC(&v), zVecBufNC(dy), size );
   ((zODE2 *)ode)->f( t, &x, &v, ((zODE2 *)ode)->util, &a );
   return dy;
@@ -63,12 +63,12 @@ zVec _zODE2Cat(zVec y, double dt, zVec dy, zVec yn, void *ode)
   int size;
 
   size = zVecSizeNC(y) / 2;
-  zVecSetSizeNC( &x,  size ); zVecBufNC(&x)  = zVecBufNC(y);
-  zVecSetSizeNC( &v,  size ); zVecBufNC(&v)  = zVecBufNC(y)  + size;
-  zVecSetSizeNC( &xn, size ); zVecBufNC(&xn) = zVecBufNC(yn);
-  zVecSetSizeNC( &vn, size ); zVecBufNC(&vn) = zVecBufNC(yn) + size;
-  zVecSetSizeNC( &vf, size ); zVecBufNC(&vf) = zVecBufNC(dy);
-  zVecSetSizeNC( &af, size ); zVecBufNC(&af) = zVecBufNC(dy) + size;
+  zVecAssignArray( &x,  size, zVecBufNC(y) );
+  zVecAssignArray( &v,  size, zVecBufNC(y)  + size );
+  zVecAssignArray( &xn, size, zVecBufNC(yn) );
+  zVecAssignArray( &vn, size, zVecBufNC(yn) + size );
+  zVecAssignArray( &vf, size, zVecBufNC(dy) );
+  zVecAssignArray( &af, size, zVecBufNC(dy) + size );
   ((zODE2 *)ode)->cat_dis( &x, dt, &vf, &xn, ((zODE2 *)ode)->util );
   ((zODE2 *)ode)->cat_vel( &v, dt, &af, &vn, ((zODE2 *)ode)->util );
   return yn;
@@ -81,12 +81,12 @@ zVec _zODE2Sub(zVec y1, zVec y2, zVec dy, void *ode)
   int size;
 
   size = zVecSizeNC(y1) / 2;
-  zVecSetSizeNC( &x1, size ); zVecBufNC(&x1) = zVecBufNC(y1);
-  zVecSetSizeNC( &v1, size ); zVecBufNC(&v1) = zVecBufNC(y1)  + size;
-  zVecSetSizeNC( &x2, size ); zVecBufNC(&x2) = zVecBufNC(y2);
-  zVecSetSizeNC( &v2, size ); zVecBufNC(&v2) = zVecBufNC(y2) + size;
-  zVecSetSizeNC( &dx, size ); zVecBufNC(&dx) = zVecBufNC(dy);
-  zVecSetSizeNC( &dv, size ); zVecBufNC(&dv) = zVecBufNC(dy) + size;
+  zVecAssignArray( &x1, size, zVecBufNC(y1) );
+  zVecAssignArray( &v1, size, zVecBufNC(y1)  + size );
+  zVecAssignArray( &x2, size, zVecBufNC(y2) );
+  zVecAssignArray( &v2, size, zVecBufNC(y2) + size );
+  zVecAssignArray( &dx, size, zVecBufNC(dy) );
+  zVecAssignArray( &dv, size, zVecBufNC(dy) + size );
   ((zODE2 *)ode)->sub_dis( &x1, &x2, &dx, ((zODE2 *)ode)->util );
   ((zODE2 *)ode)->sub_vel( &v1, &v2, &dv, ((zODE2 *)ode)->util );
   return dy;

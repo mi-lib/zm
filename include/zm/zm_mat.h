@@ -22,28 +22,28 @@ typedef zMatStruct * zMat;
  * \retval the row size of a matrix if \a m is not null.
  * \retval 0 if \a m is the null pointer.
  */
-#define zMatRowSizeNC(m)        zArray2RowSize(m)
-#define zMatRowSize(m)          ( (m) ? zMatRowSizeNC(m) : 0 )
+#define zMatRowSizeNC(m)         zArray2RowSize(m)
+#define zMatRowSize(m)           ( (m) ? zMatRowSizeNC(m) : 0 )
 /*! \brief column size of a matrix.
  * \retval the column size of a matrix if \a m is not null.
  * \retval 0 if \a m is the null pointer.
  */
-#define zMatColSizeNC(m)        zArray2ColSize(m)
-#define zMatColSize(m)          ( (m) ? zMatColSizeNC(m) : 0 )
+#define zMatColSizeNC(m)         zArray2ColSize(m)
+#define zMatColSize(m)           ( (m) ? zMatColSizeNC(m) : 0 )
 /*! \brief set the row size of a matrix. */
-#define zMatSetRowSizeNC(m,r)   ( zMatRowSizeNC(m) = (r) )
-#define zMatSetRowSize(m,r)     ( (m) ? zMatSetRowSizeNC(m,r) : 0 )
+#define zMatSetRowSizeNC(m,size) ( zMatRowSizeNC(m) = (size) )
+#define zMatSetRowSize(m,size)   ( (m) ? zMatSetRowSizeNC(m,size) : 0 )
 /*! \brief set the column size of a matrix. */
-#define zMatSetColSizeNC(m,c)   ( zMatColSizeNC(m) = (c) )
-#define zMatSetColSize(m,c)     ( (m) ? zMatSetColSizeNC(m,c) : 0 )
+#define zMatSetColSizeNC(m,size) ( zMatColSizeNC(m) = (size) )
+#define zMatSetColSize(m,size)   ( (m) ? zMatSetColSizeNC(m,size) : 0 )
 
-#define zMatSetSizeNC(m,r,c) do{\
-  zMatSetRowSizeNC(m,r);\
-  zMatSetColSizeNC(m,c);\
+#define zMatSetSizeNC(m,rowsize,colsize) do{\
+  zMatSetRowSizeNC(m,rowsize);\
+  zMatSetColSizeNC(m,colsize);\
 } while(0)
-#define zMatSetSize(m,r,c) do{\
-  zMatSetRowSize(m,r);\
-  zMatSetColSize(m,c);\
+#define zMatSetSize(m,rowsize,colsize) do{\
+  zMatSetRowSize(m,rowsize);\
+  zMatSetColSize(m,colsize);\
 } while(0)
 
 #define zMatRowSizeEqual(m1,m2)    ( zMatRowSizeNC(m1) == zMatRowSizeNC(m2) )

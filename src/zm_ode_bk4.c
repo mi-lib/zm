@@ -28,11 +28,8 @@ static zVec _zODE_BK4_Func(zVec x, zVec y, void *util)
   ode = (zODE *)util;
   ws = (_zODE_BK4 *)ode->_ws;
   /* divide y vector and assign them to half-size vectors */
-  zVecSetSizeNC( &y1, zVecSizeNC(ws->x) );
-  zVecBufNC(&y1) = zVecBufNC(y);
-  zVecSetSizeNC( &y2, zVecSizeNC(ws->x) );
-  zVecBufNC(&y2) = zVecBufNC(y) + zVecSizeNC(ws->x);
-
+  zVecAssignArray( &y1, zVecSizeNC(ws->x), zVecBufNC(y) );
+  zVecAssignArray( &y2, zVecSizeNC(ws->x), zVecBufNC(y) + zVecSizeNC(ws->x) );
   /* k1 */
   ode->cat( ws->x, ws->a11, &ws->k1, ws->xt, ws->util );
   ode->cat( ws->xt, ws->a12, &ws->k2, ws->xt, ws->util );
@@ -60,10 +57,8 @@ zODE* zODEInit_BK4(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*,zV
     ZALLOCERROR();
     return NULL;
   }
-  zVecSetSizeNC( &ws->k1, dim );
-  zVecBufNC(&ws->k1) = zVecBufNC(ws->k);
-  zVecSetSizeNC( &ws->k2, dim );
-  zVecBufNC(&ws->k2) = zVecBufNC(ws->k) + dim;
+  zVecAssignArray( &ws->k1, dim, zVecBufNC(ws->k) );
+  zVecAssignArray( &ws->k2, dim, zVecBufNC(ws->k) + dim );
   ws->iter = iter;
   ode->f = f;
   ode->_ws = (_zODE_BK4 *)ws;

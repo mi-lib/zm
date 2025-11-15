@@ -29,7 +29,7 @@ zMat zMatSetElemList(zMat m, ... )
 }
 
 /* allocate memory for a matrix. */
-zMat zMatAlloc(int row, int col)
+zMat zMatAlloc(int rowsize, int colsize)
 {
   zMat m;
 
@@ -37,12 +37,11 @@ zMat zMatAlloc(int row, int col)
     ZALLOCERROR();
     return NULL;
   }
-  if( !( zMatBufNC(m) = zAlloc( double, row*col ) ) ){
-    ZALLOCERROR();
+  zArray2Alloc( m, double, rowsize, colsize );
+  if( !zMatBufNC(m) ){
     zFree( m );
     return NULL;
   }
-  zMatSetSizeNC( m, row, col );
   return m;
 }
 

@@ -7,7 +7,7 @@
 #include <zm/zm_cmat.h>
 
 /* allocate a complex matrix. */
-zCMat zCMatAlloc(int row, int col)
+zCMat zCMatAlloc(int rowsize, int colsize)
 {
   zCMat m;
 
@@ -15,12 +15,11 @@ zCMat zCMatAlloc(int row, int col)
     ZALLOCERROR();
     return NULL;
   }
-  if( !( zCMatBufNC(m) = zAlloc( zComplex, row*col ) ) ){
-    ZALLOCERROR();
+  zArray2Alloc( m, zComplex, rowsize, colsize );
+  if( !zCMatBufNC(m) ){
     zFree( m );
     return NULL;
   }
-  zCMatSetSizeNC( m, row, col );
   return m;
 }
 

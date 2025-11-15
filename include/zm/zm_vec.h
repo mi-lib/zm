@@ -31,23 +31,26 @@ typedef zVecStruct * zVec;
 #define zVecSetSize(v,s)       ( (v) ? zVecSetSizeNC(v,s) : 0 )
 
 /*! \brief check if the sizes of two vectors are equal. */
-#define zVecSizeEqual(v1,v2) ( zVecSizeNC(v1) == zVecSizeNC(v2) )
+#define zVecSizeEqual(v1,v2)   ( zVecSizeNC(v1) == zVecSizeNC(v2) )
 
 /*! \brief check if the specified position of a vector is valid. */
 #define zVecPosIsValid(v,n)    zArrayPosIsValid( v, n )
 
 /*! \brief pointer to the array buffer of of double-precision floating-point values in a vector. */
-#define zVecBufNC(v)       zArrayBuf(v)
-#define zVecBuf(v)         ( (v) ? zArrayBuf(v) : NULL )
+#define zVecBufNC(v)           zArrayBuf(v)
+#define zVecBuf(v)             ( (v) ? zArrayBuf(v) : NULL )
+
+/*! \brief assign a buffer of double-precision floating-point values to a vector. */
+#define zVecAssignArray(vec,size,buf) zArrayAssign( vec, buf, size )
 
 /*! \brief get an element of a vector without checking size. */
-#define zVecElemNC(v,n)    zVecBufNC(v)[n]
+#define zVecElemNC(v,n)        zVecBufNC(v)[n]
 /*! \brief get an element of a vector. */
-#define zVecElem(v,n)      ( (v) && zVecPosIsValid(v,n) ? zVecElemNC(v,n) : 0 )
+#define zVecElem(v,n)          ( (v) && zVecPosIsValid(v,n) ? zVecElemNC(v,n) : 0 )
 /*! \brief set an element of a vector without checking size. */
-#define zVecSetElemNC(v,n,e) ( zVecElemNC(v,n) = (e) )
+#define zVecSetElemNC(v,n,e)   ( zVecElemNC(v,n) = (e) )
 /*! \brief set an element of a vector. */
-#define zVecSetElem(v,n,e) ( (v) && zVecPosIsValid(v,n) ? zVecSetElemNC(v,n,e) : 0 )
+#define zVecSetElem(v,n,e)     ( (v) && zVecPosIsValid(v,n) ? zVecSetElemNC(v,n,e) : 0 )
 
 /*! \brief set elements of a vector for values in the argument list.
  *

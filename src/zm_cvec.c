@@ -15,12 +15,11 @@ zCVec zCVecAlloc(int size)
     ZALLOCERROR();
     return NULL;
   }
-  if( !( zArrayBuf(v) = zAlloc( zComplex, size ) ) ){
-    ZALLOCERROR();
+  zArrayAlloc( v, zComplex, size );
+  if( !zCVecBufNC(v) ){
     free( v );
     return NULL;
   }
-  zCVecSetSizeNC( v, size );
   return v;
 }
 

@@ -145,8 +145,7 @@ static bool _zDataSmoothSG(double src[], int size, int w, int dim, double dest[]
     goto TERMINATE;
   }
   for( i=0; i<w; i++ ) zVecElemNC(ts,i) = i;
-  zVecSetSizeNC( &window, w );
-  zVecBufNC(&window) = src;
+  zVecAssignArray( &window, w, src );
   if( !zPexIPCreateLSM( &pc, w-1, dim, ts, &window ) ){
     result = false;
     goto TERMINATE;
