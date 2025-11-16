@@ -62,6 +62,9 @@ typedef zMatStruct * zMat;
 #define zMatRowBufNC(m,r) ( zMatBufNC(m) + (r)*zMatColSizeNC(m) )
 #define zMatRowBuf(m,r)   ( (m) ? zMatRowBufNC(m,r) : NULL )
 
+/*! \brief assign a buffer of double-precision floating-point values to a matrix. */
+#define zMatAssignArray(mat,rowsize,colsize,array) zArray2Assign(mat,array,rowsize,colsize)
+
 /*! \brief check if the specified row and column of a matrix is valid. */
 #define zMatPosIsValid(m,r,c) zArray2PosIsValid(m,r,c)
 

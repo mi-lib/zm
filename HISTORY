@@ -1,3 +1,4 @@
+2025.11.16. Added zMatAssignArray. [zm_mat]
 2025.11.15. Modified _zDataSmoothSG, zLELyapnovSolve, _zODE_BK4_Func, zODEInit_BK4, _zODE2RegularFunc, _zODE2Cat, and _zODE2Sub to use zVecAssignArray. [zm_data, zm_le_lyapnov, zm_ode_bk4, zm_ode2]
 2025.11.15. Added zVecAssignArray. [zm_vec]
 2025.11.15. Modified zCMatAlloc to use zArray2Alloc. [zm_cmat]
