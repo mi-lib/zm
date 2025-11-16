@@ -83,7 +83,7 @@ static int _zNLESolveDM(zNLE *nle, zVec var, void *util, double tol, int iter, d
 /* Newton-Raphson's method. */
 static int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol, int iter, double *err)
 {
-  int i, ret = -1;
+  int i;
   zLEWorkspace workspace;
 
   workspace.m = nle->_opt._h;
@@ -95,8 +95,7 @@ static int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol, int iter, d
     nle->f( var, nle->_f, util );
     if( zVecIsTol( nle->_f, tol ) ){
       _zNLEEvalRes( nle, var, util, err );
-      ret = i;
-      goto TERMINATE; /* succeed */
+      return i; /* succeed */
     }
     nle->_jac( nle, var, nle->_j, util );
     /* uses SR-inverse instead of MP-inverse, similar to LM method. */
@@ -104,9 +103,7 @@ static int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol, int iter, d
     if( !_zNLEStep( nle, var, util ) ) break;
   }
   ZITERWARN( iter );
- TERMINATE:
-  zLEWorkspaceFree( &workspace );
-  return ret;
+  return -1;
 }
 
 /* solve simultaneous nonlinear equations by Broyden's method. */
