@@ -583,7 +583,7 @@ static int _zMatSVDSort(const zMat m, zVec sv, zMat u)
 
   rank = zMin( zMatRowSizeNC(m), zMatColSizeNC(m) );
   for( i=0; i<rank; i++ ){
-    if( zIsTiny( zDataMax( zVecBuf(sv)+i, zVecSizeNC(sv)-i, &im ) ) ) break;
+    if( zIsTol( zDataMax( zVecBuf(sv)+i, zVecSizeNC(sv)-i, &im ), ZM_MAT_SVD_TOL ) ) break;
     im += i;
     zVecSwapNC( sv, i, im );
     zVecSetElemNC( sv, i, sqrt( zVecElemNC(sv,i) ) );

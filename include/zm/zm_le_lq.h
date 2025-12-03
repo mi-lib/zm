@@ -11,38 +11,55 @@
 
 __BEGIN_DECLS
 
-/*! \brief LQ/QR decomposition based on Gram=Schmidt's method.
+/*! \brief tolerance for rank detection in LQ decomposition based on Gram=Schmidt's method. */
+#define ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ( 1.0e-10 )
+
+/*! \brief LQ decomposition of a matrix.
  *
- * zMatDecompLQDST() decompose given matrix \a m into a lower triangular
- * matrix \a l and a normalized orthogonal matrix \a q, based on Gram=Schmidt's
- * orthogonalization method, namely,
+ * zMatDecompLQ_GramSchmidt_DST() decomposes a matrix \a m into a lower triangular matrix \a l and
+ * a row-orthonormal matrix \a q, based on Gram=Schmidt's orthogonalization method, namely,
  *  \a l \a q = \a m.
  * It destroys \a m during the computation.
+ * zMatDecompLQ_GramSchmidt() does LQ decomposition based on Gram=Schmidt's orthogonalization method
+ * without destroying \a m.
  *
- * zMatDecompLQ() does LQ decomposition without destroying \a m.
+ * zMatDecompLQ_Householder() does LQ decomposition based on Householder's method without destroying \a m.
+ * \note
+ * zMatDecompLQ_GramSchmidt_DST() and zMatDecompLQ_GramSchmidt() are aliased to zMatDecompLQDST()
+ * and zMatDecompLQ(), respectively, as macros.
+ * \return
+ * zMatDecompLQ_GramSchmidt_DST(), zMatDecompLQ_GramSchmidt(), and zMatDecompLQ_Householder()
+ * return the rank of \a m.
+ * \notes
+ * When the null pointer is given for \a l, these functions compute only the orthonormal matrix \a q.
+ */
+__ZM_EXPORT int zMatDecompLQ_GramSchmidt_DST(zMat m, zMat l, zMat q);
+__ZM_EXPORT int zMatDecompLQ_GramSchmidt(const zMat m, zMat l, zMat q);
+__ZM_EXPORT int zMatDecompLQ_Householder(const zMat m, zMat l, zMat q);
+
+/* aliases */
+#define zMatDecompLQDST zMatDecompLQ_GramSchmidt_DST
+#define zMatDecompLQ    zMatDecompLQ_GramSchmidt
+
+/*! \brief LQ decomposition based on Gram=Schmidt's method and resizing of a matrix.
+ */
+__ZM_EXPORT int zMatDecompLQAndResize(const zMat m, zMat l, zMat q);
+
+/*! \brief LQ decomposition with an automatic matrix allocation.
+ */
+__ZM_EXPORT int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q);
+
+/*! \brief QR decomposition of a matrix based on Gram=Schmidt's method.
  *
- * zQRDecomp() does QR decomposition, a transpose of \a zMatDecompLQ(), namely,
+ * zMatDecompQR() decomposes a matrix \a m into a column-orthonormal matrix \a q and an upper triangular
+ * matrix \a u based on Gram=Schmidt's orthogonalization method, namely,
  *  \a q \a r = \a m
  * \return
- * zMatDecompLQDST() and zMatDecompLQ() return column-rank of \a m.
- * zQRDecomp() returns row-rank of \a m.
+ * zMatDecompQR() returns the rank of \a m.
  * \notes
- * The null pointer is assignable for \a l or \a r.
- * When the null pointer is given for them, these functions compute only the
- * orthogonal matrix \a q.
- *
- * If one column / row or more are dependent on other columns / rows, those
- * functions fail to decompose the given matrix into an orthogonal space.
+ * When the null pointer is given for \a r, zMatDecompQR() computes only the orthonormal matrix \a q.
  */
-__ZM_EXPORT int zMatDecompLQDST(zMat m, zMat l, zMat q, zIndex idx);
-__ZM_EXPORT int zMatDecompLQ(const zMat m, zMat l, zMat q, zIndex idx);
-__ZM_EXPORT int zMatDecompLQReg(const zMat m, zMat l, zMat q, zIndex idx);
-
-/*! \brief LQ decomposition with an automatic matrix allocation and resize.
- */
-__ZM_EXPORT int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q, zIndex *idx);
-
-__ZM_EXPORT int zMatDecompQR(const zMat m, zMat q, zMat r, zIndex idx);
+__ZM_EXPORT int zMatDecompQR(const zMat m, zMat q, zMat r);
 
 __END_DECLS
 

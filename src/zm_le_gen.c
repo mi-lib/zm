@@ -113,8 +113,7 @@ zVec zLESolveNormMin(const zMat a, const zVec b, const zVec w, zVec ans)
 {
   zLEWorkspace workspace;
 
-  if( !zMatRowVecSizeEqual( a, b ) ||
-      !zMatColVecSizeEqual( a, ans ) ){
+  if( !zMatRowVecSizeEqual( a, b ) || !zMatColVecSizeEqual( a, ans ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
@@ -142,8 +141,7 @@ zVec zLESolveErrorMin(const zMat a, const zVec b, const zVec w, zVec ans)
 {
   zLEWorkspace workspace;
 
-  if( !zMatRowVecSizeEqual( a, b ) ||
-      !zMatColVecSizeEqual( a, ans ) ){
+  if( !zMatRowVecSizeEqual( a, b ) || !zMatColVecSizeEqual( a, ans ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
@@ -174,13 +172,11 @@ zVec zLESolveRefMin(const zMat a, const zVec b, const zVec w, const zVec ref, zV
 {
   zLEWorkspace workspace;
 
-  if( !zMatRowVecSizeEqual( a, b ) ||
-      !zMatColVecSizeEqual( a, ans ) ){
+  if( !zMatRowVecSizeEqual( a, b ) || !zMatColVecSizeEqual( a, ans ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
-  if( !zVecSizeEqual( ref, ans ) ||
-      ( w && !zVecSizeEqual( ans, w ) ) ){
+  if( !zVecSizeEqual( ref, ans ) || ( w && !zVecSizeEqual( ans, w ) ) ){
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
@@ -193,23 +189,22 @@ zVec zLESolveRefMin(const zMat a, const zVec b, const zVec w, const zVec ref, zV
 /* compute left-lower part of the linear equation. */
 static void _zLESolveMP1(zLEWorkspace *workspace, const zVec we, int rank)
 {
-  if( rank < (int)zMatColSizeNC(workspace->l) ){
-    zMatColReg( workspace->l, rank );
-    zMatRowReg( workspace->r, rank );
+  if( rank < zMatColSizeNC(workspace->l) ){
+    zMatColResize( workspace->l, rank );
+    zMatRowResize( workspace->r, rank );
     zLESolveErrorMinDST( workspace->l, workspace->b, we, workspace->c, workspace );
   } else
     zLESolveL( workspace->l, workspace->b, workspace->c, workspace->idx2 );
 }
 
-/* generalized linear equation solver using Moore-Penrose's
- * inverse (MP-inverse, pseudoinverse) based on LQ decomposition. */
-zVec zLESolveMP(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans)
+/* generalized linear equation solver with MP-inverse based on LQ decomposition. */
+zVec zLESolveMPLQ(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans)
 {
   int rank;
   zLEWorkspace workspace;
 
   if( !_zLEWorkspaceAllocLR( &workspace, a ) ) goto TERMINATE2;
-  if( ( rank = zMatDecompLQ( a, workspace.l, workspace.r, workspace.idx2 ) ) == 0 )
+  if( ( rank = zMatDecompLQ( a, workspace.l, workspace.r ) ) <= 0 )
     goto TERMINATE2; /* extremely irregular case */
   if( !_zLEWorkspaceAllocMP( &workspace, b, rank ) ) goto TERMINATE1;
 
@@ -225,8 +220,7 @@ zVec zLESolveMP(const zMat a, const zVec b, const zVec wn, const zVec we, zVec a
   return ans;
 }
 
-/* generalized linear equation solver with MP-inverse
- * based on LU decomposition. */
+/* generalized linear equation solver using MP-inverse based on LU decomposition. */
 zVec zLESolveMPLU(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans)
 {
   int rank;
@@ -249,8 +243,7 @@ zVec zLESolveMPLU(const zMat a, const zVec b, const zVec wn, const zVec we, zVec
   return ans;
 }
 
-/* generalized linear equation solver with MP-inverse
- * based on singular value decomposition. */
+/* generalized linear equation solver using MP-inverse based on singular value decomposition. */
 zVec zLESolveMPSVD(const zMat a, const zVec b, zVec ans)
 {
   int rank;
@@ -263,8 +256,8 @@ zVec zLESolveMPSVD(const zMat a, const zVec b, zVec ans)
   tmp = zVecAlloc( zMatRowSizeNC(a) );
   if( !u || !v || !sv || !tmp ) goto TERMINATE;
   if( ( rank = zMatSVD( a, u, sv, v ) ) < zMatRowSizeNC(a) ){
-    zMatColReg( u, rank );
-    zMatRowReg( v, rank );
+    zMatColResize( u, rank );
+    zMatRowResize( v, rank );
     zVecSetSize( sv, rank );
     zVecSetSize( tmp, rank );
   }
@@ -280,15 +273,14 @@ zVec zLESolveMPSVD(const zMat a, const zVec b, zVec ans)
   return ans;
 }
 
-/* generalized linear equation solver using Moore-Penrose's inverse
- * (MP-inverse, pseudoinverse) based on LQ decomposition with the null space. */
+/* generalized linear equation solver using MP-inverse based on LQ decomposition with the null space. */
 zVec zLESolveMPNull(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, zMat mn)
 {
   int i, rank;
   zLEWorkspace workspace;
 
   if( !_zLEWorkspaceAllocLR( &workspace, a ) ) goto TERMINATE2;
-  if( ( rank = zMatDecompLQ( a, workspace.l, workspace.r, workspace.idx2 ) ) <= 0 )
+  if( ( rank = zMatDecompLQ( a, workspace.l, workspace.r ) ) <= 0 )
     goto TERMINATE2; /* extremely irregular case */
   if( !_zLEWorkspaceAllocMP( &workspace, b, rank ) ) goto TERMINATE1;
 
@@ -310,8 +302,7 @@ zVec zLESolveMPNull(const zMat a, const zVec b, const zVec wn, const zVec we, zV
   return ans;
 }
 
-/* generalized linear equation solver using MP-inverse
- * biasing a vector in the null space. */
+/* generalized linear equation solver using MP-inverse biasing a vector in the null space. */
 zVec zLESolveMPAux(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, const zVec aux)
 {
   zVec bb;
@@ -329,8 +320,7 @@ zVec zLESolveMPAux(const zMat a, const zVec b, const zVec wn, const zVec we, zVe
 /* check sizes of vectors and matrices for a linear equation solver with SR-inverse matrix. */
 static bool _zLESolveSRSizeEqual(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans)
 {
-  if( !zMatRowVecSizeEqual( a, b ) ||
-      !zMatColVecSizeEqual( a, ans ) ){
+  if( !zMatRowVecSizeEqual( a, b ) || !zMatColVecSizeEqual( a, ans ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }

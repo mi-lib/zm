@@ -196,7 +196,7 @@ zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, const zIndex
 }
 
 /* linear equation solver: Residual iteration on LU decomposition. */
-zVec zLESolveRI(const zMat a, const zVec b, zVec ans)
+zVec zLESolveLURI(const zMat a, const zVec b, zVec ans)
 {
   int i;
   zMat l, u;
@@ -211,7 +211,7 @@ zVec zLESolveRI(const zMat a, const zVec b, zVec ans)
   idx = zIndexCreate( zVecSizeNC(b) );
   if( !l || !u || !res || !err || !idx ) goto TERMINATE;
 
-  if( zMatDecompLU( a, l, u, idx ) < (int)zMatRowSizeNC(a) ){
+  if( zMatDecompLU( a, l, u, idx ) < zMatRowSizeNC(a) ){
     ZRUNERROR( ZM_ERR_MAT_SINGULAR );
     ans = NULL;
     goto TERMINATE;
@@ -237,7 +237,7 @@ zVec zLESolveRI(const zMat a, const zVec b, zVec ans)
 }
 
 /* linear equation solver: Gauss-Seidel's method. */
-zVec zLESolveGS(const zMat a, const zVec b, zVec ans)
+zVec zLESolveGaussSeidel(const zMat a, const zVec b, zVec ans)
 {
   int i, j, k, p, count;
   double x;

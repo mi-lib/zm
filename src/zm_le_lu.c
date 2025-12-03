@@ -61,15 +61,15 @@ int zMatDecompLU(const zMat m, zMat l, zMat u, zIndex idx)
   return rank;
 }
 
-/* LU decomposition and regression of a matrix. */
-int zMatDecompLUReg(const zMat m, zMat l, zMat u, zIndex idx)
+/* LU decomposition and resizing of a matrix. */
+int zMatDecompLUAndResize(const zMat m, zMat l, zMat u, zIndex idx)
 {
   int rank;
 
   if( ( rank = zMatDecompLU( m, l, u, idx ) ) < 0 ) return -1;
-  if( rank < (int)zMatRowSizeNC(m) ){
-    zMatColReg( l, rank ); /* lower triangle regression */
-    zMatRowReg( u, rank ); /* upper triangle regression */
+  if( rank < zMatRowSizeNC(m) ){
+    zMatColResize( l, rank );
+    zMatRowResize( u, rank );
   }
   return rank;
 }
@@ -86,7 +86,7 @@ int zMatDecompLUAlloc(const zMat m, zMat *l, zMat *u, zIndex *idx)
     zIndexFree( *idx );
     return -1;
   }
-  return zMatDecompLUReg( m, *l, *u, *idx );
+  return zMatDecompLUAndResize( m, *l, *u, *idx );
 }
 
 /* Cholesky decomposition of a matrix (destructive). */
@@ -110,7 +110,6 @@ int zMatDecompCholeskyDST(zMat m, zMat l, zIndex idx)
       a = 1.0 / a;
       rank++;
     }
-
     for( j=i+1; j<n; j++ ){
       zMatElemNC(m,p,zIndexElemNC(idx,j)) *= a;
       zMatElemNC(m,zIndexElemNC(idx,j),p) *= a;
@@ -124,8 +123,6 @@ int zMatDecompCholeskyDST(zMat m, zMat l, zIndex idx)
     for( j=0; j<=i; j++ )
       zMatSetElemNC( l, zIndexElemNC(idx,i), j,
         zMatElemNC( m, zIndexElemNC(idx,i), zIndexElemNC(idx,j) ) );
-  if( rank < n )
-    ZRUNWARN( ZM_ERR_MAT_SINGULAR );
   return rank;
 }
 
@@ -150,14 +147,14 @@ int zMatDecompCholesky(const zMat m, zMat l, zIndex idx)
   return rank;
 }
 
-/* Cholesky decomposition and regression of a matrix. */
-int zMatDecompCholeskyReg(const zMat m, zMat l, zIndex idx)
+/* Cholesky decomposition and resizing of a matrix. */
+int zMatDecompCholeskyAndResize(const zMat m, zMat l, zIndex idx)
 {
   int rank;
 
   if( ( rank = zMatDecompCholesky( m, l, idx ) ) < 0 ) return -1;
-  if( rank < (int)zMatRowSizeNC(m) )
-    zMatColReg( l, rank ); /* lower triangle regression */
+  if( rank < zMatRowSizeNC(m) )
+    zMatColResize( l, rank );
   return rank;
 }
 
@@ -171,5 +168,5 @@ int zMatDecompCholeskyAlloc(const zMat m, zMat *l, zIndex *idx)
     zIndexFree( *idx );
     return -1;
   }
-  return zMatDecompCholeskyReg( m, *l, *idx );
+  return zMatDecompCholeskyAndResize( m, *l, *idx );
 }

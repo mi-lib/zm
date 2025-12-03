@@ -57,8 +57,13 @@
 #define ZM_ERR_MAT_SIZEMISMATCH            "size mismatch of matrices"
 #define ZM_ERR_MAT_SIZEMISMATCH_VEC        "size mismatch of matrix and vector"
 #define ZM_ERR_MAT_SIZEMISMATCH_CVEC       "size mismatch of matrix and complex vector"
+#define ZM_ERR_MAT_CANNOTRESIZEROW         "cannot resize matrix in row from %d to %d"
+#define ZM_ERR_MAT_CANNOTRESIZECOL         "cannot resize matrix in column from %d to %d"
 #define ZM_ERR_MAT_NOTSQR                  "not a square matrix"
 #define ZM_ERR_MAT_NOTSYMMETRIC            "not a symmetric matrix"
+#define ZM_ERR_MAT_SINGULAR                "matrix is singular"
+#define ZM_ERR_MAT_NOTPOSITIVESEMIDEFINITE "matrix is not positive-semidefinite"
+#define ZM_ERR_MAT_CANNOTDECOMPOSEZEROMAT  "cannot decompose zero-matrix to L and Q matrices"
 
 #define ZM_ERR_VEC_SIZENOTFOUND            "vector size not specified"
 #define ZM_ERR_MAT_SIZENOTFOUND            "matrix size not specified"
@@ -70,9 +75,6 @@
 #define ZM_ERR_VEC_ZERONORM                "cannot normalize zero vector"
 
 #define ZM_ERR_CVEC_CONJPAIR_UNABLE        "unable to pair co-conjugate complex numbers."
-
-#define ZM_ERR_MAT_SINGULAR                "matrix is singular"
-#define ZM_ERR_MAT_NOTPOSITIVESEMIDEFINITE "matrix is not positive-semidefinite"
 
 #define ZM_ERR_INVALID_LOGBASE             "invalid base of logarithm"
 

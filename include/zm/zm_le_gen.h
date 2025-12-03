@@ -14,16 +14,18 @@ __BEGIN_DECLS
 /*! \brief workspace for generalized linear equation solvers.
  */
 typedef struct{
-  zMat m; /*!< internal matrix to be inverted. */
-  zMat l; /*!< left hand matrix for decomposition (LU/LQ) */
-  zMat r; /*!< right hand matrix for decomposition (LU/LQ) */
-  zVec b; /*!< copy of b vector */
+  /*! \cond */
+  zMat m; /* internal matrix to be inverted. */
+  zMat l; /* left hand matrix for decomposition (LU/LQ) */
+  zMat r; /* right hand matrix for decomposition (LU/LQ) */
+  zVec b; /* copy of b vector */
   zVec c;
   zVec v1;
   zVec v2;
   zVec s;
   zIndex idx1;
   zIndex idx2;
+  /*! \endcond */
 } zLEWorkspace;
 
 /*! \brief initialize workspace for generalized linear equation solver. */
@@ -140,11 +142,14 @@ __ZM_EXPORT zVec zLESolveErrorMin(const zMat a, const zVec b, const zVec w, zVec
 __ZM_EXPORT zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLEWorkspace *workspace);
 __ZM_EXPORT zVec zLESolveRefMin(const zMat a, const zVec b, const zVec w, const zVec ref, zVec ans);
 
-__ZM_EXPORT zVec zLESolveMP(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans);
+__ZM_EXPORT zVec zLESolveMPLQ(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans);
 __ZM_EXPORT zVec zLESolveMPLU(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans);
 __ZM_EXPORT zVec zLESolveMPSVD(const zMat a, const zVec b, zVec ans);
 __ZM_EXPORT zVec zLESolveMPNull(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, zMat mn);
 __ZM_EXPORT zVec zLESolveMPAux(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, const zVec aux);
+
+/* alias */
+#define zLESolveMP zLESolveMPLQ
 
 __ZM_EXPORT zVec zLESolveSRBiasDST(zMat a, zVec b, zVec wn, zVec we, double bias, zVec ans, zLEWorkspace *workspace);
 #define zLESolveSRDST(a,b,wn,we,ans,workspace) zLESolveSRBiasDST( a, b, wn, we, 0, ans, workspace )

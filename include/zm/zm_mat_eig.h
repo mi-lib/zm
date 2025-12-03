@@ -119,6 +119,9 @@ __ZM_EXPORT bool zMatSymEigJacobi(const zMat m, zVec eigval, zMat eigbase);
  */
 __ZM_EXPORT int zMatSVD(const zMat m, zMat u, zVec sv, zMat v);
 
+/*! \def tolerance to discard too small singular values. */
+#define ZM_MAT_SVD_TOL ( 1.0e-6 )
+
 /*! \brief maximum singular value of a matrix.
  */
 __ZM_EXPORT double zMatSingularValueMax(const zMat m);

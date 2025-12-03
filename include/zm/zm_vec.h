@@ -270,8 +270,9 @@ __ZM_EXPORT double zVecElemVar(const zVec v);
  *
  * zVecMatch() checks if the given two vectors \a v1 and \a v2 exactly match with each other.
  * \return
- * zVecEqual() returns the true value if \a v1 equals to \a v2, or the false value otherwise.
- * zVecMatch() returns the true value if \a v1 exactly matches with \a v2, or the false value otherwise.
+ * zVecEqual() returns the true value if \a v1 equals to \a v2. Otherwise, it returns the false value.
+ * zVecMatch() returns the true value if \a v1 exactly matches with \a v2. Otherwise, it returns the
+ * false value.
  */
 __ZM_EXPORT bool zVecEqual(const zVec v1, const zVec v2, double tol);
 __ZM_EXPORT bool zVecMatch(const zVec v1, const zVec v2);

@@ -475,24 +475,34 @@ bool zMatIsSymmetric(const zMat m)
   return true;
 }
 
-/* row regression of a matrix. */
-zMat zMatRowReg(zMat m, int rank)
+/* resize row of a matrix. */
+zMat zMatRowResize(zMat m, int size)
 {
-  if( rank < zMatRowSizeNC(m) ) zMatSetRowSizeNC( m, rank );
+  if( size == zMatRowSize(m) ) return m; /* nothing happens. */
+  if( size > zMatRowSize(m) ){
+    ZRUNERROR( ZM_ERR_MAT_CANNOTRESIZEROW, zMatRowSizeNC(m), size );
+    return NULL;
+  }
+  zMatSetRowSizeNC( m, size );
   return m;
 }
 
-/* column regression of a matrix. */
-zMat zMatColReg(zMat m, int rank)
+/* resize column of a matrix. */
+zMat zMatColResize(zMat m, int size)
 {
   int i;
   double *sp, *dp;
 
-  if( rank < zMatColSizeNC(m) ){
-    for( sp=dp=zMatBufNC(m), i=0; i<zMatRowSizeNC(m); i++, sp+=zMatColSizeNC(m), dp+=rank )
-      memmove( dp, sp, sizeof(double)*rank );
-    zMatSetColSizeNC( m, rank );
+  if( size == zMatColSizeNC(m) ) return m; /* nothing happens. */
+  if( size > zMatColSizeNC(m) ){
+    ZRUNERROR( ZM_ERR_MAT_CANNOTRESIZECOL, zMatColSizeNC(m), size );
+    return NULL;
   }
+  sp = zMatBufNC(m) + zMatColSizeNC(m);
+  dp = zMatBufNC(m) + size;
+  for( i=1; i<zMatRowSizeNC(m); i++, sp+=zMatColSizeNC(m), dp+=size )
+    memmove( dp, sp, sizeof(double)*size );
+  zMatSetColSizeNC( m, size );
   return m;
 }
 

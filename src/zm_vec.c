@@ -286,23 +286,15 @@ double zVecElemVar(const zVec v){ return _zVecElemVar( v ); }
 /* check if two vectors are equal. */
 bool zVecEqual(const zVec v1, const zVec v2, double tol)
 {
-  int i;
-
   if( !zVecSizeEqual( v1, v2 ) ) return false;
-  for( i=0; i<zVecSizeNC(v1); i++ )
-    if( !zEqual( zVecElemNC(v1,i), zVecElemNC(v2,i), tol ) ) return false;
-  return true;
+  return zRawVecEqual( zVecBufNC(v1), zVecBufNC(v2), zVecSizeNC(v1), tol );
 }
 
-/* check if two vectors exactly matches with each other. */
+/* check if two vectors exactly match with each other. */
 bool zVecMatch(const zVec v1, const zVec v2)
 {
-  int i;
-
   if( !zVecSizeEqual( v1, v2 ) ) return false;
-  for( i=0; i<zVecSizeNC(v1); i++ )
-    if( zVecElemNC(v1,i) != zVecElemNC(v2,i) ) return false;
-  return true;
+  return zRawVecMatch( zVecBufNC(v1), zVecBufNC(v2), zVecSizeNC(v1) );
 }
 
 /* check if a vector is tiny. */

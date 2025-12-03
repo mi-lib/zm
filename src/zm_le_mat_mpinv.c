@@ -7,13 +7,12 @@
 #include <zm/zm_le.h>
 
 /* initialization: LQ decomposition */
-static int _zMatMPInvAllocWork1(const zMat m, zMat *l, zMat *q, zIndex *idx)
+static int _zMatMPInvAllocWork1(const zMat m, zMat *l, zMat *q)
 {
   int rank;
 
-  if( ( rank = zMatDecompLQAlloc( m, l, q, idx ) ) < 0 ){
+  if( ( rank = zMatDecompLQAlloc( m, l, q ) ) < 0 ){
     zMatFreeAtOnce( 2, *l, *q );
-    zIndexFree( *idx );
     return -1;
   }
   return rank;
@@ -37,9 +36,8 @@ int zMatMPInv(const zMat m, zMat mp)
 {
   int rank;
   zMat l, q, tmp1, tmp2, tmp3;
-  zIndex idx;
 
-  if( ( rank = _zMatMPInvAllocWork1( m, &l, &q, &idx ) ) < 0 ) return -1;
+  if( ( rank = _zMatMPInvAllocWork1( m, &l, &q ) ) < 0 ) return -1;
   if( _zMatMPInvAllocWork2( rank, zMatRowSizeNC(l), &tmp1, &tmp2, &tmp3 ) < 0 ) return -1;
   if( zMatIsSqr( l ) )
     zMatInv( l, tmp3 );
@@ -51,7 +49,6 @@ int zMatMPInv(const zMat m, zMat mp)
   zMulMatTMat( q, tmp3, mp );
 
   zMatFreeAtOnce( 5, l, q, tmp1, tmp2, tmp3 );
-  zIndexFree( idx );
   return rank;
 }
 
@@ -60,9 +57,8 @@ int zMatMPInvNull(const zMat m, zMat mp, zMat mn)
 {
   int i, rank;
   zMat l, q, tmp1, tmp2, tmp3;
-  zIndex idx;
 
-  if( ( rank = _zMatMPInvAllocWork1( m, &l, &q, &idx ) ) < 0 ) return -1;
+  if( ( rank = _zMatMPInvAllocWork1( m, &l, &q ) ) < 0 ) return -1;
   if( _zMatMPInvAllocWork2( rank, zMatRowSizeNC(l), &tmp1, &tmp2, &tmp3 ) < 0 ) return -1;
   if( zMatIsSqr( l ) ){
     zMatInv( l, tmp3 );
@@ -77,7 +73,6 @@ int zMatMPInvNull(const zMat m, zMat mp, zMat mn)
   for( i=0; i<zMatRowSizeNC(mn); i++ ) zMatElemNC(mn,i,i) -= 1.0;
 
   zMatFreeAtOnce( 5, l, q, tmp1, tmp2, tmp3 );
-  zIndexFree( idx );
   return rank;
 }
 
@@ -86,9 +81,8 @@ zMat zMulMPInvMatMat(const zMat m1, const zMat m2, zMat m)
 {
   int rank;
   zMat l, q, tmp1, tmp2, tmp3;
-  zIndex idx;
 
-  if( ( rank = _zMatMPInvAllocWork1( m1, &l, &q, &idx ) ) < 0 ) return NULL;
+  if( ( rank = _zMatMPInvAllocWork1( m1, &l, &q ) ) < 0 ) return NULL;
   if( _zMatMPInvAllocWork2( rank, zMatColSizeNC(m2), &tmp1, &tmp2, &tmp3 ) < 0 ) return NULL;
   if( zMatIsSqr( l ) )
     zMulInvMatMat( l, m2, tmp3 );
@@ -100,7 +94,6 @@ zMat zMulMPInvMatMat(const zMat m1, const zMat m2, zMat m)
   zMulMatTMat( q, tmp3, m );
 
   zMatFreeAtOnce( 5, l, q, tmp1, tmp2, tmp3 );
-  zIndexFree( idx );
   return m;
 }
 

@@ -96,8 +96,8 @@ static zVec _zLESolveLUDeg(zMat l, zMat u, int rank, const zVec b, zVec ans, zIn
   zVec c;
 
   if( !( c = zVecAlloc( rank ) ) ) return NULL;
-  zMatColReg( l, rank );
-  zMatRowReg( u, rank );
+  zMatColResize( l, rank );
+  zMatRowResize( u, rank );
   zLESolveErrorMin( l, b, NULL, c );
   zLESolveNormMin( u, c, NULL, ans );
   zVecFree( c );

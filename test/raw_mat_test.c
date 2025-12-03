@@ -3,7 +3,7 @@
 #define MAT_ROW_SIZE 12
 #define MAT_COL_SIZE 10
 
-void assert_get_put(void)
+void assert_raw_mat_get_put(void)
 {
   const int rowsize = MAT_ROW_SIZE;
   const int colsize = MAT_COL_SIZE;
@@ -60,7 +60,7 @@ void assert_get_put(void)
   zAssert( zRawMatSwapCol, result );
 }
 
-void assert_arith(void)
+void assert_raw_mat_arith(void)
 {
   const int rowsize = MAT_ROW_SIZE;
   const int colsize = MAT_COL_SIZE;
@@ -143,7 +143,97 @@ void assert_arith(void)
   zAssert( zRawMatCatDRC, result );
 }
 
-void assert_transpose(void)
+void assert_raw_mat_col_innerprod(void)
+{
+  const double mat[] = {
+    3,-2, 5, 7,
+   -6, 1,-4, 2,
+    5, 3,-6,-1,
+  };
+  const double vec[] = {
+    2,-1, 3,
+  };
+  double mtv[4];
+  const double answer[] = { 27, 4, -4, 9 };
+  const int rowsize = 3;
+  const int colsize = 4;
+
+  zRawMulMatTVec( mat, vec, rowsize, colsize, mtv );
+  zAssert( zRawMatColInnerProd,
+    zEqual( zRawMatColInnerProd( mat, vec, rowsize, colsize, 0 ), answer[0], 0 ) &&
+    zEqual( zRawMatColInnerProd( mat, vec, rowsize, colsize, 1 ), answer[1], 0 ) &&
+    zEqual( zRawMatColInnerProd( mat, vec, rowsize, colsize, 2 ), answer[2], 0 ) &&
+    zEqual( zRawMatColInnerProd( mat, vec, rowsize, colsize, 3 ), answer[3], 0 ) );
+  zAssert( zRawMatColInnerProd + zRawMulMatTVec, zRawVecMatch( mtv, answer, colsize ) );
+}
+
+void assert_raw_mat_col_arith(void)
+{
+  const double mat_src[] = {
+    3,-2, 5, 7,
+   -6, 1,-4, 2,
+    5, 3,-6,-1,
+  };
+  const double vec[] = { 2,-1, 3 };
+  const double mat_col_add_answer[] = {
+    5, 0, 7, 9,
+   -7, 0,-5, 1,
+    8, 6,-3, 2,
+  };
+  const double mat_col_sub_answer[] = {
+    1,-4, 3, 5,
+   -5, 2,-3, 3,
+    2, 0,-9,-4,
+  };
+  const double mat_col_mul_answer[] = {
+    6,-4, 10,14,
+  -12, 2, -8, 4,
+   10, 6,-12,-2,
+  };
+  const double mat_col_cat_answer[] = {
+    7, 2, 9,11,
+   -8,-1,-6, 0,
+   11, 9, 0, 5,
+  };
+
+  double *mat;
+  const int rowsize = 3;
+  const int colsize = 4;
+  bool result1, result2, result3, result4;
+  int i;
+
+  mat = zAlloc( double, rowsize * colsize );
+  if( !mat ){
+    ZALLOCERROR();
+    return;
+  }
+  zRawMatCopy( mat_src, mat, rowsize, colsize );
+  for( i=0; i<colsize; i++ )
+    zRawMatColAddDRC( mat, vec, rowsize, colsize, i );
+  result1 = zRawMatMatch( mat, mat_col_add_answer, rowsize, colsize );
+
+  zRawMatCopy( mat_src, mat, rowsize, colsize );
+  for( i=0; i<colsize; i++ )
+    zRawMatColSubDRC( mat, vec, rowsize, colsize, i );
+  result2 = zRawMatMatch( mat, mat_col_sub_answer, rowsize, colsize );
+
+  zRawMatCopy( mat_src, mat, rowsize, colsize );
+  for( i=0; i<colsize; i++ )
+    zRawMatColMulDRC( mat, 2, rowsize, colsize, i );
+  result3 = zRawMatMatch( mat, mat_col_mul_answer, rowsize, colsize );
+
+  zRawMatCopy( mat_src, mat, rowsize, colsize );
+  for( i=0; i<colsize; i++ )
+    zRawMatColCatDRC( mat, 2, vec, rowsize, colsize, i );
+  result4 = zRawMatMatch( mat, mat_col_cat_answer, rowsize, colsize );
+  free( mat );
+  zAssert( zRawMatColAddDRC, result1 );
+  zAssert( zRawMatColSubDRC, result2 );
+  zAssert( zRawMatColMulDRC, result3 );
+  zAssert( zRawMatColCatDRC, result4 );
+}
+
+void assert_raw_mat_transpose(void)
 {
   const int rowsize = MAT_ROW_SIZE;
   const int colsize = MAT_COL_SIZE;
@@ -170,7 +260,7 @@ void assert_transpose(void)
   zAssert( zRawMatTrace, zIsTiny( tr - zRawMatTrace( mat_test2, rowsize, colsize ) ) );
 }
 
-void assert_mul_mat_vec(void)
+void assert_raw_mat_mul_mat_vec(void)
 {
   double mat_test1[] = {
     2, 1,-1, 2,
@@ -239,7 +329,7 @@ void assert_mul_mat_vec(void)
   zAssert( zRawMulMatTMat, zRawMatIsTiny( error, 4, 4 ) );
 }
 
-void assert_dyad(void)
+void assert_raw_mat_dyad(void)
 {
   const int rowsize = 4;
   const int colsize = 3;
@@ -298,11 +388,12 @@ void assert_dyad(void)
 int main(void)
 {
   zRandInit();
-  assert_get_put();
-  assert_arith();
-  assert_transpose();
-  assert_mul_mat_vec();
-  assert_dyad();
-
+  assert_raw_mat_get_put();
+  assert_raw_mat_arith();
+  assert_raw_mat_col_innerprod();
+  assert_raw_mat_col_arith();
+  assert_raw_mat_transpose();
+  assert_raw_mat_mul_mat_vec();
+  assert_raw_mat_dyad();
   return EXIT_SUCCESS;
 }

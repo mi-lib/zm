@@ -3,7 +3,7 @@
 #define MAT_ROW_SIZE 12
 #define MAT_COL_SIZE 10
 
-void assert_clone(void)
+void assert_mat_clone(void)
 {
   const int rowsize = MAT_ROW_SIZE;
   const int colsize = MAT_COL_SIZE;
@@ -17,47 +17,104 @@ void assert_clone(void)
   zMatFree( dest );
 }
 
-void assert_mat_is_diag(void)
+void assert_mat_resize(void)
 {
-  zMat m;
-  const int size = 5;
+  zMat src, dest, part;
+  const int rowsize = 5;
+  const int colsize = 8;
+  const int regcolsize = 3;
+  const int n = 100;
   int i;
   bool result = true;
 
-  m = zMatAllocSqr( size );
-  zMatZero( m );
-  for( i=0; i<size; i++ )
-    zMatSetElem( m, i, i, zRandF(-10,10) );
-
-  if( !zMatIsDiag( m, zTOL ) ) result = false;
-  zMatElemNC(m,1,0) = 1;
-  if( zMatIsDiag( m, zTOL ) ) result = false;
-  zMatElemNC(m,1,0) = 0;
-  zMatElemNC(m,0,0) = 0;
-  if( !zMatIsDiag( m, zTOL ) ) result = false;
-  zMatFree( m );
-  zAssert( zMatIsDiag, result );
+  src  = zMatAlloc( rowsize, colsize );
+  dest = zMatAlloc( rowsize, colsize );
+  part = zMatAlloc( rowsize, regcolsize );
+  for( i=0; i<n; i++ ){
+    zMatRandUniform( src, -10, 10 );
+    zMatResetSize( dest );
+    zMatCopy( src, dest );
+    zMatGet( src, 0, 0, part );
+    zMatColResize( dest, regcolsize );
+    if( !zMatEqual( dest, part, zTOL ) ) result = false;
+  }
+  zMatFreeAtOnce( 3, src, dest, part );
+  zAssert( zMatColReg, result );
 }
 
-void assert_mat_is_ident(void)
+void assert_mat_ident(void)
 {
   zMat m;
-  const int size = 5;
-  bool result = true;
+  const int largesize = 8;
+  const int smallsize = 5;
+  bool result1, result2, result3, result4, result5, result6;
 
-  m = zMatAllocSqr( size );
-  zMatIdent( m );
-  if( !zMatIsIdent( m, zTOL ) ) result = false;
-  zMatElemNC(m,1,0) = 1;
-  if( zMatIsIdent( m, zTOL ) ) result = false;
-  zMatElemNC(m,1,0) = 0;
-  zMatElemNC(m,0,0) = 0;
-  if( zMatIsIdent( m, zTOL ) ) result = false;
+  m = zMatAlloc( largesize, smallsize );
+  zMatIdentNC( m );
+  result1 = zMatIsIdent( m, zTOL );
+  result4 = !zMatIdent( m );
   zMatFree( m );
-  zAssert( zMatIsIdent, result );
+
+  m = zMatAlloc( smallsize, largesize );
+  zMatIdentNC( m );
+  result2 = zMatIsIdent( m, zTOL );
+  result5 = !zMatIdent( m );
+  zMatFree( m );
+
+  m = zMatAllocSqr( largesize );
+  zMatIdentNC( m );
+  result3 = zMatIsIdent( m, zTOL );
+  result6 = zMatIdent( m ) && zMatIsIdent( m, zTOL );
+  zMatFree( m );
+
+  zAssert( zMatIdentNC + zMatIsIdent (rowsize > colsize), result1 );
+  zAssert( zMatIdentNC + zMatIsIdent (rowsize < colsize), result2 );
+  zAssert( zMatIdentNC + zMatIsIdent (rowsize = colsize), result3 );
+  zAssert( zMatIdent + zMatIsIdent (rowsize > colsize), result4 );
+  zAssert( zMatIdent + zMatIsIdent (rowsize < colsize), result5 );
+  zAssert( zMatIdent + zMatIsIdent (rowsize = colsize), result6 );
 }
 
-void assert_is_symmetric(void)
+void assert_mat_diag(void)
+{
+  zMat m;
+  zVec diag;
+  const int largesize = 8;
+  const int smallsize = 5;
+  int i;
+  bool result1, result2, result3, result4, result5, result6;
+
+  diag = zVecAlloc( largesize );
+  for( i=0; i<zVecSizeNC(diag); i++ )
+    zVecSetElemNC( diag, i, i*2+1 );
+
+  m = zMatAlloc( largesize, smallsize );
+  zMatDiagNC( m, diag );
+  result1 = zMatIsDiag( m, zTOL );
+  result4 = !zMatDiag( m, diag );
+  zMatFree( m );
+
+  m = zMatAlloc( smallsize, largesize );
+  zMatDiagNC( m, diag );
+  result2 = zMatIsDiag( m, zTOL );
+  result5 = !zMatDiag( m, diag );
+  zMatFree( m );
+
+  m = zMatAllocSqr( largesize );
+  zMatDiagNC( m, diag );
+  result3 = zMatIsDiag( m, zTOL );
+  result6 = zMatDiag( m, diag ) && zMatIsDiag( m, zTOL );
+  zMatFree( m );
+
+  zAssert( zMatDiagNC + zMatIsDiag (rowsize > colsize), result1 );
+  zAssert( zMatDiagNC + zMatIsDiag (rowsize < colsize), result2 );
+  zAssert( zMatDiagNC + zMatIsDiag (rowsize = colsize), result3 );
+  zAssert( zMatDiag + zMatIsDiag (rowsize > colsize), result4 );
+  zAssert( zMatDiag + zMatIsDiag (rowsize < colsize), result5 );
+  zAssert( zMatDiag + zMatIsDiag (rowsize = colsize), result6 );
+}
+
+void assert_mat_is_symmetric(void)
 {
   zMat m, mt;
   bool result = true;
@@ -73,7 +130,7 @@ void assert_is_symmetric(void)
   zAssert( zMatIsSymmetric, result );
 }
 
-void assert_get_put(void)
+void assert_mat_get_put(void)
 {
   const int rowsize = MAT_ROW_SIZE;
   const int colsize = MAT_COL_SIZE;
@@ -137,7 +194,7 @@ void assert_get_put(void)
   zVecFreeAtOnce( 2, vec_test1, vec_test2 );
 }
 
-void assert_arith(void)
+void assert_mat_arith(void)
 {
   const int rowsize = MAT_ROW_SIZE;
   const int colsize = MAT_COL_SIZE;
@@ -222,7 +279,7 @@ void assert_arith(void)
   zMatFreeAtOnce( 3, mat_test1, mat_test2, mat_test3 );
 }
 
-void assert_transpose(void)
+void assert_mat_transpose(void)
 {
   const int rowsize = MAT_ROW_SIZE;
   const int colsize = MAT_COL_SIZE;
@@ -317,7 +374,7 @@ void assert_mul_mat_vec(void)
   zVecFreeAtOnce( 6, vec_test1, vec_test2, vec_test3, ans1, ans2, vec_error );
 }
 
-void assert_dyad(void)
+void assert_mat_dyad(void)
 {
   zVec vec_test1, vec_test2;
   zMat mat_test1, mat_test2, ans1, ans2, ans3, ans4, error;
@@ -371,7 +428,7 @@ void assert_dyad(void)
   zMatFreeAtOnce( 7, mat_test1, mat_test2, ans1, ans2, ans3, ans4, error );
 }
 
-void assert_quad(void)
+void assert_mat_quad(void)
 {
   const int rowsize = MAT_ROW_SIZE;
   const int colsize = MAT_COL_SIZE;
@@ -453,18 +510,18 @@ void assert_mulmattmatmat(void)
 int main(void)
 {
   zRandInit();
-  assert_clone();
-  assert_mat_is_diag();
-  assert_mat_is_ident();
-  assert_is_symmetric();
-  assert_get_put();
-  assert_arith();
-  assert_transpose();
+  assert_mat_clone();
+  assert_mat_resize();
+  assert_mat_ident();
+  assert_mat_diag();
+  assert_mat_is_symmetric();
+  assert_mat_get_put();
+  assert_mat_arith();
+  assert_mat_transpose();
   assert_mul_mat_vec();
-  assert_dyad();
-  assert_quad();
+  assert_mat_dyad();
+  assert_mat_quad();
   assert_mulmatmatmatt();
   assert_mulmattmatmat();
-
   return EXIT_SUCCESS;
 }

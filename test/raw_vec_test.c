@@ -3,7 +3,7 @@
 #define TEST_VEC_SIZE    10
 #define TEST_VEC_BUFSIZ 100
 
-void assert_get_put(void)
+void assert_raw_vec_get_put(void)
 {
   double test_vec1[TEST_VEC_BUFSIZ];
   double test_vec2[TEST_VEC_BUFSIZ];
@@ -20,7 +20,7 @@ void assert_get_put(void)
   zAssert( zRawVecSwap, test_vec1[3] == test_vec2[6] && test_vec1[6] == test_vec2[3] );
 }
 
-void assert_misc(void)
+void assert_raw_vec_misc(void)
 {
   double test_vec1[TEST_VEC_BUFSIZ];
   double test_vec2[TEST_VEC_BUFSIZ];
@@ -50,7 +50,54 @@ void assert_misc(void)
   zAssert( zRawVecShiftDRC, result );
 }
 
-void assert_arith(void)
+void assert_raw_vec_equal(void)
+{
+  double *v1, *v2;
+  const int size = 10;
+  int i;
+  bool result1, result2;
+
+  v1 = zAlloc( double, size );
+  v2 = zAlloc( double, size );
+  if( !v1 || !v2 ){
+    ZALLOCERROR();
+    return;
+  }
+  zRawVecRandUniform( v1, size, -10, 10 );
+  zRawVecCopy( v1, v2, size );
+  for( i=0; i<size; i++ )
+    *( v2 + i ) += zTOL * 0.5;
+  result1 = zRawVecEqual( v1, v2, size, zTOL );
+  for( i=0; i<size; i++ )
+    *( v2 + i ) += zTOL * 10;
+  result2 = zRawVecEqual( v1, v2, size, zTOL );
+  free( v1 );
+  free( v2 );
+  zAssert( zRawVecEqual (positive case), result1 );
+  zAssert( zRawVecEqual (negative case), !result2 );
+}
+
+void assert_raw_vec_match(void)
+{
+  double *v1, *v2;
+  const int size = 10;
+  bool result;
+
+  v1 = zAlloc( double, size );
+  v2 = zAlloc( double, size );
+  if( !v1 || !v2 ){
+    ZALLOCERROR();
+    return;
+  }
+  zRawVecRandUniform( v1, size, -10, 10 );
+  zRawVecCopy( v1, v2, size );
+  result = zRawVecMatch( v1, v2, size );
+  free( v1 );
+  free( v2 );
+  zAssert( zRawVecCopy + zRawVecMatch, result );
+}
+
+void assert_raw_vec_arith(void)
 {
   double test_vec1[TEST_VEC_BUFSIZ];
   double test_vec2[TEST_VEC_BUFSIZ];
@@ -97,7 +144,21 @@ void assert_arith(void)
   zAssert( zRawVecCat, result );
 }
 
-void assert_normalize(void)
+void assert_raw_vec_innerprod(void)
+{
+  const double v1[]  = { 3,-2, 5 };
+  const double v2[]  = {-6, 1,-4 };
+  const double v3[]  = { 5, 3,-6 };
+  const double vec[] = { 2,-1, 3 };
+  const int size = 3;
+
+  zAssert( zRawVecInnerProd,
+    zEqual( zRawVecInnerProd( v1, vec, size ), 23, 0 ) &&
+    zEqual( zRawVecInnerProd( v2, vec, size ),-25, 0 ) &&
+    zEqual( zRawVecInnerProd( v3, vec, size ),-11, 0 ) );
+}
+
+void assert_raw_vec_normalize(void)
 {
   double test_vec1[TEST_VEC_BUFSIZ];
   double test_vec2[TEST_VEC_BUFSIZ];
@@ -117,10 +178,12 @@ void assert_normalize(void)
 int main(void)
 {
   zRandInit();
-  assert_get_put();
-  assert_misc();
-  assert_arith();
-  assert_normalize();
-
+  assert_raw_vec_get_put();
+  assert_raw_vec_equal();
+  assert_raw_vec_match();
+  assert_raw_vec_misc();
+  assert_raw_vec_arith();
+  assert_raw_vec_innerprod();
+  assert_raw_vec_normalize();
   return EXIT_SUCCESS;
 }

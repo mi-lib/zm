@@ -18,6 +18,10 @@ __BEGIN_DECLS
 zArray2Class( zMatStruct, double );
 typedef zMatStruct * zMat;
 
+/*! \brief row/column capacity of a matrix. */
+#define zMatRowCapacity(m)       zArray2RowCapacity(m)
+#define zMatColCapacity(m)       zArray2ColCapacity(m)
+
 /*! \brief row size of a matrix.
  * \retval the row size of a matrix if \a m is not null.
  * \retval 0 if \a m is the null pointer.
@@ -30,11 +34,16 @@ typedef zMatStruct * zMat;
  */
 #define zMatColSizeNC(m)         zArray2ColSize(m)
 #define zMatColSize(m)           ( (m) ? zMatColSizeNC(m) : 0 )
+
+/*! \brief minimum of row size and column size of a matrix. */
+#define zMatMinSizeNC(m)         zMin( zMatRowSizeNC(m), zMatColSizeNC(m) )
+#define zMatMinSize(m)           ( (m) ? zMatMinSizeNC(m) : 0 )
+
 /*! \brief set the row size of a matrix. */
-#define zMatSetRowSizeNC(m,size) ( zMatRowSizeNC(m) = (size) )
+#define zMatSetRowSizeNC(m,size) zArray2SetRowSize( m, size )
 #define zMatSetRowSize(m,size)   ( (m) ? zMatSetRowSizeNC(m,size) : 0 )
 /*! \brief set the column size of a matrix. */
-#define zMatSetColSizeNC(m,size) ( zMatColSizeNC(m) = (size) )
+#define zMatSetColSizeNC(m,size) zArray2SetColSize( m, size )
 #define zMatSetColSize(m,size)   ( (m) ? zMatSetColSizeNC(m,size) : 0 )
 
 #define zMatSetSizeNC(m,rowsize,colsize) do{\
@@ -45,6 +54,9 @@ typedef zMatStruct * zMat;
   zMatSetRowSize(m,rowsize);\
   zMatSetColSize(m,colsize);\
 } while(0)
+
+/*! \brief reset size of a matrix up to its capacity. */
+#define zMatResetSize(mat) zArray2ResetSize( mat )
 
 #define zMatRowSizeEqual(m1,m2)    ( zMatRowSizeNC(m1) == zMatRowSizeNC(m2) )
 #define zMatColSizeEqual(m1,m2)    ( zMatColSizeNC(m1) == zMatColSizeNC(m2) )
@@ -330,20 +342,20 @@ __ZM_EXPORT bool zMatIsIdent(zMat m, double tol);
  */
 __ZM_EXPORT bool zMatIsSymmetric(const zMat m);
 
-/*! \brief matrix regression.
+/*! \brief resize a matrix.
  *
- * zMatRowReg() regresses the row size of a matrix \a m, namely, if \a rank is less than the row size
- * of \a m, it regresses \a m in row direction.
+ * zMatRowResize() resizes the row of a matrix \a m to \a size. \a size must be smaller than or equal
+ * to the row capacity of \a m.
  *
- * zMatColReg() regresses the column size of \a m, namely, if \a rank is less than the column size of
- * \a m, it regresses \a m in column direction.
+ * zMatColResize() resizes the column of a matrix \a m to \a size. \a size must be smaller than or equal
+ * to the column capacity of \a m.
  *
- * Those functions directly modify \a m.
+ * If \a size is larger than the capacity of \a m, they do nothing.
  * \return
- * zMatRowReg() and zMatColReg() return a pointer \a m.
+ * zMatRowResize() and zMatColResize() return a pointer \a m.
  */
-__ZM_EXPORT zMat zMatRowReg(zMat m, int rank);
-__ZM_EXPORT zMat zMatColReg(zMat m, int rank);
+__ZM_EXPORT zMat zMatRowResize(zMat m, int size);
+__ZM_EXPORT zMat zMatColResize(zMat m, int size);
 
 /*! \brief basic arithmetics for matrix.
  *

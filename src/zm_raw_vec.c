@@ -38,7 +38,7 @@ void zRawVecRandUniform(double *v, int size, double min, double max)
 }
 
 /* create a random raw vector with an arrayed range. */
-__EXPORT void zRawVecRand(double *v, double *min, double *max, int size)
+void zRawVecRand(double *v, double *min, double *max, int size)
 {
   while( size-- > 0 ) *v++ = zRandF( *min++, *max++ );
 }
@@ -54,6 +54,22 @@ double *zRawVecSwap(double *v, int i1, int i2)
 {
   zSwap( double, v[i1], v[i2] );
   return v;
+}
+
+/* check if two raw vectors are equal. */
+bool zRawVecEqual(const double *v1, const double *v2, int size, double tol)
+{
+  for( ; size>0; size-- )
+    if( !zEqual( *v1++, *v2++, tol ) ) return false;
+  return true;
+}
+
+/* check if two vectors exactly match with each other. */
+bool zRawVecMatch(const double *v1, const double *v2, int size)
+{
+  for( ; size>0; size-- )
+    if( *v1++ != *v2++ ) return false;
+  return true;
 }
 
 /* check if a raw vector is tiny. */

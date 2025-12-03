@@ -22,17 +22,17 @@ __BEGIN_DECLS
  * zRawVecZero() returns a pointer \a v.
  * zRawVecTouchup() returns no value.
  */
-#define zRawVecZero(v,s) memset( v, 0, sizeof(double)*(s) )
+#define zRawVecZero(v,size) memset( v, 0, sizeof(double)*(size) )
 __ZM_EXPORT void zRawVecTouchup(double *v, int size, double tol);
 
 /*! \brief copy a raw vector.
  *
  * zRawVecCopy() copies a vector \a src to \a dest.
- * \a s is the size of the vectors.
+ * \a size is the size of the vectors.
  * \return
  * zRawVecCopy() returns a pointer to \a dest.
  */
-#define zRawVecCopy(src,dst,s) memcpy( dst, src, sizeof(double)*(s) )
+#define zRawVecCopy(src,dest,size) memcpy( dest, src, sizeof(double)*(size) )
 
 /*! \brief get/put a part of a raw vector.
  *
@@ -42,8 +42,8 @@ __ZM_EXPORT void zRawVecTouchup(double *v, int size, double tol);
  * \return
  * zRawVecGet() and zRawVecPut() return a pointer to \a dest.
  */
-#define zRawVecGet(src,pos,dst,siz) zRawVecCopy( (src)+(pos), dst, siz )
-#define zRawVecPut(dst,pos,src,siz) zRawVecCopy( src, (dst)+(pos), siz )
+#define zRawVecGet(src,pos,dest,size) zRawVecCopy( (src)+(pos), dest, size )
+#define zRawVecPut(dest,pos,src,size) zRawVecCopy( src, (dest)+(pos), size )
 
 /*! \brief create uniform vector, linear space vector and random vector.
  *
@@ -87,6 +87,22 @@ __ZM_EXPORT void zRawVecShift(const double *src, int size, double shift, double 
  */
 __ZM_EXPORT double *zRawVecSwap(double *v, int i1, int i2);
 
+/*! \brief compare two vectors.
+ *
+ * zRawVecEqual() checks if two raw vectors \a v1 and \a v2 are equal to each other. \a tol is the
+ * tolerance to regard two values as the same.
+ *
+ * zRawVecMatch() checks if two raw vectors \a v1 and \a v2 exactly match with each other.
+ *
+ * \a size is the sizes of the two raw vectors.
+ * \return
+ * zRawVecEqual() returns the true value if \a v1 equals to \a v2. Otherwise, it returns the false value.
+ * zRawVecMatch() returns the true value if \a v1 exactly matches with \a v2. Otherwise, it returns the
+ * false value.
+ */
+__ZM_EXPORT bool zRawVecEqual(const double *v1, const double *v2, int size, double tol);
+__ZM_EXPORT bool zRawVecMatch(const double *v1, const double *v2, int size);
+
 /*! \brief check if a raw vector is tiny.
  *
  * zRawVecIsTol() returns the true value if all components of a raw vector \a v are smaller than
@@ -99,7 +115,7 @@ __ZM_EXPORT double *zRawVecSwap(double *v, int i1, int i2);
  * zRawVecIsTol(), zRawVecIsTiny() return results as boolean values.
  */
 __ZM_EXPORT bool zRawVecIsTol(const double *v, int size, double tol);
-#define zRawVecIsTiny(v,siz)  zRawVecIsTol( v, siz, zTOL )
+#define zRawVecIsTiny(v,size)  zRawVecIsTol( v, size, zTOL )
 
 /*! \brief check if a raw vector contains NaN.
  *
@@ -225,13 +241,13 @@ __ZM_EXPORT double zRawVecInnerProd(const double *v1, const double *v2, int size
  * zRawVecNormalize() and zRawVecNormalizeDRC() return a pointer to the result.
  */
 __ZM_EXPORT double zRawVecSqrNorm(const double *v, int size);
-#define zRawVecNorm(v,siz)         sqrt( zRawVecSqrNorm(v,siz) )
+#define zRawVecNorm(v,size)         sqrt( zRawVecSqrNorm(v,size) )
 __ZM_EXPORT double zRawVecWSqrNorm(const double *v, const double *w, int size);
-#define zRawVecWNorm(v,w,siz)      sqrt( zRawVecWSqrNorm(v,w,siz) )
+#define zRawVecWNorm(v,w,size)      sqrt( zRawVecWSqrNorm(v,w,size) )
 __ZM_EXPORT double *zRawVecNormalize(const double *src, int size, double *dest);
-#define zRawVecNormalizeDRC(v,siz) zRawVecNormalize(v,siz,v)
+#define zRawVecNormalizeDRC(v,size) zRawVecNormalize(v,size,v)
 __ZM_EXPORT double zRawVecSqrDist(const double *v1, const double *v2, int size);
-#define zRawVecDist(v1,v2,siz)     sqrt( zRawVecSqrDist( v1, v2, siz ) )
+#define zRawVecDist(v1,v2,size)     sqrt( zRawVecSqrDist( v1, v2, size ) )
 
 /*! \brief print a raw vector.
  *
@@ -242,7 +258,7 @@ __ZM_EXPORT double zRawVecSqrDist(const double *v1, const double *v2, int size);
  * zRawVecFPrint() and zRawVecPrint() return no values.
  */
 __ZM_EXPORT void zRawVecFPrint(FILE *fp, const double *v, int size);
-#define zRawVecPrint(v,s) zRawVecFPrint( stdout, v, s )
+#define zRawVecPrint(v,size) zRawVecFPrint( stdout, v, size )
 
 __END_DECLS
 

@@ -82,24 +82,24 @@ __ZM_EXPORT zVec zLESolveL(const zMat l, const zVec b, zVec ans, const zIndex id
 __ZM_EXPORT zVec zLESolveU(const zMat u, const zVec b, zVec ans);
 __ZM_EXPORT zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, const zIndex index);
 
-/*! \brief linear equation solver by residual iteration.
+/*! \brief linear equation solver by LU decomposition method and residual iteration.
  *
- * zLESolveRI() solves linear equation \a a x = \a b based on LU decomposition and improves the accuracy
+ * zLESolveLURI() solves linear equation \a a x = \a b based on LU decomposition and improves accuracy
  * by residual iteration. The answer is put into \a ans.
  * \return
- * zLESolveRI() returns a pointer \a ans if succeeds.
- * If \a a is a singular matrix, meaning that the equation does not have a unique answer, it returns
+ * zLESolveLURI() returns a pointer \a ans if succeeds.
+ * If \a a is not a regular matrix, meaning that the equation does not have a unique answer, it returns
  * the null pointer.
  */
-__ZM_EXPORT zVec zLESolveRI(const zMat a, const zVec b, zVec ans);
+__ZM_EXPORT zVec zLESolveLURI(const zMat a, const zVec b, zVec ans);
 
 /*! \brief linear equation solver by Gauss-Seidel method.
  *
- * zLESolveGS() solves linear equation \a a x = \a b based on Gauss-Seidel's method.
+ * zLESolveGaussSeidel() solves linear equation \a a x = \a b based on Gauss-Seidel's method.
  * The answer (x in the equation) is put into \a ans.
  * It is typically utilized for sparse equation, namely, an equation with a sparse coefficient matrix \a a.
  * \return
- * zLESolveGS() returns a pointer \a ans if succeeds or the iteration does not converge within
+ * zLESolveGaussSeidel() returns a pointer \a ans if succeeds or the iteration does not converge within
  * ZM_MAX_ITER_NUM times (defined in zm_misc.h).
  *
  * If the sizes of \a a, \b, and \a ans do not match, or it fails to allocate working memory, it returns
@@ -109,7 +109,7 @@ __ZM_EXPORT zVec zLESolveRI(const zMat a, const zVec b, zVec ans);
  * Iteration is executed up to Z_MAX_ITER_NUM times. If the iteration does not finish even after trying
  * over Z_MAX_ITER_NUM times, the function gives it up to calculate.
  */
-__ZM_EXPORT zVec zLESolveGS(const zMat a, const zVec b, zVec ans);
+__ZM_EXPORT zVec zLESolveGaussSeidel(const zMat a, const zVec b, zVec ans);
 
 __END_DECLS
 
