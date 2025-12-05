@@ -19,11 +19,10 @@ zMat generate_matrix_composition(zMat mat, int rank)
   return mat;
 }
 
-bool check_matrix_composition(zMat mat, zMat left_mat, zMat right_mat)
+bool check_matrix_composition(zMat mat, zMat left_mat, zMat right_mat, double tol)
 {
   zMat mat_check;
   bool result;
-  const double tol = 1.0e-8;
 
   if( !( mat_check = zMatAlloc( zMatRowSize(mat), zMatColSize(mat) ) ) ){
     ZALLOCERROR();
@@ -40,11 +39,10 @@ bool check_matrix_composition(zMat mat, zMat left_mat, zMat right_mat)
   return result;
 }
 
-bool check_matrix_orthogonality(zMat q, int rank)
+bool check_matrix_orthogonality(zMat q, int rank, double tol)
 {
   zMat qqt;
   bool result;
-  const double tol = 1.0e-9;
 
   qqt = zMatAllocSqr( rank );
   zMulMatMatT( q, q, qqt );
@@ -88,6 +86,7 @@ bool assert_mat_decomp_lu(int rowsize, int colsize, int rank, int n)
   zMat mat, l, u;
   zIndex index;
   int i, count_success = 0;
+  const double tol = 1.0e-11;
 
   mat = zMatAlloc( rowsize, colsize );
   l = zMatAlloc( rowsize, rowsize );
@@ -96,7 +95,7 @@ bool assert_mat_decomp_lu(int rowsize, int colsize, int rank, int n)
   for( i=0; i<n; i++ ){
     generate_matrix_composition( mat, rank );
     zMatDecompLU( mat, l, u, index );
-    if( check_matrix_composition( mat, l, u ) ) count_success++;
+    if( check_matrix_composition( mat, l, u, tol ) ) count_success++;
   }
   eprintf( "success rate (%d x %d) rank=%d, %d/%d ", rowsize, colsize, rank, count_success, n );
   zMatFreeAtOnce( 3, mat, l, u );
@@ -108,6 +107,7 @@ bool assert_mat_decomp_lq_one(int rowsize, int colsize, int rank, int n)
 {
   zMat mat, l, q;
   int i, size, rank_result, count_success = 0;
+  const double tol = 1.0e-9;
 
   mat = zMatAlloc( rowsize, colsize );
   size = zMatMinSize( mat );
@@ -124,7 +124,7 @@ bool assert_mat_decomp_lq_one(int rowsize, int colsize, int rank, int n)
       zMatColResize( l, rank );
       zMatRowResize( q, rank );
     }
-    if( check_matrix_composition( mat, l, q ) && check_matrix_orthogonality( q, rank ) ) count_success++;
+    if( check_matrix_composition( mat, l, q, tol ) && check_matrix_orthogonality( q, rank, tol ) ) count_success++;
   }
  TERMINATE:
   eprintf( "success rate (%d x %d) rank=%d, %d/%d ", zMatRowSize(mat), zMatColSize(mat), rank, count_success, n );
@@ -136,6 +136,7 @@ bool assert_mat_decomp_lq_householder_one(int rowsize, int colsize, int rank, in
 {
   zMat mat, l, q;
   int i, size, rank_result, count_success = 0;
+  const double tol = 1.0e-10;
 
   mat = zMatAlloc( rowsize, colsize );
   size = zMatMinSize( mat );
@@ -152,7 +153,7 @@ bool assert_mat_decomp_lq_householder_one(int rowsize, int colsize, int rank, in
     }
     zMatColResize( l, rank );
     zMatRowResize( q, rank );
-    if( check_matrix_composition( mat, l, q ) && check_matrix_orthogonality( q, rank ) ) count_success++;
+    if( check_matrix_composition( mat, l, q, tol ) && check_matrix_orthogonality( q, rank, tol ) ) count_success++;
   }
  TERMINATE:
   zMatFreeAtOnce( 3, mat, l, q );
@@ -170,14 +171,14 @@ int main(void)
   zRandInit();
   zAssert( zMatDecompCholesky (8x5), assert_mat_decomp_cholesky( size_large, size_small, n ) );
   zAssert( zMatDecompCholesky (8x8), assert_mat_decomp_cholesky( size_large, size_large, n ) );
-  zAssert( zMatDecompLU (5x8), assert_mat_decomp_lu( 5, 8, rank, n ) );
-  zAssert( zMatDecompLU (8x5), assert_mat_decomp_lu( 8, 5, rank, n ) );
-  zAssert( zMatDecompLU (8x8), assert_mat_decomp_lu( 8, 8, rank, n ) );
-  zAssert( zMatDecompLQ (5x8), assert_mat_decomp_lq_one( 5, 8, rank, n ) );
-  zAssert( zMatDecompLQ (8x5), assert_mat_decomp_lq_one( 8, 5, rank, n ) );
-  zAssert( zMatDecompLQ (8x8), assert_mat_decomp_lq_one( 8, 8, rank, n ) );
-  zAssert( zMatDecompLQ_Householder (5x8), assert_mat_decomp_lq_householder_one( 5, 8, 3, n ) );
-  zAssert( zMatDecompLQ_Householder (8x5), assert_mat_decomp_lq_householder_one( 8, 5, 3, n ) );
-  zAssert( zMatDecompLQ_Householder (8x8), assert_mat_decomp_lq_householder_one( 8, 8, 5, n ) );
+  zAssert( zMatDecompLU (5x8), assert_mat_decomp_lu( size_small, size_large, rank, n ) );
+  zAssert( zMatDecompLU (8x5), assert_mat_decomp_lu( size_large, size_small, rank, n ) );
+  zAssert( zMatDecompLU (8x8), assert_mat_decomp_lu( size_large, size_large, rank, n ) );
+  zAssert( zMatDecompLQ (5x8), assert_mat_decomp_lq_one( size_small, size_large, rank, n ) );
+  zAssert( zMatDecompLQ (8x5), assert_mat_decomp_lq_one( size_large, size_small, rank, n ) );
+  zAssert( zMatDecompLQ (8x8), assert_mat_decomp_lq_one( size_large, size_large, rank, n ) );
+  zAssert( zMatDecompLQ_Householder (5x8), assert_mat_decomp_lq_householder_one( size_small, size_large, rank, n ) );
+  zAssert( zMatDecompLQ_Householder (8x5), assert_mat_decomp_lq_householder_one( size_large, size_small, rank, n ) );
+  zAssert( zMatDecompLQ_Householder (8x8), assert_mat_decomp_lq_householder_one( size_large, size_large, size_small, n ) );
   return 0;
 }

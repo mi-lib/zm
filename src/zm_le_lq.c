@@ -48,18 +48,17 @@ static int _zMatDecompLQ_Householder_DST(zMat m, zMat q)
 {
   double s, ds, norm_inv, reflection;
   double *u;
-  int i, j, size, colsize;
+  int i, j, size, colsize, rank;
 
   zMatIdentNC( q );
   size = zMatMinSize( m );
-  for( i=0; i<size; i++ ){
+  for( rank=0, i=0; i<size; i++ ){
     u = &zMatElemNC(m,i,i);
     colsize = zMatColSizeNC(m) - i;
-    if( zIsTiny( ( s = zRawVecNorm( u, colsize ) ) ) ) break;
-    if( zSgn( zMatElemNC(m,i,i) ) < 0 ) s = -s;
-    if( zIsTiny( ( ds = s - zMatElemNC(m,i,i) ) ) ) continue;
+    if( zIsTiny( ( s = -zSgn( zMatElemNC(m,i,i) ) * zRawVecNorm( u, colsize ) ) ) ||
+        zIsTiny( ( ds = s - zMatElemNC(m,i,i) ) ) ) continue;
     norm_inv = 1.0 / ( s * ds );
-    *u = -ds;
+    *u = -ds; /* to use u temporarily as a reflection vector */
     for( j=0; j<zMatColSizeNC(q); j++ ){
       reflection = -norm_inv * zRawMatColInnerProd( zMatRowBufNC(q,i), u, zMatRowSizeNC(q)-i, zMatColSizeNC(q), j );
       zRawMatColCatDRC( zMatRowBufNC(q,i), reflection, u, zMatRowSizeNC(q)-i, zMatColSizeNC(q), j );
@@ -70,8 +69,9 @@ static int _zMatDecompLQ_Householder_DST(zMat m, zMat q)
     }
     *u = s;
     zRawVecZero( u + 1, colsize - 1 );
+    rank++;
   }
-  return i; /* rank */
+  return rank;
 }
 
 /* LQ decomposition based on Householder method. */
