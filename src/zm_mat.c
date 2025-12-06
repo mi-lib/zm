@@ -396,14 +396,19 @@ void zMatShift(zMat m, double shift)
     zMatElemNC( m, i, i ) += shift;
 }
 
-/* maximum of matrix elements. */
-double zMatElemMax(const zMat m, int *im){ return _zMatElemMax( m, im ); }
-/* minimum of vector elements. */
-double zMatElemMin(const zMat m, int *im){ return _zMatElemMin( m, im ); }
-/* absolute maximum of vector elements. */
-double zMatElemAbsMax(const zMat m, int *im){ return _zMatElemAbsMax( m, im ); }
-/* absolute minimum of vector elements. */
-double zMatElemAbsMin(const zMat m, int *im){ return _zMatElemAbsMin( m, im ); }
+#define ZM_MAT_DEF_ELEM_SEARCH_METHOD(refer) \
+  ZM_MAT_DEF_ELEM_SEARCH_METHOD_PROTOTYPE(refer){ \
+    int im; \
+    double retval; \
+    retval = zData##refer( zMatBuf(m), zMatRowSizeNC(m) * zMatColSizeNC(m), &im ); \
+    if( ir ) *ir = im / zMatColSizeNC(m); \
+    if( ic ) *ic = im % zMatColSizeNC(m); \
+    return retval; \
+  }
+ZM_MAT_DEF_ELEM_SEARCH_METHOD( Max )
+ZM_MAT_DEF_ELEM_SEARCH_METHOD( Min )
+ZM_MAT_DEF_ELEM_SEARCH_METHOD( AbsMax )
+ZM_MAT_DEF_ELEM_SEARCH_METHOD( AbsMin )
 
 /* check if two matrices are equal. */
 bool zMatEqual(const zMat m1, const zMat m2, double tol)
@@ -1083,7 +1088,7 @@ void zMatImg(const zMat m)
   int i, j;
   int c;
 
-  d = 0.25 * zMatElemAbsMax( m, NULL );
+  d = 0.25 * zMatElemAbsMax( m, NULL, NULL );
   for( i=0; i<zMatRowSizeNC(m); i++ ){
     for( j=0; j<zMatColSizeNC(m); j++ ){
       if( zIsTiny( zMatElemNC(m,i,j) ) )

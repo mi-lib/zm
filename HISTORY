@@ -1,3 +1,8 @@
+2025.12.06. Added zMatDecompLQNull. [zm_le_lq]
+2025.12.06. Added _zMatDecompLQRank_Householder, and modified zMatDecompLQ_Householder to use it. [zm_le_lq]
+2025.12.06. Defined ZM_MAT_DEF_ELEM_SEARCH_METHOD_PROTOTYPE and ZM_MAT_DEF_ELEM_SEARCH_METHOD, and reimplemented zMatElemMax, zMatElemMin, zMatElemAbsMax, and zMatElemAbsMin by using them. [zm_mat]
+2025.12.06. Abolished _zMatElemMax, _zMatElemMin, _zMatElemAbsMax, and _zMatElemAbsMin, and modified zMatElemMax, zMatElemMin, zMatElemAbsMax, and zMatElemAbsMin to refer row and column indices separately. [zm_mat]
+2025.12.05. Debugged zMatDecompLQ_Householder. [zm_le_lq]
 2025.12.05. Debugged _zMatDecompLQ_Householder_DST to determine signedness of mirrored components and count rank correctly. [zm_le_lq]
 2025.12.03. Added a benchmarking test of linear equation solvers. [test]
 2025.12.03. Renamed zLESolveMPLQ, and defined zLESolveMP as an alias to zLESolveMP. [zm_le_gen]

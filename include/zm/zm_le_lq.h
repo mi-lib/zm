@@ -17,7 +17,7 @@ __BEGIN_DECLS
 /*! \brief LQ decomposition of a matrix.
  *
  * zMatDecompLQ_GramSchmidt_DST() decomposes a matrix \a m into a lower triangular matrix \a l and
- * a row-orthonormal matrix \a q, based on Gram=Schmidt's orthogonalization method, namely,
+ * a row-orthonormal matrix \a q based on Gram=Schmidt's orthogonalization method, namely,
  *  \a l \a q = \a m.
  * It destroys \a m during the computation.
  * zMatDecompLQ_GramSchmidt() does LQ decomposition based on Gram=Schmidt's orthogonalization method
@@ -40,6 +40,18 @@ __ZM_EXPORT int zMatDecompLQ_Householder(const zMat m, zMat l, zMat q);
 /* aliases */
 #define zMatDecompLQDST zMatDecompLQ_GramSchmidt_DST
 #define zMatDecompLQ    zMatDecompLQ_GramSchmidt
+
+/*! \brief LQ decomposition with the null-space projector.
+ *
+ * zMatDecompLQNull() decomposes a matrix \a m into a lower triangular matrix \a l and a row-orthonormal
+ * matrix \a q based on Householder's method. It also finds the null-space projector matrix \a qnull.
+ * Namely, the following equations are satisfied:
+ *  \a l \a q = \a m
+ *  \a m \a qnull = O.
+ * \return
+ * zMatDecompLQNull() returns the rank of \a m.
+ */
+__ZM_EXPORT int zMatDecompLQNull(const zMat m, zMat l, zMat q, zMat qnull);
 
 /*! \brief LQ decomposition based on Gram=Schmidt's method and resizing of a matrix.
  */

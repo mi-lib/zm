@@ -194,6 +194,28 @@ void assert_mat_get_put(void)
   zVecFreeAtOnce( 2, vec_test1, vec_test2 );
 }
 
+void assert_mat_elem_maxmin(void)
+{
+  double mat_array[] = {
+    1, -2,  3, -4,
+    9,-10, 11,-12,
+   -5,  6, -7,  8,
+  };
+  zMatStruct mat;
+  int ir, ic;
+  double retval;
+
+  zMatAssignArray( &mat, 3, 4, mat_array );
+  retval = zMatElemMax( &mat, &ir, &ic );
+  zAssert( zMatElemMax, retval == 11 && ir == 1 && ic == 2 );
+  retval = zMatElemMin( &mat, &ir, &ic );
+  zAssert( zMatElemMin, retval == -12 && ir == 1 && ic == 3 );
+  retval = zMatElemAbsMax( &mat, &ir, &ic );
+  zAssert( zMatElemAbsMax, retval == 12 && ir == 1 && ic == 3 );
+  retval = zMatElemAbsMin( &mat, &ir, &ic );
+  zAssert( zMatElemAbsMin, retval == 1 && ir == 0 && ic == 0 );
+}
+
 void assert_mat_arith(void)
 {
   const int rowsize = MAT_ROW_SIZE;
@@ -516,6 +538,7 @@ int main(void)
   assert_mat_diag();
   assert_mat_is_symmetric();
   assert_mat_get_put();
+  assert_mat_elem_maxmin();
   assert_mat_arith();
   assert_mat_transpose();
   assert_mul_mat_vec();

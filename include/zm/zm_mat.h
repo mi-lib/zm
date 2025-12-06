@@ -277,19 +277,18 @@ __ZM_EXPORT void zMatShift(zMat m, double shift);
  * \a m, respectively.
  * zMatElemAbsMax() and zMatElemAbsMin() find the component of \a m whose absolute value is the maximum
  * and minimum, respectively.
- * For those four functions, the index that gives the maximum/minimum is stored where pointed by \a im,
- * unless it is the null pointer.
+ * For those four functions, the row and column indices that gives the maximum/minimum are stored where
+ * pointed by \a ir and \a ic, respectively, unless the null pointers are assigned for them.
  * \return
  * zMatElemMax(), zMatElemMin(), zMatElemAbsMax(), and zMatElemAbsMin() return the results.
  */
-#define _zMatElemMax(m,im)    zDataMax( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
-#define _zMatElemMin(m,im)    zDataMin( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
-#define _zMatElemAbsMax(m,im) zDataAbsMax( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
-#define _zMatElemAbsMin(m,im) zDataAbsMin( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), im )
-__ZM_EXPORT double zMatElemMax(const zMat m, int *im);
-__ZM_EXPORT double zMatElemMin(const zMat m, int *im);
-__ZM_EXPORT double zMatElemAbsMax(const zMat m, int *im);
-__ZM_EXPORT double zMatElemAbsMin(const zMat m, int *im);
+#define ZM_MAT_DEF_ELEM_SEARCH_METHOD_PROTOTYPE(refer) \
+  double zMatElem##refer(const zMat m, int *ir, int *ic)
+
+__ZM_EXPORT ZM_MAT_DEF_ELEM_SEARCH_METHOD_PROTOTYPE( Max );
+__ZM_EXPORT ZM_MAT_DEF_ELEM_SEARCH_METHOD_PROTOTYPE( Min );
+__ZM_EXPORT ZM_MAT_DEF_ELEM_SEARCH_METHOD_PROTOTYPE( AbsMax );
+__ZM_EXPORT ZM_MAT_DEF_ELEM_SEARCH_METHOD_PROTOTYPE( AbsMin );
 
 /*! \brief check if two matrices are equal.
  *

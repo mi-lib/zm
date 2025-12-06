@@ -161,6 +161,38 @@ bool assert_mat_decomp_lq_householder_one(int rowsize, int colsize, int rank, in
   return count_success == n;
 }
 
+bool assert_mat_decomp_lq_nullspace(int rowsize, int colsize, int rank, int n)
+{
+  zMat mat, l, q, qnull, zero_check;
+  int i, size, rank_result, count_success = 0;
+  const double tol = 1.0e-10;
+
+  mat = zMatAlloc( rowsize, colsize );
+  size = zMatMinSize( mat );
+  l = zMatAlloc( zMatRowSize(mat), size );
+  q = zMatAlloc( size, zMatColSize(mat) );
+  qnull = zMatAllocSqr( zMatColSize(mat) );
+  if( !mat || !l || !q || !qnull ) goto TERMINATE;
+  for( i=0; i<n; i++ ){
+    zMatResetSize( l );
+    zMatResetSize( q );
+    generate_matrix_composition( mat, rank );
+    rank_result = zMatDecompLQNull( mat, l, q, qnull );
+    zero_check = zMatAlloc( rowsize, zMatColSizeNC(mat) - rank_result );
+    zMulMatMat( mat, qnull, zero_check );
+    if( zMatIsTol( zero_check, tol ) ){
+      count_success++;
+    } else{
+      eprintf( "%g ", zMatElemAbsMax( zero_check, NULL, NULL ) );
+    }
+    zMatFree( zero_check );
+  }
+ TERMINATE:
+  zMatFreeAtOnce( 4, mat, l, q, qnull );
+  eprintf( "number of success (%d x %d) rank=%d) %d/%d ", zMatRowSize(mat), zMatColSize(mat), rank, count_success, n );
+  return count_success == n;
+}
+
 int main(void)
 {
   const int size_large = 8;
@@ -180,5 +212,7 @@ int main(void)
   zAssert( zMatDecompLQ_Householder (5x8), assert_mat_decomp_lq_householder_one( size_small, size_large, rank, n ) );
   zAssert( zMatDecompLQ_Householder (8x5), assert_mat_decomp_lq_householder_one( size_large, size_small, rank, n ) );
   zAssert( zMatDecompLQ_Householder (8x8), assert_mat_decomp_lq_householder_one( size_large, size_large, size_small, n ) );
+  zAssert( zMatDecompLQNull (5x8), assert_mat_decomp_lq_nullspace( size_small, size_large, rank, n ) );
+  zAssert( zMatDecompLQNull (8x5), assert_mat_decomp_lq_nullspace( size_large, size_small, rank, n ) );
   return 0;
 }

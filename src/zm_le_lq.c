@@ -74,6 +74,26 @@ static int _zMatDecompLQ_Householder_DST(zMat m, zMat q)
   return rank;
 }
 
+/* abstract rull-rank matrices from LQ decomposition. */
+static int _zMatDecompLQRank_Householder(const zMat lfull, const zMat qfull, zMat l, zMat q)
+{
+  int rank;
+
+  if( ( rank = _zMatDecompLQ_Householder_DST( lfull, qfull ) ) <= 0 ){
+    ZRUNERROR( ZM_ERR_MAT_CANNOTDECOMPOSEZEROMAT );
+    return -1;
+  }
+  if( l ){
+    zMatSetColSizeNC( l, rank );
+    zMatGetNC( lfull, 0, 0, l );
+  }
+  if( q ){
+    zMatSetRowSizeNC( q, rank );
+    zMatGetNC( qfull, 0, 0, q );
+  }
+  return rank;
+}
+
 /* LQ decomposition based on Householder method. */
 int zMatDecompLQ_Householder(const zMat m, zMat l, zMat q)
 {
@@ -86,16 +106,29 @@ int zMatDecompLQ_Householder(const zMat m, zMat l, zMat q)
     ZALLOCERROR();
     goto TERMINATE;
   }
-  if( ( rank = _zMatDecompLQ_Householder_DST( ltmp, qtmp ) ) <= 0 ){
-    ZRUNERROR( ZM_ERR_MAT_CANNOTDECOMPOSEZEROMAT );
+  rank = _zMatDecompLQRank_Householder( ltmp, qtmp, l, q );
+
+ TERMINATE:
+  zMatFreeAtOnce( 2, ltmp, qtmp );
+  return rank;
+}
+
+/* LQ decomposition based on Householder method. */
+int zMatDecompLQNull(const zMat m, zMat l, zMat q, zMat qnull)
+{
+  zMat ltmp, qtmp;
+  int rank = -1;
+
+  ltmp = zMatClone( m );
+  qtmp = zMatAllocSqr( zMatColSizeNC(m) );
+  if( !ltmp || !qtmp ){
+    ZALLOCERROR();
     goto TERMINATE;
   }
-  zMatColResize( l, rank );
-  zMatRowResize( q, rank );
-  if( l )
-    zMatGet( ltmp, 0, 0, l );
-  zMatGet( qtmp, 0, 0, q );
-
+  if( ( rank = _zMatDecompLQRank_Householder( ltmp, qtmp, l, q ) ) > 0 && qnull ){
+    zMatSetColSizeNC( qnull, zMatColSizeNC(m) - rank );
+    zMatTGetNC( qtmp, rank, 0, qnull );
+  }
  TERMINATE:
   zMatFreeAtOnce( 2, ltmp, qtmp );
   return rank;
