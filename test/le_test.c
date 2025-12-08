@@ -499,6 +499,52 @@ void assert_mat_mul_inv(void)
   zAssert( zMulInvMatMat, result );
 }
 
+void assert_mat_mul_inv_mat_vec(void)
+{
+  zMat m1, m2, mat_ans, mat_org;
+  zVec v, vec_ans, vec_org;
+  const int size = 10;
+  const int n = 100;
+  int i;
+  const double tol = 1.0e-9;
+  bool result = true;
+
+  m1 = zMatAllocSqr( size );
+  m2 = zMatAllocSqr( size );
+  mat_ans = zMatAllocSqr( size );
+  mat_org = zMatAllocSqr( size );
+  v = zVecAlloc( size );
+  vec_ans = zVecAlloc( size );
+  vec_org = zVecAlloc( size );
+  if( !m1 || !m2 || !mat_ans || !mat_org || !v || !vec_ans || !vec_org ){
+    ZALLOCERROR();
+    goto TERMINATE;
+  }
+  for( i=0; i<n; i++ ){
+    zMatRandUniform( mat_org, -10, 10 );
+    zMatRandUniform( m1, -10, 10 );
+    zMulMatMat( m1, mat_org, m2 );
+    zVecRandUniform( vec_org, -10, 10 );
+    zMulMatVec( m1, vec_org, v );
+    zMulInvMatMatAndVec( m1, m2, v, mat_ans, vec_ans );
+    if( !zVecEqual( vec_org, vec_ans, tol ) ){
+      zVecSubDRC( vec_ans, vec_org );
+      eprintf( "vectors are not equal: max error = %g\n", zVecElemAbsMax( vec_ans, NULL ) );
+      result = false;
+    }
+    if( !zMatEqual( mat_org, mat_ans, tol ) ){
+      zMatSubDRC( mat_ans, mat_org );
+      eprintf( "matrices are not equal: max error = %g\n", zMatElemAbsMax( mat_ans, NULL, NULL ) );
+      result = false;
+    }
+  }
+
+ TERMINATE:
+  zMatFreeAtOnce( 4, m1, m2, mat_ans, mat_org );
+  zVecFreeAtOnce( 3, v, vec_ans, vec_org );
+  zAssert( zMulInvMatMatAndVec, result );
+}
+
 zMat make_mpinv_testcase1(void)
 {
   /* regular case */
@@ -681,6 +727,7 @@ void assert_mat_det_adj(void)
   double det;
   const int size = 10, testnum = 100;
   int k;
+  const double tol = 1.0e-10;
   bool result = true;
 
   m = zMatAllocSqr( size );
@@ -692,7 +739,7 @@ void assert_mat_det_adj(void)
     det = zMatDet( m );
     zMatAdj( m, minv2 );
     zMatDivDRC( minv2, det );
-    if( !zMatEqual( minv1, minv2, zTOL ) ){
+    if( !zMatEqual( minv1, minv2, tol ) ){
       zMatSubDRC( minv1, minv2 );
       eprintf( "case #%d: maximum error = %g\n", k, zMatElemAbsMax( minv1, NULL, NULL ) );
       result = false;
@@ -715,6 +762,7 @@ int main(void)
   assert_lyapnov_equation();
   assert_mat_inv();
   assert_mat_mul_inv();
+  assert_mat_mul_inv_mat_vec();
   assert_mat_mpinv();
   assert_mat_mpinv_rand();
   assert_mpnull();

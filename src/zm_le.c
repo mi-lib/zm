@@ -7,7 +7,7 @@
 #include <zm/zm_le.h>
 
 /* directly make a matrix column-balanced. */
-void zMatBalancingColDST(zMat m, zVec s)
+void zMatColBalancingDST(zMat m, zVec s)
 {
   int i, j;
   double tmp;
@@ -26,24 +26,30 @@ void zMatBalancingColDST(zMat m, zVec s)
   }
 }
 
-/* directly make a pair of matrix and vector balanced. */
-void zMatBalancingDST(zMat m, zVec v, zVec s)
+/* directly make a pair of matrix and vector row-balanced. */
+void zMatVecRowBalancingDST(zMat m, zVec v)
 {
   int i;
-  double *mp, max;
+  double *mp, tmp;
 
-  if( s ) /* if necessary for column-balancing */
-    zMatBalancingColDST( m, s );
   for( mp=zMatBuf(m), i=0; i<zMatRowSizeNC(m); mp+=zMatColSizeNC(m), i++ ){
-    if( ( max = zDataAbsMax( mp, zMatColSizeNC(m), NULL ) ) == 0 )
+    if( ( tmp = zDataAbsMax( mp, zMatColSizeNC(m), NULL ) ) == 0 )
       continue;
-    zRawVecDivDRC( mp, max, zMatColSizeNC(m) );
-    zVecElemNC(v,i) /= max;
+    zRawVecDivDRC( mp, tmp, zMatColSizeNC(m) );
+    zVecElemNC(v,i) /= tmp;
   }
 }
 
+/* directly make a pair of matrix and vector balanced. */
+void zMatVecBalancingDST(zMat m, zVec v, zVec s)
+{
+  if( s )
+    zMatColBalancingDST( m, s );
+  zMatVecRowBalancingDST( m, v );
+}
+
 /* make a pair of matrix and vector balanced. */
-bool zMatBalancing(const zMat morg, const zVec vorg, zMat m, zVec v, zVec s)
+bool zMatVecBalancing(const zMat morg, const zVec vorg, zMat m, zVec v, zVec s)
 {
   if( !zMatSizeEqual( morg, m ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -60,8 +66,53 @@ bool zMatBalancing(const zMat morg, const zVec vorg, zMat m, zVec v, zVec s)
   }
   zMatCopyNC( morg, m );
   zVecCopyNC( vorg, v );
-  zMatBalancingDST( m, v, s );
+  zMatVecBalancingDST( m, v, s );
   return true;
+}
+
+/* directly make a pair of matrices row-balanced. */
+void zMatMatRowBalancingDST(zMat m1, zMat m2)
+{
+  int i;
+  double *mp1, *mp2, tmp;
+
+  for( mp1=zMatBuf(m1), mp2=zMatBuf(m2), i=0; i<zMatRowSizeNC(m1); mp1+=zMatColSizeNC(m1), mp2+=zMatColSizeNC(m2), i++ ){
+    if( ( tmp = zDataAbsMax( mp1, zMatColSizeNC(m1), NULL ) ) == 0 )
+      continue;
+    zRawVecDivDRC( mp1, tmp, zMatColSizeNC(m1) );
+    zRawVecDivDRC( mp2, tmp, zMatColSizeNC(m2) );
+  }
+}
+
+/* directly make a pair of matrices balanced. */
+void zMatMatBalancingDST(zMat m1, zMat m2, zVec s)
+{
+  if( s )
+    zMatColBalancingDST( m1, s );
+  zMatMatRowBalancingDST( m1, m2 );
+}
+
+/* directly make a pair of matrices and a vector row-balanced. */
+void zMatMatVecRowBalancingDST(zMat m1, zMat m2, zVec v)
+{
+  int i;
+  double *mp1, *mp2, tmp;
+
+  for( mp1=zMatBuf(m1), mp2=zMatBuf(m2), i=0; i<zMatRowSizeNC(m1); mp1+=zMatColSizeNC(m1), mp2+=zMatColSizeNC(m2), i++ ){
+    if( ( tmp = zDataAbsMax( mp1, zMatColSizeNC(m1), NULL ) ) == 0 )
+      continue;
+    zRawVecDivDRC( mp1, tmp, zMatColSizeNC(m1) );
+    zRawVecDivDRC( mp2, tmp, zMatColSizeNC(m2) );
+    zVecElemNC(v,i) /= tmp;
+  }
+}
+
+/* directly make a pair of matrices and a vector balanced. */
+void zMatMatVecBalancingDST(zMat m1, zMat m2, zVec v, zVec s)
+{
+  if( s )
+    zMatColBalancingDST( m1, s );
+  zMatMatVecRowBalancingDST( m1, m2, v );
 }
 
 /* residual b - a x. */
@@ -79,7 +130,7 @@ zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
   double x;
 
   n = zVecSizeNC( b );
-  zMatBalancingDST( a, b, s );
+  zMatVecBalancingDST( a, b, s );
   /* forward elimination */
   for( i=0; i<n; i++ ){
     p = zMatPivoting( a, idx, i, i );
@@ -93,7 +144,8 @@ zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
       zMatElemNC(a,p,j) *= ahead;
     zVecElemNC(b,p) *= ahead;
     for( j=i+1; j<n; j++ ){
-      if( !zIsTiny( ahead = zMatElemNC(a,(q=zIndexElemNC(idx,j)),i) ) ){
+      q = zIndexElemNC( idx, j );
+      if( !zIsTiny( ahead = zMatElemNC(a,q,i) ) ){
         for( k=i+1; k<n; k++ )
           zMatElemNC(a,q,k) -= zMatElemNC(a,p,k) * ahead;
         zVecElemNC(b,q) -= zVecElemNC(b,p) * ahead;

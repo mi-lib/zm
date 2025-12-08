@@ -13,35 +13,69 @@ __BEGIN_DECLS
 
 /*! \brief make a pair of matrix and vector balanced.
  *
- * zMatBalancingColDST() destructively makes a matrix column-balanced. Namely, each column of \a m is
+ * zMatColBalancingDST() destructively makes a matrix column-balanced. Namely, each column of \a m is
  * divided by the absolute-maximum component in the same column.
  *
- * zMatBalancingDST() destructively makes a pair of matrix \a m and vector \a v balanced. Namely, each
- * column of \a m is primarily divided by the absolute-maximum component in the same column, and then
- * each row of \a m and the corresponding component of \a v by the absolute-maximum value in the row.
+ * zMatVecRowBalancingDST() destructively makes a pair of matrix \a m and vector \a v row-balanced.
+ * Namely, each column of \a m is primarily divided by the absolute-maximum component in the same column,
+ * and then, each row of \a m and the corresponding component of \a v by the absolute-maximum value in
+ * the row.
  *
- * Scalings are skipped when the balancing factor with respect to the working column or row is zero.
+ * zMatVecBalancingDST() destructively makes a pair of matrix \a m and vector \a v both column- and row-
+ * balanced.
  *
- * zMatBalancing() makes \a morg and \a vorg balanced, and puts the result into \a m and \a v.
+ * zMatVecBalancing() makes \a morg and \a vorg balanced, and puts the result into \a m and \a v.
  *
  * They work as preprocesses of a linear equation solver. Actually, zLESolveGaussDST() internally calls
- * zMatBalancingDST().
+ * zMatVecBalancingDST().
  *
  * The column-balancing factors are stored in \a s for all the functions if it is not the null pointer.
  * It is used for re-balancing. For the original equation \a morg x = \a vorg, the balanced equation is
  * \a m \a s x = v. Thus, the solution \a y of \a m y = v has to be amplified by \a s in such a way as
  * zVecAmpDRC( y, s ).
  * \return
- * zMatBalancingColDST() and zMatBalancingDST() return no values.
+ * zMatColBalancingDST(), zMatVecRowBalancingDST(), and zMatVecBalancingDST() return no values.
  *
- * zMatBalancing() returns the false value if size-mismatch happens among arguments. Otherwise, it
+ * zMatVecBalancing() returns the false value if size-mismatch happens among arguments. Otherwise, it
  * returns the true value.
  * \sa
  * zLESolveGaussDST
  */
-__ZM_EXPORT void zMatBalancingColDST(zMat m, zVec s);
-__ZM_EXPORT void zMatBalancingDST(zMat m, zVec v, zVec s);
-__ZM_EXPORT bool zMatBalancing(const zMat morg, const zVec vorg, zMat m, zVec v, zVec s);
+__ZM_EXPORT void zMatColBalancingDST(zMat m, zVec s);
+__ZM_EXPORT void zMatVecRowBalancingDST(zMat m, zVec v);
+__ZM_EXPORT void zMatVecBalancingDST(zMat m, zVec v, zVec s);
+__ZM_EXPORT bool zMatVecBalancing(const zMat morg, const zVec vorg, zMat m, zVec v, zVec s);
+
+/*! \brief make a pair of matrices balanced.
+ *
+ * zMatMatBalancingDST() destructively makes a pair of matrices \a m1 and \a m2 both column- and row-
+ * balanced.
+ *
+ * The column-balancing factors are stored in \a s to be used for re-balancing, if it is not the null
+ * pointer.
+ * \return
+ * zMatMatBalancingDST() does not return any value.
+ * \sa
+ * zMatVecBalancingDST
+ */
+__ZM_EXPORT void zMatMatBalancingDST(zMat m1, zMat m2, zVec s);
+
+/*! \brief directly make a pair of matrices and a vector balanced.
+ *
+ * zMatMatVecRowBalancingDST() destructively makes a pair of matrices \a m1 and \a m2 and a vector \a v
+ * row-balanced simultaneously.
+ *
+ * zMatMatVecBalancingDST() destructively makes a pair of matrices \a m1 and \a m2 and a vector \a v
+ * both column- and row- balanced simultaneously.
+ * The column-balancing factors are stored in \a s to be used for re-balancing, if it is not the null
+ * pointer.
+ * \return
+ * zMatMatVecRowBalancingDST() and zMatMatVecBalancingDST() do not return any value.
+ * \sa
+ * zMatVecBalancingDST, zMatMatBalancingDST
+ */
+__ZM_EXPORT void zMatMatVecRowBalancingDST(zMat m1, zMat m2, zVec v);
+__ZM_EXPORT void zMatMatVecBalancingDST(zMat m1, zMat m2, zVec v, zVec s);
 
 /*! \brief residual b - a x.
  *

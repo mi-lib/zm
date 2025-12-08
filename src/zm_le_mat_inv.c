@@ -94,35 +94,6 @@ zMat zMatAdj(const zMat m, zMat adj)
   return adj;
 }
 
-/* directly make a matrix row-balanced and column-balanced. */
-static void _zMatBalancingDST(zMat m1, zMat m2, zVec s)
-{
-  int i, j;
-  double *mp1, *mp2, tmp;
-
-  /* column balancing */
-  if( s )
-    for( i=0; i<zMatColSizeNC(m1); i++ ){
-      zVecSetElemNC( s, i, fabs( zMatBuf(m1)[i] ) );
-      for( j=1; j<zMatRowSizeNC(m1); j++ ){
-        tmp = fabs( zMatElemNC(m1,j,i) );
-        if( tmp > zVecElem(s,i) ) zVecSetElemNC( s, i, tmp );
-      }
-      if( zVecElem(s,i) == 0 ) continue;
-      /* inverse column-balancing factor */
-      zVecSetElemNC( s, i, 1.0 / zVecElem(s,i) );
-      for( j=0; j<zMatRowSizeNC(m1); j++ )
-        zMatElemNC(m1,j,i) *= zVecElemNC(s,i);
-    }
-  /* row balancing */
-  for( mp1=zMatBuf(m1), mp2=zMatBuf(m2), i=0; i<zMatRowSizeNC(m1); mp1+=zMatColSizeNC(m1), mp2+=zMatColSizeNC(m2), i++ ){
-    if( ( tmp = zDataAbsMax( mp1, zMatColSizeNC(m1), NULL ) ) == 0 )
-      continue;
-    zRawVecDivDRC( mp1, tmp, zMatColSizeNC(m1) );
-    zRawVecDivDRC( mp2, tmp, zMatColSizeNC(m2) );
-  }
-}
-
 /* inner operation of zMulInvMatMat and zMulMatInvMat. */
 static zMat _zMulInvMat(const zMat m1, const zMat m2, zMat m, zIndex idx, zVec s)
 {
@@ -132,7 +103,7 @@ static zMat _zMulInvMat(const zMat m1, const zMat m2, zMat m, zIndex idx, zVec s
   double x;
 
   n = zMatRowSizeNC( m );
-  _zMatBalancingDST( m1, m2, s );
+  zMatMatBalancingDST( m1, m2, s );
   /* forward elimination */
   for( i=0; i<n; i++ ){
     p = zMatPivoting( m1, idx, i, i );
@@ -173,7 +144,7 @@ static zMat _zMulInvMat(const zMat m1, const zMat m2, zMat m, zIndex idx, zVec s
   return m;
 }
 
-/* multiplication of inverse matrix and matrix without checking sizes. */
+/* multiplication of an inverse matrix and another matrix without checking sizes. */
 zMat _zMulInvMatMatNC(const zMat m1, const zMat m2, zMat m)
 /* m = m1^-1 m2 */
 {
@@ -195,7 +166,7 @@ zMat _zMulInvMatMatNC(const zMat m1, const zMat m2, zMat m)
   return m;
 }
 
-/* multiplication of inverse matrix and matrix. */
+/* multiplication of an inverse matrix and another matrix. */
 zMat zMulInvMatMat(const zMat m1, const zMat m2, zMat m)
 /* m = m1^-1 m2 */
 {
@@ -210,7 +181,7 @@ zMat zMulInvMatMat(const zMat m1, const zMat m2, zMat m)
   return _zMulInvMatMatNC( m1, m2, m );
 }
 
-/* multiplication of matrix and inverse matrix. */
+/* multiplication of a matrix and an inverse matrix. */
 zMat zMulMatInvMat(const zMat m1, const zMat m2, zMat m)
 /* m = m1 m2^-1 */
 {
@@ -266,6 +237,105 @@ zMat zMatInv(const zMat m, zMat im)
     _zMulInvMatMatNC( m, im, im );
   }
   return im;
+}
+
+/* multiplication of an inverse matrix and another matrix and a vector (destructive). */
+zMat zMulInvMatMatAndVecDST(const zMat m1, const zMat m2, const zVec v, zMat mat_ans, zVec vec_ans, zIndex idx, zVec s)
+{
+  int i, j, k;
+  int n, p, q;
+  double head;
+  double x;
+
+  n = zVecSizeNC( v );
+  zMatMatVecBalancingDST( m1, m2, v, s );
+  /* forward elimination */
+  for( i=0; i<n; i++ ){
+    p = zMatPivoting( m1, idx, i, i );
+    if( ( head = zMatElemNC(m1,p,i) ) == 0 ){
+      ZRUNERROR( ZM_ERR_MAT_SINGULAR );
+      return NULL;
+    }
+    head = 1.0 / head;
+    zMatSetElemNC( m1, p, i, 1 );
+    for( j=i+1; j<n; j++ )
+      zMatElemNC(m1,p,j) *= head;
+    for( j=0; j<zMatColSizeNC(m2); j++ )
+      zMatElemNC(m2,p,j) *= head;
+    zVecElemNC(v,p) *= head;
+    for( j=i+1; j<n; j++ ){
+      q = zIndexElemNC( idx, j );
+      if( !zIsTiny( head = zMatElemNC(m1,q,i) ) ){
+        for( k=i+1; k<n; k++ )
+          zMatElemNC(m1,q,k) -= zMatElemNC(m1,p,k) * head;
+        for( k=0; k<zMatColSizeNC(m2); k++ )
+          zMatElemNC(m2,q,k) -= zMatElemNC(m2,p,k) * head;
+        zVecElemNC(v,q) -= zVecElemNC(v,p) * head;
+      }
+      zMatSetElemNC( m1, q, i, 0 );
+    }
+  }
+  /* backward elimination */
+  for( i=n-1; i>=0; i-- ){
+    p = zIndexElemNC( idx, i );
+    for( j=0; j<zMatColSizeNC(m2); j++ ){
+      x = zMatElemNC( m2, p, j );
+      for( k=n-1; k>i; k-- )
+        x -= zMatElemNC(m1,p,k)*zMatElemNC(mat_ans,k,j);
+      zMatSetElemNC( mat_ans, i, j, x );
+    }
+    x = zVecElemNC( v, p );
+    for( j=n-1; j>i; j-- )
+      x -= zMatElemNC(m1,p,j)*zVecElemNC(vec_ans,j);
+    zVecSetElemNC( vec_ans, i, x );
+  }
+  if( s ){
+    for( i=0; i<n; i++ )
+      zRawVecMulDRC( zMatRowBuf(mat_ans,i), zVecElem(s,i), zMatColSizeNC(mat_ans) );
+    zVecAmpDRC( vec_ans, s );
+  }
+  return m1;
+}
+
+/* multiplication of an inverse matrix and another matrix and a vector without checking sizes. */
+zMat zMulInvMatMatAndVecNC(const zMat m1, const zMat m2, const zVec v, zMat mat_ans, zVec vec_ans)
+{
+  zMat mcp1, mcp2;
+  zVec vcp, s;
+  zIndex idx;
+
+  mcp1 = zMatClone( m1 );
+  mcp2 = zMatClone( m2 );
+  vcp  = zVecClone( v );
+  idx = zIndexCreate( zMatRowSizeNC(m1) );
+  s = zVecAlloc( zMatRowSizeNC(m1) );
+  if( !mcp1 || !mcp2 || !vcp || !idx || !s ||
+      !zMulInvMatMatAndVecDST( mcp1, mcp2, vcp, mat_ans, vec_ans, idx, s ) ) mat_ans = NULL;
+
+  zMatFree( mcp1 );
+  zMatFree( mcp2 );
+  zVecFree( vcp );
+  zIndexFree( idx );
+  zVecFree( s );
+  return mat_ans;
+}
+
+/* multiplication of inverse matrix and matrix. */
+zMat zMulInvMatMatAndVec(const zMat m1, const zMat m2, const zVec v, zMat mat_ans, zVec vec_ans)
+{
+  if( !zMatIsSqr(m1) ){
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
+    return NULL;
+  }
+  if( zMatColSize(m1) != zMatRowSize(m2) || !zMatSizeEqual(m2,mat_ans) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+    return NULL;
+  }
+  if( !zMatColVecSizeEqual( m1, v ) || !zVecSizeEqual( v, vec_ans ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return NULL;
+  }
+  return zMulInvMatMatAndVecNC( m1, m2, v, mat_ans, vec_ans );
 }
 
 /* inverse matrix by Hotelling's method. */

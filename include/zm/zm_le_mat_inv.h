@@ -48,6 +48,26 @@ __ZM_EXPORT zMat zMulInvMatMat(const zMat m1, const zMat m2, zMat m);
 __ZM_EXPORT zMat zMulMatInvMat(const zMat m1, const zMat m2, zMat m);
 __ZM_EXPORT zMat zMatInv(const zMat m, zMat im);
 
+/*! \brief multiplication of inverse matrix and matrix.
+ *
+ * zMulInvMatMatAndVecDST(), zMulInvMatMatAndVecNC(), and zMulInvMatMatAndVec() multiplies a matrix
+ * \a m2 and a vector \a v by an inverse of a matrix \a m1 simultaneously.
+ * zMulInvMatMatAndVecDST() destructively modifies \a m1.
+ * zMulInvMatMatAndVecNC() does not check sizes of \a m1, \a m2, and \a v.
+ * \return
+ * zMulInvMatMatAndVecDST(), zMulInvMatMatAndVecNC(), and zMulInvMatMatAndVec() return the pointer \a m1,
+ * if they succeed.
+ * zMulInvMatMatAndVecDST() returns the null pointer if \a m1 is not invertible.
+ * zMulInvMatMatAndVecNC() returns the null pointer if it fails to allocate matrices and vectors for
+ * internal workspace.
+ * zMulInvMatMatAndVec() returns the null pointer if sizes of \a m1, \a m2, and \a v are not consistent.
+ * \sa
+ * zMulInvMatMat, zLESolveGaussDST, zLESolveGauss
+ */
+__ZM_EXPORT zMat zMulInvMatMatAndVecDST(const zMat m1, const zMat m2, const zVec v, zMat mat_ans, zVec vec_ans, zIndex idx, zVec s);
+__ZM_EXPORT zMat zMulInvMatMatAndVecNC(const zMat m1, const zMat m2, const zVec v, zMat mat_ans, zVec vec_ans);
+__ZM_EXPORT zMat zMulInvMatMatAndVec(const zMat m1, const zMat m2, const zVec v, zMat mat_ans, zVec vec_ans);
+
 /*! \brief inverse matrix by Hotelling's method.
  *
  * zMatInvHotelling() computes the inverse matrix of a given matrix \a m by Hotelling's method.
