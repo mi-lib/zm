@@ -86,10 +86,10 @@ static int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol, int iter, d
   int i;
   zLEWorkspace workspace;
 
-  workspace.m = nle->_opt._h;
-  workspace.v1 = nle->_opt._p;
-  workspace.idx1 = nle->_opt._idx;
-  workspace.s = nle->_opt._q;
+  workspace.m_regular = nle->_opt._h;
+  workspace.v_ispace = nle->_opt._p;
+  workspace.index_le = nle->_opt._idx;
+  workspace.v_scale = nle->_opt._q;
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){
     nle->f( var, nle->_f, util );

@@ -218,7 +218,7 @@ void try_le_gen_one(zMat a, zVec b, zVec w, zVec w2, zVec x, zVec _b, double err
   clock_t c1, c2;
 
   c1 = clock();
-  zLESolveMPLQ( a, b, w, w2, x );
+  zLESolveMP_LQ( a, b, w, w2, x );
   c2 = clock();
   zMulMatVec( a, x, _b );
   delta_clock[0] = c2 - c1;
@@ -226,7 +226,7 @@ void try_le_gen_one(zMat a, zVec b, zVec w, zVec w2, zVec x, zVec _b, double err
   eprintf( "MP(LQ):%g %ld ", error[0], delta_clock[0] );
 
   c1 = clock();
-  zLESolveMPLU( a, b, w, w2, x );
+  zLESolveMP_LU( a, b, w, w2, x );
   c2 = clock();
   zMulMatVec( a, x, _b );
   delta_clock[1] = c2 - c1;
@@ -234,7 +234,7 @@ void try_le_gen_one(zMat a, zVec b, zVec w, zVec w2, zVec x, zVec _b, double err
   eprintf( "MP(LU):%g %ld ", error[1], delta_clock[1] );
 
   c1 = clock();
-  zLESolveMPSVD( a, b, x );
+  zLESolveMP_SVD( a, b, x );
   c2 = clock();
   zMulMatVec( a, x, _b );
   delta_clock[2] = c2 - c1;
@@ -304,13 +304,13 @@ void assert_le_gen(void)
 
   zMatFree( a );
   zVecFreeAtOnce( 5, b, _b, w, w2, x );
-  zAssert( zLESolveMPLQ, result_general[0] );
-  zAssert( zLESolveMPLU, result_general[1] );
-  zAssert( zLESolveMPSVD, result_general[2] );
+  zAssert( zLESolveMP_LQ, result_general[0] );
+  zAssert( zLESolveMP_LU, result_general[1] );
+  zAssert( zLESolveMP_SVD, result_general[2] );
   zAssert( zLESolveSR, result_general[3] );
-  zAssert( zLESolveMPLQ (ill-conditioned cases), result_illcond[0] );
-  zAssert( zLESolveMPLU (ill-conditioned cases), result_illcond[1] );
-  zAssert( zLESolveMPSVD (ill-conditioned cases), result_illcond[2] );
+  zAssert( zLESolveMP_LQ (ill-conditioned cases), result_illcond[0] );
+  zAssert( zLESolveMP_LU (ill-conditioned cases), result_illcond[1] );
+  zAssert( zLESolveMP_SVD (ill-conditioned cases), result_illcond[2] );
   zAssert( zLESolveSR (ill-conditioned cases), result_illcond[3] );
 }
 

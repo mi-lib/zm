@@ -11,20 +11,23 @@
 
 __BEGIN_DECLS
 
-/*! \brief workspace for generalized linear equation solvers.
- */
+/*! \brief workspace for generalized linear equation solvers. */
 typedef struct{
   /*! \cond */
-  zMat m; /* internal matrix to be inverted. */
-  zMat l; /* left hand matrix for decomposition (LU/LQ) */
-  zMat r; /* right hand matrix for decomposition (LU/LQ) */
-  zVec b; /* copy of b vector */
-  zVec c;
-  zVec v1;
-  zVec v2;
-  zVec s;
-  zIndex idx1;
-  zIndex idx2;
+  /* for regular linear equation solver */
+  zMat m_regular;   /* an internal matrix to be inverted. */
+  zVec v_scale;     /* a scaling vector for balancing */
+  zIndex index_le;  /* an index vector for pivotting */
+  zVec b_copy;      /* copy of b vector */
+  zVec v_ispace;    /* internal-space vector */
+  /* for referenced norm-minimization */
+  zVec v_ref;
+  /* for MP-inverse */
+  zVec v_mp_ispace; /* full-rank internal-space vector */
+  /* for LU/LQ factorization */
+  zMat l_facto;     /* left hand matrix */
+  zMat r_facto;     /* right hand matrix */
+  zIndex index_lu;  /* an index vector for LU decomposition */
   /*! \endcond */
 } zLEWorkspace;
 
@@ -39,126 +42,127 @@ __ZM_EXPORT void zLEWorkspaceFree(zLEWorkspace *workspace);
 
 /*! \brief generalized linear equation solver.
  *
- * zLESolve function family solves generalized linear equations,
- * in which the coefficient matrix is not necessarily square.
- * Suppose 'a x = b' is given, where 'a' is a 'r'x'c' matrix, 'b' is
- * a 'c'x1 vector and 'x', or 'ans', is a 'r'x1 vector.
- * The answer is put into \a ans.
+ * These functions solve a generalized linear equation \a \a ans = \a b, where the coefficient
+ * matrix \a a is not necessarily regular.
  *
- * zLESolveNormMinDST() and zLESolveNormMin() solve redundant
- * equations, in which \a r < \a c, so as to minimize the norm
- * of \a ans. \a a must be row full rank.
- * \a w is a weighting vector, or diagonal components of a
- * weighting matrix for each component of \a ans. When the null
- * pointer is given instead, a uniform weight is applied.
- * In zLESolveNormMinDST(), \a m and \a v are temporary
- * work space matrix and vector, where \a m is \a r x \a r,
- * and \a v is \a r x1.
- * \a index is a temporary index( \a r x1), which should be
- * ordered before being given to the function by zIndexOrder(),
- * for example.
+ * zLESolveNormMinDST() and zLESolveNormMin() solve a redundant linear equation, namely, an equation
+ * where the number of variables is larger than the number of equations, as to minimize the squared
+ * norm of the solution.
+ * The coefficient matrix \a must be row-full-rank.
+ * \a w is a weighting vector, namely diagonal components of a weighting matrix on each component
+ * of \a ans. If the null pointer is assigned for \a w, a uniform weight is applied.
  *
- * zLESolveErrorMinDST() and zLESolveErrorMin() solve inferior
- * equations, in which \a r > \a c, so as to minimize the norm
- * of the error \a a x - \a b. \a a must be column full rank.
- * \a w is a weighting vector, or diagonal components of a
- * weighting matrix for the norm of the error \a a x - \a b.
- * When the null pointer is given instead, a uniform weight is
- * applied.
- * In zLESolveErrorMinDST(), \a m and \a v are temporary work
- * space matrices and a vector, where \a m is \a c x \a c, and
- * \a v is \a c x1. \a index is a temporary index( \a c x1),
- * which should be ordered before being given to the function
- * by zIndexOrder(), for example.
+ * zLESolveErrorMinDST() and zLESolveErrorMin() solve an overconstrained linear equation, namely,
+ * an equation where the number of equations is larger than the number of variables, as to minimize
+ * the residual of \a a \a ans and \a b.
+ * The coefficient matrix \a a must be column-full-rank.
+ * \a w is a weighting vector, namely, diagonal components of a weighting matrix on the residual of
+ * each equation. 
+ * of \a ans. If the null pointer is assigned for \a w, a uniform weight is applied.
  *
- * zLESolveRefMinDST() and zLESolveRefMin() solve redundant
- * equations almost in the same style with zLESolveNormMinDST()
- * and zLESolveNormMin(). Different from norm-minimizing solvers,
- * these two functions accept a reference of the answer and
- * minimize the weighted norm of the error between \a ref and
- * \a ans. In zLESolveRefMinDST(), \a m, \a v1 and \a v2 are
- * temporary work space matrix and vectors, where \a m is
- * \a r x \a r, \a v1 is \a r x1 and \a v2 is \a r x1.
+ * zLESolveRefNormMinDST() and zLESolveRefNormMin() solve a redundant linear equation as to minimize
+ * the squared error between the answer \a ans and a reference vector \a ref.
+ * \a a must be row-full-rank as well as zLESolveNormMinDST() and zLESolveNormMin().
+ * \a w is a weighting vector on the error.
  *
- * zLESolveMP() solves the equation based on Moore-Penrose's
- * inverse (MP-inverse) matrix, where LQ decomposition is used
- * internally. One difference from the original definition, it
- * can weigh on both the residual error and the answer norm;
- * \a wn is for answer norm and \a we is for residual error.
- * zLESolveMPLU() also solves the equation based on pseudoinverse
- * matrix, where LU decomposition is used internally.
- *
- * zLESolveMPSVD() is another version of an equation solver
- * by pseudoinverse matrix, while it is based on the singular
- * value decomposition along with the original definition of
- * pseudoinverse. It cannot accept weightings.
- *
- * Probably, there is no situation where zLESolveMPLU() and
- * zLESolveMPSVD() are preferred.
- *
- * zLESolveMPAux() solves the equation based on MP-inverse,
- * biasing a vector \a aux in the null space of \a a. Namely:
- *  \a ans = \a a # \a b + ( 1 - \a a # \a a ) \a aux, where
- * \a a # is MP-inverse of \a a and 1 is the identity matrix.
- *
- * zLESolveSRDST() and zLESolveSR() solve the linear equation
- * using singularity robust inverse (or SR-inverse) matrix,
- * proposed by Y. Nakamura and H. Hanafusa (1991). \a wn and
- * \a we are weighting vectors on the norm and residual error,
- * respectively.
- * SR-inverse technique is one of the variations of Tikhonov
- * reguralization of ill-posed matrix.
- *
- * zLESolveSRAux() solves the equation based on SR-inverse,
- * biasing a vector \a aux in the null space of \a a. Namely:
- *  \a ans = \a a * \a b + ( 1 - \a a * \a a) \a aux, where
- * \a a * is SR-inverse of \a a and 1 is the identity matrix.
- *
- * zLESolveRSRDST() and zLESolveRSR() solve the linear equation
- * using referred singularity robust inverse matrix, proposed
- * by T. Sugihara (2004). In addition to \a wn and \a we, it
- * requires \a ref as a referential answer vector. The weighted
- * error between \a ref and \a ans instead of the norm of \a ans
- * is minimized.
- *
- * In zLESolveSRDST() and zLESolveRSRDST(), \a m and \a v are
- * temporary work space matrices and a vector, where \a m is
- * \a c x \a c, and \a v is \a c x1.
- * \a index is a temporary index( \a c x1), which should be
- * ordered before being given to the function by zIndexOrder(),
- * for example.
- *
- * For all DST functions, \a s is used for column-balancing.
- * See zBalancingDST() or zLESolveGaussDST().
+ * zLESolveNormMinDST(), zLESolveErrorMinDST(), and zLESolveRefNormMinDST() use a workspace \a workspace,
+ * which should be initialized with zLEWorkspaceAlloc() beforehand and freed with zLEWorkspaceFree
+ * afterward, for internal matrix-vector computations.
+ * zLESolveNormMin(), zLESolveErrorMin(), and zLESolveRefNormMin() internally allocate workspace.
  * \return
  * All these functions return a pointer \a ans.
  * \sa
- * zBalancingDST, zLESolveGaussDST
+ * zLEWorkspaceAlloc, zLEWorkspaceFree
  */
 __ZM_EXPORT zVec zLESolveNormMinDST(zMat a, zVec b, zVec w, zVec ans, zLEWorkspace *workspace);
 __ZM_EXPORT zVec zLESolveNormMin(const zMat a, const zVec b, const zVec w, zVec ans);
 __ZM_EXPORT zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLEWorkspace *workspace);
 __ZM_EXPORT zVec zLESolveErrorMin(const zMat a, const zVec b, const zVec w, zVec ans);
-__ZM_EXPORT zVec zLESolveRefMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLEWorkspace *workspace);
-__ZM_EXPORT zVec zLESolveRefMin(const zMat a, const zVec b, const zVec w, const zVec ref, zVec ans);
+__ZM_EXPORT zVec zLESolveRefNormMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLEWorkspace *workspace);
+__ZM_EXPORT zVec zLESolveRefNormMin(const zMat a, const zVec b, const zVec w, const zVec ref, zVec ans);
 
-__ZM_EXPORT zVec zLESolveMPLQ(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans);
-__ZM_EXPORT zVec zLESolveMPLU(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans);
-__ZM_EXPORT zVec zLESolveMPSVD(const zMat a, const zVec b, zVec ans);
+/*! \brief generalized linear equation solver based on Moore-Penrose's inverse matrix.
+ *
+ * zLESolveMP function family solves a generalized linear equation \a a \a ans = \a b, where the number
+ * of equations and the number of variables are not necessarily equal, and the coefficient matrix is not
+ * necessarily full-rank.
+ * \a wn is a weighting vector, namely, diagonal components of a weighting matrix on the norm of the
+ * answer vector \a ans.
+ * \a we is a weighting vector, namely, diagonal components of a weighting matrix on the residual
+ * of \a a \a ans and \a b.
+ * They find the weighted Moore-Penrose's inverse (MP-inverse) solution \a ans, which minimizes error
+ * between \a a \a ans and \b weighted by \a we with minimum weighted norm by \a wn.
+ *
+ * Three methods to find the MP-inverse solution are available.
+ * zLESolveMP_LQ() uses LQ decomposition.
+ * zLESolveMP_LU() uses LU decomposition.
+ * zLESolveMP_SVD() uses the singular value decomposition, which does not accept weights.
+ * zLESolveMP() is an alias to zLESolveMP_LQ().
+ *
+ * zLESolveMPNull finds the MP-inverse solution \a ans, and the null-space projector \a wn simultaneously.
+ * \a wn is a square matrix that maps arbitrary vector to the zero vector.
+ *
+ * zLESolveMPAux() finds the MP-inverse solution plus a bias in the null-space, which is mapped from
+ * a vector \a aux. Namely,
+ *  \a ans = \a a # \a b + ( I - \a a # \a a ) \a aux,
+ * where \a a # is the MP-inverse matrix of \a a, and I is the identity matrix.
+ * \return
+ * All these functions return a pointer \a ans.
+ */
+__ZM_EXPORT zVec zLESolveMP_LQ(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans);
+__ZM_EXPORT zVec zLESolveMP_LU(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans);
+__ZM_EXPORT zVec zLESolveMP_SVD(const zMat a, const zVec b, zVec ans);
 __ZM_EXPORT zVec zLESolveMPNull(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, zMat mn);
 __ZM_EXPORT zVec zLESolveMPAux(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, const zVec aux);
 
 /* alias */
-#define zLESolveMP zLESolveMPLQ
+#define zLESolveMP zLESolveMP_LQ
 
+/*! \brief singularity-robust generalized linear equation solver.
+ *
+ * These functions solve a generalized linear equation \a \a ans = \a b, where the coefficient
+ * matrix \a a is not necessarily regular, with the singularity-robust inverse matrix proposed
+ * by Y. Nakamura and H. Hanafusa (1986):
+ *  Y. Nakamura and H. Hanafusa, Inverse Kinematic Solutions with Singularity Robustness for
+ *  Robot Manipulator Control, Journal of Dynamic Systems, Measurement and Control, 108:163-171, 1986.
+ * This is a simplified version of Tikhonov's regularization.
+ *
+ * zLESolveSRDST() and zLESolveSR() find the SR-inverse solution \a ans, which minimizes the sum
+ * of the error between \a a \a ans and \a b weighted by \a we and the weighted norm by \a wn, namely,
+ *  (\a a \a ans - \a b)^T diag \a we (\a a \a ans - \a b) + \a ans^T diag \a wn \a ans.
+ * \a wn is a weighting vector, namely, diagonal components of a weighting matrix on the norm of the
+ * answer vector \a ans.
+ * \a we is a weighting vector, namely, diagonal components of a weighting matrix on the residual
+ * of \a a \a ans and \a b.
+ * zLESolveSRBiasDST() and zLESolveSRBias() find the SR-inverse solution \a ans, where the weight
+ * on the norm of \a ans is biased by a scalar value \a bias. Namely, it minimizes
+ *  (\a a \a ans - \a b)^T diag \a we (\a a \a ans - \a b) + \a ans^T ( diag \a wn + \a bias I ) \a ans,
+ * where I is the identity matrix.
+ *
+ * zLESolveSRAuxDST() and zLESolveSRAux() find the SR-inverse solution plus a bias in the null-space,
+ * which is mapped from a vector \a aux. Namely,
+ *  \a ans = \a a * \a b + ( I - \a a * \a a ) \a aux,
+ * where \a a * is the SR-inverse matrix of \a a.
+ *
+ * zLESolveSRRefDST() and zLESolveSRRef() find a solution \a ans that minimizes the sum of the error
+ * between \a a \a ans and \a b weighted yb \a we and the error between \a ans and a reference vector
+ * \a ref weighted by \a wn.
+ *
+ * zLESolveSRDST(), zLESolveSRBiasDST(), zLESolveSRAuxDST(), and zLESolveSRRefDST() use a workspace
+ * \a workspace, which should be initialized with zLEWorkspaceAlloc() beforehand and freed with
+ * zLEWorkspaceFree afterward, for internal matrix-vector computations.
+ * zLESolveSR(), zLESolveSRBias(), zLESolveSRAux(), and zLESolveSRRef() internally allocate workspace.
+ * \return
+ * All these functions return a pointer \a ans.
+ */
 __ZM_EXPORT zVec zLESolveSRBiasDST(zMat a, zVec b, zVec wn, zVec we, double bias, zVec ans, zLEWorkspace *workspace);
-#define zLESolveSRDST(a,b,wn,we,ans,workspace) zLESolveSRBiasDST( a, b, wn, we, 0, ans, workspace )
 __ZM_EXPORT zVec zLESolveSRBias(const zMat a, const zVec b, const zVec wn, const zVec we, double bias, zVec ans);
-#define zLESolveSR( a, b, wn, we, ans ) zLESolveSRBias( a, b, wn, we, 0, ans )
+#define zLESolveSRDST(a,b,wn,we,ans,workspace) zLESolveSRBiasDST( a, b, wn, we, 0, ans, workspace )
+#define zLESolveSR( a, b, wn, we, ans )        zLESolveSRBias( a, b, wn, we, 0, ans )
 __ZM_EXPORT zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zVec aux, zLEWorkspace *Workspace, zVec bb);
 __ZM_EXPORT zVec zLESolveSRAux(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, const zVec aux);
-__ZM_EXPORT zVec zLESolveRSRDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLEWorkspace *workspace);
-__ZM_EXPORT zVec zLESolveRSR(const zMat a, const zVec b, const zVec wn, const zVec we, const zVec ref, zVec ans);
+__ZM_EXPORT zVec zLESolveSRRefDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLEWorkspace *workspace);
+__ZM_EXPORT zVec zLESolveSRRef(const zMat a, const zVec b, const zVec wn, const zVec we, const zVec ref, zVec ans);
 
 __END_DECLS
 

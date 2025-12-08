@@ -1,3 +1,7 @@
+2025.12.08. Renamed zLESolveRefMinDST and zLESolveRefMin to zLESolveRefNormMinDST and zLESolveRefNormMin, respectively. [zm_le_gen]
+2025.12.08. Renamed zLESolveMPLQ, zLESolveMPLU, and zLESolveMPSVD to zLESolveMP_LQ, zLESolveMP_LU, and zLESolveMP_SVD, respectively, and modified the alias zLESolveMP to zLESolveMP_LQ. [zm_le_gen]
+2025.12.08. Renamed zLESolveRSRDST and zLESolveRSR to zLESolveSRRefDST and zLESolveSRRef, respectively. [zm_le_gen]
+2025.12.07. Renamed members m, b, c, s, v1, v2, l, r, idx1, and idx2 of zLEWorkspace to m_regular, b_copy, v_mp_ispace, v_scale, v_ispace, v_ref, l_facto, r_facto, index_le, and index_lu, respectively. [zm_le_gen, zm_nle_dm]
 2025.12.06. Added zMatDecompLQNull. [zm_le_lq]
 2025.12.06. Added _zMatDecompLQRank_Householder, and modified zMatDecompLQ_Householder to use it. [zm_le_lq]
 2025.12.06. Defined ZM_MAT_DEF_ELEM_SEARCH_METHOD_PROTOTYPE and ZM_MAT_DEF_ELEM_SEARCH_METHOD, and reimplemented zMatElemMax, zMatElemMin, zMatElemAbsMax, and zMatElemAbsMin by using them. [zm_mat]

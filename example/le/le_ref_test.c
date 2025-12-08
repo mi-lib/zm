@@ -5,7 +5,7 @@ void test(zMat a, zVec b, zVec w, zVec d, zVec x, zVec y)
   zVec tmp;
 
   tmp = zVecAlloc( zVecSizeNC(d) );
-  zLESolveRefMin( a, b, w, d, x );
+  zLESolveRefNormMin( a, b, w, d, x );
   zMulMatVec( a, x, y );
   zVecSubDRC( y, b );
   zVecSub( d, x ,tmp );
