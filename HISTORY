@@ -1,3 +1,6 @@
+2025.12.15. Debugged assert_mat_decomp_lq_householder_one and assert_mat_decomp_lq_nullspace. [test]
+2025.12.15. Added zLESolveMP_LQ_DST, zLESolveMP_LU_DST, and zLESolveMPNullDST, and modified zLESolveMP_LQ, zLESolveMP_LU, and zLESolveMPNull to use them. [zm_le_gen]
+2025.12.15. Renamed _zLESolveMP1 to _zLESolveMP_L. [zm_le_gen]
 2025.12.08. Added zMulInvMatMatAndVecDST, zMulInvMatMatAndVecNC, and zMulInvMatMatAndVec. [zm_le_mat_inv]
 2025.12.08. Added zMatMatRowBalancingDST, and reimplemented zMatMatBalancingDST by using it. [zm_le]
 2025.12.08. Renamed _zMatMatBalancingDST to zMatMatBalancingDST, and moved it to zm_le as an exported function. [zm_le, zm_le_mat_inv]

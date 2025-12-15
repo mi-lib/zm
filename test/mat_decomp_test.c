@@ -156,8 +156,8 @@ bool assert_mat_decomp_lq_householder_one(int rowsize, int colsize, int rank, in
     if( check_matrix_composition( mat, l, q, tol ) && check_matrix_orthogonality( q, rank, tol ) ) count_success++;
   }
  TERMINATE:
-  zMatFreeAtOnce( 3, mat, l, q );
   eprintf( "number of success (%d x %d) rank=%d) %d/%d ", zMatRowSize(mat), zMatColSize(mat), rank, count_success, n );
+  zMatFreeAtOnce( 3, mat, l, q );
   return count_success == n;
 }
 
@@ -178,18 +178,22 @@ bool assert_mat_decomp_lq_nullspace(int rowsize, int colsize, int rank, int n)
     zMatResetSize( q );
     generate_matrix_composition( mat, rank );
     rank_result = zMatDecompLQNull( mat, l, q, qnull );
-    zero_check = zMatAlloc( rowsize, zMatColSizeNC(mat) - rank_result );
-    zMulMatMat( mat, qnull, zero_check );
-    if( zMatIsTol( zero_check, tol ) ){
+    if( zMatColSizeNC(mat) == rank_result ){
       count_success++;
     } else{
-      eprintf( "%g ", zMatElemAbsMax( zero_check, NULL, NULL ) );
+      zero_check = zMatAlloc( rowsize, zMatColSizeNC(mat) - rank_result );
+      zMulMatMat( mat, qnull, zero_check );
+      if( zMatIsTol( zero_check, tol ) ){
+        count_success++;
+      } else{
+        eprintf( "%g ", zMatElemAbsMax( zero_check, NULL, NULL ) );
+      }
+      zMatFree( zero_check );
     }
-    zMatFree( zero_check );
   }
  TERMINATE:
-  zMatFreeAtOnce( 4, mat, l, q, qnull );
   eprintf( "number of success (%d x %d) rank=%d) %d/%d ", zMatRowSize(mat), zMatColSize(mat), rank, count_success, n );
+  zMatFreeAtOnce( 4, mat, l, q, qnull );
   return count_success == n;
 }
 

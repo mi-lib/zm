@@ -81,6 +81,36 @@ __ZM_EXPORT zVec zLESolveErrorMin(const zMat a, const zVec b, const zVec w, zVec
 __ZM_EXPORT zVec zLESolveRefNormMinDST(zMat a, zVec b, zVec w, zVec ref, zVec ans, zLEWorkspace *workspace);
 __ZM_EXPORT zVec zLESolveRefNormMin(const zMat a, const zVec b, const zVec w, const zVec ref, zVec ans);
 
+/*! \brief destructive version of generalized linear equation solver based on Moore-Penrose's inverse matrix.
+ *
+ * zLESolveMP_LQ_DST() solves a generalized linear equation a ans = b with internal workspace \a workspace,
+ * where the coefficient matrix a has to be decomposed into L and Q matrices, and the vector b has to be
+ * cloned in advance.
+ *
+ * zLESolveMP_LU_DST() solves a generalized linear equation a ans = b with internal workspace \a workspace,
+ * where the coefficient matrix a has to be decomposed into L and U matrices, and the vector b has to be
+ * cloned in advance.
+ *
+ * zLESolveMPNullDST() solves a generalized linear equation a ans = b and simultaneously finds the null-space
+ * projector with internal workspace \a workspace, where the coefficient matrix a has to be decomposed into
+ * L and Q matrices, and the vector b has to be cloned in advance.
+ *
+ * For these functions, \a wn is a weighting vector, namely, diagonal components of a weighting matrix on
+ * the norm of the answer vector \a ans. \a we is a weighting vector, namely, diagonal components of a
+ * weighting matrix on the residual of \a a \a ans and \a b.
+ * \a rank is the rank of the coefficient matrix, which is the same with the column size of L matrix and
+ * the row size of the Q/U matrix.
+ * The answer is stored where \a ans points.
+ * \a mn for zLESolveMPNullDST() is a pointer where the null-space projector is stored.
+ * \return
+ * These functions return a pointer \a ans.
+ * \sa
+ * zMatDecompLQ, zMatDecompLU
+ */
+__ZM_EXPORT zVec zLESolveMP_LQ_DST(zLEWorkspace *workspace, const zVec we, const zVec wn, int rank, zVec ans);
+__ZM_EXPORT zVec zLESolveMP_LU_DST(zLEWorkspace *workspace, const zVec we, const zVec wn, int rank, zVec ans);
+__ZM_EXPORT zVec zLESolveMPNullDST(zLEWorkspace *workspace, const zVec we, const zVec wn, int rank, zVec ans, zMat mn);
+
 /*! \brief generalized linear equation solver based on Moore-Penrose's inverse matrix.
  *
  * zLESolveMP function family solves a generalized linear equation \a a \a ans = \a b, where the number

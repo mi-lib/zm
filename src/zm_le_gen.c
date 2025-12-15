@@ -200,7 +200,7 @@ zVec zLESolveRefNormMin(const zMat a, const zVec b, const zVec w, const zVec ref
 }
 
 /* compute left-lower part of the linear equation. */
-static void _zLESolveMP1(zLEWorkspace *workspace, const zVec we, int rank)
+static void _zLESolveMP_L(zLEWorkspace *workspace, const zVec we, int rank)
 {
   if( rank < zMatColSizeNC(workspace->l_facto) ){
     zMatColResize( workspace->l_facto, rank );
@@ -208,6 +208,44 @@ static void _zLESolveMP1(zLEWorkspace *workspace, const zVec we, int rank)
     zLESolveErrorMinDST( workspace->l_facto, workspace->b_copy, we, workspace->v_mp_ispace, workspace );
   } else
     zLESolveL( workspace->l_facto, workspace->b_copy, workspace->v_mp_ispace, workspace->index_lu );
+}
+
+/* generalized linear equation solver with MP-inverse based on LQ decomposition (destructive). */
+zVec zLESolveMP_LQ_DST(zLEWorkspace *workspace, const zVec we, const zVec wn, int rank, zVec ans)
+{
+  _zLESolveMP_L( workspace, we, rank );
+  zMatIsSqr( workspace->r_facto ) ?
+    zMulMatTVec( workspace->r_facto, workspace->v_mp_ispace, ans ) :
+    zLESolveNormMinDST( workspace->r_facto, workspace->v_mp_ispace, wn, ans, workspace );
+  return ans;
+}
+
+/* generalized linear equation solver using MP-inverse based on LU decomposition (destructive). */
+zVec zLESolveMP_LU_DST(zLEWorkspace *workspace, const zVec we, const zVec wn, int rank, zVec ans)
+{
+  _zLESolveMP_L( workspace, we, rank );
+  zMatIsSqr( workspace->r_facto ) ?
+    zLESolveU( workspace->r_facto, workspace->v_mp_ispace, ans ) :
+    zLESolveNormMinDST( workspace->r_facto, workspace->v_mp_ispace, wn, ans, workspace );
+  return ans;
+}
+
+/* generalized linear equation solver using MP-inverse with the null space (destructive). */
+zVec zLESolveMPNullDST(zLEWorkspace *workspace, const zVec we, const zVec wn, int rank, zVec ans, zMat mn)
+{
+  int i;
+
+  _zLESolveMP_L( workspace, we, rank );
+  if( zMatIsSqr( workspace->r_facto ) ){
+    zMulMatTVec( workspace->r_facto, workspace->v_mp_ispace, ans );
+    zMatZero( mn );
+  } else{
+    zLESolveNormMinDST( workspace->r_facto, workspace->v_mp_ispace, wn, ans, workspace );
+    zMulMatTMat( workspace->r_facto, workspace->r_facto, mn );
+    for( i=0; i<zMatRowSizeNC(mn); i++ )
+      zMatElemNC(mn,i,i) -= 1.0;
+  }
+  return ans;
 }
 
 /* generalized linear equation solver with MP-inverse based on LQ decomposition. */
@@ -220,12 +258,7 @@ zVec zLESolveMP_LQ(const zMat a, const zVec b, const zVec wn, const zVec we, zVe
   if( ( rank = zMatDecompLQ( a, workspace.l_facto, workspace.r_facto ) ) <= 0 )
     goto TERMINATE2; /* extremely irregular case */
   if( !_zLEWorkspaceAllocMP( &workspace, b, rank ) ) goto TERMINATE1;
-
-  _zLESolveMP1( &workspace, we, rank );
-  zMatIsSqr( workspace.r_facto ) ?
-    zMulMatTVec( workspace.r_facto, workspace.v_mp_ispace, ans ) :
-    zLESolveNormMinDST( workspace.r_facto, workspace.v_mp_ispace, wn, ans, &workspace );
-
+  zLESolveMP_LQ_DST( &workspace, we, wn, rank, ans );
  TERMINATE1:
   _zLEWorkspaceFreeMP( &workspace );
  TERMINATE2:
@@ -243,12 +276,7 @@ zVec zLESolveMP_LU(const zMat a, const zVec b, const zVec wn, const zVec we, zVe
   if( ( rank = zMatDecompLU( a, workspace.l_facto, workspace.r_facto, workspace.index_lu ) ) == 0 )
     goto TERMINATE2; /* extremely irregular case */
   if( !_zLEWorkspaceAllocMP( &workspace, b, rank ) ) goto TERMINATE1;
-
-  _zLESolveMP1( &workspace, we, rank );
-  zMatIsSqr( workspace.r_facto ) ?
-    zLESolveU( workspace.r_facto, workspace.v_mp_ispace, ans ) :
-    zLESolveNormMinDST( workspace.r_facto, workspace.v_mp_ispace, wn, ans, &workspace );
-
+  zLESolveMP_LU_DST( &workspace, we, wn, rank, ans );
  TERMINATE1:
   _zLEWorkspaceFreeMP( &workspace );
  TERMINATE2:
@@ -289,25 +317,14 @@ zVec zLESolveMP_SVD(const zMat a, const zVec b, zVec ans)
 /* generalized linear equation solver using MP-inverse based on LQ decomposition with the null space. */
 zVec zLESolveMPNull(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, zMat mn)
 {
-  int i, rank;
+  int rank;
   zLEWorkspace workspace;
 
   if( !_zLEWorkspaceAllocLR( &workspace, a ) ) goto TERMINATE2;
   if( ( rank = zMatDecompLQ( a, workspace.l_facto, workspace.r_facto ) ) <= 0 )
     goto TERMINATE2; /* extremely irregular case */
   if( !_zLEWorkspaceAllocMP( &workspace, b, rank ) ) goto TERMINATE1;
-
-  _zLESolveMP1( &workspace, we, rank );
-  if( zMatIsSqr( workspace.r_facto ) ){
-    zMulMatTVec( workspace.r_facto, workspace.v_mp_ispace, ans );
-    zMatZero( mn );
-  } else{
-    zLESolveNormMinDST( workspace.r_facto, workspace.v_mp_ispace, wn, ans, &workspace );
-    zMulMatTMat( workspace.r_facto, workspace.r_facto, mn );
-    for( i=0; i<zMatRowSizeNC(mn); i++ )
-      zMatElemNC(mn,i,i) -= 1.0;
-  }
-
+  zLESolveMPNullDST( &workspace, we, wn, rank, ans, mn );
  TERMINATE1:
   _zLEWorkspaceFreeMP( &workspace );
  TERMINATE2:
