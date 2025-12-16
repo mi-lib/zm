@@ -39,7 +39,7 @@ void assert_mat_resize(void)
     if( !zMatEqual( dest, part, zTOL ) ) result = false;
   }
   zMatFreeAtOnce( 3, src, dest, part );
-  zAssert( zMatColReg, result );
+  zAssert( zMatResetSize + zMatColResize, result );
 }
 
 void assert_mat_ident(void)

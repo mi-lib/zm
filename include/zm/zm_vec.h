@@ -30,6 +30,9 @@ typedef zVecStruct * zVec;
 #define zVecSetSizeNC(v,s)     ( zVecSizeNC(v) = (s) )
 #define zVecSetSize(v,s)       ( (v) ? zVecSetSizeNC(v,s) : 0 )
 
+/*! \brief reset size of a vector up to its capacity. */
+#define zVecResetSize(vec) zArrayResetSize( vec )
+
 /*! \brief check if the sizes of two vectors are equal. */
 #define zVecSizeEqual(v1,v2)   ( zVecSizeNC(v1) == zVecSizeNC(v2) )
 
@@ -292,6 +295,16 @@ __ZM_EXPORT bool zVecIsTol(const zVec v, double tol);
 #define zVecIsTiny(v) zVecIsTol( v, zTOL )
 
 __ZM_EXPORT bool zVecIsNan(const zVec v);
+
+/*! \brief resize a vector.
+ *
+ * zVecResize() resizes a vector \a v to \a size.
+ * \a size must be smaller than or equal to the capacity of \a v.
+ * \return
+ * zVecResize() returns a pointer \a v.
+ * If the capacity of \a v is smaller than \a size, it returns the null pointer.
+ */
+__ZM_EXPORT zVec zVecResize(zVec v, int size);
 
 /*! \brief basic arithmetics for vector.
  *

@@ -1,3 +1,7 @@
+2025.12.16. Added _zLEWorkspaceAllocAndCopyB and _zLEWorkspaceAllocMPAndCopyAB, and modified zLESolveNormMin, zLESolveErrorMin, zLESolveMP_LQ, zLESolveMP_LU, zLESolveMPNull, zLESolveSRBias, and zLESolveSRRef to use them. [zm_le_gen]
+2025.12.16. Modified specifications of zLEWorkspaceAlloc, _zLEWorkspaceAllocMP, _zLEWorkspaceAllocLR, and zLEWorkspaceAllocMP to directly specify sizes of matrices and vectors to be allocated. [zm_le_gen]
+2025.12.15. Added zLEWorkspaceAllocMP, zLEWorkspaceFreeMP, and zLEWorkspaceResizeMP, and modified zLESolveMP_LQ, zLESolveMP_LU, and zLESolveMPNull to use them. [zm_le_gen]
+2025.12.15. Added zVecResize and zVecResetSize. [zm_errmsg, zm_vec]
 2025.12.15. Debugged assert_mat_decomp_lq_householder_one and assert_mat_decomp_lq_nullspace. [test]
 2025.12.15. Added zLESolveMP_LQ_DST, zLESolveMP_LU_DST, and zLESolveMPNullDST, and modified zLESolveMP_LQ, zLESolveMP_LU, and zLESolveMPNull to use them. [zm_le_gen]
 2025.12.15. Renamed _zLESolveMP1 to _zLESolveMP_L. [zm_le_gen]

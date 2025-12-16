@@ -38,6 +38,30 @@ void assert_vec_get_put(void)
   zVecFreeAtOnce( 3, test_vec1, test_vec2, test_vec3 );
 }
 
+void assert_vec_resize(void)
+{
+  zVec src, dest, part;
+  const int size = 5;
+  const int regsize = 3;
+  const int n = 100;
+  int i;
+  bool result = true;
+
+  src  = zVecAlloc( size );
+  dest = zVecAlloc( size );
+  part = zVecAlloc( regsize );
+  for( i=0; i<n; i++ ){
+    zVecRandUniform( src, -10, 10 );
+    zVecResetSize( dest );
+    zVecCopy( src, dest );
+    zVecGet( src, 0, part );
+    zVecResize( dest, regsize );
+    if( !zVecEqual( dest, part, zTOL ) ) result = false;
+  }
+  zVecFreeAtOnce( 3, src, dest, part );
+  zAssert( zVecResetSize + zVecResize, result );
+}
+
 void assert_vec_misc(void)
 {
   const int size = TEST_VEC_SIZE;
@@ -311,6 +335,7 @@ int main(void)
 {
   zRandInit();
   assert_vec_get_put();
+  assert_vec_resize();
   assert_vec_misc();
   assert_vec_shift();
   assert_vec_arith();

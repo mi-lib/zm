@@ -309,6 +309,18 @@ bool zVecIsNan(const zVec v)
   return zRawVecIsNan( zVecBufNC(v), zVecSizeNC(v) );
 }
 
+/* resize a vector. */
+zVec zVecResize(zVec v, int size)
+{
+  if( size == zVecSize(v) ) return v; /* nothing happens. */
+  if( size > zVecSize(v) ){
+    ZRUNERROR( ZM_ERR_VEC_CANNOTRESIZE, zVecSizeNC(v), size );
+    return NULL;
+  }
+  zVecSetSizeNC( v, size );
+  return v;
+}
+
 /* add two vectors without checking size consistency. */
 zVec zVecAddNC(const zVec v1, const zVec v2, zVec v)
 {

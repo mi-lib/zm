@@ -375,6 +375,49 @@ void assert_le_gen_aux(void)
   zAssert( zLESolveSR / zLESolveSRAux, zIsTol( e_max_sr, tol_sr ) && zIsTol( e_max_sr_aux, tol_sr ) );
 }
 
+void assert_le_mpnull(void)
+{
+  zMat a, mn;
+  zVec b, w, w2, x1, x2, aux, dx, e1, e2;
+  double e_max_mp, e_max_mp_aux;
+  const int rowsize = 150;
+  const int colsize = 200;
+  const double tol_mp = 1.0e-10;
+
+  a = zMatAlloc( rowsize, colsize );
+  mn = zMatAllocSqr( colsize );
+  b = zVecAlloc( rowsize );
+  w = zVecAlloc( colsize );
+  w2= zVecAlloc( rowsize );
+  x1 = zVecAlloc( colsize );
+  x2 = zVecAlloc( colsize );
+  aux = zVecAlloc( colsize );
+  dx = zVecAlloc( colsize );
+  e1 = zVecAlloc( rowsize );
+  e2 = zVecAlloc( rowsize );
+
+  zMatRandUniform( a, -10, 10 );
+  zVecRandUniform( b, -10, 10 );
+  zVecSetAll( w2, 1.0e6 );
+  zVecSetAll( w, 1.0 );
+  zVecRandUniform( aux, -10, 10 );
+
+  zLESolveMP( a, b, w, w2, x1 );
+  zLESolveMPNull( a, b, w, w2, x2, mn );
+
+  zMulMatVec( a, x1, e1 ); zVecSubDRC( e1, b );
+  zMulMatVec( mn, aux, dx );
+  zVecAddDRC( x2, dx );
+  zMulMatVec( a, x2, e2 ); zVecSubDRC( e2, b );
+
+  e_max_mp = zVecElemAbsMax( e1, NULL );
+  e_max_mp_aux = zVecElemAbsMax( e2, NULL );
+
+  zMatFreeAtOnce( 2, a, mn );
+  zVecFreeAtOnce( 9, b, w, w2, x1, x2, e1, e2, aux, dx );
+  zAssert( zLESolveMPNull, zIsTol( e_max_mp, tol_mp ) && zIsTol( e_max_mp_aux, tol_mp ) );
+}
+
 /* special linear equation solver */
 
 void assert_tridiagonal_equation(void)
@@ -758,6 +801,7 @@ int main(void)
   assert_le_gauss_seidel();
   assert_le_gen();
   assert_le_gen_aux();
+  assert_le_mpnull();
   assert_tridiagonal_equation();
   assert_lyapnov_equation();
   assert_mat_inv();

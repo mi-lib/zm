@@ -34,11 +34,18 @@ typedef struct{
 /*! \brief initialize workspace for generalized linear equation solver. */
 __ZM_EXPORT void zLEWorkspaceInit(zLEWorkspace *workspace);
 /*! \brief allocate workspace for generalized linear equation solvers. */
-__ZM_EXPORT bool zLEWorkspaceAlloc(zLEWorkspace *workspace, const zVec b, int size);
+__ZM_EXPORT bool zLEWorkspaceAlloc(zLEWorkspace *workspace, int num_equation, int num_variable);
 /*! \brief clone workspace for generalized linear equation solvers. */
 __ZM_EXPORT bool zLEWorkspaceClone(zLEWorkspace *src, zLEWorkspace *cln);
 /*! \brief free workspace for generalized linear equation solvers. */
 __ZM_EXPORT void zLEWorkspaceFree(zLEWorkspace *workspace);
+
+/*! \brief allocate workspace for LQ/LU decomposition and generalized linear equation solvers based on MP inverse. */
+__ZM_EXPORT bool zLEWorkspaceAllocMP(zLEWorkspace *workspace, int num_equation, int num_variable);
+/*! \brief free workspace for LQ/LU decomposition and generalized linear equation solvers based on MP inverse. */
+__ZM_EXPORT void zLEWorkspaceFreeMP(zLEWorkspace *workspace);
+/*! \brief resize matrices and a vector for LQ/LU decomposition and generalized linear equation solvers based on MP inverse. */
+__ZM_EXPORT void zLEWorkspaceResizeMP(zLEWorkspace *workspace, int rank);
 
 /*! \brief generalized linear equation solver.
  *
