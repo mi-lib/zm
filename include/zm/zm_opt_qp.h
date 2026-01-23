@@ -20,31 +20,6 @@ __BEGIN_DECLS
  */
 __ZM_EXPORT double zQuadraticValue(const zMat q, const zVec c, const zVec x);
 
-/* TODO: remove description about zQPSolve(). */
-/*! \brief convex quadratic programming solver.
- *
- * zQPSolve() solves a quadratic programming with equality constraint conditions
- * to find the vector x that minimizes 0.5 x^T \a q x + \a c^T x subject to
- * \a a x = \a b, where \a q is a positive definite quadratic coefficient matrix,
- * \a c is an offset coefficient vector, \a a and \a b are the coefficient matrix
- * and a constant vector to describe the equality constraint.
- *
- * The result is put into \a ans. If \a cost is not the null pointer, the optimum
- * value is stored in it.
- * \note
- * zQPSolve() does not check if \a q is positive-definite. If not, the solution
- * does not make sense.
- * \return
- * zQPSolve() returns the true value if it succeeds to get the solution, or the
- * false value in failure cases where there is a mismatch of vector and matrix,
- * or it fails to allocate memory.
- * \sa
- * zLCPSolveLemke
- */
-#if 0
-__ZM_EXPORT bool zQPSolve(const zMat q, const zVec c, const zMat a, const zVec b, zVec ans, double *cost);
-#endif
-
 /*! \brief convex quadratic programming solver.
  *
  * zQPSolveLemke() and zQPSolveIP() solve a quadratic programming with inequality constraint conditions

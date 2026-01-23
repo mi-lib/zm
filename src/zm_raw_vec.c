@@ -322,10 +322,22 @@ double zRawVecSqrDist(const double *v1, const double *v2, int size)
   return d;
 }
 
-/* print a raw vector out to a file. */
-void zRawVecFPrint(FILE *fp, const double *v, int size)
+/* print components of a raw vector out to a file. */
+void zRawVecValueFPrint(FILE *fp, const double *v, int size)
 {
   while( size-- > 0 )
     fprintf( fp, "%.10g ", *v++ );
   fprintf( fp, "\n" );
+}
+
+/* print a raw vector out to a file. */
+void zRawVecFPrint(FILE *fp, const double *v, int capacity, int size)
+{
+  fprintf( fp, "%d", size );
+  if( capacity != size )
+    fprintf( fp, "/%d", capacity );
+  fprintf( fp, " (" );
+  while( size-- > 0 )
+    fprintf( fp, "%.10g ", *v++ );
+  fprintf( fp, ")\n" );
 }

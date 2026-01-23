@@ -1,5 +1,98 @@
 #include <zm/zm.h>
 
+void assert_deg2rad(void)
+{
+  double val;
+
+  val = zRandF( -10, 10 );
+  zAssert( zDeg2Rad, zEqual( zRad2Deg( zDeg2Rad(val) ), val, zTOL ) );
+  zAssert( zRad2Deg, zEqual( zDeg2Rad( zRad2Deg(val) ), val, zTOL ) );
+}
+
+void assert_is_even_odd(void)
+{
+  zAssert( zIsEven, zIsEven( 0 ) && zIsEven( 2 ) && zIsEven( -2 ) && !zIsEven( 1 ) );
+  zAssert( zIsOdd, !zIsOdd( 0 ) && zIsOdd( 1 ) && zIsOdd( -1 ) );
+}
+
+void assert_is_max_min(void)
+{
+  zAssert( zIsMax,
+    zIsMax( 1, NAN ) &&
+    zIsMax( 1, 0 ) &&
+    zIsMax( 0,-1 ) &&
+    zIsMax( HUGE_VAL, 0 ) &&
+   !zIsMax( NAN, 0 ) &&
+   !zIsMax( 0, 1 ) &&
+   !zIsMax(-1, 0 ) &&
+   !zIsMax( 0, HUGE_VAL ) );
+  zAssert( zIsMin,
+    zIsMin( 0, NAN ) &&
+    zIsMin( 0, 1 ) &&
+    zIsMin(-1, 0 ) &&
+    zIsMin(-HUGE_VAL, 0 ) &&
+   !zIsMin( NAN, 0 ) &&
+   !zIsMin( 1, 0 ) &&
+   !zIsMin( 0,-1 ) &&
+   !zIsMin( 0,-HUGE_VAL ) );
+  zAssert( zIsAbsMax,
+    zIsAbsMax( 1, NAN ) &&
+    zIsAbsMax( 1, 0 ) &&
+    zIsAbsMax(-1, 0 ) &&
+    zIsAbsMax( HUGE_VAL, 0 ) &&
+    zIsAbsMax(-HUGE_VAL, 0 ) &&
+   !zIsAbsMax( NAN, 1 ) &&
+   !zIsAbsMax( 0, 1 ) &&
+   !zIsAbsMax( 0,-1 ) &&
+   !zIsAbsMax( 0, HUGE_VAL ) &&
+   !zIsAbsMax( 0,-HUGE_VAL ) );
+  zAssert( zIsAbsMin,
+    zIsAbsMin( 0, NAN ) &&
+    zIsAbsMin( 0, 1 ) &&
+    zIsAbsMin( 0,-1 ) &&
+    zIsAbsMin( 0, HUGE_VAL ) &&
+    zIsAbsMin( 0,-HUGE_VAL ) &&
+   !zIsAbsMin( NAN, 0 ) &&
+   !zIsAbsMin( 1, 0 ) &&
+   !zIsAbsMin(-1, 0 ) &&
+   !zIsAbsMin( HUGE_VAL, 0 ) &&
+   !zIsAbsMin(-HUGE_VAL, 0 ) );
+}
+
+void assert_phase_normalize(void)
+{
+  zAssert( zPhaseNormalize,
+    zEqual( zPhaseNormalize(3*zPI), zPI, zTOL ) &&
+    zEqual( zPhaseNormalize(-zPI-zTOL), zPI, zTOL ) );
+}
+
+void assert_ceil(void)
+{
+  zAssert( zCeil, zCeil(0.5) == 1.0 && zCeil(-0.5) == -1.0 );
+  zAssert( zRound,
+    zRound( 1.499999 ) == 1.0 && zRound( 1.50000001 ) == 2.0 &&
+    zRound(-1.499999 ) ==-1.0 && zRound(-1.50000001 ) ==-2.0 );
+  zAssert( zFruct, zFruct( zPI, 2 ) == zPI - 2 && zFruct( zPIx2, 2 ) == zPIx2 - 6 );
+}
+
+void assert_cube_cbrt(void)
+{
+  double val;
+
+  val = zRandF( 1, 10 );
+  zAssert( zCbrt, zIsTiny( zCube( zCbrt( val ) ) - val ) );
+}
+
+void assert_log(void)
+{
+  double val;
+
+  val = zRandF( zTOL, 1.0e10 );
+  zAssert( zLog,
+    zEqual( zLog(2,val), log2(val), zTOL ) &&
+    zEqual( zLog(10,val), log10(val), zTOL ) );
+}
+
 void assert_permutation(void)
 {
   zAssert( zPermutation (zFactorial),
@@ -66,38 +159,19 @@ void assert_combination_pascaltriangle(void)
 
 int main(void)
 {
-  double val;
-
   zRandInit();
-
-  val = zRandF( -10, 10 );
-  zAssert( zDeg2Rad, zEqual( zRad2Deg( zDeg2Rad(val) ), val, zTOL ) );
-  zAssert( zRad2Deg, zEqual( zDeg2Rad( zRad2Deg(val) ), val, zTOL ) );
-
-  zAssert( zIsEven, zIsEven( 0 ) && zIsEven( 2 ) && zIsEven( -2 ) && !zIsEven( 1 ) );
-  zAssert( zIsOdd, !zIsOdd( 0 ) && zIsOdd( 1 ) && zIsOdd( -1 ) );
+  assert_deg2rad();
+  assert_is_even_odd();
+  assert_is_max_min();
 
 #if 0
   zAssert( zIsSgnOpp, zIsSgnOpp( 1, -1 ) && !zIsSgnOpp( 1, 0 ) && !zIsSgnOpp( -1, 0 ) );
 #endif
 
-  zAssert( zPhaseNormalize,
-    zEqual( zPhaseNormalize(3*zPI), zPI, zTOL ) &&
-    zEqual( zPhaseNormalize(-zPI-zTOL), zPI, zTOL ) );
-
-  zAssert( zCeil, zCeil(0.5) == 1.0 && zCeil(-0.5) == -1.0 );
-  zAssert( zRound,
-    zRound( 1.499999 ) == 1.0 && zRound( 1.50000001 ) == 2.0 &&
-    zRound(-1.499999 ) ==-1.0 && zRound(-1.50000001 ) ==-2.0 );
-  zAssert( zFruct, zFruct( zPI, 2 ) == zPI - 2 && zFruct( zPIx2, 2 ) == zPIx2 - 6 );
-
-  val = zRandF( 1, 10 );
-  zAssert( zCbrt, zIsTiny( zCube( zCbrt( val ) ) - val ) );
-  val = zRandF( zTOL, 1.0e10 );
-  zAssert( zLog,
-    zEqual( zLog(2,val), log2(val), zTOL ) &&
-    zEqual( zLog(10,val), log10(val), zTOL ) );
-
+  assert_phase_normalize();
+  assert_ceil();
+  assert_cube_cbrt();
+  assert_log();
   assert_permutation();
   assert_combination();
   assert_combination_recursive();

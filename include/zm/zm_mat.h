@@ -68,11 +68,11 @@ typedef zMatStruct * zMat;
 #define zMatIsSqr(m)               zMatRowColSizeEqual(m,m)
 
 /*! \brief pointer to the array buffer of double-precision floating-point values in a matrix. */
-#define zMatBufNC(m)      zArray2Buf(m)
+#define zMatBufNC(m)      zArray2Buf( m )
 #define zMatBuf(m)        ( (m) ? zMatBufNC(m) : NULL )
 /*! \brief pointer to the \a r th row array buffer of double-precision floating-point values in a matrix. */
-#define zMatRowBufNC(m,r) ( zMatBufNC(m) + (r)*zMatColSizeNC(m) )
-#define zMatRowBuf(m,r)   ( (m) ? zMatRowBufNC(m,r) : NULL )
+#define zMatRowBufNC(m,r) zArray2RowBufNC( m, r )
+#define zMatRowBuf(m,r)   ( (m) ? zArray2RowBuf( m, r ) : NULL )
 
 /*! \brief assign a buffer of double-precision floating-point values to a matrix. */
 #define zMatAssignArray(mat,rowsize,colsize,array) zArray2Assign(mat,array,rowsize,colsize)
@@ -164,8 +164,8 @@ __ZM_EXPORT zMat zMatTouchup(zMat m, double tol);
  * zMatIdent() and zMatDiag() for safety.
  */
 __ZM_EXPORT zMat zMatIdentNC(zMat m);
-__ZM_EXPORT zMat zMatDiagNC(zMat m, zVec d);
 __ZM_EXPORT zMat zMatIdent(zMat m);
+__ZM_EXPORT zMat zMatDiagNC(zMat m, zVec d);
 __ZM_EXPORT zMat zMatDiag(zMat m, zVec d);
 __ZM_EXPORT zMat zMatRandUniform(zMat m, double min, double max);
 __ZM_EXPORT zMat zMatRand(zMat m, zMat min, zMat max);
@@ -175,10 +175,10 @@ __ZM_EXPORT zMat zMatRand(zMat m, zMat min, zMat max);
  * zMatCopy() copies the matrix \a src to the other \a dest.
  * zMatCopyNC() also copies \a src to the other \a dest but without checking the size consistency.
  *
- * zMatCopyArray() copies elements of an array with the size \a row times \a col to \a m.
+ * zMatCopyArray() copies elements of an array with the size \a rowsize x \a colsize to \a m.
  *
  * zMatClone() creates a clone of \a m.
- * zMatCloneArray() creates a clone of \a array with the size \a s.
+ * zMatCloneArray() creates a clone of \a array with the size \a rowsize x \a colsize.
  * \return
  * zMatCopyNC() returns a pointer \a dest.
  *
@@ -195,17 +195,17 @@ __ZM_EXPORT zMat zMatRand(zMat m, zMat min, zMat max);
  */
 __ZM_EXPORT zMat zMatCopyNC(const zMat src, zMat dest);
 __ZM_EXPORT zMat zMatCopy(const zMat src, zMat dest);
-__ZM_EXPORT zMat zMatCopyArray(const double array[], int r, int c, zMat m);
+__ZM_EXPORT zMat zMatCopyArray(const double array[], int rowsize, int colsize, zMat m);
 __ZM_EXPORT zMat zMatClone(const zMat src);
-__ZM_EXPORT zMat zMatCloneArray(const double array[], int r, int c);
+__ZM_EXPORT zMat zMatCloneArray(const double array[], int rowsize, int colsize);
 
 /*! \brief partially copy a matrix.
  *
- * zMatGet() gets a submatrix of \a src from (\a pr, \a pc) to \a dest, while zMatPut() puts \a src
- * to \a dest as a submatrix at (\a pr, \a pc).
+ * zMatGet() gets a submatrix of \a src from (\a r, \a c) to \a dest, while zMatPut() puts \a src
+ * to \a dest as a submatrix at (\a r, \a c).
  *
- * It is expected that \a dest for zMatGet() (or \a src for zMatPut()) has larger size than \a pr +
- * the row size of \a src (or \a dest) times \a pc + the column size of \a src (or \a dest).
+ * It is expected that \a dest for zMatGet() (or \a src for zMatPut()) has larger size than \a r +
+ * the row size of \a src (or \a dest) times \a c + the column size of \a src (or \a dest).
  * \return
  * zMatGetNC() and zMatPutNC() always return a pointer \a dest without checking the size consistency
  * between \a src and \a dest, while zMatGet() and zMatPut() return the null pointer if the sizes of
@@ -213,14 +213,14 @@ __ZM_EXPORT zMat zMatCloneArray(const double array[], int r, int c);
  * \sa
  * zRawMatGet, zRawMatPut
  */
-__ZM_EXPORT zMat zMatGetNC(const zMat src, int pr, int pc, zMat dest);
-__ZM_EXPORT zMat zMatGet(const zMat src, int pr, int pc, zMat dest);
-__ZM_EXPORT zMat zMatTGetNC(const zMat src, int pr, int pc, zMat dest);
-__ZM_EXPORT zMat zMatTGet(const zMat src, int pr, int pc, zMat dest);
-__ZM_EXPORT zMat zMatPutNC(zMat dest, int pr, int pc, const zMat src);
-__ZM_EXPORT zMat zMatPut(zMat dest, int pr, int pc, const zMat src);
-__ZM_EXPORT zMat zMatTPutNC(zMat dest, int pr, int pc, const zMat src);
-__ZM_EXPORT zMat zMatTPut(zMat dest, int pr, int pc, const zMat src);
+__ZM_EXPORT zMat zMatGetNC(const zMat src, int r, int c, zMat dest);
+__ZM_EXPORT zMat zMatGet(const zMat src, int r, int c, zMat dest);
+__ZM_EXPORT zMat zMatTGetNC(const zMat src, int r, int c, zMat dest);
+__ZM_EXPORT zMat zMatTGet(const zMat src, int r, int c, zMat dest);
+__ZM_EXPORT zMat zMatPutNC(zMat dest, int r, int c, const zMat src);
+__ZM_EXPORT zMat zMatPut(zMat dest, int r, int c, const zMat src);
+__ZM_EXPORT zMat zMatTPutNC(zMat dest, int r, int c, const zMat src);
+__ZM_EXPORT zMat zMatTPut(zMat dest, int r, int c, const zMat src);
 
 /*! \brief abstract, put and swap row/column vector of a matrix.
  *
@@ -238,10 +238,10 @@ __ZM_EXPORT zMat zMatTPut(zMat dest, int pr, int pc, const zMat src);
  * zMatPutColNC() puts the \a col th column vector of \a m for \a v without checking the size.
  * zMatPutCol() puts the \a col th column vector of \a m for \a v.
  *
- * zMatSwapRowNC() swaps \a r1 th row and \a r2 th row of \a m without checking the size.
- * zMatSwapRow() swaps \a r1 th row and \a r2 th row of \a m.
- * zMatSwapColNC() swaps \a c1 th column and \a c2 th column of \a m without checking the size.
- * zMatSwapCol() swaps \a c1 th column and \a c2 th column of \a m.
+ * zMatSwapRowNC() swaps \a row1 th row and \a row2 th row of \a m without checking the size.
+ * zMatSwapRow() swaps \a row1 th row and \a row2 th row of \a m.
+ * zMatSwapColNC() swaps \a col1 th column and \a col2 th column of \a m without checking the size.
+ * zMatSwapCol() swaps \a col1 th column and \a col2 th column of \a m.
  * \return
  * zMatRowNC(), zMatColNC(), zMatRow() and zMatCol() return a pointer to the abstracted vector.
  *
@@ -251,17 +251,17 @@ __ZM_EXPORT zMat zMatTPut(zMat dest, int pr, int pc, const zMat src);
  * If it is not urgent and you are not hasty, you'd better not use NC functions for safety.
  */
 __ZM_EXPORT zVec zMatGetRowNC(const zMat m, int row, zVec v);
-__ZM_EXPORT zVec zMatGetColNC(const zMat m, int col, zVec v);
 __ZM_EXPORT zVec zMatGetRow(const zMat m, int row, zVec v);
+__ZM_EXPORT zVec zMatGetColNC(const zMat m, int col, zVec v);
 __ZM_EXPORT zVec zMatGetCol(const zMat m, int col, zVec v);
 __ZM_EXPORT zMat zMatPutRowNC(zMat m, int row, const zVec v);
-__ZM_EXPORT zMat zMatPutColNC(zMat m, int col, const zVec v);
 __ZM_EXPORT zMat zMatPutRow(zMat m, int row, const zVec v);
+__ZM_EXPORT zMat zMatPutColNC(zMat m, int col, const zVec v);
 __ZM_EXPORT zMat zMatPutCol(zMat m, int col, const zVec v);
-__ZM_EXPORT zMat zMatSwapRowNC(zMat m, int r1, int r2);
-__ZM_EXPORT zMat zMatSwapColNC(zMat m, int c1, int c2);
-__ZM_EXPORT zMat zMatSwapRow(zMat m, int r1, int r2);
-__ZM_EXPORT zMat zMatSwapCol(zMat m, int c1, int c2);
+__ZM_EXPORT zMat zMatSwapRowNC(zMat m, int row1, int row2);
+__ZM_EXPORT zMat zMatSwapRow(zMat m, int row1, int row2);
+__ZM_EXPORT zMat zMatSwapColNC(zMat m, int col1, int col2);
+__ZM_EXPORT zMat zMatSwapCol(zMat m, int col1, int col2);
 
 /*! \brief shift diagonal values of a matrix.
  *

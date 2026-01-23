@@ -22,6 +22,11 @@
 #define ZM_WARN_VEC_SIZEMISMATCH           "vector has only %d components, while specified size is %d"
 #define ZM_WARN_MAT_SIZEMISMATCH           "matrix has only %d components, while specified size is %d"
 
+#define ZM_WARN_MAT_DEST_ROWOVERSIZED      "destination matrix (%d x %d) row-oversized for src matrix (%d x %d) from (%d,%d), truncated"
+#define ZM_WARN_MAT_DEST_COLUMNOVERSIZED   "destination matrix (%d x %d) column-oversized for src matrix (%d x %d) from (%d,%d), truncated"
+#define ZM_WARN_MAT_SRC_ROWOVERSIZED       "src matrix (%d x %d) row-oversized for destination matrix (%d x %d) from (%d,%d), truncated"
+#define ZM_WARN_MAT_SRC_COLUMNOVERSIZED    "src matrix (%d x %d) column-oversized for destination matrix (%d x %d) from (%d,%d), truncated"
+
 #define ZM_WARN_EDGE_ZERO                  "identical ends of an edge"
 
 #define ZM_WARN_VECLIST_EMPTY              "empty vector list assigned"
@@ -58,8 +63,8 @@
 #define ZM_ERR_MAT_SIZEMISMATCH            "size mismatch of matrices"
 #define ZM_ERR_MAT_SIZEMISMATCH_VEC        "size mismatch of matrix and vector"
 #define ZM_ERR_MAT_SIZEMISMATCH_CVEC       "size mismatch of matrix and complex vector"
-#define ZM_ERR_MAT_CANNOTRESIZEROW         "cannot resize matrix in row from %d to %d"
-#define ZM_ERR_MAT_CANNOTRESIZECOL         "cannot resize matrix in column from %d to %d"
+#define ZM_ERR_MAT_CANNOTRESIZEROW         "cannot resize matrix in row to %d over %d"
+#define ZM_ERR_MAT_CANNOTRESIZECOL         "cannot resize matrix in column to %d over %d"
 #define ZM_ERR_MAT_NOTSQR                  "not a square matrix"
 #define ZM_ERR_MAT_NOTSYMMETRIC            "not a symmetric matrix"
 #define ZM_ERR_MAT_SINGULAR                "matrix is singular"

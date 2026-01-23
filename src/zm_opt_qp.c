@@ -33,59 +33,6 @@ double zQuadraticValue(const zMat q, const zVec c, const zVec x)
   return val;
 }
 
-#if 0
-/* quadratic programming solver. */
-/* NOTE: this function is to be deleted due to mathematical illegality. */
-bool zQPSolve(const zMat q, const zVec c, const zMat a, const zVec b, zVec ans, double *cost)
-{
-  int i, j, m, n;
-  zMat d;
-  zVec f, y;
-
-  n = zVecSize( ans );
-  m = b ?  zVecSize( b ) : 0;
-  if( !zMatIsSqr(q) || zMatRowSize(q)!=n ){
-    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
-    return false;
-  }
-  if( c && zVecSize(c)!=n ){
-    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
-    return false;
-  }
-  if( a && zMatColSize(a) == 0 )
-    a = NULL;
-  if( a && ( zMatColSize(a)!=n || zMatRowSize(a)!=m ) ){
-    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
-    return false;
-  }
-
-  d = zMatAllocSqr( n+m );
-  f = zVecAlloc( n+m );
-  y = zVecAlloc( n+m );
-  for( i=0; i<n; i++ ){
-    for( j=0; j<n; j++ )
-      zMatSetElemNC( d, i, j,
-        0.5*( zMatElemNC( q, i, j )+zMatElemNC( q, j, i ) ) );
-    if( c ) zVecSetElemNC( f, i,-zVecElemNC( c, i ) );
-  }
-  for( i=0; i<m; i++ ){
-    for( j=0; j<n; j++ ){
-      zMatSetElemNC( d, n+i, j, zMatElemNC( a, i, j ) );
-      zMatSetElemNC( d, j, n+i, zMatElemNC( a, i, j ) );
-    }
-    zVecSetElemNC( f, n+i, zVecElemNC( b, i ) );
-  }
-  zLESolveGauss( d, f, y );
-  for( i=0; i<n; i++ )
-    zVecSetElemNC( ans, i, zVecElemNC( y, i ) );
-
-  zMatFree( d );
-  zVecFreeAtOnce( 2, f, y );
-  if( cost ) *cost = zQuadraticValue( q, c, ans );
-  return true;
-}
-#endif
-
 /* transform a quadratic programming problem to a linear complementary problem. */
 static bool _zQP2LCP(const zMat q, const zVec c, const zMat a, const zVec b, zMat *lm, zVec *lq, zVec *z)
 {

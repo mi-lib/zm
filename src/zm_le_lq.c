@@ -60,8 +60,8 @@ static int _zMatDecompLQ_Householder_DST(zMat m, zMat q)
     norm_inv = 1.0 / ( s * ds );
     *u = -ds; /* to use u temporarily as a reflection vector */
     for( j=0; j<zMatColSizeNC(q); j++ ){
-      reflection = -norm_inv * zRawMatColInnerProd( zMatRowBufNC(q,i), u, zMatRowSizeNC(q)-i, zMatColSizeNC(q), j );
-      zRawMatColCatDRC( zMatRowBufNC(q,i), reflection, u, zMatRowSizeNC(q)-i, zMatColSizeNC(q), j );
+      reflection = -norm_inv * zRawMatColInnerProd( zMatRowBufNC(q,i), zMatColCapacity(q), u, zMatRowSizeNC(q)-i, zMatColSizeNC(q), j );
+      zRawMatColCatDRC( zMatRowBufNC(q,i), zMatColCapacity(q), reflection, u, zMatRowSizeNC(q)-i, zMatColSizeNC(q), j );
     }
     for( j=zMatRowSizeNC(m)-1; j>i; j-- ){
       reflection = -norm_inv * zRawVecInnerProd( &zMatElemNC(m,j,i), u, colsize );

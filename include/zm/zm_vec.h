@@ -20,6 +20,9 @@ __BEGIN_DECLS
 zArrayClass( zVecStruct, double );
 typedef zVecStruct * zVec;
 
+/*! \brief capacity of a vector. */
+#define zVecCapacity(v)        zArrayCapacity(v)
+
 /*! \brief size of a vector.
  * \retval the size of a vector if \a v is not null.
  * \retval 0 if \a v is the null pointer.
@@ -31,7 +34,7 @@ typedef zVecStruct * zVec;
 #define zVecSetSize(v,s)       ( (v) ? zVecSetSizeNC(v,s) : 0 )
 
 /*! \brief reset size of a vector up to its capacity. */
-#define zVecResetSize(vec) zArrayResetSize( vec )
+#define zVecResetSize(vec)     zArrayResetSize( vec )
 
 /*! \brief check if the sizes of two vectors are equal. */
 #define zVecSizeEqual(v1,v2)   ( zVecSizeNC(v1) == zVecSizeNC(v2) )

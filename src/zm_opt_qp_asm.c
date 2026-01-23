@@ -71,7 +71,7 @@ static void _zQPASMDestroy(zQPASM *qpasm)
 static bool _zQPASMInitBase(zQPASM *qpasm, const zMat a, const zVec b)
 {
   zLPTableau tab;
-  int i, n;
+  int i, n, i_to_activate;
   bool ret = true;
 
   tab.a = zMatAlloc( zMatRowSizeNC(a), 2 * ( zMatColSizeNC(a) + zMatRowSizeNC(a) ) );
@@ -97,12 +97,12 @@ static bool _zQPASMInitBase(zQPASM *qpasm, const zMat a, const zVec b)
       zMatSetElemNC( tab.a, i, n+i, 1.0 );
       zVecSetElemNC( tab.b, i,-zVecElemNC(b,i) );
     }
-    zMatSetElemNC( tab.a, i, zArraySize(tab.in)+i, 1.0 );
+    zMatSetElemNC( tab.a, i, zIndexSizeNC(tab.in)+i, 1.0 );
   }
-  for( i=zArraySize(tab.in); i<zVecSizeNC(tab.c); i++ )
+  for( i=zIndexSizeNC(tab.in); i<zVecSizeNC(tab.c); i++ )
     zVecSetElemNC( tab.c, i, 1.0 );
   tab.d = 0;
-  zIndexOrder( tab.ib, zArraySize(tab.in) );
+  zIndexOrder( tab.ib, zIndexSizeNC(tab.in) );
   zIndexOrder( tab.in, 0 );
   zIndexOrder( tab.ir, 0 );
   if( !zLPTableauSimplex( &tab ) || !zIsTiny(tab.d) ){
@@ -112,20 +112,20 @@ static bool _zQPASMInitBase(zQPASM *qpasm, const zMat a, const zVec b)
   }
   zLPTableauFindBase( &tab ); /* remove artificial variables from the bases */
   /* rearrange initial feasible solution and active set */
-  zIndexSizeNC(qpasm->ia) = zIndexSizeNC(tab.ir);
+  zIndexSetSize( qpasm->ia, zIndexSizeNC(tab.ir) );
   zIndexCopyNC( tab.ir, qpasm->ia );
-  zIndexSizeNC(qpasm->in) = 0;
+  zIndexSetSize( qpasm->in, 0 );
   zVecZero( qpasm->xtmp );
-  for( i=0; i<zArraySize(tab.ib); i++ ){
+  for( i=0; i<zIndexSizeNC(tab.ib); i++ ){
     if( zIndexElemNC(tab.ib,i) < zMatColSizeNC(a) ){
       zVecSetElemNC( qpasm->xtmp, zIndexElemNC(tab.ib,i), zVecElemNC(tab.b,i) );
     } else
-    if( zIndexElemNC(tab.ib,i) < n ){
+    if( ( i_to_activate = zIndexElemNC(tab.ib,i) - n ) < 0 ){
       zVecSetElemNC( qpasm->xtmp, zIndexElemNC(tab.ib,i)-zMatColSizeNC(a),-zVecElemNC(tab.b,i) );
     } else
-    if( zIndexElemNC(tab.ib,i) < n + zMatRowSizeNC(a) ){
-      zIndexRemoveVal( qpasm->ia, zIndexElemNC(tab.ib,i)-n );
-      zIndexInsertVal( qpasm->in, zMatRowSizeNC(a), zIndexElemNC(tab.ib,i)-n );
+    if( i_to_activate < zMatRowSizeNC(a) ){
+      zIndexRemoveVal( qpasm->ia, i_to_activate );
+      zIndexInsertVal( qpasm->in, i_to_activate );
     } else{
       ZRUNERROR( ZM_ERR_FATAL );
       ret = false;
@@ -142,11 +142,11 @@ static bool _zQPASMSolveEq(zQPASM *qpasm, const zMat a, const zVec b, zVec x)
 {
   int i, j;
 
-  zMatSetSize( qpasm->_m, zIndexSizeNC(qpasm->ia), zIndexSizeNC(qpasm->ia) );
-  zVecSetSize( qpasm->_v, zIndexSizeNC(qpasm->ia) );
-  zVecSetSize( qpasm->_lambda, zIndexSizeNC(qpasm->ia) );
-  zArraySize( qpasm->_idx ) = zIndexSizeNC(qpasm->ia);
-  zVecSetSize( qpasm->_s, zIndexSizeNC(qpasm->ia) );
+  zMatSetSizeNC( qpasm->_m, zIndexSizeNC(qpasm->ia), zIndexSizeNC(qpasm->ia) );
+  zVecSetSizeNC( qpasm->_v, zIndexSizeNC(qpasm->ia) );
+  zVecSetSizeNC( qpasm->_lambda, zIndexSizeNC(qpasm->ia) );
+  zVecSetSizeNC( qpasm->_s, zIndexSizeNC(qpasm->ia) );
+  zIndexSetSize( qpasm->_idx, zIndexSizeNC(qpasm->ia) );
   zIndexOrder( qpasm->_idx, 0 );
   for( i=0; i<zIndexSizeNC(qpasm->ia); i++ ){
     for( j=0; j<zIndexSizeNC(qpasm->ia); j++ ){
@@ -155,9 +155,9 @@ static bool _zQPASMSolveEq(zQPASM *qpasm, const zMat a, const zVec b, zVec x)
     zVecElemNC(qpasm->_v,i) = zVecElemNC(qpasm->aqinvc_plus_b,zIndexElemNC(qpasm->ia,i));
   }
   zLESolveGaussDST( qpasm->_m, qpasm->_v, qpasm->_lambda, qpasm->_idx, qpasm->_s );
-  zVecSetSize( qpasm->_s, zVecSizeNC(x) );
+  zVecSetSizeNC( qpasm->_s, zVecSizeNC(x) );
   for( i=0; i<zVecSizeNC(qpasm->_s); i++ ){
-    zVecElemNC(qpasm->_s,i) = 0;
+    zVecSetElemNC( qpasm->_s, i, 0 );
     for( j=0; j<zIndexSizeNC(qpasm->ia); j++ )
       zVecElemNC(qpasm->_s,i) += zMatElemNC(a,zIndexElemNC(qpasm->ia,j),i) * zVecElemNC(qpasm->_lambda,j);
   }
@@ -186,7 +186,7 @@ static bool _zQPASMAddEq(zQPASM *qpasm, const zMat a, const zVec b, const zVec x
   }
   if( !is_violated ) return false;
   zIndexRemoveVal( qpasm->in, imin );
-  zIndexInsertVal( qpasm->ia, zMatRowSizeNC(a), imin );
+  zIndexInsertVal( qpasm->ia, imin );
   zVecInterDivDRC( qpasm->xtmp, x, dmin );
   return true;
 }
@@ -194,15 +194,15 @@ static bool _zQPASMAddEq(zQPASM *qpasm, const zMat a, const zVec b, const zVec x
 /* delete an equality constraint from active set. */
 static bool _zQPASMDelEq(zQPASM *qpasm, const zMat a)
 {
-  int i, ic, i_to_active;
+  int i, ic, i_to_activate;
   bool is_violated = false;
 
   for( i=ic=0; i<zVecSizeNC(qpasm->_lambda); i++ ){
     if( zVecElemNC(qpasm->_lambda,i) < 0 ){
       is_violated = true;
-      i_to_active = zIndexElemNC(qpasm->ia,ic);
+      i_to_activate = zIndexElemNC(qpasm->ia,ic);
       zIndexRemove( qpasm->ia, ic );
-      zIndexInsertVal( qpasm->in, zMatRowSizeNC(a), i_to_active );
+      zIndexInsertVal( qpasm->in, i_to_activate );
     } else
       ic++;
   }

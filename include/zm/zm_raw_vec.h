@@ -257,8 +257,9 @@ __ZM_EXPORT double zRawVecSqrDist(const double *v1, const double *v2, int size);
  * \return
  * zRawVecFPrint() and zRawVecPrint() return no values.
  */
-__ZM_EXPORT void zRawVecFPrint(FILE *fp, const double *v, int size);
-#define zRawVecPrint(v,size) zRawVecFPrint( stdout, v, size )
+__ZM_EXPORT void zRawVecValueFPrint(FILE *fp, const double *v, int size);
+__ZM_EXPORT void zRawVecFPrint(FILE *fp, const double *v, int capacity, int size);
+#define zRawVecPrint(v,capacity,size) zRawVecFPrint( stdout, v, capacity, size )
 
 __END_DECLS
 

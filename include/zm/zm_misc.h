@@ -40,6 +40,21 @@ __BEGIN_DECLS
 /*! \brief checks if an integer value \a d is an odd number. */
 #define zIsOdd(d)     ( (d) & 0x1 )
 
+#define _zTestExpr(testval,baseval,expr) ( zIsNan(testval) ? false : ( zIsNan(baseval) ? true : expr(testval,baseval) ) )
+#define _zIsMax(testval,baseval)    ( (testval) > (baseval) )
+#define _zIsMin(testval,baseval)    ( (testval) < (baseval) )
+#define _zIsAbsMax(testval,baseval) ( fabs(testval) > fabs(baseval) )
+#define _zIsAbsMin(testval,baseval) ( fabs(testval) < fabs(baseval) )
+
+/*! \brief check if a value is larger than a base value. */
+#define zIsMax(testval,baseval)    _zTestExpr( testval, baseval, _zIsMax )
+/*! \brief check if a value is smaller than a base value. */
+#define zIsMin(testval,baseval)    _zTestExpr( testval, baseval, _zIsMin )
+/*! \brief check if the absolute of a value is larger than a base value. */
+#define zIsAbsMax(testval,baseval) _zTestExpr( testval, baseval, _zIsAbsMax )
+/*! \brief check if the absolute of a value is smaller than a base value. */
+#define zIsAbsMin(testval,baseval) _zTestExpr( testval, baseval, _zIsAbsMin )
+
 /*! \brief check if two values are equal. */
 __ZM_EXPORT bool zEqual(double a, double b, double tol);
 

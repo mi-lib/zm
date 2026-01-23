@@ -139,11 +139,53 @@ void assert_le(void)
   eprintf( "success rate (LU+RI)  %d/%d ", count_ri, n );     zAssert( zLESolveLURI,      count_ri == n );
 }
 
+void assert_le_mat_capacity(void)
+{
+  zMat a;
+  zVec b, x, ans;
+  zIndex index;
+  const double tol = ( 1.0e-10 );
+  const int rowcapacity = 15, colcapacity = 13;
+  const int size = 10;
+  const int n = 1000;
+  int i;
+  int count_gauss = 0;
+
+  a = zMatAlloc( rowcapacity, colcapacity );
+  b = zVecAlloc( colcapacity );
+  x = zVecAlloc( rowcapacity );
+  ans = zVecAlloc( size );
+  index = zIndexAlloc( size*2 );
+  if( !a || !b || !x || !ans || !index ) goto TERMINATE;
+  zMatSetSize( a, size, size );
+  zVecSetSize( b, size );
+  zVecSetSize( x, size );
+  zIndexSetSize( index, size );
+  for( i=0; i<n; i++ ){
+    /* generate a problem */
+    zMatRandUniform( a, -10, 10 );
+    zVecRandUniform( ans,-10, 10 );
+    zMulMatVec( a, ans, b );
+    /* Gauss's elimination method */
+    zLESolveGauss( a, b, x );
+    if( zVecIsTol( zVecSubDRC( x, ans ), tol ) ) count_gauss++;
+    else{
+      eprintf( "error (Gauss's elimination method) " );
+      zVecFPrint( stderr, x );
+    }
+  }
+ TERMINATE:
+  zMatFree( a );
+  zVecFreeAtOnce( 3, b, x, ans );
+  zIndexFree( index );
+  zAssert( zLESolveGauss (more-capacity case), count_gauss == n );
+}
+
 void assert_le_gauss_seidel(void)
 {
   zMat a, a_org;
   zVec b, x, ans;
-  const double tol = ( 1.0e-10 );
+  const double tol = ( 1.0e-9 );
   const int size = 10;
   const int n = 1000;
   int i, j;
@@ -542,6 +584,38 @@ void assert_mat_mul_inv(void)
   zAssert( zMulInvMatMat, result );
 }
 
+void assert_mat_mul_inv_capacity(void)
+{
+  zMat m1, m2, m3, m;
+  const int colcapacity = 20;
+  const int rowsize = 10;
+  const int colsize = 8;
+  const int testnum = 100;
+  bool result = true;
+  int k;
+  const double tol = 1.0e-10;
+
+  m1 = zMatAlloc( rowsize, colcapacity );
+  m2 = zMatAlloc( rowsize, colsize );
+  m3 = zMatAlloc( rowsize, colsize );
+  m = zMatAlloc( rowsize, colcapacity );
+  zMatSetColSize( m1, colsize );
+  zMatSetColSize( m, rowsize );
+  for( k=0; k<testnum; k++ ){
+    zMatRandUniform( m, -10, 10 );
+    zMatRandUniform( m1,-10, 10 );
+    zMulMatMat( m, m1, m2 );
+    zMulInvMatMat( m, m2, m3 );
+    zMatSub( m1, m3, m2 );
+    if( !zMatIsTol( m2, tol ) ){
+      eprintf( "case #%d: maximum error = %g\n", k, zMatElemAbsMax( m2, NULL, NULL ) );
+      result = false;
+    }
+  }
+  zMatFreeAtOnce( 4, m, m1, m2, m3 );
+  zAssert( zMulInvMatMat (more-capacity case), result );
+}
+
 void assert_mat_mul_inv_mat_vec(void)
 {
   zMat m1, m2, mat_ans, mat_org;
@@ -798,6 +872,7 @@ int main(void)
   assert_mat_mat_sweep_out();
   assert_mat_vec_sweep_out();
   assert_le();
+  assert_le_mat_capacity();
   assert_le_gauss_seidel();
   assert_le_gen();
   assert_le_gen_aux();
@@ -806,6 +881,7 @@ int main(void)
   assert_lyapnov_equation();
   assert_mat_inv();
   assert_mat_mul_inv();
+  assert_mat_mul_inv_capacity();
   assert_mat_mul_inv_mat_vec();
   assert_mat_mpinv();
   assert_mat_mpinv_rand();

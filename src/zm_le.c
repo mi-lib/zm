@@ -32,7 +32,7 @@ void zMatVecRowBalancingDST(zMat m, zVec v)
   int i;
   double *mp, tmp;
 
-  for( mp=zMatBuf(m), i=0; i<zMatRowSizeNC(m); mp+=zMatColSizeNC(m), i++ ){
+  for( mp=zMatBuf(m), i=0; i<zMatRowSizeNC(m); mp+=zMatColCapacity(m), i++ ){
     if( ( tmp = zDataAbsMax( mp, zMatColSizeNC(m), NULL ) ) == 0 )
       continue;
     zRawVecDivDRC( mp, tmp, zMatColSizeNC(m) );
@@ -76,7 +76,7 @@ void zMatMatRowBalancingDST(zMat m1, zMat m2)
   int i;
   double *mp1, *mp2, tmp;
 
-  for( mp1=zMatBuf(m1), mp2=zMatBuf(m2), i=0; i<zMatRowSizeNC(m1); mp1+=zMatColSizeNC(m1), mp2+=zMatColSizeNC(m2), i++ ){
+  for( mp1=zMatBuf(m1), mp2=zMatBuf(m2), i=0; i<zMatRowSizeNC(m1); mp1+=zMatColCapacity(m1), mp2+=zMatColCapacity(m2), i++ ){
     if( ( tmp = zDataAbsMax( mp1, zMatColSizeNC(m1), NULL ) ) == 0 )
       continue;
     zRawVecDivDRC( mp1, tmp, zMatColSizeNC(m1) );
@@ -98,7 +98,7 @@ void zMatMatVecRowBalancingDST(zMat m1, zMat m2, zVec v)
   int i;
   double *mp1, *mp2, tmp;
 
-  for( mp1=zMatBuf(m1), mp2=zMatBuf(m2), i=0; i<zMatRowSizeNC(m1); mp1+=zMatColSizeNC(m1), mp2+=zMatColSizeNC(m2), i++ ){
+  for( mp1=zMatBuf(m1), mp2=zMatBuf(m2), i=0; i<zMatRowSizeNC(m1); mp1+=zMatColCapacity(m1), mp2+=zMatColCapacity(m2), i++ ){
     if( ( tmp = zDataAbsMax( mp1, zMatColSizeNC(m1), NULL ) ) == 0 )
       continue;
     zRawVecDivDRC( mp1, tmp, zMatColSizeNC(m1) );

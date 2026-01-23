@@ -313,8 +313,8 @@ bool zVecIsNan(const zVec v)
 zVec zVecResize(zVec v, int size)
 {
   if( size == zVecSize(v) ) return v; /* nothing happens. */
-  if( size > zVecSize(v) ){
-    ZRUNERROR( ZM_ERR_VEC_CANNOTRESIZE, zVecSizeNC(v), size );
+  if( size > zVecCapacity(v) ){
+    ZRUNERROR( ZM_ERR_VEC_CANNOTRESIZE, zVecCapacity(v), size );
     return NULL;
   }
   zVecSetSizeNC( v, size );
@@ -661,16 +661,10 @@ zVec zVecFScan(FILE *fp)
 /* print a vector out to a file. */
 void zVecFPrint(FILE *fp, const zVec v)
 {
-  int i;
-
   if( !v )
     fprintf( fp, "(null vector)\n" );
-  else{
-    fprintf( fp, "%d (", zVecSizeNC(v) );
-    for( i=0; i<zVecSizeNC(v); i++ )
-      fprintf( fp, " %.10g", zVecElemNC(v,i) );
-    fprintf( fp, " )\n" );
-  }
+  else
+    zRawVecFPrint( fp, zVecBufNC(v), zVecCapacity(v), zVecSizeNC(v) );
 }
 
 /* scan a vector from a line of a file. */
@@ -696,10 +690,6 @@ zVec zVecValueFScan(FILE *fp)
 /* print a vector out to a file. */
 void zVecValueFPrint(FILE *fp, const zVec v)
 {
-  int i;
-
-  if( !v ) return;
-  for( i=0; i<zVecSizeNC(v); i++ )
-    fprintf( fp, "%.10g ", zVecElemNC(v,i) );
-  fprintf( fp, "\n" );
+  if( v )
+    zRawVecValueFPrint( fp, zVecBufNC(v), zVecSizeNC(v) );
 }

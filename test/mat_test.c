@@ -118,9 +118,10 @@ void assert_mat_is_symmetric(void)
 {
   zMat m, mt;
   bool result = true;
+  const int row_size = MAT_ROW_SIZE;
 
-  m  = zMatAllocSqr( MAT_ROW_SIZE );
-  mt = zMatAllocSqr( MAT_ROW_SIZE );
+  m  = zMatAllocSqr( row_size );
+  mt = zMatAllocSqr( row_size );
   zMatRandUniform( m, -10, 10 );
   zMatT( m, mt );
   zMatAddDRC( m, mt );
@@ -308,92 +309,128 @@ void assert_mat_transpose(void)
   zMat mat_test1, mat_test2;
   double tr;
   int i, j;
-  bool result;
+  bool result_t, result_t_drc, result_trace;
 
-  mat_test1 = zMatAlloc( colsize, rowsize );
-  mat_test2 = zMatAlloc( rowsize, colsize );
+  mat_test1 = zMatAlloc( rowsize, colsize );
+  mat_test2 = zMatAlloc( colsize, rowsize );
   zMatRandUniform( mat_test1, -10, 10 );
   zMatT( mat_test1, mat_test2 );
-  for( result=true, i=0; i<rowsize; i++ )
+  for( result_t=true, i=0; i<rowsize; i++ )
     for( j=0; j<colsize; j++ )
-      if( zMatElemNC(mat_test1,j,i) != zMatElemNC(mat_test2,i,j) ) result = false;
-  zAssert( zMatT, result );
-  zMatSetSize( mat_test2, colsize, rowsize );
-  zMatCopy( mat_test1, mat_test2 );
-  zMatTDRC( mat_test2 );
-  for( result=true, i=0; i<rowsize; i++ )
-    for( j=0; j<colsize; j++ )
-      if( zMatElemNC(mat_test1,j,i) != zMatElemNC(mat_test2,i,j) ) result = false;
-  zAssert( zMatTDRC, result );
+      if( zMatElemNC(mat_test1,i,j) != zMatElemNC(mat_test2,j,i) ) result_t = false;
+  zMatTDRC( mat_test1 );
+  result_t_drc = zMatMatch( mat_test1, mat_test2 );
   for( tr=0, i=0; i<zMin(rowsize,colsize); i++ )
     tr += zMatElem(mat_test2,i,i);
-  zAssert( zMatTraceNC, zIsTiny( tr - zMatTraceNC( mat_test2 ) ) );
+  result_trace = zIsTiny( tr - zMatTraceNC( mat_test2 ) );
   zMatFreeAtOnce( 2, mat_test1, mat_test2 );
+
+  zAssert( zMatT, result_t );
+  zAssert( zMatTDRC, result_t_drc );
+  zAssert( zMatTraceNC, result_trace );
 }
 
 void assert_mul_mat_vec(void)
 {
-  zMat mat_test1, mat_test2, mat_test3, ans3, ans4, ans5, mat_error;
-  zVec vec_test1, vec_test2, vec_test3, ans1, ans2, vec_error;
-
-  mat_test1 = zMatCreateList( 3, 4,
+  zMat mat1, mat2, mat3, ans3, ans4, ans5, mat, mat_error;
+  zVec vec1, vec2, ans1, ans2, vec, vec_error;
+  double mat1_array[] = {
     2.0, 1.0,-1.0, 2.0,
     1.0, 3.0, 2.0,-1.0,
-   -1.0, 2.0,-3.0, 1.0 );
-  mat_test2 = zMatCreateList( 4, 3,
+   -1.0, 2.0,-3.0, 1.0,
+  };
+  double mat2_array[] = {
     1.0, 1.0, 2.0,
     2.0,-2.0,-1.0,
    -1.0, 3.0, 2.0,
-   -2.0, 1.0,-3.0 );
-  vec_test1 = zVecCreateList( 4,
-    1.0, 3.0, 4.0,-2.0 );
-  vec_test2 = zVecCreateList( 3,
-    2.0,-1.0, 3.0 );
-  ans1 = zVecCreateList( 3,
-   -3.0, 20.0, -9.0 );
-  ans2 = zVecCreateList( 4, 0.0, 5.0,-13.0, 8.0 );
-  ans3 = zMatCreateList( 3, 3,
+   -2.0, 1.0,-3.0,
+  };
+  double mat3_array[] = {
+    1.0, 1.0, 2.0, 2.0,
+   -2.0,-1.0,-1.0, 3.0,
+    2.0,-2.0, 1.0,-3.0,
+  };
+  double vec1_array[] = {
+    1.0, 3.0, 4.0,-2.0,
+  };
+  double vec2_array[] = {
+    2.0,-1.0, 3.0,
+  };
+  double ans1_array[] = {
+   -3.0, 20.0, -9.0,
+  };
+  double ans2_array[] = {
+    0.0, 5.0,-13.0, 8.0,
+  };
+  double ans3_array[] = {
     1.0, -1.0, -5.0,
     7.0,  0.0,  6.0,
-    4.0,-13.0,-13.0 );
-  ans4 = zMatCreateList( 3, 3,
+    4.0,-13.0,-13.0,
+  };
+  double ans4_array[] = {
     5.0,  2.0, -5.0,
     6.0,-10.0,  1.0,
-   -3.0,  6.0,-12.0 );
-  ans5 = zMatCreateList( 4, 4,
+   -3.0,  6.0,-12.0,
+  };
+  double ans5_array[] = {
     -2.0, 3.0, 2.0, 10.0,
     -1.0,-6.0, 1.0,  5.0,
    -11.0, 3.0,-7.0, 13.0,
-     6.0, 1.0, 6.0, -2.0 );
+     6.0, 1.0, 6.0, -2.0,
+  };
+  bool result_mv, result_mtv, result_mm, result_mmt, result_mtm;
 
-  vec_test3 = zVecAlloc( 3 );
+  mat1 = zMatCloneArray( mat1_array, 3, 4 );
+  mat2 = zMatCloneArray( mat2_array, 4, 3 );
+  mat3 = zMatCloneArray( mat3_array, 3, 4 );
+  vec1 = zVecCloneArray( vec1_array, 4 );
+  vec2 = zVecCloneArray( vec2_array, 3 );
+  ans1 = zVecCloneArray( ans1_array, 3 );
+  ans2 = zVecCloneArray( ans2_array, 4 );
+  ans3 = zMatCloneArray( ans3_array, 3, 3 );
+  ans4 = zMatCloneArray( ans4_array, 3, 3 );
+  ans5 = zMatCloneArray( ans5_array, 4, 4 );
+
+  vec = zVecAlloc( 3 );
   vec_error = zVecAlloc( 3 );
-  zMulMatVec( mat_test1, vec_test1, vec_test3 );
-  zVecSub( vec_test3, ans1, vec_error );
-  zAssert( zMulMatVec, zVecIsTiny( vec_error ) );
-  zVecFreeAtOnce( 2, vec_test3, vec_error );
-  vec_test3 = zVecAlloc( 4 );
+  zMulMatVec( mat1, vec1, vec );
+  zVecSub( vec, ans1, vec_error );
+  result_mv = zVecIsTiny( vec_error );
+  zVecFreeAtOnce( 2, vec, vec_error );
+
+  vec = zVecAlloc( 4 );
   vec_error = zVecAlloc( 4 );
-  zMulMatTVec( mat_test1, vec_test2, vec_test3 );
-  zVecSub( vec_test3, ans2, vec_error );
-  zAssert( zMulMatTVec, zVecIsTiny( vec_error ) );
-  mat_test3 = zMatAllocSqr( 3 );
+  zMulMatTVec( mat1, vec2, vec );
+  zVecSub( vec, ans2, vec_error );
+  result_mtv = zVecIsTiny( vec_error );
+  zVecFreeAtOnce( 2, vec, vec_error );
+
+  mat = zMatAllocSqr( 3 );
   mat_error = zMatAllocSqr( 3 );
-  zMulMatMat( mat_test1, mat_test2, mat_test3 );
-  zMatSub( mat_test3, ans3, mat_error );
-  zAssert( zMulMatMat, zMatIsTiny( mat_error ) );
-  zMatSetSize( mat_test2, 3, 4 );
-  zMulMatMatT( mat_test1, mat_test2, mat_test3 );
-  zMatSub( mat_test3, ans4, mat_error );
-  zAssert( zMulMatMatT, zMatIsTiny( mat_error ) );
-  zMatFreeAtOnce( 2, mat_test3, mat_error );
-  mat_test3 = zMatAllocSqr( 4 );
+  zMulMatMat( mat1, mat2, mat );
+  zMatSub( mat, ans3, mat_error );
+  result_mm = zMatIsTiny( mat_error );
+
+  zMulMatMatT( mat1, mat3, mat );
+  zMatSub( mat, ans4, mat_error );
+  result_mmt = zMatIsTiny( mat_error );
+  zMatFreeAtOnce( 2, mat, mat_error );
+
+  mat = zMatAllocSqr( 4 );
   mat_error = zMatAllocSqr( 4 );
-  zMulMatTMat( mat_test1, mat_test2, mat_test3 );
-  zMatSub( mat_test3, ans5, mat_error );
-  zAssert( zMulMatTMat, zMatIsTiny( mat_error ) );
-  zMatFreeAtOnce( 7, mat_test1, mat_test2, mat_test3, ans3, ans4, ans5, mat_error );
-  zVecFreeAtOnce( 6, vec_test1, vec_test2, vec_test3, ans1, ans2, vec_error );
+  zMulMatTMat( mat1, mat3, mat );
+  zMatSub( mat, ans5, mat_error );
+  result_mtm = zMatIsTiny( mat_error );
+  zMatFreeAtOnce( 2, mat, mat_error );
+
+  zMatFreeAtOnce( 6, mat1, mat2, mat3, ans3, ans4, ans5 );
+  zVecFreeAtOnce( 4, vec1, vec2, ans1, ans2 );
+
+  zAssert( zMulMatVec, result_mv );
+  zAssert( zMulMatTVec, result_mtv );
+  zAssert( zMulMatMat, result_mm );
+  zAssert( zMulMatMatT, result_mmt );
+  zAssert( zMulMatTMat, result_mtm );
 }
 
 void assert_mat_dyad(void)

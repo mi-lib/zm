@@ -21,7 +21,8 @@ int zMatPivoting(zMat m, zIndex idx, int r, int c)
       pi = i;
     }
   }
-  return zIndexSwap( idx, pi, r );
+  zIndexSwapNC( idx, pi, r );
+  return zIndexElemNC(idx,r);
 }
 
 /* matrix pivoting in diagonal values. */
@@ -39,7 +40,8 @@ int zMatPivotingDiag(zMat m, zIndex idx, int i)
       pi = j;
     }
   }
-  return zIndexSwap( idx, pi, i );
+  zIndexSwapNC( idx, pi, i );
+  return zIndexElemNC(idx,i);
 }
 
 /* sweep out a column of a matrix. */
