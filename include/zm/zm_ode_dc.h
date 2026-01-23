@@ -10,9 +10,8 @@
 
 __BEGIN_DECLS
 
-/*!
- */
-__ZM_EXPORT zODE *zODEInitDC(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec));
+/* Deferred correction with Rechardson's extrapolation */
+__ZM_EXPORT zODE *zODECreateDC(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyDC(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateDC(zODE *ode, double t, zVec x, double dt, void *util);
 

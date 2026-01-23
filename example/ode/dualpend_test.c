@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
   zODE ode;
 
   zODEAssign( &ode, RK4, NULL, NULL );
-  zODEInit( &ode, 4, 0, dualpend_eqm );
+  zODECreate( &ode, 4, 0, dualpend_eqm );
   x = zVecAlloc( 4 );
   zVecSetElem( x, 0, zDeg2Rad( argc>1 ? atof(argv[1]) : T1 ) );
   zVecSetElem( x, 1, zDeg2Rad( argc>2 ? atof(argv[2]) : T2 ) );

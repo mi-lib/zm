@@ -15,8 +15,8 @@ typedef struct{
   zVec *k;
 } _zODE_ERK;
 
-/* initialize ODE solver based on embedded Runge-Kutta method. */
-static zODE* _zODEInit_ERK(zODE *ode, int dim, int stepsize, zVec (* f)(double,zVec,void*,zVec))
+/* create an ODE solver based on embedded Runge-Kutta method. */
+static zODE* _zODECreateERK(zODE *ode, int dim, int stepsize, zVec (* f)(double,zVec,void*,zVec))
 {
   int i;
   _zODE_ERK *ws;
@@ -41,8 +41,8 @@ static zODE* _zODEInit_ERK(zODE *ode, int dim, int stepsize, zVec (* f)(double,z
   return ode;
 }
 
-/* destroy ODE solver. */
-static void _zODEDestroy_ERK(zODE *ode)
+/* destroy an ODE solver. */
+static void _zODEDestroyERK(zODE *ode)
 {
   int i;
   _zODE_ERK *ws;
@@ -57,7 +57,7 @@ static void _zODEDestroy_ERK(zODE *ode)
 }
 
 /* directly integrate variable by ODE based on embedded Runge-Kutta method. */
-static zVec _zODEUpdate_ERK(zODE *ode, double t, zVec x, double dt, double a[], double bc[], double bf[], double c[], void *util)
+static zVec _zODEUpdateERK(zODE *ode, double t, zVec x, double dt, double a[], double bc[], double bf[], double c[], void *util)
 {
   int i, j, l;
   _zODE_ERK *ws;
@@ -78,8 +78,8 @@ static zVec _zODEUpdate_ERK(zODE *ode, double t, zVec x, double dt, double a[], 
   }
   if( dt > ZODE_ERK_DT_TOL && zVecDist( ws->_xc, ws->_xf ) > ZODE_ERK_TOL ){
     dt *= 0.5;
-    _zODEUpdate_ERK( ode, t, x, dt, a, bc, bf, c, util );
-    _zODEUpdate_ERK( ode, t+dt, x, dt, a, bc, bf, c, util );
+    _zODEUpdateERK( ode, t, x, dt, a, bc, bf, c, util );
+    _zODEUpdateERK( ode, t+dt, x, dt, a, bc, bf, c, util );
   } else
     zVecCopyNC( ws->_xf, x );
   return x;
@@ -87,17 +87,17 @@ static zVec _zODEUpdate_ERK(zODE *ode, double t, zVec x, double dt, double a[], 
 
 /* Runge-Kutta-Fehlberg method */
 
-zODE* zODEInit_RKF45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
+zODE* zODECreateRKF45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
-  return _zODEInit_ERK( ode, dim, 6, f );
+  return _zODECreateERK( ode, dim, 6, f );
 }
 
-void zODEDestroy_RKF45(zODE *ode)
+void zODEDestroyRKF45(zODE *ode)
 {
-  _zODEDestroy_ERK( ode );
+  _zODEDestroyERK( ode );
 }
 
-zVec zODEUpdate_RKF45(zODE *ode, double t, zVec x, double dt, void *util)
+zVec zODEUpdateRKF45(zODE *ode, double t, zVec x, double dt, void *util)
 {
   static double a[] = {
     1.0/4,
@@ -110,22 +110,22 @@ zVec zODEUpdate_RKF45(zODE *ode, double t, zVec x, double dt, void *util)
   static double b5[] = { 16.0/135, 0, 6656.0/12825, 28561.0/56430, -9.0/50, 2.0/55 };
   static double c[] = { 1.0/4, 3.0/8, 12.0/13, 1.0, 1.0/2 };
 
-  return _zODEUpdate_ERK( ode, t, x, dt, a, b4, b5, c, util );
+  return _zODEUpdateERK( ode, t, x, dt, a, b4, b5, c, util );
 }
 
 /* Cash-Karp method */
 
-zODE* zODEInit_CK45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
+zODE* zODECreateCK45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
-  return _zODEInit_ERK( ode, dim, 6, f );
+  return _zODECreateERK( ode, dim, 6, f );
 }
 
-void zODEDestroy_CK45(zODE *ode)
+void zODEDestroyCK45(zODE *ode)
 {
-  _zODEDestroy_ERK( ode );
+  _zODEDestroyERK( ode );
 }
 
-zVec zODEUpdate_CK45(zODE *ode, double t, zVec x, double dt, void *util)
+zVec zODEUpdateCK45(zODE *ode, double t, zVec x, double dt, void *util)
 {
   static double a[] = {
     1.0/5,
@@ -138,22 +138,22 @@ zVec zODEUpdate_CK45(zODE *ode, double t, zVec x, double dt, void *util)
   static double b5[] = { 2825.0/27648, 0.0, 18575.0/48384, 13525.0/55296, 277.0/14336, 1.0/4 };
   static double c[] = { 1.0/5, 3.0/10, 3.0/5, 1.0, 7.0/8.0 };
 
-  return _zODEUpdate_ERK( ode, t, x, dt, a, b4, b5, c, util );
+  return _zODEUpdateERK( ode, t, x, dt, a, b4, b5, c, util );
 }
 
 /* Dormand-Prince method */
 
-zODE* zODEInit_DP45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
+zODE* zODECreateDP45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
-  return _zODEInit_ERK( ode, dim, 7, f );
+  return _zODECreateERK( ode, dim, 7, f );
 }
 
-void zODEDestroy_DP45(zODE *ode)
+void zODEDestroyDP45(zODE *ode)
 {
-  _zODEDestroy_ERK( ode );
+  _zODEDestroyERK( ode );
 }
 
-zVec zODEUpdate_DP45(zODE *ode, double t, zVec x, double dt, void *util)
+zVec zODEUpdateDP45(zODE *ode, double t, zVec x, double dt, void *util)
 {
   static double a[] = {
     1.0/5,
@@ -169,5 +169,5 @@ zVec zODEUpdate_DP45(zODE *ode, double t, zVec x, double dt, void *util)
     35.0/384, 0.0, 500.0/1113, 125.0/192, -2187.0/6784, 11.0/84, 0 };
   static double c[] = { 1.0/5, 3.0/10, 4.0/5, 8.0/9, 1.0, 1.0 };
 
-  return _zODEUpdate_ERK( ode, t, x, dt, a, b4, b5, c, util );
+  return _zODEUpdateERK( ode, t, x, dt, a, b4, b5, c, util );
 }

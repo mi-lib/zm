@@ -12,8 +12,8 @@ typedef struct{
   zVec u, v; /* working space */
 } _zODE_RKG;
 
-/* initialize ODE solver based on Runge-Kutta-Gill method. */
-zODE* zODEInit_RKG(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
+/* create an ODE solver based on Runge-Kutta-Gill method. */
+zODE* zODECreateRKG(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_RKG *ws;
 
@@ -28,8 +28,8 @@ zODE* zODEInit_RKG(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,z
   return ode;
 }
 
-/* destroy ODE solver. */
-void zODEDestroy_RKG(zODE *ode)
+/* destroy an ODE solver. */
+void zODEDestroyRKG(zODE *ode)
 {
   _zODE_RKG *ws;
 
@@ -40,7 +40,7 @@ void zODEDestroy_RKG(zODE *ode)
 }
 
 /* directly integrate variable by ODE based on Runge-Kutta-Gill method. */
-zVec zODEUpdate_RKG(zODE *ode, double t, zVec x, double dt, void *util)
+zVec zODEUpdateRKG(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_RKG *ws;
   const double r2 = sqrt(2);

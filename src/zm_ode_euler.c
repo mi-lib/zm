@@ -7,8 +7,8 @@
 
 #include <zm/zm_ode.h>
 
-/* initialize ODE solver based on Euler method. */
-zODE* zODEInit_Euler(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
+/* create an ODE solver based on Euler method. */
+zODE* zODECreateEuler(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
   if( !( ode->_ws = zVecAlloc( dim ) ) ){
     ZALLOCERROR();
@@ -18,15 +18,15 @@ zODE* zODEInit_Euler(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*
   return ode;
 }
 
-/* destroy ODE solver. */
-void zODEDestroy_Euler(zODE *ode)
+/* destroy an ODE solver. */
+void zODEDestroyEuler(zODE *ode)
 {
   zVecFree( (zVec)ode->_ws );
   ode->f = NULL;
 }
 
 /* directly integrate variable by ODE based on Euler method. */
-zVec zODEUpdate_Euler(zODE *ode, double t, zVec x, double dt, void *util)
+zVec zODEUpdateEuler(zODE *ode, double t, zVec x, double dt, void *util)
 {
   ode->f( t, x, util, (zVec)ode->_ws );
   return ode->cat( x, dt, (zVec)ode->_ws, x, util );

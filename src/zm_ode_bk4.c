@@ -43,8 +43,8 @@ static zVec _zODE_BK4_Func(zVec x, zVec y, void *util)
   return y;
 }
 
-/* initialize ODE solver based on Butcher-Kuntzmann method. */
-zODE* zODEInit_BK4(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*,zVec))
+/* create an ODE solver based on Butcher-Kuntzmann method. */
+zODE* zODECreateBK4(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_BK4 *ws;
 
@@ -66,8 +66,8 @@ zODE* zODEInit_BK4(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*,zV
   return ode;
 }
 
-/* destroy ODE solver. */
-void zODEDestroy_BK4(zODE *ode)
+/* destroy an ODE solver. */
+void zODEDestroyBK4(zODE *ode)
 {
   _zODE_BK4 *ws;
 
@@ -79,7 +79,7 @@ void zODEDestroy_BK4(zODE *ode)
 }
 
 /* directly integrate variable by ODE based on Gauss method. */
-zVec zODEUpdate_Gauss(zODE *ode, double t, zVec x, double dt, void *util)
+zVec zODEUpdateGauss(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_BK4 *ws;
   const double bk4_c = sqrt(3)/6;
@@ -103,7 +103,7 @@ zVec zODEUpdate_Gauss(zODE *ode, double t, zVec x, double dt, void *util)
 }
 
 /* directly integrate variable by ODE based on Radau method. */
-zVec zODEUpdate_Radau(zODE *ode, double t, zVec x, double dt, void *util)
+zVec zODEUpdateRadau(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_BK4 *ws;
 

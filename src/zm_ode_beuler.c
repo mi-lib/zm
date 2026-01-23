@@ -29,8 +29,8 @@ static zVec _zODE_BEuler_Func(zVec x, zVec y, void *util)
   return ((zODE *)util)->cat( y, -ws->dt, ws->v, y, ws->util );
 }
 
-/* initialize ODE solver based on backward Euler method. */
-zODE* zODEInit_BEuler(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*,zVec))
+/* create an ODE solver based on backward Euler method. */
+zODE* zODECreateBEuler(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_BEuler *ws;
 
@@ -48,8 +48,8 @@ zODE* zODEInit_BEuler(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*
   return ode;
 }
 
-/* destroy ODE solver. */
-void zODEDestroy_BEuler(zODE *ode)
+/* destroy an ODE solver. */
+void zODEDestroyBEuler(zODE *ode)
 {
   _zODE_BEuler *ws;
 
@@ -61,7 +61,7 @@ void zODEDestroy_BEuler(zODE *ode)
 }
 
 /* directly integrate variable by ODE based on backward Euler method. */
-zVec zODEUpdate_BEuler(zODE *ode, double t, zVec x, double dt, void *util)
+zVec zODEUpdateBEuler(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_BEuler *ws;
 
@@ -77,7 +77,7 @@ zVec zODEUpdate_BEuler(zODE *ode, double t, zVec x, double dt, void *util)
 /* trapezoidal formula method */
 
 /* directly integrate variable by ODE based on backward Euler method. */
-zVec zODEUpdate_TR(zODE *ode, double t, zVec x, double dt, void *util)
+zVec zODEUpdateTR(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_BEuler *ws;
 

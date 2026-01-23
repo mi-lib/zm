@@ -25,8 +25,8 @@ int main(void)
 
   zODEAssign( &ode, Radau, NULL, NULL );
   zODEAssign( &ode_dc, Radau, NULL, NULL );
-  zODEInit( &ode, 2, 0, dp );
-  zODEInitDC( &ode_dc, 2, 0, dp );
+  zODECreate( &ode, 2, 0, dp );
+  zODECreateDC( &ode_dc, 2, 0, dp );
   x = zVecCreateList( 2, 1.0, 0.0 );
   x_dc = zVecClone( x );
   output( x, x_dc );

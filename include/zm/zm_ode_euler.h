@@ -12,11 +12,10 @@
 
 __BEGIN_DECLS
 
-/* Euler method is too known to describe:-)
- */
-__ZM_EXPORT zODE *zODEInit_Euler(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
-__ZM_EXPORT void zODEDestroy_Euler(zODE *ode);
-__ZM_EXPORT zVec zODEUpdate_Euler(zODE *ode, double t, zVec x, double dt, void *util);
+/* Euler method is too known to describe:-) */
+__ZM_EXPORT zODE *zODECreateEuler(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
+__ZM_EXPORT void zODEDestroyEuler(zODE *ode);
+__ZM_EXPORT zVec zODEUpdateEuler(zODE *ode, double t, zVec x, double dt, void *util);
 
 __END_DECLS
 

@@ -31,13 +31,13 @@ int main(void)
 
   zODE2Assign( &ode[0], Regular, NULL, NULL, NULL, NULL );  zODE2AssignRegular( &ode[0], RK4 );
   zODE2Assign( &ode[1], Leapfrog, NULL, NULL, NULL, NULL );
-  zODE2Assign( &ode[2], Sympl, NULL, NULL, NULL, NULL );
+  zODE2Assign( &ode[2], Symplectic, NULL, NULL, NULL, NULL );
   for( i=0; i<N_METHOD; i++ ){
-    zODE2Init( &ode[i], 1, 0, ddp );
+    zODE2Create( &ode[i], 1, 0, ddp );
     x[i] = zVecCreateList( 1, 1.0 );
     dx[i] = zVecCreateList( 1, 0.0 );
   }
-  zODE2InitHistLeapfrog( &ode[1], x[1], dx[1], DT );
+  zODE2InitHistoryLeapfrog( &ode[1], x[1], dx[1], DT );
 
   fp = fopen( "result.dat", "w" );
   output( fp, x, dx );

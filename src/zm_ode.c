@@ -18,6 +18,7 @@ zVec _zODESubDefault(zVec x1, zVec x2, zVec dx, void *dummy)
   return zVecSubNC( x1, x2, dx );
 }
 
+/* assign concatenation and subtraction functions to an ODE solver. */
 void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,void*), zVec (* subf)(zVec,zVec,zVec,void*))
 {
   ode->cat = catf ? catf : _zODECatDefault;

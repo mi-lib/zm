@@ -17,7 +17,7 @@ typedef struct{
 } _zODE_Adams;
 
 /* allocate working space for zODE_Adams. */
-static zODE *_zODEAlloc_Adams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
+static zODE *_zODEAllocAdams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_Adams *ws;
 
@@ -38,7 +38,7 @@ static zODE *_zODEAlloc_Adams(zODE *ode, int dim, int step, zVec (* f)(double,zV
 }
 
 /* set weighting coefficients for linear multistep method. */
-static void _zODESetWeight_Adams(zVec w, int step, double g0)
+static void _zODESetWeightAdams(zVec w, int step, double g0)
 {
   int i, j;
   zVec g;
@@ -61,7 +61,7 @@ static void _zODESetWeight_Adams(zVec w, int step, double g0)
 }
 
 /* inner computation of Adams's method. */
-static zVec _zODEUpdate_Adams(zODE *ode, double t, zVec x, zVec xorg, zVec xnew, zVec w, double dt, void *util)
+static zVec _zODEUpdateAdams(zODE *ode, double t, zVec x, zVec xorg, zVec xnew, zVec w, double dt, void *util)
 {
   _zODE_Adams *ws;
 
@@ -71,22 +71,20 @@ static zVec _zODEUpdate_Adams(zODE *ode, double t, zVec x, zVec xorg, zVec xnew,
   return ode->cat( x, dt, ws->dx, xnew, util );
 }
 
-/* initialize ODE solver based on Predictor-Corrector method with
- * Adams=Bashforth / Adams=Moulton's formulae. */
-zODE *zODEInit_Adams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
+/* Create an ODE solver based on Predictor-Corrector method with Adams=Bashforth / Adams=Moulton's formulae. */
+zODE *zODECreateAdams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_Adams *ws;
 
-  if( !( ode = _zODEAlloc_Adams( ode, dim, step, f ) ) )
-    return NULL;
+  if( !( ode = _zODEAllocAdams( ode, dim, step, f ) ) ) return NULL;
   ws = (_zODE_Adams *)ode->_ws;
-  _zODESetWeight_Adams( ws->wb, ws->step, 1 );   /* AB formula */
-  _zODESetWeight_Adams( ws->wm, ws->step, 0 ); /* AM formula */
+  _zODESetWeightAdams( ws->wb, ws->step, 1 );   /* AB formula */
+  _zODESetWeightAdams( ws->wm, ws->step, 0 ); /* AM formula */
   return ode;
 }
 
-/* destroy ODE solver. */
-void zODEDestroy_Adams(zODE *ode)
+/* destroy an ODE solver. */
+void zODEDestroyAdams(zODE *ode)
 {
   _zODE_Adams *ws;
 
@@ -99,7 +97,7 @@ void zODEDestroy_Adams(zODE *ode)
 }
 
 /* directly integrate variable by ODE based on Predictor-Corrector method. */
-zVec zODEUpdate_Adams(zODE *ode, double t, zVec x, double dt, void *util)
+zVec zODEUpdateAdams(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_Adams *ws;
   double t2;
@@ -112,12 +110,12 @@ zVec zODEUpdate_Adams(zODE *ode, double t, zVec x, double dt, void *util)
   xnew = ws->x2;
   /* predictor */
   zRingDecHead( &ws->hist ); /* increment ring */
-  _zODEUpdate_Adams( ode, t,  x, x, xold, ws->wb, dt, util );
+  _zODEUpdateAdams( ode, t,  x, x, xold, ws->wb, dt, util );
   /* corrector by successive substitution method */
   zRingDecHead( &ws->hist ); /* increment ring */
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){
-    _zODEUpdate_Adams( ode, t2, x, xold, xnew, ws->wm, dt, util );
+    _zODEUpdateAdams( ode, t2, x, xold, xnew, ws->wm, dt, util );
     if( zIsTiny( zVecDist( xold, xnew ) ) ) goto UPDATE;
     zSwap( zVec, xold, xnew );
   }

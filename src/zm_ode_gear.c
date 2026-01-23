@@ -34,8 +34,8 @@ static zVec _zODE_Gear_Func(zVec x, zVec y, void *util)
   return y;
 }
 
-/* initialize ODE solver based on Gear method. */
-zODE* zODEInit_Gear(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
+/* create an ODE solver based on Gear method. */
+zODE* zODECreateGear(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
 {
   _zODE_Gear *ws;
   double a[][6] = {
@@ -75,8 +75,8 @@ zODE* zODEInit_Gear(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,z
   return ode;
 }
 
-/* destroy ODE solver. */
-void zODEDestroy_Gear(zODE *ode)
+/* destroy an ODE solver. */
+void zODEDestroyGear(zODE *ode)
 {
   _zODE_Gear *ws;
 
@@ -89,13 +89,13 @@ void zODEDestroy_Gear(zODE *ode)
 }
 
 /* initialize history with a given vector. */
-void zODEInitHist_Gear(zODE *ode, zVec x)
+void zODEInitHistoryGear(zODE *ode, zVec x)
 {
   zVecRingFill( &((_zODE_Gear*)ode->_ws)->hist, x );
 }
 
 /* directly integrate variable by ODE based on Gear method. */
-zVec zODEUpdate_Gear(zODE *ode, double t, zVec x, double dt, void *util)
+zVec zODEUpdateGear(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_Gear *ws;
 

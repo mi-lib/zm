@@ -19,11 +19,11 @@ void zODE2AssignFunc(zODE2 *ode, zVec (* catf1)(zVec,double,zVec,zVec,void*), zV
   ode->sub_vel = subf2 ? subf2 : _zODESubDefault;
 }
 
-/* initialize */
-zODE2 *zODE2InitRegular(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec))
+/* create */
+zODE2 *zODE2CreateRegular(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec))
 {
   ode->f = f;
-  if( !zODEInit( &ode->_ode, dim*2, step, _zODE2RegularFunc ) )
+  if( !zODECreate( &ode->_ode, dim*2, step, _zODE2RegularFunc ) )
     return NULL;
   if( !( ode->_x = zVecAlloc(dim*2) ) ){
     ZALLOCERROR();
@@ -105,8 +105,8 @@ void zODE2UpdateRegular(zODE2 *ode, double t, zVec x, zVec v, double dt, void *u
 
 /* *** simplest symplectic method *** */
 
-/* initialize */
-zODE2 *zODE2InitSympl(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec))
+/* create */
+zODE2 *zODE2CreateSymplectic(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec))
 {
   ode->f = f;
   if( !( ode->_a = zVecAlloc(dim) ) ){
@@ -117,14 +117,14 @@ zODE2 *zODE2InitSympl(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec
 }
 
 /* destroy */
-void zODE2DestroySympl(zODE2 *ode)
+void zODE2DestroySymplectic(zODE2 *ode)
 {
   ode->f = NULL;
   zVecFree( ode->_a );
 }
 
 /* update state destructively. */
-void zODE2UpdateSympl(zODE2 *ode, double t, zVec x, zVec v, double dt, void *util)
+void zODE2UpdateSymplectic(zODE2 *ode, double t, zVec x, zVec v, double dt, void *util)
 {
   ode->f( t, x, v, util, ode->_a );
   ode->cat_vel( v, dt, ode->_a, v, util );
@@ -133,8 +133,8 @@ void zODE2UpdateSympl(zODE2 *ode, double t, zVec x, zVec v, double dt, void *uti
 
 /* *** leapfrog method *** */
 
-/* initialize */
-zODE2 *zODE2InitLeapfrog(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec))
+/* create */
+zODE2 *zODE2CreateLeapfrog(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec))
 {
   ode->f = f;
   ode->_x = zVecAlloc(dim);
@@ -149,7 +149,7 @@ zODE2 *zODE2InitLeapfrog(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,z
 }
 
 /* initialize startup history */
-void zODE2InitHistLeapfrog(zODE2 *ode, zVec x, zVec v, double dt)
+void zODE2InitHistoryLeapfrog(zODE2 *ode, zVec x, zVec v, double dt)
 {
   zVecCopy( v, ode->_v ); /* v_-0.5 = v_0 */
 }

@@ -41,22 +41,22 @@ int main(void)
   zODEAssign( &ode[9], Gear, NULL, NULL );
   zODEAssign( &ode[10],TR, NULL, NULL );
 
-  zODEInitDC( &ode[0], 2, 0, dp ); /* Euler method */
-  zODEInitDC( &ode[1], 2, 0, dp ); /* Heun method */
-  zODEInitDC( &ode[2], 2, 0, dp ); /* classical Runge-Kutta method */
-  zODEInitDC( &ode[3], 2, 0, dp ); /* Runge-Kutta-Gill method */
-  zODEInitDC( &ode[4], 2, 0, dp ); /* Runge-Kutta_Fehlberg method */
-  zODEInitDC( &ode[5], 2, 5, dp ); /* PC on AB/AM formula */
-  zODEInitDC( &ode[6], 2, 0, dp ); /* backward Euler method */
-  zODEInitDC( &ode[7], 2, 0, dp ); /* Gauss method */
-  zODEInitDC( &ode[8], 2, 0, dp ); /* Radau method */
-  zODEInitDC( &ode[9], 2, 3, dp ); /* Gear method */
-  zODEInitDC( &ode[10],2, 0, dp ); /* trapezoidal method */
+  zODECreateDC( &ode[0], 2, 0, dp ); /* Euler method */
+  zODECreateDC( &ode[1], 2, 0, dp ); /* Heun method */
+  zODECreateDC( &ode[2], 2, 0, dp ); /* classical Runge-Kutta method */
+  zODECreateDC( &ode[3], 2, 0, dp ); /* Runge-Kutta-Gill method */
+  zODECreateDC( &ode[4], 2, 0, dp ); /* Runge-Kutta_Fehlberg method */
+  zODECreateDC( &ode[5], 2, 5, dp ); /* PC on AB/AM formula */
+  zODECreateDC( &ode[6], 2, 0, dp ); /* backward Euler method */
+  zODECreateDC( &ode[7], 2, 0, dp ); /* Gauss method */
+  zODECreateDC( &ode[8], 2, 0, dp ); /* Radau method */
+  zODECreateDC( &ode[9], 2, 3, dp ); /* Gear method */
+  zODECreateDC( &ode[10],2, 0, dp ); /* trapezoidal method */
 
   x[0] = zVecCreateList( 2, 1.0, 0.0 );
   for( i=1; i<ODES; i++ )
     x[i] = zVecClone( x[0] );
-  zODEInitHist_Gear( &ode[9], x[9] );
+  zODEInitHistoryGear( &ode[9], x[9] );
 
   output_all( x );
   for( t=0; t<T; t+=DT ){

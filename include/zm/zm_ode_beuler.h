@@ -12,17 +12,15 @@
 
 __BEGIN_DECLS
 
-/* backward Euler method - easiest way of implicit solutions.
- */
-__ZM_EXPORT zODE *zODEInit_BEuler(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
-__ZM_EXPORT void zODEDestroy_BEuler(zODE *ode);
-__ZM_EXPORT zVec zODEUpdate_BEuler(zODE *ode, double t, zVec x, double dt, void *util);
+/* backward Euler method - easiest way of implicit solutions. */
+__ZM_EXPORT zODE *zODECreateBEuler(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
+__ZM_EXPORT void zODEDestroyBEuler(zODE *ode);
+__ZM_EXPORT zVec zODEUpdateBEuler(zODE *ode, double t, zVec x, double dt, void *util);
 
-/* trapezoidal formula method - A-stable implicit solutions.
- */
-#define zODEInit_TR zODEInit_BEuler
-#define zODEDestroy_TR zODEDestroy_BEuler
-__ZM_EXPORT zVec zODEUpdate_TR(zODE *ode, double t, zVec x, double dt, void *util);
+/* trapezoidal formula method - A-stable implicit solutions. */
+#define zODECreateTR zODECreateBEuler
+#define zODEDestroyTR zODEDestroyBEuler
+__ZM_EXPORT zVec zODEUpdateTR(zODE *ode, double t, zVec x, double dt, void *util);
 
 __END_DECLS
 

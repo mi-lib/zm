@@ -7,10 +7,8 @@
 
 #include <zm/zm_ode.h>
 
-/* zODEInitDC
- * - initialize ODE solver enabling deferred correction.
- */
-zODE *zODEInitDC(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
+/* create an ODE solver enabling deferred correction. */
+zODE *zODECreateDC(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
 {
   ode->_x1 = zVecAlloc( dim );
   ode->_x2 = zVecAlloc( dim );
@@ -18,12 +16,10 @@ zODE *zODEInitDC(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec
     ZALLOCERROR();
     return NULL;
   }
-  return zODEInit( ode, dim, step, f );
+  return zODECreate( ode, dim, step, f );
 }
 
-/* zODEDestroyDC
- * - destroy ODE solver enabling deferred correction.
- */
+/* destroy an ODE solver enabling deferred correction. */
 void zODEDestroyDC(zODE *ode)
 {
   zVecFree( ode->_x1 );
@@ -32,9 +28,7 @@ void zODEDestroyDC(zODE *ode)
 }
 
 #define ZODE_DC_TOL ( 1.0e-6 )
-/* zODEUpdateDC
- * - update state vector by solving ODE enabling deferred correction.
- */
+/* update state vector by solving ODE enabling deferred correction. */
 zVec zODEUpdateDC(zODE *ode, double t, zVec x, double dt, void *util)
 {
   /* full-step update */
