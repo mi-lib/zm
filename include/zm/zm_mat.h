@@ -349,12 +349,18 @@ __ZM_EXPORT bool zMatIsSymmetric(const zMat m);
  * zMatColResize() resizes the column of a matrix \a m to \a size. \a size must be smaller than or equal
  * to the column capacity of \a m.
  *
- * If \a size is larger than the capacity of \a m, they do nothing.
+ * zMatResize() resizes both the row and column of a matrix \a m to \a rowsize and \a colsize, respectively.
+ * \a rowsize and \a colsize must be smaller than or equal to the row and column capacities of \a m,
+ * respectively.
+ *
+ * If either \a rowsize or \a colsize is larger than the corresponding capacity of \a m, they do nothing.
  * \return
- * zMatRowResize() and zMatColResize() return a pointer \a m.
+ * zMatRowResize(), zMatColResize() and zMatResize() return a pointer \a m if they succeed. Otherwise,
+ * they return the null pointer.
  */
 __ZM_EXPORT zMat zMatRowResize(zMat m, int size);
 __ZM_EXPORT zMat zMatColResize(zMat m, int size);
+__ZM_EXPORT zMat zMatResize(zMat mat, int rowsize, int colsize);
 
 /*! \brief basic arithmetics for matrix.
  *

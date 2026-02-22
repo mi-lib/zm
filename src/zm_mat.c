@@ -489,25 +489,22 @@ bool zMatIsSymmetric(const zMat m)
 /* resize row of a matrix. */
 zMat zMatRowResize(zMat m, int size)
 {
-  if( size == zMatRowSize(m) ) return m; /* nothing happens. */
-  if( size > zMatRowCapacity(m) ){
-    ZRUNERROR( ZM_ERR_MAT_CANNOTRESIZEROW, size, zMatRowCapacity(m) );
-    return NULL;
-  }
-  zMatSetRowSizeNC( m, size );
-  return m;
+  zArray2RowResize( m, size );
+  return zMatRowSizeNC( m ) == size ? m : NULL;
 }
 
 /* resize column of a matrix. */
 zMat zMatColResize(zMat m, int size)
 {
-  if( size == zMatColSizeNC(m) ) return m; /* nothing happens. */
-  if( size > zMatColCapacity(m) ){
-    ZRUNERROR( ZM_ERR_MAT_CANNOTRESIZECOL, size, zMatColCapacity(m) );
-    return NULL;
-  }
-  zMatSetColSizeNC( m, size );
-  return m;
+  zArray2ColResize( m, size );
+  return zMatColSizeNC( m ) == size ? m : NULL;
+}
+
+/* resize a matrix. */
+zMat zMatResize(zMat mat, int rowsize, int colsize)
+{
+  zArray2Resize( mat, rowsize, colsize );
+  return zMatRowSizeNC(mat) == rowsize && zMatColSizeNC(mat) == colsize ? mat : NULL;
 }
 
 /* add matrices without checking size consistency. */

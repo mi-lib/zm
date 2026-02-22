@@ -59,12 +59,9 @@
 
 #define ZM_ERR_VEC_NULL                    "null vector assigned"
 #define ZM_ERR_VEC_SIZEMISMATCH            "size mismatch of vectors"
-#define ZM_ERR_VEC_CANNOTRESIZE            "cannot resize vector from %d to %d"
 #define ZM_ERR_MAT_SIZEMISMATCH            "size mismatch of matrices"
 #define ZM_ERR_MAT_SIZEMISMATCH_VEC        "size mismatch of matrix and vector"
 #define ZM_ERR_MAT_SIZEMISMATCH_CVEC       "size mismatch of matrix and complex vector"
-#define ZM_ERR_MAT_CANNOTRESIZEROW         "cannot resize matrix in row to %d over %d"
-#define ZM_ERR_MAT_CANNOTRESIZECOL         "cannot resize matrix in column to %d over %d"
 #define ZM_ERR_MAT_NOTSQR                  "not a square matrix"
 #define ZM_ERR_MAT_NOTSYMMETRIC            "not a symmetric matrix"
 #define ZM_ERR_MAT_SINGULAR                "matrix is singular"

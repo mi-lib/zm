@@ -155,6 +155,10 @@ void zLEWorkspaceResizeMP(zLEWorkspace *workspace, int rank)
   zMatColResize( workspace->l_facto, rank );
   zMatRowResize( workspace->r_facto, rank );
   zVecResize( workspace->v_mp_ispace, rank );
+  zMatResize( workspace->m_regular, rank, rank );
+  zVecResize( workspace->v_ispace, rank );
+  zVecResize( workspace->v_scale, rank );
+  zIndexResize( workspace->index_le, rank );
 }
 
 /* weighted-norm-minimizing redundant linear equation solver without checking size consistency. */

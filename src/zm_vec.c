@@ -312,13 +312,8 @@ bool zVecIsNan(const zVec v)
 /* resize a vector. */
 zVec zVecResize(zVec v, int size)
 {
-  if( size == zVecSize(v) ) return v; /* nothing happens. */
-  if( size > zVecCapacity(v) ){
-    ZRUNERROR( ZM_ERR_VEC_CANNOTRESIZE, zVecCapacity(v), size );
-    return NULL;
-  }
-  zVecSetSizeNC( v, size );
-  return v;
+  zArrayResize( v, size );
+  return zVecSizeNC(v) == size ? v : NULL;
 }
 
 /* add two vectors without checking size consistency. */

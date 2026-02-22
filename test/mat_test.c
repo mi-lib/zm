@@ -19,27 +19,49 @@ void assert_mat_clone(void)
 
 void assert_mat_resize(void)
 {
-  zMat src, dest, part;
+  zMat src, dest, part1, part2, part3;
   const int rowsize = 5;
   const int colsize = 8;
+  const int regrowsize = 3;
   const int regcolsize = 3;
   const int n = 100;
   int i;
-  bool result = true;
+  bool result_failure, result1 = true, result2 = true, result3 = true;
 
   src  = zMatAlloc( rowsize, colsize );
   dest = zMatAlloc( rowsize, colsize );
-  part = zMatAlloc( rowsize, regcolsize );
+  part1 = zMatAlloc( rowsize, regcolsize );
+  part2 = zMatAlloc( regrowsize, colsize );
+  part3 = zMatAlloc( regrowsize, regcolsize );
+  /* failure cases */
+  result_failure =
+    !zMatRowResize( dest, rowsize + 1 ) &&
+    !zMatColResize( dest, colsize + 1 ) &&
+    !zMatResize( dest, rowsize + 1, colsize ) &&
+    !zMatResize( dest, rowsize, colsize + 1 ) &&
+    !zMatResize( dest, rowsize + 1, colsize + 1 );
+  /* successful cases */
   for( i=0; i<n; i++ ){
     zMatRandUniform( src, -10, 10 );
     zMatResetSize( dest );
     zMatCopy( src, dest );
-    zMatGet( src, 0, 0, part );
+    zMatGet( src, 0, 0, part1 );
+    zMatGet( src, 0, 0, part2 );
+    zMatGet( src, 0, 0, part3 );
     zMatColResize( dest, regcolsize );
-    if( !zMatEqual( dest, part, zTOL ) ) result = false;
+    if( !zMatEqual( dest, part1, zTOL ) ) result1 = false;
+    zMatResetSize( dest );
+    zMatRowResize( dest, regrowsize );
+    if( !zMatEqual( dest, part2, zTOL ) ) result2 = false;
+    zMatResetSize( dest );
+    zMatResize( dest, regrowsize, regcolsize );
+    if( !zMatEqual( dest, part3, zTOL ) ) result3 = false;
   }
-  zMatFreeAtOnce( 3, src, dest, part );
-  zAssert( zMatResetSize + zMatColResize, result );
+  zMatFreeAtOnce( 5, src, dest, part1, part2, part3 );
+  zAssert( zMatResetSize + zMatColResize + zMatRowResize + zMatResize (failure case), result_failure );
+  zAssert( zMatResetSize + zMatColResize, result1 );
+  zAssert( zMatResetSize + zMatRowResize, result2 );
+  zAssert( zMatResetSize + zMatResize, result3 );
 }
 
 void assert_mat_ident(void)
