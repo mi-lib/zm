@@ -1,3 +1,6 @@
+2026.02.23. Enabled to automatically test C++ codes in test. [test]
+2026.02.23. Added C++ methods of zVecStruct. [zm_vec]
+2026.02.23. Defined _zVecStruct, and redefined zVecStruct and zVec for C++. [zm_vec]
 2026.02.23. Debugged _zLESolveMP_L corresponding to the uses of zLEWorkspaceResizeMP in zLESolveMP_LQ, zLESolveMP_LU, and zLESolveMPNull. (thanks to Naoki Wakisaka). [zm_le_gen]
 2026.02.23. Debugged zLEWorkspaceResizeMP (thanks to Naoki Wakisaka). [zm_le_gen]
 2026.02.23. Abolished ZM_ERR_VEC_CANNOTRESIZE, ZM_ERR_MAT_CANNOTRESIZEROW, and ZM_ERR_MAT_CANNOTRESIZECOL. [zm_errmsg]
