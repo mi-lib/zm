@@ -251,12 +251,10 @@ zVec zLESolveRefNormMin(const zMat a, const zVec b, const zVec w, const zVec ref
 /* compute left-lower part of the linear equation. */
 static void _zLESolveMP_L(zLEWorkspace *workspace, const zVec we, int rank)
 {
-  if( rank < zMatColSizeNC(workspace->l_facto) ){
-    zMatColResize( workspace->l_facto, rank );
-    zMatRowResize( workspace->r_facto, rank );
-    zLESolveErrorMinDST( workspace->l_facto, workspace->b_copy, we, workspace->v_mp_ispace, workspace );
-  } else
+  if( zMatIsSqr( workspace->l_facto ) )
     zLESolveL( workspace->l_facto, workspace->b_copy, workspace->v_mp_ispace, workspace->index_lu );
+  else
+    zLESolveErrorMinDST( workspace->l_facto, workspace->b_copy, we, workspace->v_mp_ispace, workspace );
 }
 
 /* generalized linear equation solver with MP-inverse based on LQ decomposition (destructive). */
