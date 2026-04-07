@@ -11,19 +11,16 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
-/* CLASS: zOptLine
- * line search class
- * ********************************************************** */
-
-/*! \brief golden section proportion */
-#define Z_GSEC 0.38196601125911
+/*! \brief golden ratio (sqrt(5)+1)/2 */
+#define zGOLDENRATIO  1.618033988749895
+/*! \brief minor segment ratio of golden section (sqrt(5)+1)/(sqrt(5)-1) */
+#define zGOLDENRATIO2 0.381966011250105
 
 /*! \brief golden section method */
-__ZM_EXPORT double zOptLineGSEC(double (*eval)(double,void*), double a, double b, void *util, int iter);
+__ZM_EXPORT double zOptLineGoldenSection(double (*eval)(double,void*), double xmin, double xmax, void *util, int iter);
 
-/*! \brief bisection method */
-__ZM_EXPORT double zOptLineBisec(double (*eval)(double,void*), double a, double b, void *util, int iter);
+/*! \brief trisection method. */
+__ZM_EXPORT double zOptLineTrisection(double (*eval)(double,void*), double xmin, double xmax, void *util, int iter);
 
 /*! \brief Brent's method */
 __ZM_EXPORT double zOptLineBrent(double (*eval)(double,void*), double a, double b, void *util, int iter);

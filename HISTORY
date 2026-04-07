@@ -1,3 +1,8 @@
+2026.04.07. Added the cumulative distribution function zCDF. [zm_sf_erf]
+2026.04.07. Added zOptLineGoldenSection and zOptLineTrisection. [zm_opt_line]
+2026.04.07. Abolished zOptLineGSEC and zOptLineBisec. [zm_opt_line]
+2026.04.07. Defined zGOLDENRATIO. [zm_opt_line]
+2026.04.07. Renamed Z_GSEC to zGOLDENRATIO2, and corrected the value. [zm_opt_line]
 2026.02.23. Enabled to automatically test C++ codes in test. [test]
 2026.02.23. Added C++ methods of zVecStruct. [zm_vec]
 2026.02.23. Defined _zVecStruct, and redefined zVecStruct and zVec for C++. [zm_vec]
