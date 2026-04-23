@@ -45,6 +45,20 @@ __ZM_EXPORT void zVecArrayFree(zVecArray *array);
  */
 __ZM_EXPORT zVec zVecArrayFill(zVecArray *array, zVec v);
 
+/*! \brief create zVec from a zVecArray
+ * src_array the source of a vector array
+ * dest_vec  the destination of a vector which is gathered
+ */
+__ZM_EXPORT zVec *zVecCreateFromzVecArray(const zVecArray *src_array, zVec *dest_vec);
+
+/*! \brief create zVecArray from a zVec
+ * src_vec    the source of a vector
+ * vec_size   the size of vector of dest_array
+ * array_size the size of array of dest_array
+ * dest_array the destination of a vector array
+ */
+__ZM_EXPORT zVecArray *zVecArrayCreateFromzVec(const zVec src_vec, const int vec_size, const int array_size, zVecArray *dest_array);
+
 __END_DECLS
 
 #endif /* __ZM_VEC_ARRAY_H__ */
