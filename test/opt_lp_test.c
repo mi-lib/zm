@@ -82,9 +82,49 @@ void assert_lp_simplex(void)
   zAssert( zLPSolveSimplex (regular case), result );
 }
 
+bool test_lp_megiddo_dyer(int num_test, int num_constraint)
+{
+  zLPMegiddoDyer lp;
+  double x1, x2, cost;
+  double x1_ans, x2_ans, cost_ans;
+  int i, j;
+  double theta;
+  bool result1, result2;
+
+  for( i=0; i<num_test; i++ ){
+    zLPMegiddoDyerInit( &lp );
+    zLPMegiddoDyerSetCostCoefficient( &lp, zRandF(-5,5), zRandF(-5,5) );
+    for( j=0; j<num_constraint; j++ ){
+      theta = zRandF( -zPI, zPI );
+      zLPMegiddoDyerAddConstraint( &lp, cos(theta), sin(theta), 5 + 5*cos(theta) );
+    }
+    result1 = zLPMegiddoDyerSolveDirect( &lp, &x1_ans, &x2_ans, &cost_ans );
+    result2 = zLPMegiddoDyerSolve( &lp, &x1, &x2, &cost );
+    zLPMegiddoDyerDestroy( &lp );
+    if( !result1 && !result2 ) continue;
+    if( !zEqual( x1, x1_ans, zTOL ) || !zEqual( x2, x2_ans, zTOL ) ){
+      eprintf( "solution         : (x1*,x2*)=(%g,%g) (cost = %g)\n", x1, x2, cost );
+      eprintf( "solution (direct): (x1*,x2*)=(%g,%g) (cost = %g)\n", x1_ans, x2_ans, cost_ans );
+      return false;
+    }
+  }
+  return true;
+}
+
+void assert_lp_megiddo_dyer(void)
+{
+  bool result;
+
+  result = test_lp_megiddo_dyer( 100, 20 );
+  zAssert( zLPMegiddoDyer (regular cases), result );
+  result = test_lp_megiddo_dyer( 10, 5 );
+  zAssert( zLPMegiddoDyer (likely unsolvable cases), result );
+}
+
 int main(void)
 {
   zRandInit();
   assert_lp_simplex();
+  assert_lp_megiddo_dyer();
   return 0;
 }

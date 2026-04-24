@@ -12,17 +12,15 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
-/* CLASS: zSeq
- * motion sequence class for multiple dimension system.
- * ********************************************************** */
-
-typedef struct{
+/*! \struct zSeq
+ * \brief a sequence of vectors with intervals.
+ */
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zSeqData ){
   double dt;
   zVec v;
-} zSeqData;
+};
 
-zListClass( zSeq, zSeqCell, zSeqData );
+ZEDA_DEF_LIST_CLASS( zSeq, zSeqCell, zSeqData );
 
 #define zSeqCellFree(c) do{\
   if( (c) ){\

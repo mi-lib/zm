@@ -13,17 +13,17 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
-/*! \brief vecter cluster class.
- *//* ******************************************************* */
-typedef struct{
+/*! \struct zVecCluster
+ * \brief vecter cluster class.
+ */
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zVecCluster ){
   zVecAddrList vlist; /*!< \brief list of vectors */
   zVec core;          /*!< \brief core vector of the cluster */
   double var;         /*!< \brief variance */
   /*! \cond */
   double *_sil;       /* silhouettes */
   /*! \endcond */
-} zVecCluster;
+};
 
 #define zVecClusterSampleList(c) ( &(c)->vlist )
 #define zVecClusterCore(c)       (c)->core
@@ -42,10 +42,9 @@ __ZM_EXPORT double zVecClusterMaxSilhouette(const zVecCluster *c);
 __ZM_EXPORT void zVecClusterFPrint(FILE *fp, const zVecCluster *c);
 __ZM_EXPORT void zVecClusterValueFPrint(FILE *fp, const zVecCluster *c);
 
-/* ********************************************************** */
-/*! \brief methods for core and error computation
- *//* ******************************************************* */
-
+/*! \struct zVecClusterMethod
+ * \brief methods for core and error computation.
+ */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zVecClusterMethod ){
   /*! \cond */
   zVec error; /* error vector */
@@ -97,12 +96,14 @@ __ZM_EXPORT zVecClusterMethod *zVecClusterMethodCopy(const zVecClusterMethod *sr
 /*! \brief destroy methods for clustering. */
 __ZM_EXPORT void zVecClusterMethodDestroy(zVecClusterMethod *method);
 
-/* ********************************************************** */
-/*! \brief multiple vecter clusters class.
- *//* ******************************************************* */
+/*! \struct zVecClusterList
+ * \brief list of vecter clusters.
+ */
+ZEDA_DEF_LIST_CLASS( zVecClusterList, zVecClusterListCell, zVecCluster );
 
-zListClass( zVecClusterList, zVecClusterListCell, zVecCluster );
-
+/*! \struct zVecMCluster
+ * \brief multiple vector clusters.
+ */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zVecMCluster ){
   zVecClusterList clist;    /*!< a list of clusters */
   zVecClusterMethod method; /*!< methods for core and error computation */

@@ -11,13 +11,12 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
 /*! \struct zBSplineParam
  * \brief B-spline parameter
  *
  * zBSplineParam defines the parameter space of B-spline.
  * It consists of the order of the curve and knots.
- *//* ******************************************************* */
+ */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zBSplineParam ){
   int order; /*!< \brief order of a curve */
   zVec knot; /*!< \brief knot vector */
@@ -72,35 +71,32 @@ __ZM_EXPORT double zBSplineParamBasis(const zBSplineParam *param, double t, int 
 /*! \brief derivative of the basis function of B-spline family. */
 __ZM_EXPORT double zBSplineParamBasisDiff(const zBSplineParam *param, double t, int i, int r, int seg, int diff);
 
-/* ********************************************************** */
 /*! \struct zNURBSCPCell
  * \brief cell of NURBS containing a control point and weight.
  *
  * zNURBSCPCell is a cell of NURBS that contains a control point
  * and associated weight.
- *//* ******************************************************* */
+ */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBSCPCell ){
   zVec cp;  /*!< control point */
   double w; /*!< weight */
 };
 
-/* ********************************************************** */
 /*! \struct zNURBSCPArray
  * \brief an array of control points for NURBS.
  *
  * zNURBSCPArray is an array of control points for NURBS.
- * It is defined with a macro zArrayClass.
- * \sa zArrayClass.
- *//* ******************************************************* */
-zArrayClass( zNURBSCPArray, zNURBSCPCell );
+ * It is defined with a macro ZEDA_DEF_ARRAY_CLASS.
+ * \sa ZEDA_DEF_ARRAY_CLASS.
+ */
+ZEDA_DEF_ARRAY_CLASS( zNURBSCPArray, zNURBSCPCell );
 
-/* ********************************************************** */
 /*! \struct zNURBS
  * \brief NURBS curve.
  *
  * zNURBS is a NURBS curve made from a sequence of control
  * points in n-dimensional space.
- *//* ******************************************************* */
+ */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBS ){
   zBSplineParam param;   /*!< \brief B-spline parameter */
   zNURBSCPArray cparray; /*!< \brief an array of control points */
@@ -247,13 +243,12 @@ __ZM_EXPORT zNURBS *zNURBSFromZTK(zNURBS *nurbs, ZTK *ztk);
  */
 __ZM_EXPORT void zNURBSFPrintZTK(FILE *fp, const zNURBS *nurbs);
 
-/* ********************************************************** */
 /*! \struct zBSpline
  * \brief B-spline curve.
  *
  * zB-spline is a B-spline curve made from a sequence of control
  * points in n-dimensional space.
- *//* ******************************************************* */
+ */
 typedef zNURBS zBSpline;
 
 #define zBSplineCreate(bspline,seq,order) zNURBSCreate( bspline, seq, order )

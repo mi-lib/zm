@@ -68,7 +68,7 @@ zVec zRANSACSaveInlier(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,const zVec
   while( --nt >= 0 ){
     if( !_zRANSACSelectRandom( sample, inlier, ns ) ) break;
     fit_fp( qt, inlier, util );
-    zListAppend( sample, inlier );
+    zListSpliceAndMoveZ( sample, inlier );
     if( ( count = _zRANSACCountInlier( qt, sample, error_fp, util, th ) ) > count_prev ){
       count_prev = count;
       zVecCopyNC( qt, q );
@@ -87,7 +87,7 @@ zVec zRANSAC(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,const zVecList*,void
   zVecList inlier;
 
   q = zRANSACSaveInlier( q, sample, fit_fp, error_fp, util, ns, nt, th, &inlier );
-  zListAppend( sample, &inlier );
+  zListSpliceAndMoveZ( sample, &inlier );
   return q;
 }
 

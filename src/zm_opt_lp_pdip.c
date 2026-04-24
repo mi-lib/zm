@@ -69,7 +69,7 @@ static bool _zLP_PDIPInit(_zLP_PDIP *dat)
   double m;
 
   if( !zLESolveMP( dat->a, dat->b, NULL, NULL, dat->x ) ){
-    ZRUNERROR( ZM_ERR_OPT_INI );
+    ZRUNERROR( ZM_ERR_OPT_NOINITIALPOINT );
     return false;
   }
   zVecSetAll( dat->y, 1.0 );

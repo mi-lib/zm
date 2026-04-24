@@ -11,11 +11,11 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
-/*! \brief double-precision floating-point value matrix class.
- * NOTES: each element of matrix(size=r*c) is at (0 - r-1,0 - c-1).
- *//* ******************************************************* */
-zArray2Class( zMatStruct, double );
+/*! \struct zMatStruct and zMat
+ * \brief double-precision floating-point value matrix class.
+ * \notes each element of a matrix (size=r*c) is at (0 - r-1,0 - c-1).
+ */
+ZEDA_DEF_ARRAY2_CLASS( zMatStruct, double );
 typedef zMatStruct * zMat;
 
 /*! \brief row/column capacity of a matrix. */

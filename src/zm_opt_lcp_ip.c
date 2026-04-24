@@ -122,7 +122,7 @@ static bool _zLCPIP_PCStep(_zLCPIP_PC *wm, const zVec w, zVec z, double *step)
   k1 = ( zSqr(_Z_LCPIP_PC_B*wm->t) - zVecSqrNorm(wm->b) ) / k2;
   a = k1 / ( 1 + sqrt( 1 + k1/k2*zVecSqrNorm(wm->c) ) );
   if( a < 0 && a > -4.0 ){
-    ZRUNERROR( ZM_ERR_OPT_STEP );
+    ZRUNERROR( ZM_ERR_OPT_CANNOTFINDSTEP );
     return false;
   }
   *step = 2.0 / ( 1 + sqrt( 1 + 4.0/a ) );

@@ -17,7 +17,9 @@ __BEGIN_DECLS
 /*! \defgroup RRT
  * \{ *//* ************************************************** */
 
-/*! \brief RRT node class to construct open tree */
+/*! \struct zRRTNode
+ * \brief RRT node class to construct open tree.
+ */
 typedef struct _zRRTNode{
   zVec v;                   /*!< a point vector */
   double cost_edge;         /*!< edge cost to the parent */
@@ -25,10 +27,14 @@ typedef struct _zRRTNode{
   struct _zRRTNode *parent; /*!< pointer to the parent node */
 } zRRTNode;
 
-/*! \brief RRT node list */
-zListClass( zRRTList, zRRTListCell, zRRTNode );
+/*! \struct zRRTList
+ * \brief RRT node list.
+ */
+ZEDA_DEF_LIST_CLASS( zRRTList, zRRTListCell, zRRTNode );
 
-/*! \brief data structure for RRT family */
+/*! \struct zRRT
+ * \brief data structure for RRT family.
+ */
 typedef struct{
   zRRTList slist; /*!< RRT from start node */
   zRRTList glist; /*!< RRT from goal node (for RRT-connect) */

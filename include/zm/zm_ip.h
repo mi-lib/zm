@@ -18,7 +18,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPKnotCell ){
   zSeqCell *cp; /*!< a pointer to the corresponding sequence cell */
 };
 
-zArrayClass( zIPKnotArray, zIPKnotCell );
+ZEDA_DEF_ARRAY_CLASS( zIPKnotArray, zIPKnotCell );
 
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPData ){
   const zSeq *seq;         /*!< sequence to be interpolated */

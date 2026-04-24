@@ -30,7 +30,8 @@ typedef struct{
   Z_NAMED_CLASS;
   struct _zmParseCell *cell;
 } zmParseVar;
-zListClass( zmParseVarList, zmParseVarCell, zmParseVar );
+
+ZEDA_DEF_LIST_CLASS( zmParseVarList, zmParseVarCell, zmParseVar );
 
 /* list of functions */
 
@@ -63,7 +64,8 @@ typedef struct{
   int argc;
   struct _zmParseCell *cell;
 } zmParseFunc;
-zListClass( zmParseFuncList, zmParseFuncCell, zmParseFunc );
+
+ZEDA_DEF_LIST_CLASS( zmParseFuncList, zmParseFuncCell, zmParseFunc );
 
 /* operator */
 

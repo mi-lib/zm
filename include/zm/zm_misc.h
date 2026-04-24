@@ -55,6 +55,12 @@ __BEGIN_DECLS
 /*! \brief check if the absolute of a value is smaller than a base value. */
 #define zIsAbsMin(testval,baseval) _zTestExpr( testval, baseval, _zIsAbsMin )
 
+/*! \brief check if a test value is less than a base value. */
+__ZM_EXPORT bool zIsLess(double testval, double baseval);
+
+/*! \brief check if a test value is greater than a base value. */
+__ZM_EXPORT bool zIsGreater(double testval, double baseval);
+
 /*! \brief check if two values are equal. */
 __ZM_EXPORT bool zEqual(double a, double b, double tol);
 

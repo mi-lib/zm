@@ -14,11 +14,11 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
-/*! \brief double-precision floating-point value vector class.
- *//* ******************************************************* */
+/*! \struct zVecStruct and zVec
+ * \brief double-precision floating-point value vector class.
+ */
 #ifdef __cplusplus
-zArrayClass( _zVecStruct, double );
+ZEDA_DEF_ARRAY_CLASS( _zVecStruct, double );
 struct zVecStruct;
 typedef zVecStruct* zVec;
 struct zVecStruct : public _zVecStruct {
@@ -63,7 +63,7 @@ struct zVecStruct : public _zVecStruct {
   friend std::ostream &operator<<(std::ostream &stream, zVec vec);
 };
 #else
-zArrayClass( zVecStruct, double );
+ZEDA_DEF_ARRAY_CLASS( zVecStruct, double );
 typedef zVecStruct* zVec;
 #endif /* __cplusplus */
 

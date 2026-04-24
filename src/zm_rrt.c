@@ -216,7 +216,8 @@ typedef struct{
   zRRTNode *node;
   double cost;
 } zRRTNearNode;
-zListClass( zRRTNearList, zRRTNearListCell, zRRTNearNode );
+
+ZEDA_DEF_LIST_CLASS( zRRTNearList, zRRTNearListCell, zRRTNearNode );
 
 /* check if a pair of nodes is rewirable. */
 bool _zRRTListCheckNodeRewirable(zRRT *rrt, zVec v1, zVec v2, double dist, void *util)

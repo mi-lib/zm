@@ -26,8 +26,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGNGEdgeData ){
   zGNGUnit *unit2;
 };
 
-zListClass( zGNGEdgeList, zGNGEdge, zGNGEdgeData );
-zListClass( zGNGEdgePtrList, zGNGEdgePtr, zGNGEdgeData* );
+ZEDA_DEF_LIST_CLASS( zGNGEdgeList, zGNGEdge, zGNGEdgeData );
+ZEDA_DEF_LIST_CLASS( zGNGEdgePtrList, zGNGEdgePtr, zGNGEdgeData* );
 
 /*! \brief unit class */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGNGUnitData ){
@@ -36,7 +36,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGNGUnitData ){
   zGNGEdgePtrList eplist;
 };
 
-zListClass( zGNGUnitList, zGNGUnit, zGNGUnitData );
+ZEDA_DEF_LIST_CLASS( zGNGUnitList, zGNGUnit, zGNGUnitData );
 
 #define Z_GNG_DEFAULT_BATCH_TRIAL_SIZE         100
 #define Z_GNG_DEFAULT_LIFETIME                  50

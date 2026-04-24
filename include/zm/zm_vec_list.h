@@ -11,12 +11,11 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
-/* CLASS: zVecList
- * vector list class.
- * ********************************************************** */
+/*! \struct zVecList
+ * \brief vector list class.
+ */
 
-zListClass( zVecList, zVecListCell, zVec );
+ZEDA_DEF_LIST_CLASS( zVecList, zVecListCell, zVec );
 
 /*! \brief insert a vector to a list at the head.
  *
@@ -93,10 +92,9 @@ __ZM_EXPORT zVecList *zVecListFScan(FILE *fp, zVecList *list);
 __ZM_EXPORT void zVecListFPrint(FILE *fp, const zVecList *list);
 #define zVecListPrint(l) zVecListFPrint( stdout, l )
 
-/* ********************************************************** */
-/* CLASS: zVecAddrList
- * vector address list class.
- * ********************************************************** */
+/*! \struct zVecAddrList
+ * \brief vector address list class.
+ */
 
 typedef zVecList zVecAddrList;
 typedef zVecListCell zVecAddrListCell;

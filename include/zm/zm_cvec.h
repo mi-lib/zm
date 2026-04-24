@@ -11,10 +11,10 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
-/*! \brief complex number vector class
- * ********************************************************** */
-zArrayClass( zCVecStruct, zComplex );
+/*! \struct zComplex
+ * \brief complex number vector class.
+ */
+ZEDA_DEF_ARRAY_CLASS( zCVecStruct, zComplex );
 typedef zCVecStruct* zCVec;
 
 /*! \brief size of a complex vector.

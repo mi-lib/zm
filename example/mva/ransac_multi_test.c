@@ -132,16 +132,16 @@ int main(int argc, char *argv[])
   q_parabola = zVecAlloc( q_size_parabola );
   zRANSACSaveInlierAuto( q_plane, &sample, fit_case_plane, error_case_plane, NULL, R, NL, &inlier_plane );
   zRANSACSaveInlierAuto( q_parabola, &sample, fit_case_parabola, error_case_parabola, NULL, R, NL, &inlier_parabola );
-  zListAppend( &sample, &inlier_plane );
+  zListSpliceAndMoveZ( &sample, &inlier_plane );
   zRANSACSaveInlierAuto( q_plane, &sample, fit_case_plane, error_case_plane, NULL, R, NL, &inlier_plane );
-  zListAppend( &sample, &inlier_parabola );
+  zListSpliceAndMoveZ( &sample, &inlier_parabola );
   zRANSACSaveInlierAuto( q_parabola, &sample, fit_case_parabola, error_case_parabola, NULL, R, NL, &inlier_parabola );
   print_case( q_plane, q_parabola );
 
   zVecFree( q_plane );
   zVecFree( q_parabola );
-  zListAppend( &sample, &inlier_plane );
-  zListAppend( &sample, &inlier_parabola );
+  zListSpliceAndMoveZ( &sample, &inlier_plane );
+  zListSpliceAndMoveZ( &sample, &inlier_parabola );
   zVecListDestroy( &sample );
   return 0;
 }

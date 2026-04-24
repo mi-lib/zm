@@ -1,5 +1,12 @@
 #include <zm/zm.h>
 
+void assert_equal(void)
+{
+  zAssert( zEqual (ordinary case), zEqual( 1.0, 1.1, 0.1 ) );
+  zAssert( zEqual (large case),    zEqual( 1.0e10, 1.1e10, 0.1 ) );
+  zAssert( zEqual (huge case),    !zEqual( 1.0, HUGE_VAL, zTOL ) );
+}
+
 void assert_deg2rad(void)
 {
   double val;
@@ -160,14 +167,10 @@ void assert_combination_pascaltriangle(void)
 int main(void)
 {
   zRandInit();
+  assert_equal();
   assert_deg2rad();
   assert_is_even_odd();
   assert_is_max_min();
-
-#if 0
-  zAssert( zIsSgnOpp, zIsSgnOpp( 1, -1 ) && !zIsSgnOpp( 1, 0 ) && !zIsSgnOpp( -1, 0 ) );
-#endif
-
   assert_phase_normalize();
   assert_ceil();
   assert_cube_cbrt();

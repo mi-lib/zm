@@ -6,9 +6,22 @@
 
 #include <zm/zm_misc.h>
 
+/* check if a test value is less than a base value. */
+bool zIsLess(double testval, double baseval)
+{
+  return testval < baseval;
+}
+
+/* check if a test value is greater than a base value. */
+bool zIsGreater(double testval, double baseval)
+{
+  return testval > baseval;
+}
+
 /* check if two values are equal. */
 bool zEqual(double a, double b, double tol)
 {
+  if( !zIsFinite( a ) || !zIsFinite( b ) ) return false;
   return zIsTol( a-b, tol*zMax( 1, zMax( fabs(a), fabs(b) ) ) );
 }
 

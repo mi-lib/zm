@@ -117,11 +117,16 @@
 #define ZM_ERR_INVALID_NUMSAMP             "too many samples %d required out of %d"
 
 #define ZM_ERR_OPT_NOEVALUATOR             "no evaluator assigned"
-#define ZM_ERR_OPT_INI                     "unable to set the initial point"
-#define ZM_ERR_OPT_STEP                    "unable to compute step length"
+#define ZM_ERR_OPT_NOINITIALPOINT          "unable to set the initial point"
+#define ZM_ERR_OPT_CANNOTFINDSTEP          "unable to compute step length"
 #define ZM_ERR_OPT_UNSOLVABLE              "optimal solution doesn't exist"
-#define ZM_ERR_OPT_INF                     "infinite solution exists"
+#define ZM_ERR_OPT_INFINITESOLUTION        "infinite solution exists"
 #define ZM_ERR_OPT_NONCONVEX               "cannot solve non-convex QP programs"
+#define ZM_ERR_OPT_NONUNIQUE               "solution not uniquely determined"
+
+#define ZM_ERR_OPT_LP2_INVALID_COSTFUNC    "invalid coefficient of cost function. c2 has to be non-zero"
+#define ZM_ERR_OPT_LP2_INVALID_CONSTRAINT  "invalid constraint, both coefficients are too small"
+#define ZM_ERR_OPT_LP2_NO_CONSTRAINT_PAIR  "paired constraints vanished"
 
 #define ZM_ERR_MVA_INVALID_SIZE            "invalid size of vector for clustering: %d"
 #define ZM_ERR_MVA_EMPTYSET                "empty set assigned"

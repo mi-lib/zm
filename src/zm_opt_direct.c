@@ -68,7 +68,7 @@ static void _zOptDIRECTRectFPrint(FILE *fp, zOptDIRECTRect *rect)
 #endif
 
 /* list of hyper-rectangle regions */
-zListClass(zOptDIRECTRectList, zOptDIRECTRectListCell, zOptDIRECTRect*);
+ZEDA_DEF_LIST_CLASS( zOptDIRECTRectList, zOptDIRECTRectListCell, zOptDIRECTRect* );
 
 /* insert a hyper-rectangle region into a list in an ascending order based on the evaluation */
 static bool _zOptDIRECTRectListInsert(zOptDIRECTRectList *list, zOptDIRECTRect *rect)

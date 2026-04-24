@@ -13,10 +13,10 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
-/*! \brief Gaussian model unit class
- *//* ******************************************************* */
-typedef struct{
+/*! \struct zGMMUnit
+ * \brief Gaussian model unit class.
+ */
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGMMUnit ){
   zVec core;   /*!< core vector */
   zMat cov;    /*!< variance-covariance matrix */
   double weight;
@@ -25,7 +25,7 @@ typedef struct{
   zVec _ci_e;    /* error multiplied by inverse of covariance */
   double _cov_det; /* determinant of covariance */
   /*! \endcond */
-} zGMMUnit;
+};
 
 /*! \brief initialize a unit Gaussian model. */
 __ZM_EXPORT zGMMUnit *zGMMUnitInit(zGMMUnit *gu);
@@ -36,15 +36,19 @@ __ZM_EXPORT zGMMUnit *zGMMUnitAlloc(zGMMUnit *gu, int core_size, int error_size)
 /*! \brief free internal vectors and matrices of a unit Gaussian model. */
 __ZM_EXPORT void zGMMUnitFree(zGMMUnit *gu);
 
-/* ********************************************************** */
-/*! \brief Gaussian mixture model class
- *//* ******************************************************* */
-zListClass( zGMMList, zGMMListCell, zGMMUnit );
-typedef struct{
+/*! \struct zGMMList
+ * \brief list of Gaussian models.
+ */
+ZEDA_DEF_LIST_CLASS( zGMMList, zGMMListCell, zGMMUnit );
+
+/*! \struct zGMM
+ * \brief Gaussian mixture model class.
+ */
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGMM ){
   zGMMList glist; /*!< list of Gaussian models */
   zVecClusterMethod method; /*!< methods for clustering */
   double log_likelihood; /*!< log-likelihood */
-} zGMM;
+};
 
 /*! \brief initialize a Gaussian mixture model */
 __ZM_EXPORT zGMM *zGMMInit(zGMM *gmm, int k, int size);

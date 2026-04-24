@@ -20,22 +20,22 @@ __BEGIN_DECLS
 /* advance type declaration */
 struct _zGraphNode;
 
-/* ********************************************************** */
-/*! \brief graph arc class.
- *//* ******************************************************* */
+/*! \strut zGraphArc
+ * \brief graph arc class.
+ */
 typedef struct _zGraphArc{
   struct _zGraphNode *node; /*!< \brief node to connect */
   double cost; /*!< \brief cost to move */
 } zGraphArc;
 
-/* ********************************************************** */
-/*! \brief graph arc set class.
- *//* ******************************************************* */
-zListClass(zGraphArcList, zGraphArcListCell, zGraphArc);
+/*! \struct zGraphArcList
+ * \brief graph arc set class.
+ */
+ZEDA_DEF_LIST_CLASS( zGraphArcList, zGraphArcListCell, zGraphArc );
 
-/* ********************************************************** */
-/*! \brief graph node class.
- *//* ******************************************************* */
+/*! \struct zGraphNode
+ * \brief graph node class.
+ */
 typedef struct _zGraphNode{
   double val;        /*!< \brief value of node */
   double hval;       /*!< \brief heuristic estimation value of node */
@@ -74,14 +74,14 @@ __ZM_EXPORT bool zGraphNodeConnect(zGraphNode *from, zGraphNode *to, double cost
  */
 __ZM_EXPORT bool zGraphNodeBiconnect(zGraphNode *n1, zGraphNode *n2, double cost);
 
-/* ********************************************************** */
-/*! \brief graph node list class.
- *//* ******************************************************* */
-zListClass(zGraphList, zGraphCell, zGraphNode);
+/*! \stsruct zGraphList
+ * \brief graph node list class.
+ */
+ZEDA_DEF_LIST_CLASS( zGraphList, zGraphCell, zGraphNode );
 
-/* ********************************************************** */
-/*! \brief graph class.
- *//* ******************************************************* */
+/*! \struct zGraph
+ * \brief graph class.
+ */
 typedef struct{
   zGraphList list;
   /* methods */
@@ -158,10 +158,10 @@ __ZM_EXPORT bool zGraphBiconnect(zGraph *graph, void *n1, void *n2, double cost)
  */
 __ZM_EXPORT void zGraphFPrint(FILE *fp, zGraph *graph);
 
-/* ********************************************************** */
-/*! \brief graph node list class.
- *//* ******************************************************* */
-zListClass(zGraphNodeList, zGraphNodeListCell, zGraphNode*);
+/*! \struct zGraphNodeList
+ * \brief graph node list class.
+ */
+ZEDA_DEF_LIST_CLASS( zGraphNodeList, zGraphNodeListCell, zGraphNode* );
 
 /*! \brief insert a node to a graph.
  *

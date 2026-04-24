@@ -11,12 +11,10 @@
 
 __BEGIN_DECLS
 
-/* ********************************************************** */
-/* CLASS: zVecArray
- * vector array class.
- * ********************************************************** */
-
-zArrayClass( zVecArray, zVec );
+/*! \struct zVecArray
+ * \brief vector array class.
+ */
+ZEDA_DEF_ARRAY_CLASS( zVecArray, zVec );
 
 /*! \brief allocate vector array.
  *

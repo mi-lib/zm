@@ -114,7 +114,7 @@ bool seqmodAppend(zStrList *arglist)
   cell = zListCellNext(cell);
   zListToHead( arglist, cell ){
     if( !zSeqScanFile( &subseq, cell->data ) ) continue;
-    zListAppend( &seq, &subseq );
+    zListSpliceAndMoveZ( &seq, &subseq );
   }
   sprintf( filename, "%s.a.%s", seqfile, ZSEQ_SUFFIX );
   zSeqPrintFile( &seq, filename );

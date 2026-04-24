@@ -278,7 +278,7 @@ bool zLPSolveSimplex(const zMat a, const zVec b, const zVec c, zVec ans, double 
   /* second phase: body problem */
   _zLTableauSetC( &tab, c );
   if( !zLPTableauSimplex( &tab ) ){
-    ZRUNERROR( ZM_ERR_OPT_INF );
+    ZRUNERROR( ZM_ERR_OPT_INFINITESOLUTION );
     goto TERMINATE;
   }
   if( cost ) *cost = tab.d;
