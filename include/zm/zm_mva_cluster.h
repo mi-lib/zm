@@ -101,73 +101,73 @@ __ZM_EXPORT void zVecClusterMethodDestroy(zVecClusterMethod *method);
  */
 ZEDA_DEF_LIST_CLASS( zVecClusterList, zVecClusterListCell, zVecCluster );
 
-/*! \struct zVecMCluster
+/*! \struct zVecMultiCluster
  * \brief multiple vector clusters.
  */
-ZDEF_STRUCT( __ZM_CLASS_EXPORT, zVecMCluster ){
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zVecMultiCluster ){
   zVecClusterList clist;    /*!< a list of clusters */
   zVecClusterMethod method; /*!< methods for core and error computation */
 };
 
-#define zVecMClusterClusterList(mc) ( &(mc)->clist )
+#define zVecMultiClusterClusterList(mc) ( &(mc)->clist )
 
 /*! \brief initialize multiple vector clusters.
  *
- * zVecMClusterInit() intializes a multiple clusters \a mc.
+ * zVecMultiClusterInit() intializes a multiple clusters \a mc.
  * \a size is the size of core vector, i.e., adjoint vector to samples, of a cluster, which is also
  * assigned to the size of error vector.
  * \return
- * zVecMClusterInit() returns a pointer \a mc if it succeeds to initialize \a mc.
+ * zVecMultiClusterInit() returns a pointer \a mc if it succeeds to initialize \a mc.
  * Otherwise, the null pointer is returned.
  */
-__ZM_EXPORT zVecMCluster *zVecMClusterInit(zVecMCluster *mc, int size);
+__ZM_EXPORT zVecMultiCluster *zVecMultiClusterInit(zVecMultiCluster *mc, int size);
 
-#define zVecMClusterErrorF(mc,v1,v2) zVecClusterMethodErrorF( &(mc)->method, v1, v2 )
-#define zVecMClusterDistF(mc,v1,v2)  zVecClusterMethodDistF( &(mc)->method, v1, v2 )
-#define zVecMClusterCoreF(mc,vl,c)   zVecClusterMethodCoreF( &(mc)->method, vl, c )
+#define zVecMultiClusterErrorF(mc,v1,v2) zVecClusterMethodErrorF( &(mc)->method, v1, v2 )
+#define zVecMultiClusterDistF(mc,v1,v2)  zVecClusterMethodDistF( &(mc)->method, v1, v2 )
+#define zVecMultiClusterCoreF(mc,vl,c)   zVecClusterMethodCoreF( &(mc)->method, vl, c )
 
-#define zVecMClusterSetErrorFunc(mc,se,fp,util) zVecClusterMethodSetErrorFunc( &(mc)->method, (se), (fp), (util) )
-#define zVecMClusterSetDistFunc(mc,fp,util)     zVecClusterMethodSetDistFunc( &(mc)->method, (fp), (util) )
-#define zVecMClusterSetCoreFunc(mc,sc,fp,util)  zVecClusterMethodSetCoreFunc( &(mc)->method, (sc), (fp), (util) )
+#define zVecMultiClusterSetErrorFunc(mc,se,fp,util) zVecClusterMethodSetErrorFunc( &(mc)->method, (se), (fp), (util) )
+#define zVecMultiClusterSetDistFunc(mc,fp,util)     zVecClusterMethodSetDistFunc( &(mc)->method, (fp), (util) )
+#define zVecMultiClusterSetCoreFunc(mc,sc,fp,util)  zVecClusterMethodSetCoreFunc( &(mc)->method, (sc), (fp), (util) )
 
-#define zVecMClusterSetLS(mc,util)   zVecClusterMethodSetLS( &(mc)->method, (util) )
+#define zVecMultiClusterSetLS(mc,util)   zVecClusterMethodSetLS( &(mc)->method, (util) )
 
 /*! \brief allocate a set of vector clusters.
  *
- * zVecMClusterAlloc() allocates memory for multiple clusters \a mc.
+ * zVecMultiClusterAlloc() allocates memory for multiple clusters \a mc.
  * \a n is the number of clusters.
  * \return
- * zVecMClusterAlloc() returns the pointer \a mc if it succeeds to allocate
+ * zVecMultiClusterAlloc() returns the pointer \a mc if it succeeds to allocate
  * memory. Otherwise, the null pointer is returned.
  */
-__ZM_EXPORT zVecMCluster *zVecMClusterAlloc(zVecMCluster *mc, int n);
+__ZM_EXPORT zVecMultiCluster *zVecMultiClusterAlloc(zVecMultiCluster *mc, int n);
 
 /*! \brief copy methods of a multiple cluster to another. */
-#define zVecMClusterMethodCopy(src,dest) zVecClusterMethodCopy( &(src)->method, &(dest)->method )
+#define zVecMultiClusterMethodCopy(src,dest) zVecClusterMethodCopy( &(src)->method, &(dest)->method )
 
 /*! \brief move a multiple cluster to another. */
-__ZM_EXPORT bool zVecMClusterMove(zVecMCluster *src, zVecMCluster *dest);
+__ZM_EXPORT bool zVecMultiClusterMove(zVecMultiCluster *src, zVecMultiCluster *dest);
 
 /*! \brief destroy a set of vector clusters. */
-__ZM_EXPORT void zVecMClusterDestroy(zVecMCluster *mc);
+__ZM_EXPORT void zVecMultiClusterDestroy(zVecMultiCluster *mc);
 
 /*! \brief evenness of clusters.
  *
- * zVecMClusterEvenness() returns the measure of evenness, namely, the ratio of
+ * zVecMultiClusterEvenness() returns the measure of evenness, namely, the ratio of
  * the maximum number of clustered samples over the minimum, of a multiple
  * cluster \a mc. \a mc is more even if it has as close value to 1.
  * \return
- * zVecMClusterEvenness() returns the measure of evenness.
+ * zVecMultiClusterEvenness() returns the measure of evenness.
  */
-__ZM_EXPORT double zVecMClusterEvenness(const zVecMCluster *mc);
+__ZM_EXPORT double zVecMultiClusterEvenness(const zVecMultiCluster *mc);
 
 /*! \brief print vectors in a set of vector clusters */
-__ZM_EXPORT void zVecMClusterFPrint(FILE *fp, const zVecMCluster *mc);
-__ZM_EXPORT void zVecMClusterValueFPrint(FILE *fp[], const zVecMCluster *mc);
-__ZM_EXPORT void zVecMClusterCoreFPrint(FILE *fp[], const zVecMCluster *mc);
+__ZM_EXPORT void zVecMultiClusterFPrint(FILE *fp, const zVecMultiCluster *mc);
+__ZM_EXPORT void zVecMultiClusterValueFPrint(FILE *fp[], const zVecMultiCluster *mc);
+__ZM_EXPORT void zVecMultiClusterCoreFPrint(FILE *fp[], const zVecMultiCluster *mc);
 
 /*! \brief print vectors in a set of clusters to files with a common basename. */
-__ZM_EXPORT bool zVecMClusterValuePrintFile(const zVecMCluster *mc, const char *basename);
+__ZM_EXPORT bool zVecMultiClusterValuePrintFile(const zVecMultiCluster *mc, const char *basename);
 
 /* ********************************************************** */
 /*! \brief clustering based on K-means
@@ -175,47 +175,47 @@ __ZM_EXPORT bool zVecMClusterValuePrintFile(const zVecMCluster *mc, const char *
 
 /*! \brief clustering of vectors by K-means.
  *
- * zVecMClusterKMeansKKZ() and zVecMClusterKMeans() make multiple clusters from a set of
- * samples based on K-means method. zVecMClusterKMeansKKZ() uses KKZ method for
- * initialization, while zVecMClusterKMeans() uses K-means++.
+ * zVecMultiClusterKMeansKKZ() and zVecMultiClusterKMeans() make multiple clusters from a set of
+ * samples based on K-means method. zVecMultiClusterKMeansKKZ() uses KKZ method for
+ * initialization, while zVecMultiClusterKMeans() uses K-means++.
  * For both functions, the resulted clusters are stored in \a mc. \a points is the
  * list of pointers to the original samples to be clusters. \a k is the number of
  * clusters.
  * \return
- * zVecMClusterKMeansKKZ() and zVecMClusterKMeans() return the number of iterations that
+ * zVecMultiClusterKMeansKKZ() and zVecMultiClusterKMeans() return the number of iterations that
  * is taken in the K-means method.
  */
-__ZM_EXPORT int zVecMClusterKMeansKKZ(zVecMCluster *mc, const zVecAddrList *points, int k);
-__ZM_EXPORT int zVecMClusterKMeans(zVecMCluster *mc, const zVecAddrList *points, int k);
+__ZM_EXPORT int zVecMultiClusterKMeansKKZ(zVecMultiCluster *mc, const zVecAddrList *points, int k);
+__ZM_EXPORT int zVecMultiClusterKMeans(zVecMultiCluster *mc, const zVecAddrList *points, int k);
 
 /*! \brief clustering of vectors by K-medoids.
  *
- * zVecMClusterKMedoids() makes multiple clusters from a set of samples based on K-medoids
+ * zVecMultiClusterKMedoids() makes multiple clusters from a set of samples based on K-medoids
  * method. It initializes clusters by the same method with K-means++.
  * The resulted clusters are stored in \a mc. \a points is the list of pointers to
  * the original samples to be clusters. \a k is the number of clusters.
  * \return
- * zVecMClusterKMedoids() returns the number of iterations that is taken in the method.
+ * zVecMultiClusterKMedoids() returns the number of iterations that is taken in the method.
  * \sa
- * zVecMClusterKMeansKKZ, zVecMClusterKMeans
+ * zVecMultiClusterKMeansKKZ, zVecMultiClusterKMeans
  */
-__ZM_EXPORT int zVecMClusterKMedoids(zVecMCluster *mc, const zVecAddrList *points, int k);
+__ZM_EXPORT int zVecMultiClusterKMedoids(zVecMultiCluster *mc, const zVecAddrList *points, int k);
 
 /*! \brief compute the mean silhouette of a set of clusters. */
-__ZM_EXPORT double zVecMClusterMeanSilhouette(zVecMCluster *mc);
+__ZM_EXPORT double zVecMultiClusterMeanSilhouette(zVecMultiCluster *mc);
 
 /*! \brief print silhouettes of a set of vector clusters to files. */
-__ZM_EXPORT bool zVecMClusterSilhouettePrintFile(const zVecMCluster *mc, const char *basename);
+__ZM_EXPORT bool zVecMultiClusterSilhouettePrintFile(const zVecMultiCluster *mc, const char *basename);
 
 /* ********************************************************** */
 /*! \brief clustering based on X-means
  *//* ******************************************************* */
 
 /*! \brief clustering of vectors by X-means based on hyperdensity of clusters. */
-__ZM_EXPORT int zVecMClusterXMeansDensity(zVecMCluster *mc, const zVecAddrList *points);
+__ZM_EXPORT int zVecMultiClusterXMeansDensity(zVecMultiCluster *mc, const zVecAddrList *points);
 
 /*! \brief clustering of vectors by X-means based on BIC */
-__ZM_EXPORT int zVecMClusterXMeansBIC(zVecMCluster *mc, const zVecAddrList *points);
+__ZM_EXPORT int zVecMultiClusterXMeansBIC(zVecMultiCluster *mc, const zVecAddrList *points);
 
 __END_DECLS
 

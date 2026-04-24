@@ -29,7 +29,7 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
 
 int main(int argc, char *argv[])
 {
-  zVecMCluster mc;
+  zVecMultiCluster mc;
   zVecList points;
   int np, nc;
   double score;
@@ -38,14 +38,14 @@ int main(int argc, char *argv[])
   nc = argc > 1 ? atoi( argv[1] ) : NC;
   np = argc > 2 ? atoi( argv[2] ) : NP;
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
-  zVecMClusterInit( &mc, 2 );
-  printf( "K-means completed in %d times of iteration.\n", zVecMClusterKMeans( &mc, &points, nc ) );
-  zVecMClusterValuePrintFile( &mc, "" );
-  score = zVecMClusterMeanSilhouette( &mc );
-  zVecMClusterSilhouettePrintFile( &mc, "s" );
+  zVecMultiClusterInit( &mc, 2 );
+  printf( "K-means completed in %d times of iteration.\n", zVecMultiClusterKMeans( &mc, &points, nc ) );
+  zVecMultiClusterValuePrintFile( &mc, "" );
+  score = zVecMultiClusterMeanSilhouette( &mc );
+  zVecMultiClusterSilhouettePrintFile( &mc, "s" );
   printf( "mean silhouette = %.10g\n", score );
 
-  zVecMClusterDestroy( &mc );
+  zVecMultiClusterDestroy( &mc );
   zVecListDestroy( &points );
   return 0;
 }

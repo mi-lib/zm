@@ -41,7 +41,7 @@ void vec_output(zVecList *points)
   fclose( fp );
 }
 
-void plane_output(zVecMCluster *mc)
+void plane_output(zVecMultiCluster *mc)
 {
   FILE *fp;
   zVecClusterListCell *c;
@@ -50,7 +50,7 @@ void plane_output(zVecMCluster *mc)
   fprintf( fp, "set isosamples 20\n" );
   fprintf( fp, "unset key\n" );
   fprintf( fp, "splot 'src'" );
-  zListForEach( zVecMClusterClusterList(mc), c ){
+  zListForEach( zVecMultiClusterClusterList(mc), c ){
     fprintf( fp, ", %g*x+%g*y+%g",
       zVecElem(c->data.core,0),
       zVecElem(c->data.core,1),
@@ -65,7 +65,7 @@ void plane_output(zVecMCluster *mc)
 
 int main(int argc, char *argv[])
 {
-  zVecMCluster mc;
+  zVecMultiCluster mc;
   zVecList points;
   int np, nc;
 
@@ -75,12 +75,12 @@ int main(int argc, char *argv[])
   gen_vec( &points, np, nc, 0, 0, 0, 10, 10, 10 );
   vec_output( &points );
 
-  zVecMClusterInit( &mc, 3 );
-  zVecMClusterSetLS( &mc, NULL );
-  printf( "K-means completed in %d times of iteration.\n", zVecMClusterKMeans( &mc, &points, nc ) );
+  zVecMultiClusterInit( &mc, 3 );
+  zVecMultiClusterSetLS( &mc, NULL );
+  printf( "K-means completed in %d times of iteration.\n", zVecMultiClusterKMeans( &mc, &points, nc ) );
   plane_output( &mc );
 
-  zVecMClusterDestroy( &mc );
+  zVecMultiClusterDestroy( &mc );
   zVecListDestroy( &points );
   return 0;
 }

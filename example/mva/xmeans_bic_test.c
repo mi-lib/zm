@@ -30,7 +30,7 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
 
 int main(int argc, char *argv[])
 {
-  zVecMCluster mc;
+  zVecMultiCluster mc;
   zVecClusterListCell *vcc;
   zVecList points;
   FILE *fp;
@@ -41,17 +41,17 @@ int main(int argc, char *argv[])
   np = argc > 1 ? atoi( argv[1] ) : NP;
   nc = argc > 2 ? atoi( argv[2] ) : NC;
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
-  zVecMClusterInit( &mc, 2 );
+  zVecMultiClusterInit( &mc, 2 );
   printf( "X-means completed in %d times of iteration.\n",
-    zVecMClusterXMeansBIC( &mc, &points ) );
+    zVecMultiClusterXMeansBIC( &mc, &points ) );
 
-  zListForEach( zVecMClusterClusterList(&mc), vcc ){
+  zListForEach( zVecMultiClusterClusterList(&mc), vcc ){
     sprintf( filename, "%d", i++ );
     fp = fopen( filename, "w" );
     zVecClusterValueFPrint( fp, &vcc->data );
     fclose( fp );
   }
-  zVecMClusterDestroy( &mc );
+  zVecMultiClusterDestroy( &mc );
   zVecListDestroy( &points );
   return 0;
 }

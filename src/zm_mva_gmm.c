@@ -287,14 +287,14 @@ static void _zGMMCreateEMMaximize(const zGMM *gmm, const zVecList *points, const
 /* create a Gaussian mixture model based on EM algorithm. */
 zGMM *zGMMCreateEM(zGMM *gmm, const zVecList *points)
 {
-  zVecMCluster mc;
+  zVecMultiCluster mc;
   zVecClusterListCell *cc;
   zGMMListCell *gc;
   zMat pdf, load;
   zVec load_det, nk;
   int k, i, iter = 0;
 
-  if( !zVecMClusterInit( &mc, gmm->method.core_size ) ||
+  if( !zVecMultiClusterInit( &mc, gmm->method.core_size ) ||
       !zVecClusterMethodCopy( &gmm->method, &mc.method ) )
     return NULL;
 
@@ -309,14 +309,14 @@ zGMM *zGMMCreateEM(zGMM *gmm, const zVecList *points)
     goto TERMINATE;
   }
   /* initialize Gaussians by K-means++ */
-  zVecMClusterKMeans( &mc, points, k );
+  zVecMultiClusterKMeans( &mc, points, k );
   gc = zListTail( &gmm->glist );
-  zListForEach( zVecMClusterClusterList(&mc), cc ){
+  zListForEach( zVecMultiClusterClusterList(&mc), cc ){
     _zGMMUnitEstim( &gc->data, zVecClusterSampleList(&cc->data), &gmm->method );
-    gc->data.weight = 1.0 / zListSize(zVecMClusterClusterList(&mc));
+    gc->data.weight = 1.0 / zListSize(zVecMultiClusterClusterList(&mc));
     gc = zListCellNext(gc);
   }
-  zVecMClusterDestroy( &mc );
+  zVecMultiClusterDestroy( &mc );
   /* iteration */
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){

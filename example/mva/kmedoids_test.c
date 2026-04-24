@@ -38,7 +38,7 @@ void gen_vec(zVecList *vl, int np, int nc, double xmin, double ymin, double xmax
 
 int main(int argc, char *argv[])
 {
-  zVecMCluster mc;
+  zVecMultiCluster mc;
   zVecList points;
   int np, nc;
 
@@ -46,10 +46,10 @@ int main(int argc, char *argv[])
   nc = argc > 1 ? atoi( argv[1] ) : NC;
   np = argc > 2 ? atoi( argv[2] ) : NP;
   gen_vec( &points, np, nc, 0, 0, 10, 10 );
-  zVecMClusterInit( &mc, 2 );
-  printf( "K-medoids completed in %d times of iteration.\n", zVecMClusterKMedoids( &mc, &points, nc ) );
-  zVecMClusterValuePrintFile( &mc, "" );
-  zVecMClusterDestroy( &mc );
+  zVecMultiClusterInit( &mc, 2 );
+  printf( "K-medoids completed in %d times of iteration.\n", zVecMultiClusterKMedoids( &mc, &points, nc ) );
+  zVecMultiClusterValuePrintFile( &mc, "" );
+  zVecMultiClusterDestroy( &mc );
   zVecListDestroy( &points );
   return 0;
 }
