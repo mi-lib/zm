@@ -488,41 +488,76 @@ __ZM_EXPORT zMat zMatCatDyad(zMat m, double k, const zVec v1, const zVec v2);
 __ZM_EXPORT double zMatTraceNC(const zMat m);
 __ZM_EXPORT double zMatTrace(const zMat m);
 
-/*! \brief multiplication of a matrix and a vector, or of two matrices.
+/*! \brief multiply a vector by a matrix.
  *
- * zMulMatVecNC() and zMulMatVec() multiply a vector \a v1 by a matrix \a m from the left side. The
- * result is put into \a v.
- * zMulMatVecDRC() directly multiplies \a v by \a m from the left side.
+ * zMulMatVec() multiplies a vector \a v1 by a matrix \a m from leftside.
+ * zMulMatTVec() multiplies a vector \a v1 by the transpose of a matrix \a m from leftside.
+ * These functions put the result into \a v.
  *
- * zMulMatTVecNC() and zMulMatTVec() multiply a vector \a v1 by transpose of a matrix \a m from the
- * left side. The result is put into \a v.
- * zMulVecMatDRC() directly multiplies \a v by transpose of \a m from the left side.
+ * zMulMatVecNC() and zMulMatTVecNC() do the same computations with zMulMatVec() and zMulMatTVec(), respectively,
+ * without checking size consistency.
  *
- * zMulMatMatNC() and zMulMatMat() calculate a multiplication \a m1 \a m2. The result is put into \a m.
- *
- * zMulMatMatTNC() and zMulMatMatT() multiply transpose of \a m2 by \a m1 from the left side. The
- * result is put into \a m.
- *
- * zMulMatTMatNC() and zMulMatTMat() multiply \a m2 by transpose of \a m1. The result is put into \a m.
+ * zMulMatVecDRC() multiplies \a v directly by \a m from leftside.
+ * zMulMatTVecDRC() multiplies \a v directly by the transpose of \a m from leftside.
  * \notes
- * zMul...DRC family requires more time for calculation because temporary memory allocation is done inside.
+ * zMulMatVecDRC() and zMulMatTVecDRC() take more time for calculation than zMulMatVec() and zMulMatTVec()
+ * because they internally allocate temporary memory.
  * \return
- * These functions return a pointer to the result.
+ * These functions return a pointer \a v.
  */
 __ZM_EXPORT zVec zMulMatVecNC(const zMat m, const zVec v1, zVec v);
 __ZM_EXPORT zVec zMulMatTVecNC(const zMat m, const zVec v1, zVec v);
+__ZM_EXPORT zVec zMulMatVec(const zMat m, const zVec v1, zVec v);
+__ZM_EXPORT zVec zMulMatTVec(const zMat m, const zVec v1, zVec v);
+__ZM_EXPORT zVec zMulMatVecDRC(const zMat m, zVec v);
+__ZM_EXPORT zVec zMulMatTVecDRC(const zMat m, zVec v);
+
+/*! \brief add/subtract a vector multiplied by a matrix to/from another vector.
+ *
+ * zVecAddMulMatVec() adds a vector \a v1 multiplied by a matrix \a m to another vector \a v0.
+ * zVecSubMulMatVec() subtracts a vector \a v1 multiplied by a matrix \a m from another vector \a v0.
+ * zVecAddMulMatVecNC() and zVecSubMulMatVecNC() do the same computations with zVecAddMulMatVec() and
+ * zVecSubMulMatVec(), respectively, without checking size consistency.
+ * These functions put results into \a v1.
+ *
+ * zVecAddMulMatVecDRC() adds a vector \a v1 multiplied by a matrix \a m directly to another vector \a v0.
+ * zVecSubMulMatVecDRC() subtracts a vector \a v1 multiplied by a matrix \a m directly from another vector \a v0.
+ * zVecAddMulMatVecNCDRC() and zVecSubMulMatVecNCDRC() do the same computations with zVecAddMulMatVecDRC()
+ * and zVecSubMulMatVecDRC(), respectively, without checking size consistency.
+ * These functions modify elements of \a v0.
+ * \return
+ * zVecAddMulMatVec(), zVecSubMulMatVec(), zVecAddMulMatVecNC(), and zVecSubMulMatVecNC() return a pointer \a v.
+ *
+ * zVecAddMulMatVecDRC(), zVecSubMulMatVecDRC(), zVecAddMulMatVecNCDRC(), and zVecSubMulMatVecNCDRC() return
+ * a pointer \a v0.
+ */
+__ZM_EXPORT zVec zVecAddMulMatVecNC(const zVec v0, const zMat m, const zVec v1, zVec v);
+__ZM_EXPORT zVec zVecSubMulMatVecNC(const zVec v0, const zMat m, const zVec v1, zVec v);
+__ZM_EXPORT zVec zVecAddMulMatVec(const zVec v0, const zMat m, const zVec v1, zVec v);
+__ZM_EXPORT zVec zVecSubMulMatVec(const zVec v0, const zMat m, const zVec v1, zVec v);
+__ZM_EXPORT zVec zVecAddMulMatVecNCDRC(zVec v0, const zMat m, const zVec v1);
+__ZM_EXPORT zVec zVecSubMulMatVecNCDRC(zVec v0, const zMat m, const zVec v1);
+__ZM_EXPORT zVec zVecAddMulMatVecDRC(zVec v0, const zMat m, const zVec v1);
+__ZM_EXPORT zVec zVecSubMulMatVecDRC(zVec v0, const zMat m, const zVec v1);
+
+/*! \brief multiply two matrices.
+ *
+ * zMulMatMat() multiplies a matrix \a m2 by another matrix \a m1 from leftside.
+ * zMulMatMatT() multiplies the transpose of a matrix \a m2 by another matrix \a m1 from leftside.
+ * zMulMatTMat() multiplies a matrix \a m2 by the transpose of another matrix \a m1 from leftside.
+ * These functions put the result into \a m.
+ *
+ * zMulMatMatNC(), zMulMatMatTNC(), and zMulMatTMatNC() do the same computations with zMulMatMat(),
+ * zMulMatMatT(), and zMulMatTMat(), respectively, without checking size consistency.
+ * \return
+ * These functions return a pointer \a m.
+ */
 __ZM_EXPORT zMat zMulMatMatNC(const zMat m1, const zMat m2, zMat m);
 __ZM_EXPORT zMat zMulMatMatTNC(const zMat m1, const zMat m2, zMat m);
 __ZM_EXPORT zMat zMulMatTMatNC(const zMat m1, const zMat m2, zMat m);
-
-__ZM_EXPORT zVec zMulMatVec(const zMat m, const zVec v1, zVec v);
-__ZM_EXPORT zVec zMulMatTVec(const zMat m, const zVec v1, zVec v);
 __ZM_EXPORT zMat zMulMatMat(const zMat m1, const zMat m2, zMat m);
 __ZM_EXPORT zMat zMulMatMatT(const zMat m1, const zMat m2, zMat m);
 __ZM_EXPORT zMat zMulMatTMat(const zMat m1, const zMat m2, zMat m);
-
-__ZM_EXPORT zVec zMulMatVecDRC(const zMat m, zVec v);
-__ZM_EXPORT zVec zMulMatTVecDRC(const zMat m, zVec v);
 
 /*! \brief quadratic multiplication of matrices and a weighting vector.
  *

@@ -294,6 +294,33 @@ __ZM_EXPORT double zRawMatTrace(const double *m, int colcapacity, int rowsize, i
  * zRawMulMatVec() multiplies a raw vector \a v1 by a raw matrix \a m.
  * zRawMulMatTVec() multiplies a raw vector \a v1 by the transpose of a raw matrix \a m.
  * For the both functions, the result is put into \a v.
+ * \return
+ * These functions return no values.
+ */
+__ZM_EXPORT void zRawMulMatVec(const double *m, int colcapacity, const double *v, int rowsize, int colsize, double *mv);
+__ZM_EXPORT void zRawMulMatTVec(const double *m, int colcapacity, const double *v, int rowsize, int colsize, double *mv);
+
+/*! \brief add/subtract a a raw vector multiplied by a raw matrix to/from another raw vector.
+ *
+ * zRawVecAddMulMatVec() adds a a raw vector \a v1 multiplied by a raw matrix \a m to another vector \a v0.
+ * zRawVecSubMulMatVec() subtracts a raw vector \a v1 multiplied by a raw matrix \a m from another vector \a v0.
+ * For these functions, the result is put into \a v.
+ *
+ * zRawVecAddMulMatVecDRC() adds a a raw vector \a v1 multiplied by a raw matrix \a m directly to another vector \a v0.
+ * zRawVecSubMulMatVecDRC subtracts a raw vector \a v1 multiplied by a raw matrix \a m directly from another vector \a v0.
+ * These functions directly modify elements of \a v0.
+ *
+ * The sizes of \a v0, \a m, \a v1, and \a v must be \a rowsize x 1, \a rowsize x \a colsize, \a colsize x 1, and \a rowsize x 1, respectively.
+ * \a colcapacity is the column-capacity of the raw matrix \a m, i.e., \a m is supposed to have sufficient memory for more than \a rowsize x \a colcapacity elements.
+ * \return
+ * These functions return no value.
+ */
+__ZM_EXPORT void zRawVecAddMulMatVec(const double *v0, const double *m, int colcapacity, const double *v1, int rowsize, int colsize, double *v);
+__ZM_EXPORT void zRawVecSubMulMatVec(const double *v0, const double *m, int colcapacity, const double *v1, int rowsize, int colsize, double *v);
+__ZM_EXPORT void zRawVecAddMulMatVecDRC(double *v0, const double *m, int colcapacity, const double *v1, int rowsize, int colsize);
+__ZM_EXPORT void zRawVecSubMulMatVecDRC(double *v0, const double *m, int colcapacity, const double *v1, int rowsize, int colsize);
+
+/*! \brief multiply a raw matrix by another raw matrix.
  *
  * zRawMulMatMat() multiplies a raw matrix \a m1 by another raw matrix \a m2 from the right side.
  * The sizes of \a m1 and \a m2 must be \a r1 x \a c1 and \a c1 x \a c2, respectively.
@@ -305,8 +332,6 @@ __ZM_EXPORT double zRawMatTrace(const double *m, int colcapacity, int rowsize, i
  * \return
  * These functions return no values.
  */
-__ZM_EXPORT void zRawMulMatVec(const double *m, int colcapacity, const double *v, int rowsize, int colsize, double *mv);
-__ZM_EXPORT void zRawMulMatTVec(const double *m, int colcapacity, const double *v, int rowsize, int colsize, double *mv);
 __ZM_EXPORT void zRawMulMatMat(const double *m1, int colcapacity1, int rowsize1, int colsize1, const double *m2, int colcapacity2, int rowsize2, int colsize2, double *m, int colcapacity3);
 __ZM_EXPORT void zRawMulMatMatT(const double *m1, int colcapacity1, int rowsize1, int colsize1, const double *m2, int colcapacity2, int rowsize2, int colsize2, double *m, int colcapacity3);
 __ZM_EXPORT void zRawMulMatTMat(const double *m1, int colcapacity1, int rowsize1, int colsize1, const double *m2, int colcapacity2, int rowsize2, int colsize2, double *m, int colcapacity3);

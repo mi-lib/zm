@@ -389,6 +389,34 @@ void zRawMulMatTVec(const double *m, int colcapacity, const double *v, int rowsi
     *( mv + i ) = zRawMatColInnerProd( m, colcapacity, v, rowsize, colsize, i );
 }
 
+/* add a a raw vector multiplied by a raw matrix to another. */
+void zRawVecAddMulMatVec(const double *v0, const double *m, int colcapacity, const double *v1, int rowsize, int colsize, double *v)
+{
+  for( ; --rowsize>=0; m+=colcapacity, v0++, v++ )
+    *v = *v0 + zRawVecInnerProd( m, v1, colsize );
+}
+
+/* subtract a raw vector multiplied by a raw matrix from another. */
+void zRawVecSubMulMatVec(const double *v0, const double *m, int colcapacity, const double *v1, int rowsize, int colsize, double *v)
+{
+  for( ; --rowsize>=0; m+=colcapacity, v0++, v++ )
+    *v = *v0 - zRawVecInnerProd( m, v1, colsize );
+}
+
+/* add a a raw vector multiplied by a raw matrix directly to another. */
+void zRawVecAddMulMatVecDRC(double *v0, const double *m, int colcapacity, const double *v1, int rowsize, int colsize)
+{
+  for( ; --rowsize>=0; m+=colcapacity, v0++ )
+    *v0 += zRawVecInnerProd( m, v1, colsize );
+}
+
+/* subtract a raw vector multiplied by a raw matrix directly from another. */
+void zRawVecSubMulMatVecDRC(double *v0, const double *m, int colcapacity, const double *v1, int rowsize, int colsize)
+{
+  for( ; --rowsize>=0; m+=colcapacity, v0++ )
+    *v0 -= zRawVecInnerProd( m, v1, colsize );
+}
+
 /* multiply a raw matrix by another. */
 void zRawMulMatMat(const double *m1, int colcapacity1, int rowsize1, int colsize1, const double *m2, int colcapacity2, int rowsize2, int colsize2, double *m, int colcapacity3)
 {

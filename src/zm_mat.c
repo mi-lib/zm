@@ -774,6 +774,118 @@ zVec zMulMatTVecNC(const zMat m, const zVec v1, zVec v)
   return v;
 }
 
+/* multiply a vector by a matrix from the left side. */
+zVec zMulMatVec(const zMat m, const zVec v1, zVec v)
+{
+  if( !zMatColVecSizeEqual( m, v1 ) || !zMatRowVecSizeEqual( m, v ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return NULL;
+  }
+  return zMulMatVecNC( m, v1, v );
+}
+
+/* multiply a vector by transpose of a matrix from the left side. */
+zVec zMulMatTVec(const zMat m, const zVec v1, zVec v)
+{
+  if( !zMatRowVecSizeEqual( m, v1 ) || !zMatColVecSizeEqual( m, v ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return NULL;
+  }
+  return zMulMatTVecNC( m, v1, v );
+}
+
+/* multiply a vector by a matrix directly. */
+zVec zMulMatVecDRC(const zMat m, zVec v)
+{
+  zVec tmp;
+
+  if( !( tmp = zVecAlloc( zVecSizeNC(v) ) ) ) return NULL;
+  zMulMatVec( m, v, tmp );
+  zVecCopyNC( tmp, v );
+  zVecFree( tmp );
+  return v;
+}
+
+/* multiply a vector by transpose of a matrix directly. */
+zVec zMulMatTVecDRC(const zMat m, zVec v)
+{
+  zVec tmp;
+
+  if( !( tmp = zVecAlloc( zVecSizeNC(v) ) ) ) return NULL;
+  zMulMatTVec( m, v, tmp );
+  zVecCopyNC( tmp, v );
+  zVecFree( tmp );
+  return v;
+}
+
+/* add a vector multiplied by a matrix to another vector without checking size consistency. */
+zVec zVecAddMulMatVecNC(const zVec v0, const zMat m, const zVec v1, zVec v)
+{
+  zRawVecAddMulMatVec( zVecBufNC(v0), zMatBufNC(m), zMatColCapacity(m), zVecBufNC(v1), zMatRowSizeNC(m), zMatColSizeNC(m), zVecBufNC(v) );
+  return v;
+}
+
+/* subtract a vector multiplied by a matrix from another vector without checking size consistency. */
+zVec zVecSubMulMatVecNC(const zVec v0, const zMat m, const zVec v1, zVec v)
+{
+  zRawVecSubMulMatVec( zVecBufNC(v0), zMatBufNC(m), zMatColCapacity(m), zVecBufNC(v1), zMatRowSizeNC(m), zMatColSizeNC(m), zVecBufNC(v) );
+  return v;
+}
+
+/* add a vector multiplied by a matrix to another vector. */
+zVec zVecAddMulMatVec(const zVec v0, const zMat m, const zVec v1, zVec v)
+{
+  if( !zMatRowVecSizeEqual( m, v0 ) || !zMatColVecSizeEqual( m, v1 ) || !zVecSizeEqual( v0, v ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return NULL;
+  }
+  return zVecAddMulMatVecNC( v0, m, v1, v );
+}
+
+/* subtract a vector multiplied by a matrix from another vector. */
+zVec zVecSubMulMatVec(const zVec v0, const zMat m, const zVec v1, zVec v)
+{
+  if( !zMatRowVecSizeEqual( m, v0 ) || !zMatColVecSizeEqual( m, v1 ) || !zVecSizeEqual( v0, v ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return NULL;
+  }
+  return zVecSubMulMatVecNC( v0, m, v1, v );
+}
+
+/* add a vector multiplied by a matrix directly to another vector without checking size consistency. */
+zVec zVecAddMulMatVecNCDRC(zVec v0, const zMat m, const zVec v1)
+{
+  zRawVecAddMulMatVecDRC( zVecBufNC(v0), zMatBufNC(m), zMatColCapacity(m), zVecBufNC(v1), zMatRowSizeNC(m), zMatColSizeNC(m) );
+  return v0;
+}
+
+/* subtract a vector multiplied by a matrix directly from another vector without checking size consistency. */
+zVec zVecSubMulMatVecNCDRC(zVec v0, const zMat m, const zVec v1)
+{
+  zRawVecSubMulMatVecDRC( zVecBufNC(v0), zMatBufNC(m), zMatColCapacity(m), zVecBufNC(v1), zMatRowSizeNC(m), zMatColSizeNC(m) );
+  return v0;
+}
+
+/* add a vector multiplied by a matrix directly to another vector. */
+zVec zVecAddMulMatVecDRC(zVec v0, const zMat m, const zVec v1)
+{
+  if( !zMatRowVecSizeEqual( m, v0 ) || !zMatColVecSizeEqual( m, v1 ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return NULL;
+  }
+  return zVecAddMulMatVecNCDRC( v0, m, v1 );
+}
+
+/* subtract a vector multiplied by a matrix directly from another vector. */
+zVec zVecSubMulMatVecDRC(zVec v0, const zMat m, const zVec v1)
+{
+  if( !zMatRowVecSizeEqual( m, v0 ) || !zMatColVecSizeEqual( m, v1 ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return NULL;
+  }
+  return zVecSubMulMatVecNCDRC( v0, m, v1 );
+}
+
 /* multiply two matrices without checking size consistency. */
 zMat zMulMatMatNC(const zMat m1, const zMat m2, zMat m)
 {
@@ -796,26 +908,6 @@ zMat zMulMatTMatNC(const zMat m1, const zMat m2, zMat m)
   zRawMulMatTMat( zMatBufNC(m1), zMatColCapacity(m1), zMatRowSizeNC(m1), zMatColSizeNC(m1),
     zMatBufNC(m2), zMatColCapacity(m2), zMatRowSizeNC(m2), zMatColSizeNC(m2), zMatBufNC(m), zMatColCapacity(m) );
   return m;
-}
-
-/* multiply a vector by a matrix from the left side. */
-zVec zMulMatVec(const zMat m, const zVec v1, zVec v)
-{
-  if( !zMatColVecSizeEqual( m, v1 ) || !zMatRowVecSizeEqual( m, v ) ){
-    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
-    return NULL;
-  }
-  return zMulMatVecNC( m, v1, v );
-}
-
-/* multiply a vector by transpose of a matrix from the left side. */
-zVec zMulMatTVec(const zMat m, const zVec v1, zVec v)
-{
-  if( !zMatRowVecSizeEqual( m, v1 ) || !zMatColVecSizeEqual( m, v ) ){
-    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
-    return NULL;
-  }
-  return zMulMatTVecNC( m, v1, v );
 }
 
 /* multiply two matrices. */
@@ -849,31 +941,6 @@ zMat zMulMatTMat(const zMat m1, const zMat m2, zMat m)
     return NULL;
   }
   return zMulMatTMatNC( m1, m2, m );
-}
-
-/* multiply a vector by a matrix directly.
- */
-zVec zMulMatVecDRC(const zMat m, zVec v)
-{
-  zVec tmp;
-
-  if( !( tmp = zVecAlloc( zVecSizeNC(v) ) ) ) return NULL;
-  zMulMatVec( m, v, tmp );
-  zVecCopyNC( tmp, v );
-  zVecFree( tmp );
-  return v;
-}
-
-/* multiply a vector by transpose of a matrix directly. */
-zVec zMulMatTVecDRC(const zMat m, zVec v)
-{
-  zVec tmp;
-
-  if( !( tmp = zVecAlloc( zVecSizeNC(v) ) ) ) return NULL;
-  zMulMatTVec( m, v, tmp );
-  zVecCopyNC( tmp, v );
-  zVecFree( tmp );
-  return v;
 }
 
 /* quadratic multiplication of matrices ('q = a diag{w} a^T') without checking size consistency. */

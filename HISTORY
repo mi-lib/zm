@@ -1,3 +1,5 @@
+2026.04.30. Added zVecAddMulMatVecNC, zVecSubMulMatVecNC, zVecAddMulMatVec, zVecSubMulMatVec, zVecAddMulMatVecNCDRC, zVecSubMulMatVecNCDRC, zVecAddMulMatVecDRC, and zVecSubMulMatVecDRC. [zm_mat]
+2026.04.30. Added zRawVecAddMulMatVec, zRawVecSubMulMatVec, zRawVecAddMulMatVecDRC, and zRawVecSubMulMatVecDRC. [zm_raw_mat]
 2026.04.24. Renamed zVecMCluster to zVecMultiCluster. [zm_mva_cluster, zm_mva_gmm, app]
 2026.04.24. Added zLPMegiddoDyer to solve a linear programming problem by Megiddo-Dyer algorithm (with a help of my AI assistant No. thirty). [zm_errmsg, zm_opt_lp_megiddodyer, zm_opt]
 2026.04.24. Renamed ZM_ERR_OPT_STEP to ZM_ERR_OPT_CANNOTFINDSTEP. [zm_errmsg, zm_opt_lcp_ip]

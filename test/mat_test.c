@@ -1,12 +1,9 @@
 #include <zm/zm.h>
 
-#define MAT_ROW_SIZE 12
-#define MAT_COL_SIZE 10
-
 void assert_mat_clone(void)
 {
-  const int rowsize = MAT_ROW_SIZE;
-  const int colsize = MAT_COL_SIZE;
+  const int rowsize = 12;
+  const int colsize = 10;
   zMat src, dest;
 
   src = zMatAlloc( rowsize, colsize );
@@ -140,7 +137,7 @@ void assert_mat_is_symmetric(void)
 {
   zMat m, mt;
   bool result = true;
-  const int row_size = MAT_ROW_SIZE;
+  const int row_size = 12;
 
   m  = zMatAllocSqr( row_size );
   mt = zMatAllocSqr( row_size );
@@ -155,8 +152,8 @@ void assert_mat_is_symmetric(void)
 
 void assert_mat_get_put(void)
 {
-  const int rowsize = MAT_ROW_SIZE;
-  const int colsize = MAT_COL_SIZE;
+  const int rowsize = 12;
+  const int colsize = 10;
   zMat mat_test1, mat_test2, mat_test3;
   zVec vec_test1, vec_test2;
   int i, j;
@@ -241,8 +238,8 @@ void assert_mat_elem_maxmin(void)
 
 void assert_mat_arith(void)
 {
-  const int rowsize = MAT_ROW_SIZE;
-  const int colsize = MAT_COL_SIZE;
+  const int rowsize = 12;
+  const int colsize = 10;
   zMat mat_test1, mat_test2, mat_test3;
   double k;
   int i, j;
@@ -326,8 +323,8 @@ void assert_mat_arith(void)
 
 void assert_mat_transpose(void)
 {
-  const int rowsize = MAT_ROW_SIZE;
-  const int colsize = MAT_COL_SIZE;
+  const int rowsize = 12;
+  const int colsize = 10;
   zMat mat_test1, mat_test2;
   double tr;
   int i, j;
@@ -455,6 +452,50 @@ void assert_mul_mat_vec(void)
   zAssert( zMulMatTMat, result_mtm );
 }
 
+void assert_vec_add_mul_mat_vec(void)
+{
+  zMat m;
+  zVec v, v1, v2, v3, v4, v5;
+  const int rowsize = 12;
+  const int colsize = 10;
+  const int testnum = 100;
+  int i;
+  bool result1, result2, result3, result4;
+
+  m = zMatAlloc( rowsize, colsize );
+  v = zVecAlloc( colsize );
+  v1 = zVecAlloc( rowsize );
+  v2 = zVecAlloc( rowsize );
+  v3 = zVecAlloc( rowsize );
+  v4 = zVecAlloc( rowsize );
+  v5 = zVecAlloc( rowsize );
+  result1 = result2 = result3 = result4 = true;
+  for( i=0; i<testnum; i++ ){
+    zMatRandUniform( m, -10, 10 );
+    zVecRandUniform( v, -10, 10 );
+    zVecRandUniform( v1,-10, 10 );
+    zMulMatVec( m, v, v2 );
+    zVecAdd( v1, v2, v3 );
+    zVecAddMulMatVec( v1, m, v, v4 );
+    zVecCopy( v1, v5 );
+    zVecAddMulMatVecDRC( v5, m, v );
+    if( !zVecEqual( v3, v4, zTOL ) ) result1 = false;
+    if( !zVecEqual( v3, v5, zTOL ) ) result2 = false;
+    zVecSub( v1, v2, v3 );
+    zVecSubMulMatVec( v1, m, v, v4 );
+    zVecCopy( v1, v5 );
+    zVecSubMulMatVecDRC( v5, m, v );
+    if( !zVecEqual( v3, v4, zTOL ) ) result3 = false;
+    if( !zVecEqual( v3, v5, zTOL ) ) result4 = false;
+  }
+  zMatFree( m );
+  zVecFreeAtOnce( 6, v, v1, v2, v3, v4, v5 );
+  zAssert( zVecAddMulMatVec, result1 );
+  zAssert( zVecAddMulMatVecDRC, result2 );
+  zAssert( zVecSubMulMatVec, result3 );
+  zAssert( zVecSubMulMatVecDRC, result4 );
+}
+
 void assert_mat_dyad(void)
 {
   zVec vec_test1, vec_test2;
@@ -511,8 +552,8 @@ void assert_mat_dyad(void)
 
 void assert_mat_quad(void)
 {
-  const int rowsize = MAT_ROW_SIZE;
-  const int colsize = MAT_COL_SIZE;
+  const int rowsize = 12;
+  const int colsize = 10;
   zMat a, w1, w2, tmp1, tmp2, q1, q2, qt1, qt2, e1, e2;
   zVec wv1, wv2;
 
@@ -555,12 +596,14 @@ void assert_mat_quad(void)
 void assert_mulmatmatmatt(void)
 {
   zMat a, q, m, qat, mtest;
+  const int rowsize = 12;
+  const int colsize = 10;
 
-  a = zMatAlloc( MAT_ROW_SIZE, MAT_COL_SIZE );
-  q = zMatAllocSqr( MAT_COL_SIZE );
-  qat = zMatAlloc( MAT_COL_SIZE, MAT_ROW_SIZE );
-  m = zMatAllocSqr( MAT_ROW_SIZE );
-  mtest = zMatAllocSqr( MAT_ROW_SIZE );
+  a = zMatAlloc( rowsize, colsize );
+  q = zMatAllocSqr( colsize );
+  qat = zMatAlloc( colsize, rowsize );
+  m = zMatAllocSqr( rowsize );
+  mtest = zMatAllocSqr( rowsize );
   zMatRandUniform( a, -10, 10 );
   zMatRandUniform( q, -10, 10 );
   zMulMatMatMatTNC( a, q, m );
@@ -573,12 +616,14 @@ void assert_mulmatmatmatt(void)
 void assert_mulmattmatmat(void)
 {
   zMat a, q, m, qa, mtest;
+  const int rowsize = 12;
+  const int colsize = 10;
 
-  a = zMatAlloc( MAT_ROW_SIZE, MAT_COL_SIZE );
-  q = zMatAllocSqr( MAT_ROW_SIZE );
-  qa = zMatAlloc( MAT_ROW_SIZE, MAT_COL_SIZE );
-  m = zMatAllocSqr( MAT_COL_SIZE );
-  mtest = zMatAllocSqr( MAT_COL_SIZE );
+  a = zMatAlloc( rowsize, colsize );
+  q = zMatAllocSqr( rowsize );
+  qa = zMatAlloc( rowsize, colsize );
+  m = zMatAllocSqr( colsize );
+  mtest = zMatAllocSqr( colsize );
   zMatRandUniform( a, -10, 10 );
   zMatRandUniform( q, -10, 10 );
   zMulMatTMatMatNC( a, q, m );
@@ -601,6 +646,7 @@ int main(void)
   assert_mat_arith();
   assert_mat_transpose();
   assert_mul_mat_vec();
+  assert_vec_add_mul_mat_vec();
   assert_mat_dyad();
   assert_mat_quad();
   assert_mulmatmatmatt();
