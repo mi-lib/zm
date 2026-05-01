@@ -1,3 +1,12 @@
+2026.05.01. Modified zMatDecompQR to always assign non-null pointer for the upper triangular matrix. [zm_le_lq]
+2026.05.01. Reimplemented zMatDecompLQFull and zMatDecompLQNull. [zm_le_lq]
+2026.05.01. Abolished _zMatDecompLQRank_Householder. [zm_le_lq]
+2026.05.01. Abolished zMatDecompLQAndResize. [zm_le_lq]
+2026.05.01. Renamed zMatDecompLQ_GramSchmidt_DST, zMatDecompLQ_GramSchmidt, and zMatDecompLQ_Householder to zMatDecompLQDST, zMatDecompLQ, and zMatDecompLQFull, respectively.
+2026.05.01. Abolished zMatDecompLQDST and zMatDecompLQ. [zm_le_lq]
+2026.05.01. Modified zMatDecompLUDST and zMatDecompCholeskyDST to order the index vector before iterations. [zm_le_lq]
+2026.05.01. Modified specifications of zMatDecompLUDST and zMatDecompCholeskyDST to automatically adjust sizes of the factorized matrices. [zm_le_lu]
+2026.05.01. Abolished zMatDecompLUAndResize and zMatDecompCholeskyAndResize. [zm_le_lu]
 2026.04.30. Added zVecAddMulMatVecNC, zVecSubMulMatVecNC, zVecAddMulMatVec, zVecSubMulMatVec, zVecAddMulMatVecNCDRC, zVecSubMulMatVecNCDRC, zVecAddMulMatVecDRC, and zVecSubMulMatVecDRC. [zm_mat]
 2026.04.30. Added zRawVecAddMulMatVec, zRawVecSubMulMatVec, zRawVecAddMulMatVecDRC, and zRawVecSubMulMatVecDRC. [zm_raw_mat]
 2026.04.24. Renamed zVecMCluster to zVecMultiCluster. [zm_mva_cluster, zm_mva_gmm, app]

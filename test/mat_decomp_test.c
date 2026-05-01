@@ -68,6 +68,7 @@ bool assert_mat_decomp_cholesky(int rowsize, int colsize, int n)
   s = zMatAlloc( rowsize, colsize );
   index = zIndexAlloc( rowsize );
   for( i=0; i<n; i++ ){
+    zMatResetSize( l );
     zMatRandUniform( s, -10, 10 );
     zMulMatMatT( s, s, m );
     zMatDecompCholesky( m, l, index );
@@ -93,6 +94,8 @@ bool assert_mat_decomp_lu(int rowsize, int colsize, int rank, int n)
   u = zMatAlloc( rowsize, colsize );
   index = zIndexAlloc( zMatColSizeNC(l) );
   for( i=0; i<n; i++ ){
+    zMatResetSize( l );
+    zMatResetSize( u );
     generate_matrix_composition( mat, rank );
     zMatDecompLU( mat, l, u, index );
     if( check_matrix_composition( mat, l, u, tol ) ) count_success++;
@@ -118,12 +121,9 @@ bool assert_mat_decomp_lq_one(int rowsize, int colsize, int rank, int n)
     zMatResetSize( l );
     zMatResetSize( q );
     generate_matrix_composition( mat, rank );
-    rank_result = zMatDecompLQAndResize( mat, l, q );
-    if( rank_result != rank ){
+    rank_result = zMatDecompLQ( mat, l, q );
+    if( rank_result != rank )
       eprintf( "assigned rank = %d / detected rank = %d, forcibly truncate.\n", rank, rank_result );
-      zMatColResize( l, rank );
-      zMatRowResize( q, rank );
-    }
     if( check_matrix_composition( mat, l, q, tol ) && check_matrix_orthogonality( q, rank, tol ) ) count_success++;
   }
  TERMINATE:
@@ -135,19 +135,18 @@ bool assert_mat_decomp_lq_one(int rowsize, int colsize, int rank, int n)
 bool assert_mat_decomp_lq_householder_one(int rowsize, int colsize, int rank, int n)
 {
   zMat mat, l, q;
-  int i, size, rank_result, count_success = 0;
+  int i, rank_result, count_success = 0;
   const double tol = 1.0e-10;
 
   mat = zMatAlloc( rowsize, colsize );
-  size = zMatMinSize( mat );
-  l = zMatAlloc( zMatRowSize(mat), size );
-  q = zMatAlloc( size, zMatColSize(mat) );
+  l = zMatAlloc( zMatRowSize(mat), zMatColSize(mat) );
+  q = zMatAllocSqr( zMatColSize(mat) );
   if( !mat || !l || !q ) goto TERMINATE;
   for( i=0; i<n; i++ ){
     zMatResetSize( l );
     zMatResetSize( q );
     generate_matrix_composition( mat, rank );
-    rank_result = zMatDecompLQ_Householder( mat, l, q );
+    rank_result = zMatDecompLQFull( mat, l, q );
     if( rank_result != rank ){
       eprintf( "assigned rank = %d / detected rank = %d, forcibly truncate.\n", rank, rank_result );
     }
@@ -164,13 +163,12 @@ bool assert_mat_decomp_lq_householder_one(int rowsize, int colsize, int rank, in
 bool assert_mat_decomp_lq_nullspace(int rowsize, int colsize, int rank, int n)
 {
   zMat mat, l, q, qnull, zero_check;
-  int i, size, rank_result, count_success = 0;
+  int i, rank_result, count_success = 0;
   const double tol = 1.0e-10;
 
   mat = zMatAlloc( rowsize, colsize );
-  size = zMatMinSize( mat );
-  l = zMatAlloc( zMatRowSize(mat), size );
-  q = zMatAlloc( size, zMatColSize(mat) );
+  l = zMatAlloc( zMatRowSize(mat), zMatColSize(mat) );
+  q = zMatAllocSqr( zMatColSize(mat) );
   qnull = zMatAllocSqr( zMatColSize(mat) );
   if( !mat || !l || !q || !qnull ) goto TERMINATE;
   for( i=0; i<n; i++ ){

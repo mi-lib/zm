@@ -13,34 +13,48 @@ __BEGIN_DECLS
 
 /*! \brief LU decomposition.
  *
- * zMatDecompLU() decomposes the matrix \a m into a lower triangular matrix \a l and an upper triangular
+ * zMatDecompLU() decomposes a matrix \a m into a lower triangular matrix \a l and an upper triangular
  * matrix \a u based on Crout method.
- * \a index is an index vector for order discription.
- * If \a m is degenerated, the sizes of \a l and \a u are automatically adjusted.
+ * \a index is an index vector for order description.
+ * If \a m is with the size of r x c, \a l and \a u are supposed to have more than or equal to r x s
+ * and s x c sizes, where s is the minimum of the row size and the column size of \a m.
+ * If \a m is degenerated, the sizes of \a l and \a u are automatically adjusted to be column-full-rank
+ * and row-full-rank, respectively.
  *
- * zMatDecompLUDST() destroys \a m during the LU decomposition.
+ * zMatDecompLUDST() also conducts the LU decomposition, during which the given matrix \a m is destroyed.
+ *
+ * zMatDecompLUAlloc() automatically allocates matrices \a l and \a u in addition to the index vector
+ * \a index, and then conducts the LU decomposition.
  * \return
- * zMatDecompLUDST() and zMatDecompLU() return the rank of \a m, which becomes the same with the minimum
- * of the row and column size of \a m when \a m is full rank.
+ * zMatDecompLUDST(), zMatDecompLU(), and zMatDecompLUAlloc() return the rank of \a m, which becomes
+ * the same with the minimum of the row and column size of \a m when \a m is full rank.
+ * If they fail to allocate internal memory for the computation or find mismatches of sizes of matrices,
+ * they return -1.
  */
-__ZM_EXPORT int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx);
-__ZM_EXPORT int zMatDecompLU(const zMat m, zMat l, zMat u, zIndex idx);
-__ZM_EXPORT int zMatDecompLUAndResize(const zMat m, zMat l, zMat u, zIndex idx);
-__ZM_EXPORT int zMatDecompLUAlloc(const zMat m, zMat *l, zMat *u, zIndex *idx);
+__ZM_EXPORT int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex index);
+__ZM_EXPORT int zMatDecompLU(const zMat m, zMat l, zMat u, zIndex index);
+__ZM_EXPORT int zMatDecompLUAlloc(const zMat m, zMat *l, zMat *u, zIndex *index);
 
 /* Cholesky decomposition.
  *
  * zMatDecompCholesky() decomposes a positive semi-definite symmetric matrix \a m into \a l \a l ^T.
+ * \a index is an index vector for order description
+ * \a l has to have the same size with \a m.
+ * If \a m is degenerated, the size of \a l is automatically adjusted to be column-full-rank.
  *
- * zMatDecompCholeskyDST() destroys \a m during the Cholesky decomposition.
+ * zMatDecompCholeskyDST() also conducts the Cholesky decomposition, during which the given matrix \a m
+ * is destroyed.
+ *
+ * zMatDecompCholeskyAlloc() automatically allocates matrix \a l and the index vector \a index, and then
+ * conducts the Cholesky decomposition.
  * \return
- * zMatDecompCholeskyDST() and zMatDecompCholesky() return the rank of \a m. If they fail to allocate
- * internal memory for the computation, it returns -1.
+ * zMatDecompCholeskyDST(), zMatDecompCholesky(), and zMatDecompCholeskyAlloc() return the rank of \a m.
+ * If they fail to allocate internal memory for the computation or find mismatches of sizes of matrices,
+ * they return -1.
  */
 __ZM_EXPORT int zMatDecompCholeskyDST(zMat m, zMat l, zIndex index);
 __ZM_EXPORT int zMatDecompCholesky(const zMat m, zMat l, zIndex index);
-__ZM_EXPORT int zMatDecompCholeskyAndResize(const zMat m, zMat l, zIndex idx);
-__ZM_EXPORT int zMatDecompCholeskyAlloc(const zMat m, zMat *l, zIndex *idx);
+__ZM_EXPORT int zMatDecompCholeskyAlloc(const zMat m, zMat *l, zIndex *index);
 
 __END_DECLS
 
