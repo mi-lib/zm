@@ -24,15 +24,12 @@ __BEGIN_DECLS
  * If \a m is degenerated, the sizes of \a l and \a q are automatically adjusted to be column-full-rank
  * and row-full-rank, respectively.
  *
- * zMatDecompLQDST() also conducts the LQ decomposition, during which the givein matrix \a m is destroyed.
- *
  * zMatDecompLQAlloc() automatically allocates matrices \a l and \a q, and then conducts the LQ decomposition.
  * \return
- * zMatDecompLQDST(), zMatDecompLQ(), and zMatDecompLQAlloc() return the rank of \a m.
+ * zMatDecompLQ() and zMatDecompLQAlloc() return the rank of \a m.
  * If they fail to allocate internal memory for the computation or find mismatches of sizes of matrices,
  * they return -1.
  */
-__ZM_EXPORT int zMatDecompLQDST(zMat m, zMat l, zMat q);
 __ZM_EXPORT int zMatDecompLQ(const zMat m, zMat l, zMat q);
 __ZM_EXPORT int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q);
 
@@ -43,11 +40,15 @@ __ZM_EXPORT int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q);
  *  \a l \a q = \a m.
  * If \a m is with the size of r x c, \a l and \a q are supposed to have more than or equal to r x c
  * and c x c sizes, respectively.
+ *
+ * zMatDecompLQFullAlloc() automatically allocates matrices \a l and \a q, and then conducts the full-sized
+ * LQ decomposition.
  * \return
- * zMatDecompLQFull() returns the rank of the matrix \a m, or -1 if it fails to allocate internal memory
- * or finds mismathces of sizes of matrices.
+ * zMatDecompLQFull() and zMatDecompLQFullAlloc() return the rank of the matrix \a m, or -1 if they fail
+ * to allocate internal memory or find mismathces of sizes of matrices.
  */
 __ZM_EXPORT int zMatDecompLQFull(const zMat m, zMat l, zMat q);
+__ZM_EXPORT int zMatDecompLQFullAlloc(const zMat m, zMat *l, zMat *q);
 
 /*! \brief LQ decomposition with the null-space projector.
  *

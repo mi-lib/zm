@@ -6,26 +6,66 @@
 
 #include <zm/zm_le.h>
 
-/* LQ decomposition based on Gram=Schmidt's method. (destructive) */
-int zMatDecompLQDST(zMat m, zMat l, zMat q)
+/* LQ decomposition of column-long rectangular matrices based on Gram=Schmidt's method. (destructive) */
+static int _zMatDecompLQDST_Q(zMat l, zMat q) /* the original matrix has to be stored in q. */
 {
   int i, j, rank;
-  double *mp, r;
+  double *qp, r;
 
   zMatZero( l );
-  for( rank=0, i=0; i<zMatRowSizeNC(m); i++ ){
-    mp = zMatRowBuf(m,i);
+  for( rank=0, i=0; i<zMatRowSizeNC(q); i++ ){
+    qp = zMatRowBufNC(q,i);
     for( j=0; j<rank; j++ ){
-      r = zRawVecInnerProd( mp, zMatRowBuf(q,j), zMatColSizeNC(m) );
-      zRawVecCatDRC( mp, -r, zMatRowBuf(q,j), zMatColSizeNC(q) );
+      r = zRawVecInnerProd( qp, zMatRowBufNC(q,j), zMatColSizeNC(q) );
+      zRawVecCatDRC( qp, -r, zMatRowBufNC(q,j), zMatColSizeNC(q) );
       zMatSetElemNC( l, i, j, r );
     }
-    if( zIsTol( ( r = zRawVecNorm(mp,zMatColSizeNC(m)) ), ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
-    zRawVecDiv( mp, r, zMatRowBuf(q,rank), zMatColSizeNC(m) );
+    if( zIsTol( ( r = zRawVecNorm(qp,zMatColSizeNC(q)) ) / zDataAbsMax(zMatRowBufNC(l,i),rank-1,NULL), ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
+    zRawVecDivDRC( qp, r, zMatColSizeNC(q) );
     zMatSetElemNC( l, i, rank, r );
-    if( rank < zMatColSizeNC(m) ) rank++;
+    if( rank < zMatColSizeNC(q) ) rank++;
   }
-  if( rank < zMatRowSizeNC(m) ){ /* automatically adjust sizes of factorized matrices */
+  if( rank < zMatRowSizeNC(q) ){ /* automatically adjust sizes of factorized matrices */
+    zMatColResize( l, rank ); /* to be column-full-rank */
+    zMatRowResize( q, rank ); /* to be row-full-rank */
+  }
+  return rank;
+}
+
+/* LQ decomposition of row-long rectangular matrices based on Gram=Schmidt's method. (destructive) */
+static int _zMatDecompLQDST_L(zMat l, zMat q) /* the original matrix has to be stored in l. */
+{
+  int i, j, rank;
+  double r0, r, *ws = NULL;
+
+  for( i=0; i<zMatRowSizeNC(l); i++ ){
+    if( !zIsTol( ( r0 = zRawVecNorm( zMatRowBufNC(l,i), zMatColSizeNC(l) ) ), ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ){
+      ws = zMatRowBufNC(l,i);
+      break;
+    }
+  }
+  if( !ws ){
+    ZRUNERROR( ZM_ERR_MAT_CANNOTDECOMPOSEZEROMAT );
+    return 0;
+  }
+  zRawVecDiv( ws, r0, zMatRowBufNC(q,0), zMatColSizeNC(l) ); /* temporary workspace */
+  for( rank=1, i++; i<zMatRowSizeNC(l); i++ ){
+    zRawVecCopy( zMatRowBufNC(l,i), ws, zMatColSizeNC(l) ); /* temporarily store the raw vector */
+    for( j=0; j<rank; j++ )
+      zMatSetElemNC( l, i, j, zRawVecInnerProd( ws, zMatRowBufNC(q,j), zMatColSizeNC(q) ) );
+    if( rank >= zMatColSizeNC(l) ) continue;
+    zRawVecCopy( ws, zMatRowBufNC(q,rank), zMatColSizeNC(q) ); /* temporarily store the raw vector */
+    for( j=0; j<rank; j++ )
+      zRawVecCatDRC( zMatRowBufNC(q,rank), -zMatElemNC(l,i,j), zMatRowBufNC(q,j), zMatColSizeNC(q) );
+    zMatSetElemNC( l, i, rank, ( r = zRawVecNorm( zMatRowBufNC(q,rank), zMatColSizeNC(q) ) ) );
+    zRawVecZero( zMatRowBufNC(l,i) + rank + 1, zMatColSizeNC(l) - rank - 1 );
+    if( zIsTol( r / zDataAbsMax(zMatRowBufNC(l,i),rank-1,NULL), ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
+    zRawVecDivDRC( zMatRowBufNC(q,rank), r, zMatColSizeNC(q) );
+    rank++;
+  }
+  *ws = r0;
+  zRawVecZero( ws + 1, zMatColSizeNC(l) - 1 );
+  if( rank < zMatRowSizeNC(q) ){ /* automatically adjust sizes of factorized matrices */
     zMatColResize( l, rank ); /* to be column-full-rank */
     zMatRowResize( q, rank ); /* to be row-full-rank */
   }
@@ -35,23 +75,34 @@ int zMatDecompLQDST(zMat m, zMat l, zMat q)
 /* LQ decomposition based on Gram=Schmidt's method. */
 int zMatDecompLQ(const zMat m, zMat l, zMat q)
 {
-  zMat mcp;
   int rank;
 
-  if( !( mcp = zMatClone( m ) ) ){
-    ZALLOCERROR();
-    return -1;
+  if( zMatRowSizeNC(m) > zMatColSizeNC(m) ){ /* column-long rectangular matrix */
+    if( !zMatSizeEqual( m, l ) || !zMatRowColSizeEqual( q, l ) || !zMatIsSqr( q ) ){
+      ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+      return -1;
+    }
+    zMatCopyNC( m, l );
+    rank = _zMatDecompLQDST_L( l, q );
+  } else{ /* row-long rectangular matrix */
+    if( !zMatSizeEqual( m, q ) || !zMatRowSizeEqual( m, l ) || !zMatIsSqr( l ) ){
+      ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+      return -1;
+    }
+    zMatCopyNC( m, q );
+    rank = _zMatDecompLQDST_Q( l, q );
   }
-  rank = zMatDecompLQDST( mcp, l, q );
-  zMatFree( mcp );
   return rank;
 }
 
 /* LQ decomposition with an automatic matrix allocation. */
 int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q)
 {
-  *l = zMatAllocSqr( zMatRowSizeNC(m) );
-  *q = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
+  int minsize;
+
+  minsize = zMin( zMatRowSizeNC(m), zMatColSizeNC(m) );
+  *l = zMatAlloc( zMatRowSizeNC(m), minsize );
+  *q = zMatAlloc( minsize, zMatColSizeNC(m) );
   if( !*l || !*q ){
     zMatFree( *l );
     zMatFree( *q );
@@ -94,12 +145,25 @@ static int _zMatDecompLQFullDST(zMat m, zMat q)
 /* full-sized LQ decomposition based on Householder method. */
 int zMatDecompLQFull(const zMat m, zMat l, zMat q)
 {
-  if( !zMatSizeEqual( m, l ) ){
+  if( !zMatSizeEqual( m, l ) || !zMatRowColSizeEqual( q, m ) || !zMatIsSqr( q ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return -1;
   }
   zMatCopyNC( m, l );
   return _zMatDecompLQFullDST( l, q );
+}
+
+/* full-sized LQ decomposition with an automatic matrix allocation based on Householder method. */
+int zMatDecompLQFullAlloc(const zMat m, zMat *l, zMat *q)
+{
+  *l = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
+  *q = zMatAllocSqr( zMatColSizeNC(m) );
+  if( !*l || !*q ){
+    zMatFree( *l );
+    zMatFree( *q );
+    return -1;
+  }
+  return zMatDecompLQFull( m, *l, *q );
 }
 
 /* LQ decomposition based on Householder method. */
@@ -130,7 +194,7 @@ int zMatDecompQR(const zMat m, zMat q, zMat r)
     goto TERMINATE;
   }
   zMatTNC( m, mcp );
-  rank = zMatDecompLQDST( mcp, rcp, qcp );
+  rank = zMatDecompLQ( mcp, rcp, qcp );
   zMatTNC( qcp, q );
   zMatTNC( rcp, r );
 

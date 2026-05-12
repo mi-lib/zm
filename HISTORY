@@ -1,3 +1,7 @@
+2026.05.13. Debugged zMatDecompLQAlloc. [zm_le_lq]
+2026.05.13. Added zMatDecompLQFullAlloc. [zm_le_lq]
+2026.05.13. Reimplemented zMatDecompLQ not to clone the given matrix by using _zMatDecompLQDST_Q and _zMatDecompLQDST_L. [zm_le_lq]
+2026.05.13. Abolished zMatDecompLQDST, and added _zMatDecompLQDST_Q and _zMatDecompLQDST_L. [zm_le_lq]
 2026.05.01. Modified zMatDecompQR to always assign non-null pointer for the upper triangular matrix. [zm_le_lq]
 2026.05.01. Reimplemented zMatDecompLQFull and zMatDecompLQNull. [zm_le_lq]
 2026.05.01. Abolished _zMatDecompLQRank_Householder. [zm_le_lq]
