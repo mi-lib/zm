@@ -12,9 +12,9 @@
 __BEGIN_DECLS
 
 /*! \brief golden ratio (sqrt(5)+1)/2 */
-#define zGOLDENRATIO  1.618033988749895
+#define ZM_GOLDENRATIO  1.618033988749895
 /*! \brief minor segment ratio of golden section (sqrt(5)+1)/(sqrt(5)-1) */
-#define zGOLDENRATIO2 0.381966011250105
+#define ZM_GOLDENRATIO2 0.381966011250105
 
 /*! \brief golden section method */
 __ZM_EXPORT double zOptLineGoldenSection(double (*eval)(double,void*), double xmin, double xmax, void *util, int iter);

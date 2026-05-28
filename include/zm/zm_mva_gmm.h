@@ -11,8 +11,6 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
 /*! \struct zGMMUnit
  * \brief Gaussian model unit class.
  */
@@ -27,6 +25,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGMMUnit ){
   /*! \endcond */
 };
 
+__BEGIN_DECLS
+
 /*! \brief initialize a unit Gaussian model. */
 __ZM_EXPORT zGMMUnit *zGMMUnitInit(zGMMUnit *gu);
 
@@ -35,6 +35,8 @@ __ZM_EXPORT zGMMUnit *zGMMUnitAlloc(zGMMUnit *gu, int core_size, int error_size)
 
 /*! \brief free internal vectors and matrices of a unit Gaussian model. */
 __ZM_EXPORT void zGMMUnitFree(zGMMUnit *gu);
+
+__END_DECLS
 
 /*! \struct zGMMList
  * \brief list of Gaussian models.
@@ -49,6 +51,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGMM ){
   zVecClusterMethod method; /*!< methods for clustering */
   double log_likelihood; /*!< log-likelihood */
 };
+
+__BEGIN_DECLS
 
 /*! \brief initialize a Gaussian mixture model */
 __ZM_EXPORT zGMM *zGMMInit(zGMM *gmm, int k, int size);

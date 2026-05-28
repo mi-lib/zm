@@ -11,8 +11,6 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
 /*! \struct clothoid curve interpolator. */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zClothoid ){
   double x0, y0; /*!< \brief initial point */
@@ -21,6 +19,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zClothoid ){
   double fs;     /*!< \brief shrinkage */
   double _h;     /*!< \brief length of segment */
 };
+
+__BEGIN_DECLS
 
 /*! \brief create a segment of clothoid curve.
  *

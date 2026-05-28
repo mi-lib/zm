@@ -12,8 +12,6 @@
 #include <zm/zm_raw.h>
 #include <zm/zm_stat.h>
 
-__BEGIN_DECLS
-
 /*! \struct zVecStruct and zVec
  * \brief double-precision floating-point value vector class.
  */
@@ -26,19 +24,19 @@ struct zVecStruct : public _zVecStruct {
   zVecStruct(int _size) : _zVecStruct( _size ) {}
   ~zVecStruct() {}
   void assignArray(int _size, double *_buf);
-  double operator[](int pos);
+  double &operator[](int pos);
   zVec setList(...);
   zVec zero();
   zVec touchup(double tol);
-  zVec copy(const zVec src);
-  zVec copy(int _size, const double array[]);
+  zVecStruct &operator=(const zVecStruct &src);
+  zVec copyArray(int _size, const double array[]);
   zVec clone();
   zVec get(int pos, zVec dest);
   zVec put(int pos, const zVec src);
   zVec setAll(double val);
   zVec linspace(double from, double to);
   zVec randUniform(double min, double max);
-  zVec rand(zVec min, zVec max);
+  zVec rand(const zVec min, const zVec max);
   zVec shift(double shift);
   zVec swap(int i1, int i2);
   void sort(zIndex index);
@@ -53,19 +51,19 @@ struct zVecStruct : public _zVecStruct {
   bool isIncluded(double val, double tol);
   bool isTol(double tol);
   bool isNan();
-  void resetSize();
-  zVec resize(int _size);
-  zVec scale(zVec min, zVec max);
+  zVec scale(const zVec min, const zVec max);
   zVec scaleUniform(double min, double max);
-  double sqrnorm();
+  double sqrNorm();
   double norm();
   zVec normalize();
-  friend std::ostream &operator<<(std::ostream &stream, zVec vec);
+  friend std::ostream &operator<<(std::ostream &stream, const zVec vec);
 };
 #else
 ZEDA_DEF_ARRAY_CLASS( zVecStruct, double );
 typedef zVecStruct* zVec;
 #endif /* __cplusplus */
+
+__BEGIN_DECLS
 
 /*! \brief capacity of a vector. */
 #define zVecCapacity(v)        zArrayCapacity(v)
@@ -94,7 +92,7 @@ typedef zVecStruct* zVec;
 #define zVecBuf(v)             ( (v) ? zArrayBuf(v) : NULL )
 
 /*! \brief assign a buffer of double-precision floating-point values to a vector. */
-#define zVecAssignArray(vec,size,buf) zArrayAssign( vec, buf, size )
+#define zVecAssignArray(vec,size,buf) zArrayAssign( vec, size, buf )
 
 /*! \brief get an element of a vector without checking size. */
 #define zVecElemNC(v,n)        zVecBufNC(v)[n]
@@ -236,7 +234,7 @@ __ZM_EXPORT zVec zVecPut(zVec dest, int pos, const zVec src);
 __ZM_EXPORT zVec zVecSetAll(zVec v, double val);
 __ZM_EXPORT zVec zVecLinSpace(zVec v, double from, double to);
 __ZM_EXPORT zVec zVecRandUniform(zVec v, double min, double max);
-__ZM_EXPORT zVec zVecRand(zVec v, zVec min, zVec max);
+__ZM_EXPORT zVec zVecRand(zVec v, const zVec min, const zVec max);
 __ZM_EXPORT zVec zVecShift(const zVec src, double shift, zVec dest);
 #define zVecShiftDRC(vec,shift) zVecShift( vec, shift, vec )
 
@@ -487,7 +485,7 @@ __ZM_EXPORT zVec zVecMid(const zVec v1, const zVec v2, zVec v);
  * \return
  * zVecScale() and zVecScaleUniform() return a pointer \a dest.
  */
-__ZM_EXPORT zVec zVecScale(const zVec src, zVec min, zVec max, zVec dest);
+__ZM_EXPORT zVec zVecScale(const zVec src, const zVec min, const zVec max, zVec dest);
 __ZM_EXPORT zVec zVecScaleUniform(const zVec src, double min, double max, zVec dest);
 
 /*! \brief inner product of vector.
@@ -619,7 +617,7 @@ __END_DECLS
 
 #ifdef __cplusplus
 inline void zVecStruct::assignArray(int _size, double *_buf){ zVecAssignArray( this, _size, _buf ); }
-inline double zVecStruct::operator[](int pos){ return zVecElemNC( this, pos ); }
+inline double &zVecStruct::operator[](int pos){ return zVecElemNC( this, pos ); }
 inline zVec zVecStruct::setList(...){
   va_list args;
   va_start( args, this );
@@ -629,18 +627,15 @@ inline zVec zVecStruct::setList(...){
 }
 inline zVec zVecStruct::zero(){ return zVecZero( this ); }
 inline zVec zVecStruct::touchup(double tol=zTOL){ return zVecTouchup( this, tol ); }
-inline zVec zVecStruct::copy(const zVec src){ return zVecCopy( src, this ); }
-inline zVec zVecStruct::copy(int _size, const double array[]){ return zVecCopyArray( array, _size, this ); }
-inline zVec zVecStruct::clone(){
-  zVec clonevec = new zVecStruct( this->size );
-  return clonevec ? clonevec->copy( this ) : nullptr;
-}
+inline zVecStruct &zVecStruct::operator=(const zVecStruct &src){ return *zVecCopy( const_cast<zVec>(&src), this ); }
+inline zVec zVecStruct::copyArray(int _size, const double array[]){ return zVecCopyArray( array, _size, this ); }
+inline zVec zVecStruct::clone(){ return zVecClone( this ); }
 inline zVec zVecStruct::get(int pos, zVec dest){ return zVecGet( this, pos, dest ); }
 inline zVec zVecStruct::put(int pos, const zVec src){ return zVecPut( this, pos, src ); }
 inline zVec zVecStruct::setAll(double val){ return zVecSetAll( this, val ); }
 inline zVec zVecStruct::linspace(double from, double to){ return zVecLinSpace( this, from, to ); }
 inline zVec zVecStruct::randUniform(double min, double max){ return zVecRandUniform( this, min, max ); }
-inline zVec zVecStruct::rand(zVec min, zVec max){ return zVecRand( this, min, max ); }
+inline zVec zVecStruct::rand(const zVec min, const zVec max){ return zVecRand( this, min, max ); }
 inline zVec zVecStruct::shift(double shift){ return zVecShiftDRC( this, shift ); }
 inline zVec zVecStruct::swap(int i1, int i2){ return zVecSwap( this, i1, i2 ); }
 inline void zVecStruct::sort(zIndex index){ zVecSort( this, index ); }
@@ -655,14 +650,12 @@ inline double zVecStruct::elemVar(){ return _zVecElemVar( this ); }
 inline bool zVecStruct::isIncluded(double val, double tol=zTOL){ return zVecValIsIncluded( this, val, tol ); }
 inline bool zVecStruct::isTol(double tol=zTOL){ return zVecIsTol( this, tol ); }
 inline bool zVecStruct::isNan(){ return zVecIsNan( this ); }
-inline void zVecStruct::resetSize(){ zVecResetSize( this ); }
-inline zVec zVecStruct::resize(int _size){ return zVecResize( this, _size ); }
-inline zVec zVecStruct::scale(zVec min, zVec max){ return zVecScale( this, min, max, this ); }
+inline zVec zVecStruct::scale(const zVec min, const zVec max){ return zVecScale( this, min, max, this ); }
 inline zVec zVecStruct::scaleUniform(double min, double max){ return zVecScaleUniform( this, min, max, this ); }
-inline double zVecStruct::sqrnorm(){ return zVecSqrNorm( this ); }
+inline double zVecStruct::sqrNorm(){ return zVecSqrNorm( this ); }
 inline double zVecStruct::norm(){ return zVecNorm( this ); }
 inline zVec zVecStruct::normalize(){ return zVecNormalizeDRC( this ); }
-inline std::ostream &operator<<(std::ostream &stream, zVec vec){
+inline std::ostream &operator<<(std::ostream &stream, const zVec vec){
   stream << vec->size << " ( " << (*vec)[0];
   for(int i=1; i<vec->size; i++ ) stream << ", " << (*vec)[i];
   stream << " )" << std::endl;

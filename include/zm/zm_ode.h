@@ -9,8 +9,6 @@
 
 #include <zm/zm_vec.h>
 
-__BEGIN_DECLS
-
 /*! \struct zODE
  *! \brief ordinary differential equation (ODE) quadrature class
  */
@@ -24,6 +22,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zODE ){
   void *_ws; /* workspace for utility */
   zVec _x1, _x2; /* workspace for deferred correction */
 };
+
+__BEGIN_DECLS
 
 /*! \brief initialize an ODE solver. */
 #define zODEInit(ode) do{ \

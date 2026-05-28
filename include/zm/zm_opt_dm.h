@@ -9,13 +9,10 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
 /* ********************************************************** */
 /*! \defgroup descent method for unconstrained nonlinear optimization
  * \{ *//* ************************************************** */
 
-/* ********************************************************** */
 /*! \struct zOptDM
  * \brief descent method for unconstrained nonlinear optimization
  *
@@ -27,17 +24,17 @@ __BEGIN_DECLS
  * 2. Levenberg-Marquardt's method,
  * 3. variable metric method (quasi Newton's method, secant method), and
  * 4. conjugate gradient method (Fletcher-Reeves' method).
- *//* ******************************************************* */
-typedef struct _zOptDM{
+ */
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
   double (* eval)(const zVec,void*);
   zVec (* grad)(const zVec,zVec,void*);
   zMat (* hess)(const zVec,zMat,void*);
   /*!< cond */
-  zVec (* _grad)(struct _zOptDM*,const zVec,zVec,void*);
-  zMat (* _hess)(struct _zOptDM*,const zVec,zMat,void*);
-  zVec (* _vec)(struct _zOptDM*,const zVec,zVec,void*);
-  zVec (* _step)(struct _zOptDM*,const zVec,void*,double,double*);
-  zMat (* _update_h)(struct _zOptDM*, int count);
+  zVec (* _grad)(zOptDM*,const zVec,zVec,void*);
+  zMat (* _hess)(zOptDM*,const zVec,zMat,void*);
+  zVec (* _vec)(zOptDM*,const zVec,zVec,void*);
+  zVec (* _step)(zOptDM*,const zVec,void*,double,double*);
+  zMat (* _update_h)(zOptDM*,int);
   double _scale;
   zVec _x, _d, _g;
   zVec _p, _q, _r;
@@ -46,7 +43,9 @@ typedef struct _zOptDM{
   double _b;  /* for Fletcher-Reeves */
   double _df; /* decrease factor */
   double _cf; /* curvature factor */
-} zOptDM;
+};
+
+__BEGIN_DECLS
 
 __ZM_EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double scale, double (* eval)(const zVec,void*), zVec (* grad)(const zVec,zVec,void*), zMat (* hess)(const zVec,zMat,void*));
 __ZM_EXPORT zOptDM *zOptDMAssignSD(zOptDM *opt, const char *stepmethod);

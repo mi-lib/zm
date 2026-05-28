@@ -2,7 +2,7 @@
 
 void assert_vec_setlist()
 {
-  zVec v = new zVecStruct {3};
+  zVec v = new zVecStruct{ 3 };
   v->setList( 1.0, 2.0, 3.0 );
   zAssert( C++::zVec (setList), (*v)[0] == 1.0 && (*v)[1] == 2.0 && (*v)[2] == 3.0 );
   delete v;
@@ -32,7 +32,7 @@ void assert_vec_get_put()
   zAssert( C++::zVec (get), memcmp( test_vec1->buf+2, test_vec3->buf, sizeof(double)*3 ) == 0 );
   test_vec2->put( 2, test_vec3 );
   zAssert( C++::zVec (put), memcmp( test_vec2->buf+2, test_vec3->buf, sizeof(double)*3 ) == 0 );
-  test_vec2->copy( test_vec1 );
+  *test_vec2 = *test_vec1;
   test_vec2->swap( 3, 6 );
   zAssert( C++::zVec (swap), test_vec1->buf[3] == test_vec2->buf[6] && test_vec1->buf[6] == test_vec2->buf[3] );
   delete test_vec1;
@@ -52,7 +52,7 @@ void assert_vec_resize()
   for(int i=0; i<n; i++ ){
     src->randUniform( -10, 10 );
     dest->resetSize();
-    dest->copy( src );
+    *dest = *src;
     src->get( 0, part );
     dest->resize( regsize );
     if( !zVecEqual( dest, part, zTOL ) ) result = false;
@@ -96,7 +96,7 @@ void assert_vec_shift()
   bool result = true;
   for(int i=0; i<n; i++ ){
     src->randUniform( -10, 10 );
-    dest->copy( src );
+    *dest = *src;
     dest->shift( ( shift = zRandF( -10, 10 ) ) );
     zVecSub( dest, src, error );
     for(int j=0; j<error->size; j++ )
@@ -123,7 +123,7 @@ void assert_vec_scale()
       if( min->buf[j] > max->buf[j] )
         zSwap( double, min->buf[j], max->buf[j] );
     src->randUniform( 0, 1 );
-    dest->copy( src );
+    *dest = *src;
     dest->scale( min, max );
     zVecSubDRC( dest, min );
     zVecSubDRC( max, min );
@@ -140,7 +140,7 @@ void assert_vec_scale()
     elem_min = zRandF( -10,  0 );
     elem_max = zRandF(   0, 10 );
     src->randUniform( 0, 1 );
-    dest->copy( src );
+    *dest = *src;
     dest->scaleUniform( elem_min, elem_max );
     dest->shift( -elem_min );
     zVecDivDRC( dest, ( elem_max - elem_min ) );
@@ -161,7 +161,7 @@ void assert_vec_normalize()
   zVec test_vec2 = new zVecStruct{ size };
   test_vec1->randUniform( -10, 10 );
   double norm = test_vec1->norm();
-  test_vec2->copy( test_vec1 );
+  *test_vec2 = *test_vec1;
   test_vec2->normalize();
   zAssert( C++::zVec (normalize), zIsTiny( test_vec2->norm() - 1 ) );
   bool result = true;

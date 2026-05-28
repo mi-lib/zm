@@ -10,8 +10,7 @@
 #include <zm/zm_misc.h>
 
 /* ********************************************************** */
-/* CATEGORY:
- * vector/matrix calculation using raw double precision
+/* vector/matrix calculation using raw double precision
  * floating-point value array
  * ********************************************************** */
 

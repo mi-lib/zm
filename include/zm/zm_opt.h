@@ -16,7 +16,7 @@
 #include <zm/zm_opt_qp.h>             /* quadratic programming */
 
 /*! \macro small quantity for finite-difference derivative */
-#define Z_OPT_EPS ( 1.0e-6 )
+#define ZM_OPT_EPS ( 1.0e-6 )
 
 #include <zm/zm_opt_dm.h>             /* descent method */
 

@@ -9,12 +9,12 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
 /*! \struct zVecArray
  * \brief vector array class.
  */
 ZEDA_DEF_ARRAY_CLASS( zVecArray, zVec );
+
+__BEGIN_DECLS
 
 /*! \brief allocate vector array.
  *

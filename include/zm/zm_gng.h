@@ -11,8 +11,6 @@
 
 #include <zm/zm_vec.h>
 
-__BEGIN_DECLS
-
 /* ********************************************************** */
 /*! \defgroup GNG
  * \{ *//* ************************************************** */
@@ -38,12 +36,12 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGNGUnitData ){
 
 ZEDA_DEF_LIST_CLASS( zGNGUnitList, zGNGUnit, zGNGUnitData );
 
-#define Z_GNG_DEFAULT_BATCH_TRIAL_SIZE         100
-#define Z_GNG_DEFAULT_LIFETIME                  50
-#define Z_GNG_DEFAULT_EXTENTION_COEFF_CLOSEST    0.2
-#define Z_GNG_DEFAULT_EXTENTION_COEFF_NEIGHBOR   0.006
-#define Z_GNG_DEFAULT_REDUCTION_RATIO1           0.5
-#define Z_GNG_DEFAULT_REDUCTION_RATIO2           0.995
+#define ZM_GNG_DEFAULT_BATCH_TRIAL_SIZE         100
+#define ZM_GNG_DEFAULT_LIFETIME                  50
+#define ZM_GNG_DEFAULT_EXTENTION_COEFF_CLOSEST    0.2
+#define ZM_GNG_DEFAULT_EXTENTION_COEFF_NEIGHBOR   0.006
+#define ZM_GNG_DEFAULT_REDUCTION_RATIO1           0.5
+#define ZM_GNG_DEFAULT_REDUCTION_RATIO2           0.995
 
 /*! \brief Growing Neural Gas class.
  *
@@ -72,6 +70,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGNG ){
 #define zGNGSetErrorReductionRatio1(gng,r)   ( (gng)->error_reduction_ratio1 = (r) )
 #define zGNGSetErrorReductionRatio2(gng,r)   ( (gng)->error_reduction_ratio2 = (r) )
 #define zGNGSetSampler(gng,s)                ( (gng)->sampler = (s) )
+
+__BEGIN_DECLS
 
 /*! \brief initialize Growing Neural Gas. */
 zGNG *zGNGInit(zGNG *gng, int dim, zVec (* f)(zVec,void*), void *util);

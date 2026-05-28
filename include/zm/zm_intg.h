@@ -11,8 +11,6 @@
 
 #include <zm/zm_misc.h>
 
-__BEGIN_DECLS
-
 /* ********************************************************** */
 /*! \defgroup intg numerical integrator.
  * \{ *//* ************************************************** */
@@ -20,14 +18,15 @@ __BEGIN_DECLS
 /* ********************************************************** */
 /*! \brief numerical integrator class.
  *//* ******************************************************* */
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIntg ){
   double s;  /*!< integral value */
   double x0; /*!< previous value */
-
   /*! \cond */
   double _dt, _x; /* for quadratic approximation */
   /*! \endcond */
-} zIntg;
+};
+
+__BEGIN_DECLS
 
 /*! \brief initialize numerical integrator.
  *

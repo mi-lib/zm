@@ -210,7 +210,7 @@ static zPex _zPexExpIm(zCVec ifactor)
   zVecSetSizeNC( ifactor, ( hsize = hhsize * 2 ) );
   p1 = _zPexExpIm( ifactor );
   zVecSetSizeNC( ifactor, size-hsize );
-  memcpy( zCVecBufNC(ifactor), zCVecBufNC(ifactor)+hsize, sizeof(zComplex)*zCVecSizeNC(ifactor) );
+  memcpy( (void *)zCVecBufNC(ifactor), (const void *)( zCVecBufNC(ifactor)+hsize ), sizeof(zComplex)*zCVecSizeNC(ifactor) );
   p2 = _zPexExpIm( ifactor );
   if( !p1 || !p2 ) goto TERMINATE;
   p = zPexMul( p1, p2 );

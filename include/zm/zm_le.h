@@ -87,12 +87,13 @@ __ZM_EXPORT zVec zLEResidual(const zMat a, const zVec b, const zVec x, zVec res)
  *
  * zLESolveGauss() solves linear equation \a a x = \a b based on Gaussian elimination.
  * The answer is put into \a ans.
- * \a s is used for column-balancing, if it is not the null pointer.
  *
  * zLESolveGaussDST() destructively modifies \a a and \a b while calculating.
+ * \a index is a workspace to store the order of pivots.
+ * \a s is used for column-balancing, if it is not the null pointer.
  * \return
- * zLESolveGaussDST() returns a pointer \a ans if succeeds. When \a a is a singular matrix, the equation
- * does not have a unique answer and the null pointer is returned.
+ * zLESolveGaussDST() and zLESolveGauss() return a pointer \a ans if they succeed.
+ * When \a a is a singular matrix, the equation does not have a unique answer and they return the null pointer.
  */
 __ZM_EXPORT zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex index, zVec s);
 __ZM_EXPORT zVec zLESolveGauss(const zMat a, const zVec b, zVec ans);
@@ -112,7 +113,7 @@ __ZM_EXPORT zVec zLESolveGauss(const zMat a, const zVec b, zVec ans);
  * \sa
  * zLUDecomp
  */
-__ZM_EXPORT zVec zLESolveL(const zMat l, const zVec b, zVec ans, const zIndex idx);
+__ZM_EXPORT zVec zLESolveL(const zMat l, const zVec b, zVec ans, const zIndex index);
 __ZM_EXPORT zVec zLESolveU(const zMat u, const zVec b, zVec ans);
 __ZM_EXPORT zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, const zIndex index);
 

@@ -9,13 +9,12 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
 /*! \struct zVecList
  * \brief vector list class.
  */
-
 ZEDA_DEF_LIST_CLASS( zVecList, zVecListCell, zVec );
+
+__BEGIN_DECLS
 
 /*! \brief insert a vector to a list at the head.
  *

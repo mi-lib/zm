@@ -7,7 +7,7 @@
 #include <zm/zm_mat.h>
 
 /* set matrix components from value list. */
-static zMat _zMatSetElemList(zMat m, va_list args)
+zMat zMatSetElemVList(zMat m, va_list args)
 {
   int i, j;
 
@@ -23,7 +23,7 @@ zMat zMatSetElemList(zMat m, ... )
   va_list args;
 
   va_start( args, m );
-  _zMatSetElemList( m, args );
+  zMatSetElemVList( m, args );
   va_end( args );
   return m;
 }
@@ -53,7 +53,7 @@ zMat zMatCreateList(int row, int col, ... )
 
   if( !( m = zMatAlloc( row, col ) ) ) return NULL;
   va_start( args, col );
-  _zMatSetElemList( m, args );
+  zMatSetElemVList( m, args );
   va_end( args );
   return m;
 }
@@ -114,14 +114,14 @@ zMat zMatIdent(zMat m)
 }
 
 /* create diagonal matrix without checking size consistency. */
-zMat zMatDiagNC(zMat m, zVec d)
+zMat zMatDiagNC(zMat m, const zVec d)
 {
   zRawMatDiag( zMatBufNC(m), zMatColCapacity(m), zVecBufNC(d), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;
 }
 
 /* create diagonal matrix. */
-zMat zMatDiag(zMat m, zVec d)
+zMat zMatDiag(zMat m, const zVec d)
 {
   if( !zMatIsSqr( m ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
@@ -142,7 +142,7 @@ zMat zMatRandUniform(zMat m, double min, double max)
 }
 
 /* create a random matrix with range matrices. */
-zMat zMatRand(zMat m, zMat min, zMat max)
+zMat zMatRand(zMat m, const zMat min, const zMat max)
 {
   zRawMatRand( zMatBufNC(m), zMatColCapacity(m), zMatBufNC(min), zMatColCapacity(min), zMatBufNC(max), zMatColCapacity(max), zMatRowSizeNC(m), zMatColSizeNC(m) );
   return m;

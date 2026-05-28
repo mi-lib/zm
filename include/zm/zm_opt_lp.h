@@ -9,10 +9,8 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
 /*! \brief simplex method tableau. */
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zLPTableau ){
   zMat a;    /*!< coefficient matrix */
   zVec b;    /*!< constraint vector */
   zVec c;    /*!< cost vector */
@@ -20,7 +18,9 @@ typedef struct{
   zIndex ib; /*!< base index */
   zIndex in; /*!< non-base index */
   zIndex ir; /*!< relevant constraint index */
-} zLPTableau;
+};
+
+__BEGIN_DECLS
 
 /*! \brief create initial simplex tableau with slack variables. */
 __ZM_EXPORT bool zLPTableauCreate(zLPTableau *tab, const zMat a, const zVec b);

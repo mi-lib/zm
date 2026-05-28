@@ -9,15 +9,18 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
-typedef struct _zVecTree{
+/*! \struct zVecTree
+ * \brief binary tree of vectors.
+ */
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zVecTree ){
   int split; /*!< split index */
   zVec v;    /*!< spliting vertex */
   zVec vmin; /*!< minimum corner of bounding box */
   zVec vmax; /*!< maximum corner of bounding box */
-  struct _zVecTree *s[2]; /*!< binary branches */
-} zVecTree;
+  zVecTree *s[2]; /*!< binary branches */
+};
+
+__BEGIN_DECLS
 
 __ZM_EXPORT zVecTree *zVecTreeInit(zVecTree *tree, int dim);
 __ZM_EXPORT void zVecTreeDestroy(zVecTree *tree);

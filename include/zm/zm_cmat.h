@@ -10,14 +10,14 @@
 #include <zm/zm_mat.h>
 #include <zm/zm_cvec.h>
 
-__BEGIN_DECLS
-
 /*! \struct zCMat
  * \brief complex matrix class.
  * \notes each element of a matrix (size=r*c) is in (0 - r-1,0 - c-1).
  */
 ZEDA_DEF_ARRAY2_CLASS( zCMatStruct, zComplex );
-typedef zCMatStruct * zCMat;
+typedef zCMatStruct* zCMat;
+
+__BEGIN_DECLS
 
 #define zCMatRowSizeNC(m)        zArray2RowSize(m)
 #define zCMatRowSize(m)          ( (m) ? zCMatRowSizeNC(m) : 0 )

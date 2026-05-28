@@ -11,25 +11,25 @@
 
 #include <zm/zm_misc.h>
 
-__BEGIN_DECLS
-
 /* ********************************************************** */
 /*! \defgroup oscil nonlinear oscillator.
  * \{ *//* ************************************************** */
 
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOscCom ){
   void (* init)(void*,double,double);     /*!< initializer */
   double (* update)(void*,double,double); /*!< update */
   double (* output)(void*);               /*!< oscillator output */
-} zOscCom;
+};
 
 /* ********************************************************** */
 /*! \brief a generalized oscillator class.
  *//* ******************************************************* */
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOsc ){
   void *prp;    /*!< oscillator properties */
   zOscCom *com; /*!< command set */
-} zOsc;
+};
+
+__BEGIN_DECLS
 
 /*! \brief destroy oscillator.
  *

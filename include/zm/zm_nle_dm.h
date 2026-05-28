@@ -12,8 +12,6 @@
 
 #include <zm/zm_opt.h>
 
-__BEGIN_DECLS
-
 /* ********************************************************** */
 /*! \defgroup descent method for simultaneous nonlinear equations
  * \{ *//* ************************************************** */
@@ -30,22 +28,24 @@ __BEGIN_DECLS
  * 5. Newton-Raphson's method, and
  * 6. Broyden's method.
  */
-typedef struct _zNLE{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNLE ){
   zVec (*f)(const zVec,zVec,void*);
   zMat (*jac)(const zVec,zMat,void*);
   void *util;
   zVec wn;
   zVec we;
   /*! >cond */
-  zMat (*_jac)(struct _zNLE*,zVec,zMat,void*);
-  int ( *_solve)(struct _zNLE*,zVec,void*,double,int,double*);
+  zMat (*_jac)(zNLE*,zVec,zMat,void*);
+  int ( *_solve)(zNLE*,zVec,void*,double,int,double*);
   zVec _f;
   zVec _fw;
   zVec _fp;
   zVec _adg, _prg; /* for numerical gradient computation */
   zMat _j;
   zOptDM _opt;
-} zNLE;
+};
+
+__BEGIN_DECLS
 
 /*! \brief create simultaneous nonlinear equations solver.
  *
@@ -103,8 +103,8 @@ __ZM_EXPORT zNLE *zNLEAssignBroyden(zNLE *nle);
  */
 #define zNLESolve(nle,var,util,tol,iter,err) (nle)->_solve( nle, var, util, tol, iter, err )
 
-/*! \} */
-
 __END_DECLS
+
+/*! \} */
 
 #endif /* __ZM_NLE_DM_H__ */

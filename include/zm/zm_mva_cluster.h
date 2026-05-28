@@ -11,8 +11,6 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
 /*! \struct zVecCluster
  * \brief vecter cluster class.
  */
@@ -24,6 +22,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zVecCluster ){
   double *_sil;       /* silhouettes */
   /*! \endcond */
 };
+
+__BEGIN_DECLS
 
 #define zVecClusterSampleList(c) ( &(c)->vlist )
 #define zVecClusterCore(c)       (c)->core
@@ -41,6 +41,8 @@ __ZM_EXPORT double zVecClusterMaxSilhouette(const zVecCluster *c);
 /*! \brief print a vector cluster to a file */
 __ZM_EXPORT void zVecClusterFPrint(FILE *fp, const zVecCluster *c);
 __ZM_EXPORT void zVecClusterValueFPrint(FILE *fp, const zVecCluster *c);
+
+__END_DECLS
 
 /*! \struct zVecClusterMethod
  * \brief methods for core and error computation.
@@ -61,6 +63,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zVecClusterMethod ){
   zVec _lerr; /* workspace for loaded error vector */
   /*! \endcond */
 };
+
+__BEGIN_DECLS
 
 #define zVecClusterMethodErrorF(cm,v1,v2) (cm)->error_fp( cm, (v1), (v2), (cm)->error_util, (cm)->error )
 #define zVecClusterMethodDistF(cm,v1,v2)  (cm)->dist_fp( cm, (v1), (v2), (cm)->dist_util )
@@ -96,6 +100,8 @@ __ZM_EXPORT zVecClusterMethod *zVecClusterMethodCopy(const zVecClusterMethod *sr
 /*! \brief destroy methods for clustering. */
 __ZM_EXPORT void zVecClusterMethodDestroy(zVecClusterMethod *method);
 
+__END_DECLS
+
 /*! \struct zVecClusterList
  * \brief list of vecter clusters.
  */
@@ -108,6 +114,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zVecMultiCluster ){
   zVecClusterList clist;    /*!< a list of clusters */
   zVecClusterMethod method; /*!< methods for core and error computation */
 };
+
+__BEGIN_DECLS
 
 #define zVecMultiClusterClusterList(mc) ( &(mc)->clist )
 

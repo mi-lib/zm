@@ -11,8 +11,6 @@
 
 #include <zm/zm_vec.h>
 
-__BEGIN_DECLS
-
 /* ********************************************************** */
 /*! \defgroup RRT
  * \{ *//* ************************************************** */
@@ -20,12 +18,12 @@ __BEGIN_DECLS
 /*! \struct zRRTNode
  * \brief RRT node class to construct open tree.
  */
-typedef struct _zRRTNode{
-  zVec v;                   /*!< a point vector */
-  double cost_edge;         /*!< edge cost to the parent */
-  double cost_total;        /*!< total cost */
-  struct _zRRTNode *parent; /*!< pointer to the parent node */
-} zRRTNode;
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zRRTNode ){
+  zVec v;            /*!< a point vector */
+  double cost_edge;  /*!< edge cost to the parent */
+  double cost_total; /*!< total cost */
+  zRRTNode *parent;  /*!< pointer to the parent node */
+};
 
 /*! \struct zRRTList
  * \brief RRT node list.
@@ -35,7 +33,7 @@ ZEDA_DEF_LIST_CLASS( zRRTList, zRRTListCell, zRRTNode );
 /*! \struct zRRT
  * \brief data structure for RRT family.
  */
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zRRT ){
   zRRTList slist; /*!< RRT from start node */
   zRRTList glist; /*!< RRT from goal node (for RRT-connect) */
   zVec min;       /*!< minimum bound of vectors */
@@ -48,7 +46,9 @@ typedef struct{
   bool (* _check_collision)(zVec,void*); /* collision-check function */
   bool (* _check_goal)(zVec,void*); /* goal-check function */
   /*! \endcond */
-} zRRT;
+};
+
+__BEGIN_DECLS
 
 /*! \brief set the distance function. */
 #define zRRTSetDistanceFunc(rrt,f)       ( (rrt)->_distance = (f) )

@@ -9,9 +9,9 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
+ZEDA_DEF_RING_CLASS( zVecRing, zVec );
 
-zRingClass( zVecRing, zVec );
+__BEGIN_DECLS
 
 /* create and destroy a vector ring.
  *

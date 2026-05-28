@@ -11,14 +11,12 @@
 #include <zm/zm_cvec.h>
 #include <zm/zm_le.h>
 
-__BEGIN_DECLS
-
-/* ********************************************************** */
-/* CLASS: zPex
- * polynomial expression class
- * ********************************************************** */
-
+/*! \struct zPex
+ * \brief polynomial expression class.
+ */
 typedef zVec zPex;
+
+__BEGIN_DECLS
 
 /* n-dim polynomial has n+1 coeficients including the constant term. */
 #define zPexDim(p)               ( zVecSizeNC(p) - 1 )

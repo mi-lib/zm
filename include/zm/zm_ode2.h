@@ -10,8 +10,6 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
 /*! \struct zODE2
  *! \brief second-order ordinary differential equation quadrature class
  */
@@ -28,6 +26,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zODE2 ){
   zODE _ode;   /* need for regular solution */
   zVec _x, _v, _a; /* working memory */
 };
+
+__BEGIN_DECLS
 
 /*! \brief initialize a second-order ODE solver. */
 #define zOD2EInit(ode) do{ \

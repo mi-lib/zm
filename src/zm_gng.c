@@ -147,12 +147,12 @@ zGNG *zGNGInit(zGNG *gng, int dim, zVec (* f)(zVec,void*), void *util)
   zListInit( &gng->unitlist );
   zListInit( &gng->edgelist );
   /* default parameters */
-  zGNGSetBatchTrialSize( gng, Z_GNG_DEFAULT_BATCH_TRIAL_SIZE );
-  zGNGSetLifetime( gng, Z_GNG_DEFAULT_LIFETIME );
-  zGNGSetExtentionCoeffClosest( gng, Z_GNG_DEFAULT_EXTENTION_COEFF_CLOSEST );
-  zGNGSetExtentionCoeffNeighbor( gng, Z_GNG_DEFAULT_EXTENTION_COEFF_NEIGHBOR );
-  zGNGSetErrorReductionRatio1( gng, Z_GNG_DEFAULT_REDUCTION_RATIO1 );
-  zGNGSetErrorReductionRatio2( gng, Z_GNG_DEFAULT_REDUCTION_RATIO2 );
+  zGNGSetBatchTrialSize( gng, ZM_GNG_DEFAULT_BATCH_TRIAL_SIZE );
+  zGNGSetLifetime( gng, ZM_GNG_DEFAULT_LIFETIME );
+  zGNGSetExtentionCoeffClosest( gng, ZM_GNG_DEFAULT_EXTENTION_COEFF_CLOSEST );
+  zGNGSetExtentionCoeffNeighbor( gng, ZM_GNG_DEFAULT_EXTENTION_COEFF_NEIGHBOR );
+  zGNGSetErrorReductionRatio1( gng, ZM_GNG_DEFAULT_REDUCTION_RATIO1 );
+  zGNGSetErrorReductionRatio2( gng, ZM_GNG_DEFAULT_REDUCTION_RATIO2 );
   zGNGSetSampler( gng, f ? f : _zGNGDefaultSampler );
   gng->_v  = zVecAlloc( dim );
   gng->_vm = zVecAlloc( dim );

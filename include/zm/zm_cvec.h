@@ -9,13 +9,13 @@
 
 #include <zm/zm_vec.h>
 
-__BEGIN_DECLS
-
 /*! \struct zComplex
  * \brief complex number vector class.
  */
 ZEDA_DEF_ARRAY_CLASS( zCVecStruct, zComplex );
 typedef zCVecStruct* zCVec;
+
+__BEGIN_DECLS
 
 /*! \brief size of a complex vector.
  * \retval the size of a complex vector if \a v is not null.

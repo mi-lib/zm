@@ -11,22 +11,20 @@
 
 #include <zm/zm_misc.h>
 
-__BEGIN_DECLS
-
 /* ********************************************************** */
 /*! \defgroup graph.
  * \{ *//* ************************************************** */
 
 /* advance type declaration */
-struct _zGraphNode;
+ZDECL_STRUCT( zGraphNode );
 
 /*! \strut zGraphArc
  * \brief graph arc class.
  */
-typedef struct _zGraphArc{
-  struct _zGraphNode *node; /*!< \brief node to connect */
-  double cost; /*!< \brief cost to move */
-} zGraphArc;
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGraphArc ){
+  zGraphNode *node; /*!< \brief node to connect */
+  double cost;      /*!< \brief cost to move */
+};
 
 /*! \struct zGraphArcList
  * \brief graph arc set class.
@@ -36,13 +34,15 @@ ZEDA_DEF_LIST_CLASS( zGraphArcList, zGraphArcListCell, zGraphArc );
 /*! \struct zGraphNode
  * \brief graph node class.
  */
-typedef struct _zGraphNode{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGraphNode ){
   double val;        /*!< \brief value of node */
   double hval;       /*!< \brief heuristic estimation value of node */
   void *data;        /*!< \brief data assigned to node */
   zGraphArcList arc; /*!< \brief set of arcs to adjacent nodes */
-  struct _zGraphNode *to; /*!< \brief node providing the minimum cost */
-} zGraphNode;
+  zGraphNode *to;    /*!< \brief node providing the minimum cost */
+};
+
+__BEGIN_DECLS
 
 /*! \brief initialize a graph node unidirectionally
  *
@@ -74,6 +74,8 @@ __ZM_EXPORT bool zGraphNodeConnect(zGraphNode *from, zGraphNode *to, double cost
  */
 __ZM_EXPORT bool zGraphNodeBiconnect(zGraphNode *n1, zGraphNode *n2, double cost);
 
+__END_DECLS
+
 /*! \stsruct zGraphList
  * \brief graph node list class.
  */
@@ -82,7 +84,7 @@ ZEDA_DEF_LIST_CLASS( zGraphList, zGraphCell, zGraphNode );
 /*! \struct zGraph
  * \brief graph class.
  */
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zGraph ){
   zGraphList list;
   /* methods */
   void *(* dup)(void*);
@@ -90,7 +92,9 @@ typedef struct{
   void (* fprint)(FILE*,void*);
   void (* destroy)(void*);
   double (* h)(void*,void*,void*);
-} zGraph;
+};
+
+__BEGIN_DECLS
 
 /*! \brief initialize a graph.
  *

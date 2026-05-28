@@ -123,7 +123,7 @@ zVec zLEResidual(const zMat a, const zVec b, const zVec x, zVec res)
 }
 
 /* linear equation solver based on Gauss's elimination method (destructive). */
-zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
+zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex index, zVec s)
 {
   int i, j, k, n, p, q;
   double ahead;
@@ -133,7 +133,7 @@ zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
   zMatVecBalancingDST( a, b, s );
   /* forward elimination */
   for( i=0; i<n; i++ ){
-    p = zMatPivoting( a, idx, i, i );
+    p = zMatPivoting( a, index, i, i );
     if( ( ahead = zMatElemNC(a,p,i) ) == 0 ){
       ZRUNERROR( ZM_ERR_MAT_SINGULAR );
       return NULL;
@@ -144,7 +144,7 @@ zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
       zMatElemNC(a,p,j) *= ahead;
     zVecElemNC(b,p) *= ahead;
     for( j=i+1; j<n; j++ ){
-      q = zIndexElemNC( idx, j );
+      q = zIndexElemNC( index, j );
       if( !zIsTiny( ahead = zMatElemNC(a,q,i) ) ){
         for( k=i+1; k<n; k++ )
           zMatElemNC(a,q,k) -= zMatElemNC(a,p,k) * ahead;
@@ -155,7 +155,7 @@ zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex idx, zVec s)
   }
   /* backward elimination */
   for( i=n-1; i>=0; i-- ){
-    x = zVecElemNC( b, ( p = zIndexElemNC(idx,i) ) );
+    x = zVecElemNC( b, ( p = zIndexElemNC(index,i) ) );
     for( j=n-1; j>i; j-- )
       x -= zMatElemNC(a,p,j)*zVecElemNC(ans,j);
     zVecSetElemNC( ans, i, x );
@@ -169,7 +169,7 @@ zVec zLESolveGauss(const zMat a, const zVec b, zVec ans)
 {
   zMat acp;
   zVec bcp, s;
-  zIndex idx;
+  zIndex index;
 
   if( !zMatIsSqr( a ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
@@ -182,26 +182,26 @@ zVec zLESolveGauss(const zMat a, const zVec b, zVec ans)
   acp = zMatClone( a );
   bcp = zVecClone( b );
   s = zVecAlloc( zVecSizeNC(b) );
-  idx = zIndexCreate( zVecSizeNC(b) );
-  if( acp && bcp && idx && s )
-    ans = zLESolveGaussDST( acp, bcp, ans, idx, s );
+  index = zIndexCreate( zVecSizeNC(b) );
+  if( acp && bcp && index && s )
+    ans = zLESolveGaussDST( acp, bcp, ans, index, s );
   else
     ZALLOCERROR();
   zMatFree( acp );
   zVecFree( bcp );
   zVecFree( s );
-  zIndexFree( idx );
+  zIndexFree( index );
   return ans;
 }
 
 /* a solver for Ly=b. */
-zVec zLESolveL(const zMat l, const zVec b, zVec ans, const zIndex idx)
+zVec zLESolveL(const zMat l, const zVec b, zVec ans, const zIndex index)
 {
   int i, j, p;
   double x;
 
-  for( i=0; i<zIndexSizeNC(idx); i++ ){
-    x = zVecElemNC( b, (p=zIndexElemNC(idx,i)) );
+  for( i=0; i<zIndexSizeNC(index); i++ ){
+    x = zVecElemNC( b, (p=zIndexElemNC(index,i)) );
     for( j=0; j<i; j++ )
       x -= zMatElemNC(l,p,j)*zVecElemNC(ans,j);
     zVecSetElemNC( ans, i, x/zMatElemNC(l,p,i) );
@@ -225,7 +225,7 @@ zVec zLESolveU(const zMat u, const zVec b, zVec ans)
 }
 
 /* a solver for LUx=b. */
-zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, const zIndex idx)
+zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, const zIndex index)
 {
   zVec c;
 
@@ -233,15 +233,15 @@ zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, const zIndex
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  if( zMatRowSize(l) != zIndexSizeNC(idx) ||
-      zMatRowSize(u) != zIndexSizeNC(idx) ||
-      zVecSize(b) != zIndexSizeNC(idx) ||
-      zVecSize(ans) != zIndexSizeNC(idx) ){
+  if( zMatRowSize(l) != zIndexSizeNC(index) ||
+      zMatRowSize(u) != zIndexSizeNC(index) ||
+      zVecSize(b) != zIndexSizeNC(index) ||
+      zVecSize(ans) != zIndexSizeNC(index) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
-  if( !( c = zVecAlloc( zIndexSizeNC(idx) ) ) ) return NULL;
-  zLESolveL( l, b, c, idx );
+  if( !( c = zVecAlloc( zIndexSizeNC(index) ) ) ) return NULL;
+  zLESolveL( l, b, c, index );
   zLESolveU( u, c, ans );
   zVecFree( c );
   return ans;
@@ -254,27 +254,27 @@ zVec zLESolveLURI(const zMat a, const zVec b, zVec ans)
   zMat l, u;
   zVec res, err;
   double err_norm, err_norm_old = HUGE_VAL;
-  zIndex idx;
+  zIndex index;
 
   l = zMatAllocSqr( zVecSizeNC(b) );
   u = zMatAllocSqr( zVecSizeNC(b) );
   res = zVecAlloc( zVecSizeNC(b) );
   err = zVecAlloc( zVecSizeNC(b) );
-  idx = zIndexCreate( zVecSizeNC(b) );
-  if( !l || !u || !res || !err || !idx ) goto TERMINATE;
+  index = zIndexCreate( zVecSizeNC(b) );
+  if( !l || !u || !res || !err || !index ) goto TERMINATE;
 
-  if( zMatDecompLU( a, l, u, idx ) < zMatRowSizeNC(a) ){
+  if( zMatDecompLU( a, l, u, index ) < zMatRowSizeNC(a) ){
     ZRUNERROR( ZM_ERR_MAT_SINGULAR );
     ans = NULL;
     goto TERMINATE;
   }
-  zLESolveLU( l, u, b, ans, idx );
+  zLESolveLU( l, u, b, ans, index );
   for( i=0; i<Z_MAX_ITER_NUM; i++ ){
     zLEResidual( a, b, ans, res );
     err_norm = zVecNorm( res );
     if( err_norm >= err_norm_old ) goto TERMINATE;
     err_norm_old = err_norm;
-    zLESolveLU( l, u, res, err, idx );
+    zLESolveLU( l, u, res, err, index );
     zVecAddNCDRC( ans, err );
   }
   ZITERWARN( Z_MAX_ITER_NUM );
@@ -284,7 +284,7 @@ zVec zLESolveLURI(const zMat a, const zVec b, zVec ans)
   zMatFree( u );
   zVecFree( res );
   zVecFree( err );
-  zIndexFree( idx );
+  zIndexFree( index );
   return ans;
 }
 
@@ -293,7 +293,7 @@ zVec zLESolveGaussSeidel(const zMat a, const zVec b, zVec ans)
 {
   int i, j, k, p, count;
   double x;
-  zIndex idx;
+  zIndex index;
 
   if( !zMatIsSqr(a) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
@@ -304,13 +304,13 @@ zVec zLESolveGaussSeidel(const zMat a, const zVec b, zVec ans)
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return NULL;
   }
-  if( !( idx = zIndexCreate(zVecSizeNC(ans)) ) ) return NULL;
-  for( i=0; i<zIndexSizeNC(idx); i++ )
-    zMatPivoting( a, idx, i, i );
+  if( !( index = zIndexCreate(zVecSizeNC(ans)) ) ) return NULL;
+  for( i=0; i<zIndexSizeNC(index); i++ )
+    zMatPivoting( a, index, i, i );
 
   for( i=0; ; i++ ){
     for( count=0, j=0; j<zVecSizeNC(b); j++ ){
-      p = zIndexElemNC(idx,j);
+      p = zIndexElemNC(index,j);
       x = zVecElemNC(b,p);
       for( k=0; k<zVecSizeNC(ans); k++ )
         if( k != j ) x -= zMatElemNC(a,p,k)*zVecElemNC(ans,k);
@@ -324,6 +324,6 @@ zVec zLESolveGaussSeidel(const zMat a, const zVec b, zVec ans)
       break;
     }
   }
-  zIndexFree( idx );
+  zIndexFree( index );
   return ans;
 }

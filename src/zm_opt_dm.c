@@ -18,11 +18,11 @@ static zVec _zOptDMGradNG(zOptDM *opt, const zVec var, zVec g, void *util)
 
   for( i=0; i<zVecSizeNC(var); i++ ){
     org = zVecElemNC(var,i);
-    zVecSetElemNC( var, i, org + Z_OPT_EPS );
+    zVecSetElemNC( var, i, org + ZM_OPT_EPS );
     adv = opt->eval( var, util );
-    zVecSetElemNC( var, i, org - Z_OPT_EPS );
+    zVecSetElemNC( var, i, org - ZM_OPT_EPS );
     prv = opt->eval( var, util );
-    zVecSetElemNC( g, i, 0.5 * ( adv - prv ) / Z_OPT_EPS );
+    zVecSetElemNC( g, i, 0.5 * ( adv - prv ) / ZM_OPT_EPS );
     zVecSetElemNC( var, i, org );
   }
   return g;
@@ -48,14 +48,14 @@ static zMat _zOptDMHessNG(zOptDM *opt, const zVec var, zMat h, void *util)
   }
   for( i=0; i<zVecSizeNC(var); i++ ){
     org = zVecElemNC(var,i);
-    zVecSetElemNC( var, i, org + Z_OPT_EPS );
+    zVecSetElemNC( var, i, org + ZM_OPT_EPS );
     opt->_grad( opt, var, adg, util );
-    zVecSetElemNC( var, i, org - Z_OPT_EPS );
+    zVecSetElemNC( var, i, org - ZM_OPT_EPS );
     opt->_grad( opt, var, prg, util );
     zRawVecSub( zVecBuf(adg), zVecBuf(prg), zMatRowBuf(h,i), zMatRowSizeNC(h) );
     zVecSetElemNC( var, i, org );
   }
-  zMatMulDRC( h, 0.5/Z_OPT_EPS );
+  zMatMulDRC( h, 0.5/ZM_OPT_EPS );
  TERMINATE:
   zVecFree( adg );
   zVecFree( prg );

@@ -9,18 +9,17 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
-/* ********************************************************** */
 /*! \struct zOptGAChromosome
  * \brief chromosome class for GA
  *
  * zOptGAChromosome defines a chromosome type for genetic algorithm.
- *//* ******************************************************* */
+ */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptGAChromosome ){
   double fitness;
   zVec gene;
 };
+
+__BEGIN_DECLS
 
 /*! \brief initialize a chromosome.
  */
@@ -69,10 +68,11 @@ __ZM_EXPORT zOptGAChromosome *zOptGAChromosomeRand(zOptGAChromosome *c, const zV
  */
 __ZM_EXPORT zOptGAChromosome *zOptGAChromosomeXover(const zOptGAChromosome *c1, const zOptGAChromosome *c2, zOptGAChromosome *c);
 
-/* ********************************************************** */
+__END_DECLS
+
 /*! \struct zOptGA
  * \brief GA solver class
- *//* ******************************************************* */
+ */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptGA ){
   int population;
   zOptGAChromosome *individual;
@@ -83,6 +83,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptGA ){
   double (* f)(zVec,void*);
   double eval;
 };
+
+__BEGIN_DECLS
 
 __ZM_EXPORT void zOptGAInit(zOptGA *ga);
 

@@ -11,8 +11,6 @@
 
 #include <zm/zm_misc.h>
 
-__BEGIN_DECLS
-
 /* pre-declaration of zmParseCell class */
 
 struct _zmParseCell;
@@ -171,6 +169,8 @@ typedef struct{
   int level;
   zmParseStatus status;
 } zmParser;
+
+__BEGIN_DECLS
 
 __ZM_EXPORT void zmParserInit(zmParser *parser);
 __ZM_EXPORT void zmParserDestroy(zmParser *parser);

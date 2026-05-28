@@ -11,8 +11,6 @@
 
 #include <zm/zm_pex.h>
 
-__BEGIN_DECLS
-
 /*! \struct zPexIP
  * \brief polynomial function class.
  *
@@ -29,6 +27,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zPexIP ){
   double term;
   zPex c;
 };
+
+__BEGIN_DECLS
 
 #define zPexIPDim(p)          zPexDim( (p)->c )
 

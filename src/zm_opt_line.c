@@ -7,10 +7,10 @@
 #include <zm/zm_opt.h>
 
 static double _zOptLineGoldenSectionUpdate1(double *x1, double xmin, double xmax, double (*eval)(double,void*), void *util){
-  return eval( ( *x1 = xmin + zGOLDENRATIO2 * ( xmax - xmin ) ), util );
+  return eval( ( *x1 = xmin + ZM_GOLDENRATIO2 * ( xmax - xmin ) ), util );
 }
 static double _zOptLineGoldenSectionUpdate2(double *x2, double xmin, double xmax, double (*eval)(double,void*), void *util){
-  return eval( ( *x2 = xmax - zGOLDENRATIO2 * ( xmax - xmin ) ), util );
+  return eval( ( *x2 = xmax - ZM_GOLDENRATIO2 * ( xmax - xmin ) ), util );
 }
 
 /* golden section method. */
@@ -83,13 +83,13 @@ double zOptLineBrent(double (*eval)(double,void*), double a, double b, void *uti
   ex = ew = ev = eval( x, util );
   ZITERINIT( iter );
   for( i=0; i<=iter; i++ ){
-    tol2 = 2 * ( tol1 = Z_OPT_EPS * fabs(x) + zTOL );
+    tol2 = 2 * ( tol1 = ZM_OPT_EPS * fabs(x) + zTOL );
     dm = x - ( xm = 0.5 * ( a + b ) );
     if( zIsTol( dm, tol2-0.5*(b-a) ) ) return x; /* succeed. */
     da = a - x;
     db = b - x;
     if( zIsTol( s, tol1 ) ){ /* golden section method */
-      d = zGOLDENRATIO2 * ( s = ( dm >= 0 ) ? da : db );
+      d = ZM_GOLDENRATIO2 * ( s = ( dm >= 0 ) ? da : db );
     } else{ /* try quadratic approximation */
       r = (x-w) * (ex-ev);
       q = (x-v) * (ex-ew);
@@ -98,7 +98,7 @@ double zOptLineBrent(double (*eval)(double,void*), double a, double b, void *uti
       q = fabs(q);
       if( !zIsTol( p, fabs(0.5*q*s) ) || p <= q * da || p >= q * db ){
         /* golden section method */
-        d = zGOLDENRATIO2 * ( s = ( dm >= 0 ) ? da : db );
+        d = ZM_GOLDENRATIO2 * ( s = ( dm >= 0 ) ? da : db );
       } else{ /* parabolic interpolation */
         s = d;
         u = x + ( d = p / q );

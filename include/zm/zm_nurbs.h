@@ -9,8 +9,6 @@
 
 #include <zm/zm_seq.h>
 
-__BEGIN_DECLS
-
 /*! \struct zBSplineParam
  * \brief B-spline parameter
  *
@@ -22,6 +20,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zBSplineParam ){
   zVec knot; /*!< \brief knot vector */
   int slice; /*!< \brief number of slices */
 };
+
+__BEGIN_DECLS
 
 #define ZM_BSPLINE_DEFAULT_SLICE 32
 
@@ -71,6 +71,8 @@ __ZM_EXPORT double zBSplineParamBasis(const zBSplineParam *param, double t, int 
 /*! \brief derivative of the basis function of B-spline family. */
 __ZM_EXPORT double zBSplineParamBasisDiff(const zBSplineParam *param, double t, int i, int r, int seg, int diff);
 
+__END_DECLS
+
 /*! \struct zNURBSCPCell
  * \brief cell of NURBS containing a control point and weight.
  *
@@ -101,6 +103,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNURBS ){
   zBSplineParam param;   /*!< \brief B-spline parameter */
   zNURBSCPArray cparray; /*!< \brief an array of control points */
 };
+
+__BEGIN_DECLS
 
 #define zNURBSKnotNum(nurbs)       zBSplineParamKnotNum( &(nurbs)->param )
 #define zNURBSKnot(nurbs,i)        zBSplineParamKnot( &(nurbs)->param, i )

@@ -9,10 +9,8 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
 /*! \brief workspace for generalized linear equation solvers. */
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zLEWorkspace ){
   /*! \cond */
   /* for regular linear equation solver */
   zMat m_regular;   /* an internal matrix to be inverted. */
@@ -29,7 +27,9 @@ typedef struct{
   zMat r_facto;     /* right hand matrix */
   zIndex index_lu;  /* an index vector for LU decomposition */
   /*! \endcond */
-} zLEWorkspace;
+};
+
+__BEGIN_DECLS
 
 /*! \brief initialize workspace for generalized linear equation solver. */
 __ZM_EXPORT void zLEWorkspaceInit(zLEWorkspace *workspace);

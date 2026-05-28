@@ -11,14 +11,14 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
 /*! \struct \brief histogram class. */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zHistogram ){
   double min; /*!< \brief minimum value */
   double max; /*!< \brief maximum value */
   zIndex bin; /*!< \brief bin */
 };
+
+__BEGIN_DECLS
 
 #define zHistogramBinSize(histogram)    zIndexSize( (histogram)->bin )
 #define zHistogramBinCount(histogram,i) zIndexElem( (histogram)->bin, i )

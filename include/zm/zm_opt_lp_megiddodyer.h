@@ -9,15 +9,13 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
 /*! \struct zLPMegiddoDyerConstraint
  * \brief linear inequality constraint: a1 x1 + a2 x2 <= b -> y ><= m x + y0
  */
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zLPMegiddoDyerConstraint ){
   double m;
   double y0;
-} zLPMegiddoDyerConstraint;
+};
 
 /*! \struct zLPMegiddoDyerConstraintList
  * \brief list of inequality constraints.
@@ -32,12 +30,12 @@ ZEDA_DEF_LIST_CLASS( zLPMegiddoDyerConstraintPtrList, zLPMegiddoDyerConstraintPt
 /*! \struct zLPMegiddoDyerConstraintPair
  * \brief a pair of linear inequality constraints.
  */
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zLPMegiddoDyerConstraintPair ){
   zLPMegiddoDyerConstraintPtrListCell *cp1;
   zLPMegiddoDyerConstraintPtrListCell *cp2;
   double x;
   double y;
-} zLPMegiddoDyerConstraintPair;
+};
 
 /*! \struct zLPMegiddoDyerConstraintPairList
  * \brief list of pairs of linear inequality constraints.
@@ -57,7 +55,7 @@ ZEDA_DEF_LIST_CLASS( zLPMegiddoDyerConstraintPairList, zLPMegiddoDyerConstraintP
  *  zLPMegiddoDyerSolve( &lp, &x1, &x2, &cost );
  *  zLPMegiddoDyerDestroy( &lp );
  */
-typedef struct{
+ZDEF_STRUCT( __ZM_CLASS_EXPORT, zLPMegiddoDyer ){
   double cost_c1; /*!< \brief a coefficient of the first variable of cost function */
   double cost_c2; /*!< \brief a coefficient of the second variable of cost function */
   double x_min;   /*!< \brief minimum bound of x */
@@ -76,7 +74,9 @@ typedef struct{
   double ml_max; /* maximum gradient of lowerbound segments */
   ubyte feasibility_flag;
   /*! \endcond */
-} zLPMegiddoDyer;
+};
+
+__BEGIN_DECLS
 
 /*! \brief initialize properties for Megiddo-Dyer algorithm. */
 __ZM_EXPORT void zLPMegiddoDyerInit(zLPMegiddoDyer *lp);

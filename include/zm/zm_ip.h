@@ -11,8 +11,6 @@
 
 #include <zm/zm_seq.h>
 
-__BEGIN_DECLS
-
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPKnotCell ){
   double t;     /*!< time stamp */
   zSeqCell *cp; /*!< a pointer to the corresponding sequence cell */
@@ -35,6 +33,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPData ){
 #define zIPDataSecVec(dat,i)     ( zIPDataKnot(dat,i)->cp->data.v )
 #define zIPDataSecVal(dat,i,j)   zVecElemNC( zIPDataSecVec(dat,i), j )
 
+__BEGIN_DECLS
+
 /* allocate and free the internal workspace of an interpolator. */
 __ZM_EXPORT bool zIPDataAlloc(zIPData *dat, const zSeq *seq);
 __ZM_EXPORT void zIPDataFree(zIPData *dat);
@@ -48,6 +48,8 @@ __ZM_EXPORT void zIPDataFree(zIPData *dat);
  */
 __ZM_EXPORT int zIPDataSeg(const zIPData *dat, double t);
 
+__END_DECLS
+
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIPCom ){
   zVec (*vec)(const zIPData*,double,zVec);
   zVec (*vel)(const zIPData*,double,zVec);
@@ -60,6 +62,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zIP ){
   zIPData dat;
   zIPCom *com;
 };
+
+__BEGIN_DECLS
 
 #define zIPSize(ip)        zIPDataSize( &(ip)->dat )
 #define zIPKnot(ip,i)      zIPDataKnot( &(ip)->dat, i )

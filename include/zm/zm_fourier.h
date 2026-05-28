@@ -9,8 +9,6 @@
 
 #include <zm/zm_misc.h>
 
-__BEGIN_DECLS
-
 /*! \struct zFourier
  * \brief finite Fourier series class
  */
@@ -19,6 +17,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zFourier ){
   double *sc; /*!< \brief coefficients on sine terms */
   double *cc; /*!< \brief coefficients on cosine terms */
 };
+
+__BEGIN_DECLS
 
 /*! \brief set a coefficient on a sine term without checking the index. */
 #define zFourierSetSinCoeffNC(f,i,c) ( (f)->sc[i] = (c) )

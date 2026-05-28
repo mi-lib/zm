@@ -11,8 +11,6 @@
 
 /* NOTE: never include this header file in user programs. */
 
-__BEGIN_DECLS
-
 /*! \struct trapezoidal velocity profiler. */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zTRVelProf ){
   double v0;       /*!< \brief initial velocity */
@@ -35,6 +33,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zTRVelProf ){
   double acceleration(double t);
 #endif /* __cplusplus */
 };
+
+__BEGIN_DECLS
 
 #define zTRVelProfTerm(trvelprof) (trvelprof)->_t
 

@@ -9,14 +9,68 @@
 
 #include <zm/zm_vec.h>
 
-__BEGIN_DECLS
-
 /*! \struct zMatStruct and zMat
  * \brief double-precision floating-point value matrix class.
  * \notes each element of a matrix (size=r*c) is at (0 - r-1,0 - c-1).
  */
+#ifdef __cplusplus
+ZEDA_DEF_ARRAY2_CLASS( _zMatStruct, double );
+struct zMatStruct;
+typedef zMatStruct* zMat;
+struct zMatStruct : public _zMatStruct {
+  zMatStruct() {}
+  zMatStruct(int _rowsize, int _colsize) : _zMatStruct( _rowsize, _colsize ) {}
+  ~zMatStruct() {}
+  bool isSqr();
+  void assignArray(int _rowsize, int _colsize, double *_buf);
+  double *operator[](int rowpos);
+  zMat setList(...);
+  zMat zero();
+  zMat touchup(double tol);
+  zMat ident();
+  zMat diag(const zVec d);
+  zMat randUniform(double min, double max);
+  zMat rand(const zMat min, const zMat max);
+  zMatStruct &operator=(const zMatStruct &src);
+  zMat copyArray(int _rowsize, int _colsize, const double array[]);
+  zMat clone();
+  zMat get(int rowpos, int colpos, zMat dest);
+  zMat getT(int rowpos, int colpos, zMat dest);
+  zMat put(int rowpos, int colpos, zMat dest);
+  zMat putT(int rowpos, int colpos, zMat dest);
+  zVec getRow(int rowpos, zVec v);
+  zVec getCol(int colpos, zVec v);
+  zMat putRow(int rowpos, const zVec v);
+  zMat putCol(int colpos, const zVec v);
+  zMat swapRow(int row1, int row2);
+  zMat swapCol(int col1, int col2);
+  void shiftDiag(double shift);
+  double elemMax(int &ir, int &ic);
+  double elemMin(int &ir, int &ic);
+  double elemAbsMax(int &ir, int &ic);
+  double elemAbsMin(int &ir, int &ic);
+  bool isTol(double tol);
+  bool isDiag(double tol);
+  bool isIdent(double tol);
+  bool isSymmetric();
+  zMat rowResize(int size);
+  zMat colResize(int size);
+  zMat resize(int _rowsize, int _colsize);
+  double sqrNorm();
+  double norm();
+  double infNorm();
+  zMat transpose(zMat tmat);
+  double trace();
+  friend bool operator==(const zMatStruct &m1, const zMatStruct &m2);
+  friend bool operator!=(const zMatStruct &m1, const zMatStruct &m2);
+  friend std::ostream &operator<<(std::ostream &stream, const zMat mat);
+};
+#else
 ZEDA_DEF_ARRAY2_CLASS( zMatStruct, double );
-typedef zMatStruct * zMat;
+typedef zMatStruct* zMat;
+#endif /* __cplusplus */
+
+__BEGIN_DECLS
 
 /*! \brief row/column capacity of a matrix. */
 #define zMatRowCapacity(m)       zArray2RowCapacity(m)
@@ -75,7 +129,7 @@ typedef zMatStruct * zMat;
 #define zMatRowBuf(m,r)   ( (m) ? zArray2RowBuf( m, r ) : NULL )
 
 /*! \brief assign a buffer of double-precision floating-point values to a matrix. */
-#define zMatAssignArray(mat,rowsize,colsize,array) zArray2Assign(mat,array,rowsize,colsize)
+#define zMatAssignArray(mat,rowsize,colsize,array) zArray2Assign(mat,rowsize,colsize,array)
 
 /*! \brief check if the specified row and column of a matrix is valid. */
 #define zMatPosIsValid(m,r,c) zArray2PosIsValid(m,r,c)
@@ -91,11 +145,12 @@ typedef zMatStruct * zMat;
 
 /*! \brief set elements of a matrix for values in the argument list.
  *
- * zMatSetElemList() sets all elements of a matrix \a m for the
- * values given by the argument list.
+ * zMatSetElemVList() sets all elements of a matrix \a m for values given by the variable argument list \a args.
+ * zMatSetElemList() sets all elements of a matrix \a m for values given by the argument list.
  * \return
- * zVecSetElemList() returns a pointer \a m.
+ * zVecSetElemVList() and zVecSetElemList() returns a pointer \a m.
  */
+__ZM_EXPORT zMat zMatSetElemVList(zMat m, va_list args);
 __ZM_EXPORT zMat zMatSetElemList(zMat m, ... );
 
 /*! \brief create, destroy and cleanup a matrix.
@@ -165,10 +220,10 @@ __ZM_EXPORT zMat zMatTouchup(zMat m, double tol);
  */
 __ZM_EXPORT zMat zMatIdentNC(zMat m);
 __ZM_EXPORT zMat zMatIdent(zMat m);
-__ZM_EXPORT zMat zMatDiagNC(zMat m, zVec d);
-__ZM_EXPORT zMat zMatDiag(zMat m, zVec d);
+__ZM_EXPORT zMat zMatDiagNC(zMat m, const zVec d);
+__ZM_EXPORT zMat zMatDiag(zMat m, const zVec d);
 __ZM_EXPORT zMat zMatRandUniform(zMat m, double min, double max);
-__ZM_EXPORT zMat zMatRand(zMat m, zMat min, zMat max);
+__ZM_EXPORT zMat zMatRand(zMat m, const zMat min, const zMat max);
 
 /*! \brief copy and clone a matrix.
  *
@@ -639,5 +694,73 @@ __ZM_EXPORT void zMatFPrint(FILE *fp, const zMat m);
 __ZM_EXPORT void zMatImg(const zMat m);
 
 __END_DECLS
+
+#ifdef __cplusplus
+inline bool zMatStruct::isSqr(){ return zMatIsSqr( this ); }
+inline void zMatStruct::assignArray(int _rowsize, int _colsize, double *_buf){ zMatAssignArray( this, _rowsize, _colsize, _buf ); }
+inline double *zMatStruct::operator[](int rowpos){ return zMatRowBufNC(this,rowpos); }
+inline zMat zMatStruct::setList(...){
+  va_list args;
+  va_start( args, this );
+  zMatSetElemVList( this, args );
+  va_end( args );
+  return this;
+}
+inline zMat zMatStruct::zero(){ return zMatZero( this ); }
+inline zMat zMatStruct::touchup(double tol = zTOL){ return zMatTouchup( this, tol ); }
+inline zMat zMatStruct::ident(){ return zMatIdent( this ); }
+inline zMat zMatStruct::diag(const zVec d){ return zMatDiag( this, d ); }
+inline zMat zMatStruct::randUniform(double min, double max){ return zMatRandUniform( this, min, max ); }
+inline zMat zMatStruct::rand(const zMat min, const zMat max){ return zMatRand( this, min, max ); }
+inline zMatStruct &zMatStruct::operator=(const zMatStruct &src){ return *zMatCopy( const_cast<zMatStruct*>(&src), this ); }
+inline zMat zMatStruct::copyArray(int _rowsize, int _colsize, const double array[]){ return zMatCopyArray( array, _rowsize, _colsize, this ); }
+inline zMat zMatStruct::clone(){ return zMatClone( this ); }
+inline zMat zMatStruct::get(int rowpos, int colpos, zMat dest){ return zMatGet( this, rowpos, colpos, dest ); }
+inline zMat zMatStruct::getT(int rowpos, int colpos, zMat dest){ return zMatTGet( this, rowpos, colpos, dest ); }
+inline zMat zMatStruct::put(int rowpos, int colpos, zMat dest){ return zMatPut( dest, rowpos, colpos, this ); }
+inline zMat zMatStruct::putT(int rowpos, int colpos, zMat dest){ return zMatTPut( dest, rowpos, colpos, this ); }
+inline zVec zMatStruct::getRow(int rowpos, zVec v){ return zMatGetRow( this, rowpos, v ); }
+inline zVec zMatStruct::getCol(int colpos, zVec v){ return zMatGetCol( this, colpos, v ); }
+inline zMat zMatStruct::putRow(int rowpos, const zVec v){ return zMatPutRow( this, rowpos, v ); }
+inline zMat zMatStruct::putCol(int colpos, const zVec v){ return zMatPutCol( this, colpos, v ); }
+inline zMat zMatStruct::swapRow(int row1, int row2){ return zMatSwapRow( this, row1, row2 ); }
+inline zMat zMatStruct::swapCol(int col1, int col2){ return zMatSwapCol( this, col1, col2 ); }
+inline void zMatStruct::shiftDiag(double shift){ zMatShift( this, shift ); }
+inline double zMatStruct::elemMax(int &ir, int &ic){ return zMatElemMax( this, &ir, &ic ); }
+inline double zMatStruct::elemMin(int &ir, int &ic){ return zMatElemMin( this, &ir, &ic ); }
+inline double zMatStruct::elemAbsMax(int &ir, int &ic){ return zMatElemAbsMax( this, &ir, &ic ); }
+inline double zMatStruct::elemAbsMin(int &ir, int &ic){ return zMatElemAbsMin( this, &ir, &ic ); }
+inline bool zMatStruct::isTol(double tol = zTOL){ return zMatIsTol( this, tol ); }
+inline bool zMatStruct::isDiag(double tol = zTOL){ return zMatIsDiag( this, tol ); }
+inline bool zMatStruct::isIdent(double tol = zTOL){ return zMatIsIdent( this, tol ); }
+inline bool zMatStruct::isSymmetric(){ return zMatIsSymmetric( this ); }
+inline zMat zMatStruct::rowResize(int _size){ return zMatRowResize( this, _size ); }
+inline zMat zMatStruct::colResize(int _size){ return zMatColResize( this, _size ); }
+inline zMat zMatStruct::resize(int _rowsize, int _colsize){ return zMatResize( this, _rowsize, _colsize ); }
+inline double zMatStruct::sqrNorm(){ return zMatSqrNorm( this ); }
+inline double zMatStruct::norm(){ return zMatNorm( this ); }
+inline double zMatStruct::infNorm(){ return zMatInfNorm( this ); }
+inline zMat zMatStruct::transpose(zMat tmat){ return zMatT( this, tmat ); }
+inline double zMatStruct::trace(){ return zMatTrace( this ); }
+inline bool operator==(const zMatStruct &m1, const zMatStruct &m2){ return zMatEqual( const_cast<zMatStruct*>(&m1), const_cast<zMatStruct*>(&m2), zTOL ); }
+inline bool operator!=(const zMatStruct &m1, const zMatStruct &m2){ return !zMatEqual( const_cast<zMatStruct*>(&m1), const_cast<zMatStruct*>(&m2), zTOL ); }
+inline std::ostream &operator<<(std::ostream &stream, const zMat mat){
+  stream << '(' << mat->size[0];
+  if( mat->capacity[0] != mat->size[0] )
+    stream << '/' << mat->capacity[0];
+  stream << ", " << mat->size[1];
+  if( mat->capacity[1] != mat->size[1] )
+    stream << '/' << mat->capacity[1];
+  stream << ") {" << std::endl;
+  for(int i=0; i<mat->size[0]; i++ ){
+    stream << ", " << (*mat)[i][0];
+    for(int j=0; j<mat->size[1]; j++ )
+      stream << ", " << (*mat)[i][j];
+    stream << std::endl;
+  }
+  stream << "}" << std::endl;
+  return stream;
+}
+#endif /* __cplusplus */
 
 #endif /* __ZM_MAT_H__ */

@@ -124,7 +124,7 @@ zCMat zMatToCMat(const zMat m, zCMat cm)
 /* abstract row vector of a complex matrix without checking size consistency. */
 zCVec zCMatGetRowNC(const zCMat m, int row, zCVec v)
 {
-  memcpy( zCVecBufNC(v), zCMatBufNC(m)+row*zCMatColSize(m), sizeof(zComplex)*zCMatColSizeNC(m) );
+  memcpy( (void *)zCVecBufNC(v), (const void *)zCMatRowBufNC(m,row), sizeof(zComplex)*zCMatColSizeNC(m) );
   return v;
 }
 
@@ -169,7 +169,7 @@ zCVec zCMatGetCol(const zCMat m, int col, zCVec v)
 /* put a row vector to a complex matrix without checking size consistency. */
 zCMat zCMatPutRowNC(zCMat m, int row, const zCVec v)
 {
-  memcpy( zCMatBufNC(m)+row*zCMatColSize(m), zCVecBufNC(v), sizeof(zComplex)*zCVecSizeNC(v) );
+  memcpy( (void *)zCMatRowBufNC(m,row), (const void *)zCVecBufNC(v), sizeof(zComplex)*zCVecSizeNC(v) );
   return m;
 }
 

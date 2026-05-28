@@ -192,7 +192,7 @@ zVec zVecRandUniform(zVec v, double min, double max)
 }
 
 /* create a random vector with range vectors. */
-zVec zVecRand(zVec v, zVec min, zVec max)
+zVec zVecRand(zVec v, const zVec min, const zVec max)
 {
   zRawVecRand( zVecBufNC(v), zVecBufNC(min), zVecBufNC(max), zVecSizeNC(v) );
   return v;
@@ -509,7 +509,7 @@ zVec zVecMid(const zVec v1, const zVec v2, zVec v)
 }
 
 /* scale a raw vector with two boundary vectors. */
-zVec zVecScale(const zVec src, zVec min, zVec max, zVec dest)
+zVec zVecScale(const zVec src, const zVec min, const zVec max, zVec dest)
 {
   zRawVecScale( zVecBufNC(src), zVecBufNC(min), zVecBufNC(max), zVecBufNC(dest), zVecSizeNC(src) );
   return dest;

@@ -10,8 +10,6 @@
 #include <zeda/zeda.h>
 #include <zm/zm_vec.h>
 
-__BEGIN_DECLS
-
 /*! \struct zSeq
  * \brief a sequence of vectors with intervals.
  */
@@ -21,6 +19,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zSeqData ){
 };
 
 ZEDA_DEF_LIST_CLASS( zSeq, zSeqCell, zSeqData );
+
+__BEGIN_DECLS
 
 #define zSeqCellFree(c) do{\
   if( (c) ){\
