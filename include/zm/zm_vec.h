@@ -94,7 +94,7 @@ typedef zVecStruct* zVec;
 #define zVecBuf(v)             ( (v) ? zArrayBuf(v) : NULL )
 
 /*! \brief assign a buffer of double-precision floating-point values to a vector. */
-#define zVecAssignArray(vec,size,buf) zArrayAssign( vec, buf, size )
+#define zVecAssignArray(vec,size,buf) zArrayAssign( vec, size, buf )
 
 /*! \brief get an element of a vector without checking size. */
 #define zVecElemNC(v,n)        zVecBufNC(v)[n]
