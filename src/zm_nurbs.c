@@ -355,16 +355,16 @@ static void *_zNURBSCPFromZTK(void *obj, int i, void *arg, ZTK *ztk){
   return ( zNURBSCP(((zNURBS*)obj),j) = zVecFromZTK( ztk ) ) ? obj : NULL;
 }
 
-static bool _zNURBSKnotFPrint(FILE *fp, int i, void *obj){
+static bool _zNURBSKnotFPrint(FILE *fp, int i, const void *obj){
   if( zVecSizeNC(((zNURBS*)obj)->param.knot) <= 0 ) return false;
   zVecFPrint( fp, ((zNURBS*)obj)->param.knot );
   return true;
 }
-static bool _zNURBSSliceFPrint(FILE *fp, int i, void *obj){
+static bool _zNURBSSliceFPrint(FILE *fp, int i, const void *obj){
   fprintf( fp, "%d\n", zNURBSSlice((zNURBS*)obj) );
   return true;
 }
-static bool _zNURBSSizeFPrint(FILE *fp, int i, void *obj){
+static bool _zNURBSSizeFPrint(FILE *fp, int i, const void *obj){
   fprintf( fp, "%d\n", zNURBSCPNum((zNURBS*)obj) );
   return true;
 }

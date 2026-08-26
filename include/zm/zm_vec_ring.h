@@ -11,7 +11,7 @@
 
 __BEGIN_DECLS
 
-zRingClass( zVecRing, zVec );
+ZEDA_DEF_RING_CLASS( zVecRing, zVec );
 
 /* create and destroy a vector ring.
  *
