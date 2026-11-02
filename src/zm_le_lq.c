@@ -7,7 +7,7 @@
 #include <zm/zm_le.h>
 
 /* LQ decomposition of column-long rectangular matrices based on Gram=Schmidt's method. (destructive) */
-static int _zMatDecompLQDST_Q(zMat l, zMat q) /* the original matrix has to be stored in q. */
+static int _zMatDecompLQDST_Q(zMat l, zMat q) /* q has to be initially set for the original matrix. */
 {
   int i, j, rank;
   double *qp, r;
@@ -33,7 +33,7 @@ static int _zMatDecompLQDST_Q(zMat l, zMat q) /* the original matrix has to be s
 }
 
 /* LQ decomposition of row-long rectangular matrices based on Gram=Schmidt's method. (destructive) */
-static int _zMatDecompLQDST_L(zMat l, zMat q) /* the original matrix has to be stored in l. */
+static int _zMatDecompLQDST_L(zMat l, zMat q) /* l has to be initially set for the original matrix. */
 {
   int i, j, rank;
   double r0, r, *ws = NULL;
@@ -77,14 +77,14 @@ int zMatDecompLQ(const zMat m, zMat l, zMat q)
 {
   int rank;
 
-  if( zMatRowSizeNC(m) > zMatColSizeNC(m) ){ /* column-long rectangular matrix */
+  if( zMatRowSizeNC(m) > zMatColSizeNC(m) ){ /* row-long rectangular matrix */
     if( !zMatSizeEqual( m, l ) || !zMatRowColSizeEqual( q, l ) || !zMatIsSqr( q ) ){
       ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
       return -1;
     }
     zMatCopyNC( m, l );
     rank = _zMatDecompLQDST_L( l, q );
-  } else{ /* row-long rectangular matrix */
+  } else{ /* column-long rectangular matrix */
     if( !zMatSizeEqual( m, q ) || !zMatRowSizeEqual( m, l ) || !zMatIsSqr( l ) ){
       ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
       return -1;

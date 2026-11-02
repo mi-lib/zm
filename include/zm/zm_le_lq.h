@@ -19,10 +19,11 @@ __BEGIN_DECLS
  * zMatDecompLQ() decomposes a matrix \a m into a lower triangular matrix \a l and a row-orthonormal
  * matrix \a q based on Gram=Schmidt's orthogonalization method, namely,
  *  \a l \a q = \a m.
- * If \a m is with the size of r x c, \a l and \a q are supposed to have more than or equal to r x s
- * and s x c sizes, respectively, where s is the minimum of the row size and the column size of \a m.
+ * If \a m is with the size of r x c, \a l and \a q have to be with the sizes of r x s and s x c,
+ * respectively, where s is the minimum of r and c.
  * If \a m is degenerated, the sizes of \a l and \a q are automatically adjusted to be column-full-rank
- * and row-full-rank, respectively.
+ * and row-full-rank, respectively. Namely, suppose the rank of \a m is d (<= s), the sizes of \a l
+ * and \a q will be adjusted to r x d and d x c, respectively.
  *
  * zMatDecompLQAlloc() automatically allocates matrices \a l and \a q, and then conducts the LQ decomposition.
  * \return
@@ -38,8 +39,7 @@ __ZM_EXPORT int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q);
  * zMatDecompLQFull() decomposes a matrix \a m into a lower triangular matrix \a l and a row-orthonormal
  * matrix \a q based on Householder's method, namely,
  *  \a l \a q = \a m.
- * If \a m is with the size of r x c, \a l and \a q are supposed to have more than or equal to r x c
- * and c x c sizes, respectively.
+ * If \a m is with the size of r x c, \a l and \a q have to be with the sizes of r x c and c x c, respectively.
  *
  * zMatDecompLQFullAlloc() automatically allocates matrices \a l and \a q, and then conducts the full-sized
  * LQ decomposition.
@@ -57,9 +57,9 @@ __ZM_EXPORT int zMatDecompLQFullAlloc(const zMat m, zMat *l, zMat *q);
  * Namely, the following equations are satisfied:
  *  \a l \a q = \a m
  *  \a m \a qnull = O.
- * If \a m is with the size of r x c, \a l, \a q, and \a qnull are supposed to have more than or equal to
- * r x c, c x c, and c x c sizes, respectively, while their sizes will be adjusted to r x rank, rank x c,
- * and c x (c-rank), respectively.
+ * If \a m is with the size of r x c, \a l, \a q, and \a qnull have to be with the sizes r x c, c x c, and
+ * c x c, respectively, while their sizes will be adjusted to r x d, d x c, and c x (c-d), respectively,
+ * where d is the rank of \a m.
  * \return
  * zMatDecompLQNull() returns the rank of \a m.
  */
