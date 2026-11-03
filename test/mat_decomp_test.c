@@ -133,6 +133,85 @@ bool assert_mat_decomp_lq_one(int rowsize, int colsize, int rank_max, int n)
   return count_success == n;
 }
 
+/* Target skipped-row compaction in the Q-workspace path; random LQ cases are checked separately. */
+static bool assert_mat_decomp_lq_dependent_rows(void)
+{
+  zMat mat[2], l, q;
+  int i, rank;
+  bool result;
+
+  /* Square: skip row 1 and store independent row 2 in Q[1] (zero-based indices). */
+  mat[0] = zMatCreateList( 3, 3,
+    1.0, 0.0, 0.0,
+    2.0, 0.0, 0.0,
+    0.0, 1.0, 0.0 );
+  /* Wide: the same dependency order also exercises rectangular Q storage. */
+  mat[1] = zMatCreateList( 3, 4,
+    1.0, 0.0, 0.0, 0.0,
+    2.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0 );
+  result = true;
+  for( i=0; i<2; i++ ){
+    if( !mat[i] ){
+      result = false;
+      continue;
+    }
+    l = zMatAllocSqr( 3 );
+    q = zMatAlloc( 3, zMatColSize(mat[i]) );
+    if( l && q ){
+      rank = zMatDecompLQ( mat[i], l, q );
+      if( rank != 2 ||
+          !check_matrix_composition( mat[i], l, q, 1.0e-9 ) ||
+          !check_matrix_orthogonality( q, rank, 1.0e-9 ) ) result = false;
+    } else
+      result = false;
+    zMatFreeAtOnce( 3, mat[i], l, q );
+  }
+  return result;
+}
+
+/* Target projection-count errors in both workspace paths; all inputs have numerical rank 2. */
+static bool assert_mat_decomp_lq_rank(void)
+{
+  zMat mat[3], l, q;
+  int i, size, rank;
+  bool result;
+
+  /* Square: projections [0,1] make the last coefficient essential for rejecting the 1e-12 residual. */
+  mat[0] = zMatCreateList( 3, 3,
+    1.0, 0.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 1.0e-12 );
+  /* Wide: check the same rank decision with rectangular Q storage. */
+  mat[1] = zMatCreateList( 3, 4,
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 1.0, 1.0e-12, 0.0 );
+  /* Tall: exercise the separate L-workspace path with the same small residual. */
+  mat[2] = zMatCreateList( 4, 3,
+    1.0, 0.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 1.0e-12,
+    0.0, 1.0, 0.0 );
+  result = true;
+  for( i=0; i<3; i++ ){
+    if( !mat[i] ){
+      result = false;
+      continue;
+    }
+    size = zMatMinSize( mat[i] );
+    l = zMatAlloc( zMatRowSize(mat[i]), size );
+    q = zMatAlloc( size, zMatColSize(mat[i]) );
+    if( l && q ){
+      rank = zMatDecompLQ( mat[i], l, q );
+      if( rank != 2 || zMatColSize(l) != rank || zMatRowSize(q) != rank ) result = false;
+    } else
+      result = false;
+    zMatFreeAtOnce( 3, mat[i], l, q );
+  }
+  return result;
+}
+
 bool assert_mat_decomp_lq_full_one(int rowsize, int colsize, int rank_max, int n)
 {
   zMat mat, l, q;
@@ -213,6 +292,8 @@ int main(void)
   zAssert( zMatDecompLQ (5x8), assert_mat_decomp_lq_one( size_small, size_large, size_small, n ) );
   zAssert( zMatDecompLQ (8x5), assert_mat_decomp_lq_one( size_large, size_small, size_small, n ) );
   zAssert( zMatDecompLQ (8x8), assert_mat_decomp_lq_one( size_large, size_large, size_small, n ) );
+  zAssert( zMatDecompLQ (dependent rows), assert_mat_decomp_lq_dependent_rows() );
+  zAssert( zMatDecompLQ (rank detection), assert_mat_decomp_lq_rank() );
   zAssert( zMatDecompLQFull (5x8), assert_mat_decomp_lq_full_one( size_small, size_large, size_small, n ) );
   zAssert( zMatDecompLQFull (8x5), assert_mat_decomp_lq_full_one( size_large, size_small, size_small, n ) );
   zAssert( zMatDecompLQFull (8x8), assert_mat_decomp_lq_full_one( size_large, size_large, size_small, n ) );
