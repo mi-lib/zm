@@ -1,3 +1,5 @@
+2026.11.04. Modified _zMatDecompLQDST_Q and _zMatDecompLQDST_L to evaluate the norm of row bases directly. [zm_le_lq, test]
+2026.11.03. Debugged _zMatDecompLQDST_Q and _zMatDecompLQDST_L (thanks to Naoki Wakisaka). [zm_le_lq, test]
 2026.05.26. Reimplemented zMatStruct and zMat and add methods for C++. [zm_mat]
 2026.05.26. Renamed _zMatSetElemList to zMatSetElemVList, and made it public. [zm_mat]
 2026.05.26. Renamed method sqrnorm to sqrNorm of zVec for C++. [zm_vec]

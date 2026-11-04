@@ -20,7 +20,7 @@ static int _zMatDecompLQDST_Q(zMat l, zMat q) /* q has to be initially set for t
       zRawVecCatDRC( qp, -r, zMatRowBufNC(q,j), zMatColSizeNC(q) );
       zMatSetElemNC( l, i, j, r );
     }
-    if( zIsTol( ( r = zRawVecNorm(qp,zMatColSizeNC(q)) ) / zDataAbsMax(zMatRowBufNC(l,i),rank,NULL), ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
+    if( zIsTol( ( r = zRawVecNorm(qp,zMatColSizeNC(q)) ), ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
     zRawVecDiv( qp, r, zMatRowBufNC(q,rank), zMatColSizeNC(q) );
     zMatSetElemNC( l, i, rank, r );
     if( rank < zMatColSizeNC(q) ) rank++;
@@ -59,7 +59,7 @@ static int _zMatDecompLQDST_L(zMat l, zMat q) /* l has to be initially set for t
       zRawVecCatDRC( zMatRowBufNC(q,rank), -zMatElemNC(l,i,j), zMatRowBufNC(q,j), zMatColSizeNC(q) );
     zMatSetElemNC( l, i, rank, ( r = zRawVecNorm( zMatRowBufNC(q,rank), zMatColSizeNC(q) ) ) );
     zRawVecZero( zMatRowBufNC(l,i) + rank + 1, zMatColSizeNC(l) - rank - 1 );
-    if( zIsTol( r / zDataAbsMax(zMatRowBufNC(l,i),rank,NULL), ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
+    if( zIsTol( r, ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
     zRawVecDivDRC( zMatRowBufNC(q,rank), r, zMatColSizeNC(q) );
     rank++;
   }
