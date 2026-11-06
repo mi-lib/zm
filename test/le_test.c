@@ -4,7 +4,7 @@
 
 void assert_mat_mat_sweep_out(void)
 {
-  zMat m1, m2, m3, m;
+  zMat m1, m2, m3, m4, m;
   zIndex index;
   bool result = true;
   const int size = 10, testnum = 1000;
@@ -15,20 +15,25 @@ void assert_mat_mat_sweep_out(void)
   m1 = zMatAllocSqr( size );
   m2 = zMatAllocSqr( zMatRowSizeNC(m1) );
   m3 = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m2) );
+  m4 = zMatAllocSqr( zMatRowSizeNC(m2) );
   index = zIndexCreate( zMatRowSizeNC(m1) );
   for( k=0; k<testnum; k++ ){
     zMatRandUniform( m1, -5, 5 );
     zMatCopy( m1, m );
     zMatIdent( m2 );
-    for( i=0; i<zMatRowSizeNC(m1); i++ )
+    for( i=0; i<zMatRowSizeNC(m1); i++ ){
+      zMatPivoting( m1, index, i, i );
       zMatMatSweepOut( m1, m2, zIndexElemNC(index,i), i );
-    zMulMatMat( m, m2, m3 );
+    }
+    for( i=0; i<zMatRowSizeNC(m2); i++ ) /* reorder rows along with the pivoting index */
+      zRawVecCopy( zMatRowBufNC(m2,zIndexElemNC(index,i)), zMatRowBufNC(m4,i), zMatColSizeNC(m2) );
+    zMulMatMat( m, m4, m3 );
     if( !zMatIsIdent( m3, tol ) ){
       eprintf( "maximum error = %g\n", zMatElemAbsMax( m3, NULL, NULL ) );
       result = false;
     }
   }
-  zMatFreeAtOnce( 4, m, m1, m2, m3 );
+  zMatFreeAtOnce( 5, m, m1, m2, m3, m4 );
   zIndexFree( index );
   zAssert( zMatMatSweepOut, result );
 }
@@ -42,6 +47,7 @@ void assert_mat_vec_sweep_out(void)
   const double tol = 1.0e-6;
   const int size = 10, testnum = 1000;
   int i, k;
+  double xmax;
 
   m = zMatAllocSqr( size );
   v = zVecAlloc( size );
@@ -52,13 +58,14 @@ void assert_mat_vec_sweep_out(void)
     zVecRandUniform( v, -5, 5 );
     zLESolveGauss( m, v, x );
     for( i=0; i<zMatRowSize(m); i++ ){
-      zMatPivoting( m, index, i, zIndexElem(index,i) );
+      zMatPivoting( m, index, i, i );
       zMatVecSweepOut( m, v, zIndexElem(index,i), i );
     }
     zVecReorderDRC( v, index );
+    xmax = zVecElemAbsMax( x, NULL );
     zVecSubDRC( v, x );
-    if( !zVecIsTol( v, tol ) ){
-      eprintf( "maximum error = %g\n", zVecElemAbsMax( v, NULL ) );
+    if( !zVecIsTol( v, tol * zMax( xmax, 1.0 ) ) ){ /* relative error to the solution */
+      eprintf( "maximum error = %g (maximum absolute component of solution = %g)\n", zVecElemAbsMax( v, NULL ), xmax );
       result = false;
     }
   }
