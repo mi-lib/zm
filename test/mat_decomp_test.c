@@ -297,7 +297,8 @@ bool assert_mat_decomp_lq_illcond(void)
       return false;
     }
     for( i=0; i<n+2; i++ )
-      for( j=0; j<n; j++ ) zMatSetElemNC( m, i, j, 1.0/(i+j+1) );
+      for( j=0; j<n; j++ )
+        zMatSetElemNC( m, i, j, 1.0/(i+j+1) );
     zMatTNC( m, mt );
     if( !check_mat_decomp_lq( m, n, tol_comp, tol_orth ) ){ /* row-long case */
       eprintf( "failed for %d x %d Hilbert matrix\n", n+2, n );

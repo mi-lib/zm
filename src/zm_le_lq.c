@@ -29,7 +29,7 @@ static int _zMatDecompLQDST_Q(zMat l, zMat q) /* q has to be initially set for t
     }
     if( _zMatDecompLQIsDependent( ( r = zRawVecNorm(qp,zMatColSizeNC(q)) ), norm ) ) continue;
     zRawVecDiv( qp, r, zMatRowBufNC(q,rank), zMatColSizeNC(q) );
-    zMatSetElemNC( l, i, rank++, r ); /* rank <= i < row size <= column size */
+    zMatSetElemNC( l, i, rank++, r );
   }
   if( rank == 0 ) ZRUNERROR( ZM_ERR_MAT_CANNOTDECOMPOSEZEROMAT );
   if( rank < zMatRowSizeNC(q) ){ /* automatically adjust sizes of factorized matrices */
@@ -42,7 +42,7 @@ static int _zMatDecompLQDST_Q(zMat l, zMat q) /* q has to be initially set for t
 /* LQ decomposition of row-long rectangular matrices based on modified Gram=Schmidt's method. (destructive) */
 static int _zMatDecompLQDST_L(zMat l, zMat q) /* l has to be initially set for the original matrix. */
 {
-  int i, j, rank;
+  int i, j, rank = 0;
   double r0, r, norm, *ws = NULL, *v;
 
   for( i=0; i<zMatRowSizeNC(l); i++ ){
@@ -54,9 +54,7 @@ static int _zMatDecompLQDST_L(zMat l, zMat q) /* l has to be initially set for t
   }
   if( !ws ){
     ZRUNERROR( ZM_ERR_MAT_CANNOTDECOMPOSEZEROMAT );
-    zMatColResize( l, 0 );
-    zMatRowResize( q, 0 );
-    return 0;
+    goto ZMAT_DECOMP_LQ_L_RESIZE;
   }
   zRawVecDiv( ws, r0, zMatRowBufNC(q,0), zMatColSizeNC(l) );
   for( rank=1, i++; i<zMatRowSizeNC(l); i++ ){
@@ -77,6 +75,7 @@ static int _zMatDecompLQDST_L(zMat l, zMat q) /* l has to be initially set for t
   }
   *ws = r0;
   zRawVecZero( ws + 1, zMatColSizeNC(l) - 1 );
+ ZMAT_DECOMP_LQ_L_RESIZE:
   if( rank < zMatRowSizeNC(q) ){ /* automatically adjust sizes of factorized matrices */
     zMatColResize( l, rank ); /* to be column-full-rank */
     zMatRowResize( q, rank ); /* to be row-full-rank */
