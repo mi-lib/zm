@@ -11,23 +11,30 @@
 
 __BEGIN_DECLS
 
-/*! \brief tolerance for rank detection in LQ decomposition based on Gram=Schmidt's method. */
+/*! \brief relative tolerance for rank detection in LQ decomposition based on Gram=Schmidt's method.
+ *
+ * A row vector is regarded as linearly dependent on the preceding ones if the norm of its residual
+ * after orthogonalization is not greater than this value times the norm of the original row vector.
+ */
 #define ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ( 1.0e-10 )
 
 /*! \brief LQ decomposition of a matrix.
  *
  * zMatDecompLQ() decomposes a matrix \a m into a lower triangular matrix \a l and a row-orthonormal
- * matrix \a q based on Gram=Schmidt's orthogonalization method, namely,
+ * matrix \a q based on modified Gram=Schmidt's orthogonalization method, namely,
  *  \a l \a q = \a m.
  * If \a m is with the size of r x c, \a l and \a q have to be with the sizes of r x s and s x c,
  * respectively, where s is the minimum of r and c.
  * If \a m is degenerated, the sizes of \a l and \a q are automatically adjusted to be column-full-rank
  * and row-full-rank, respectively. Namely, suppose the rank of \a m is d (<= s), the sizes of \a l
  * and \a q will be adjusted to r x d and d x c, respectively.
+ * The rank is detected with the relative tolerance ZM_LQ_DECOMP_GRAMSCHMIDT_TOL, so that the result
+ * does not depend on the scale of \a m.
  *
  * zMatDecompLQAlloc() automatically allocates matrices \a l and \a q, and then conducts the LQ decomposition.
  * \return
- * zMatDecompLQ() and zMatDecompLQAlloc() return the rank of \a m.
+ * zMatDecompLQ() and zMatDecompLQAlloc() return the rank of \a m. If \a m is a zero matrix, they
+ * return 0, and the sizes of \a l and \a q are adjusted to r x 0 and 0 x c, respectively.
  * If they fail to allocate internal memory for the computation or find mismatches of sizes of matrices,
  * they return -1.
  */

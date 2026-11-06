@@ -146,7 +146,9 @@ bool assert_mat_decomp_lq_zero(int rowsize, int colsize)
   q = zMatAlloc( size, colsize );
   if( m && l && q ){
     zMatZero( m );
-    if( zMatDecompLQ( m, l, q ) == 0 ) result = true;
+    if( zMatDecompLQ( m, l, q ) == 0 &&
+        zMatRowSizeNC(l) == rowsize && zMatColSizeNC(l) == 0 &&
+        zMatRowSizeNC(q) == 0 && zMatColSizeNC(q) == colsize ) result = true;
   }
   zMatFreeAtOnce( 3, m, l, q );
   return result;
@@ -219,6 +221,94 @@ bool assert_mat_decomp_lq_rank(void)
   }
  TERMINATE:
   zMatFreeAtOnce( 5, m[0], m[1], m[2], l, q );
+  return result;
+}
+
+/* check LQ decomposition of a matrix with the expected rank (negative value to skip rank check). */
+bool check_mat_decomp_lq(zMat m, int rank_expected, double tol_comp, double tol_orth)
+{
+  zMat l, q;
+  int size, rank;
+  bool result = false;
+
+  size = zMatMinSize( m );
+  l = zMatAlloc( zMatRowSizeNC(m), size );
+  q = zMatAlloc( size, zMatColSizeNC(m) );
+  if( !l || !q ) goto TERMINATE;
+  if( ( rank = zMatDecompLQ( m, l, q ) ) <= 0 ) goto TERMINATE;
+  if( rank_expected >= 0 && rank != rank_expected ){
+    eprintf( "assigned rank = %d / detected rank = %d\n", rank_expected, rank );
+    goto TERMINATE;
+  }
+  result = check_matrix_composition( m, l, q, tol_comp ) && check_matrix_orthogonality( q, rank, tol_orth );
+ TERMINATE:
+  zMatFreeAtOnce( 2, l, q );
+  return result;
+}
+
+/* check if rank detection is independent of the scale of the matrix. */
+bool assert_mat_decomp_lq_scale(void)
+{
+  zMat m[2];
+  const double scale[] = { 1.0e-12, 1.0, 1.0e8 };
+  const int nscale = sizeof(scale) / sizeof(double);
+  int i, k;
+  bool result = false;
+
+  for( k=0; k<nscale; k++ ){
+    m[0] = zMatCreateList( 3, 4, /* column-long case: rank 2 (the second row is slightly independent) */
+      1.0, 2.0, 3.0, 4.0,
+      2.0, 4.0, 6.0, 8.000001,
+      3.0, 6.0, 9.0, 12.0 );
+    m[1] = zMatCreateList( 4, 3, /* row-long case: rank 2 (the second row is slightly independent) */
+      1.0, 2.0, 3.0,
+      2.0, 4.0, 6.000001,
+      3.0, 6.0, 9.0,
+      4.0, 8.0, 12.0 );
+    if( !m[0] || !m[1] ) goto TERMINATE;
+    for( i=0; i<2; i++ ){
+      zMatMulDRC( m[i], scale[k] );
+      if( !check_mat_decomp_lq( m[i], 2, 1.0e-12 * scale[k], 1.0e-7 ) ){
+        eprintf( "failed for scale = %g (%d x %d)\n", scale[k], zMatRowSizeNC(m[i]), zMatColSizeNC(m[i]) );
+        goto TERMINATE;
+      }
+    }
+    zMatFreeAtOnce( 2, m[0], m[1] );
+  }
+  return true;
+ TERMINATE:
+  zMatFreeAtOnce( 2, m[0], m[1] );
+  return result;
+}
+
+/* check accuracy of LQ decomposition of ill-conditioned (Hilbert) matrices. */
+bool assert_mat_decomp_lq_illcond(void)
+{
+  zMat m, mt;
+  int n, i, j;
+  bool result = true;
+  const double tol_comp = 1.0e-12, tol_orth = 1.0e-6;
+
+  for( n=6; n<=8; n+=2 ){
+    m = zMatAlloc( n+2, n );
+    mt = zMatAlloc( n, n+2 );
+    if( !m || !mt ){
+      zMatFreeAtOnce( 2, m, mt );
+      return false;
+    }
+    for( i=0; i<n+2; i++ )
+      for( j=0; j<n; j++ ) zMatSetElemNC( m, i, j, 1.0/(i+j+1) );
+    zMatTNC( m, mt );
+    if( !check_mat_decomp_lq( m, n, tol_comp, tol_orth ) ){ /* row-long case */
+      eprintf( "failed for %d x %d Hilbert matrix\n", n+2, n );
+      result = false;
+    }
+    if( !check_mat_decomp_lq( mt, n, tol_comp, tol_orth ) ){ /* column-long case */
+      eprintf( "failed for %d x %d Hilbert matrix\n", n, n+2 );
+      result = false;
+    }
+    zMatFreeAtOnce( 2, m, mt );
+  }
   return result;
 }
 
@@ -306,6 +396,8 @@ int main(void)
   zAssert( zMatDecompLQ (column-long zero-matrix), assert_mat_decomp_lq_zero( size_small, size_large ) );
   zAssert( zMatDecompLQ (row compactions), assert_mat_decomp_lq_dependent_rows() );
   zAssert( zMatDecompLQ (error rejection in compactions), assert_mat_decomp_lq_rank() );
+  zAssert( zMatDecompLQ (scale-independent rank detection), assert_mat_decomp_lq_scale() );
+  zAssert( zMatDecompLQ (ill-conditioned matrices), assert_mat_decomp_lq_illcond() );
   zAssert( zMatDecompLQFull (5x8), assert_mat_decomp_lq_full_one( size_small, size_large, size_small, n ) );
   zAssert( zMatDecompLQFull (8x5), assert_mat_decomp_lq_full_one( size_large, size_small, size_small, n ) );
   zAssert( zMatDecompLQFull (8x8), assert_mat_decomp_lq_full_one( size_large, size_large, size_small, n ) );

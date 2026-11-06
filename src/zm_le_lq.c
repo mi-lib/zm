@@ -6,24 +6,30 @@
 
 #include <zm/zm_le.h>
 
-/* LQ decomposition of column-long rectangular matrices based on Gram=Schmidt's method. (destructive) */
+/* check if the residual of a row vector after orthogonalization is negligible relative to its original norm. */
+static bool _zMatDecompLQIsDependent(double residual, double norm)
+{
+  return residual <= ZM_LQ_DECOMP_GRAMSCHMIDT_TOL * norm;
+}
+
+/* LQ decomposition of column-long rectangular matrices based on modified Gram=Schmidt's method. (destructive) */
 static int _zMatDecompLQDST_Q(zMat l, zMat q) /* q has to be initially set for the original matrix. */
 {
   int i, j, rank;
-  double *qp, r;
+  double *qp, r, norm;
 
   zMatZero( l );
   for( rank=0, i=0; i<zMatRowSizeNC(q); i++ ){
     qp = zMatRowBufNC(q,i);
+    norm = zRawVecNorm( qp, zMatColSizeNC(q) );
     for( j=0; j<rank; j++ ){
       r = zRawVecInnerProd( qp, zMatRowBufNC(q,j), zMatColSizeNC(q) );
       zRawVecCatDRC( qp, -r, zMatRowBufNC(q,j), zMatColSizeNC(q) );
       zMatSetElemNC( l, i, j, r );
     }
-    if( zIsTol( ( r = zRawVecNorm(qp,zMatColSizeNC(q)) ), ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
+    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm(qp,zMatColSizeNC(q)) ), norm ) ) continue;
     zRawVecDiv( qp, r, zMatRowBufNC(q,rank), zMatColSizeNC(q) );
-    zMatSetElemNC( l, i, rank, r );
-    if( rank < zMatColSizeNC(q) ) rank++;
+    zMatSetElemNC( l, i, rank++, r ); /* rank <= i < row size <= column size */
   }
   if( rank < zMatRowSizeNC(q) ){ /* automatically adjust sizes of factorized matrices */
     zMatColResize( l, rank ); /* to be column-full-rank */
@@ -32,36 +38,41 @@ static int _zMatDecompLQDST_Q(zMat l, zMat q) /* q has to be initially set for t
   return rank;
 }
 
-/* LQ decomposition of row-long rectangular matrices based on Gram=Schmidt's method. (destructive) */
+/* LQ decomposition of row-long rectangular matrices based on modified Gram=Schmidt's method. (destructive) */
 static int _zMatDecompLQDST_L(zMat l, zMat q) /* l has to be initially set for the original matrix. */
 {
   int i, j, rank;
-  double r0, r, *ws = NULL;
+  double r0, r, norm, *ws = NULL, *v;
 
   for( i=0; i<zMatRowSizeNC(l); i++ ){
-    if( !zIsTol( ( r0 = zRawVecNorm( zMatRowBufNC(l,i), zMatColSizeNC(l) ) ), ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ){
+    if( ( r0 = zRawVecNorm( zMatRowBufNC(l,i), zMatColSizeNC(l) ) ) > 0 ){
       ws = zMatRowBufNC(l,i);
       break;
     }
+    zRawVecZero( zMatRowBufNC(l,i), zMatColSizeNC(l) ); /* leading null rows */
   }
   if( !ws ){
     ZRUNERROR( ZM_ERR_MAT_CANNOTDECOMPOSEZEROMAT );
+    zMatColResize( l, 0 );
+    zMatRowResize( q, 0 );
     return 0;
   }
-  zRawVecDiv( ws, r0, zMatRowBufNC(q,0), zMatColSizeNC(l) ); /* temporary workspace */
+  zRawVecDiv( ws, r0, zMatRowBufNC(q,0), zMatColSizeNC(l) );
   for( rank=1, i++; i<zMatRowSizeNC(l); i++ ){
-    zRawVecCopy( zMatRowBufNC(l,i), ws, zMatColSizeNC(l) ); /* temporarily store the raw vector */
-    for( j=0; j<rank; j++ )
-      zMatSetElemNC( l, i, j, zRawVecInnerProd( ws, zMatRowBufNC(q,j), zMatColSizeNC(q) ) );
+    /* the row vector is orthogonalized in the next row of q, or in ws if q is already full. */
+    v = rank < zMatColSizeNC(l) ? zMatRowBufNC(q,rank) : ws;
+    zRawVecCopy( zMatRowBufNC(l,i), v, zMatColSizeNC(l) );
+    norm = zRawVecNorm( v, zMatColSizeNC(l) );
+    for( j=0; j<rank; j++ ){
+      r = zRawVecInnerProd( v, zMatRowBufNC(q,j), zMatColSizeNC(q) );
+      zRawVecCatDRC( v, -r, zMatRowBufNC(q,j), zMatColSizeNC(q) );
+      zMatSetElemNC( l, i, j, r );
+    }
     if( rank >= zMatColSizeNC(l) ) continue;
-    zRawVecCopy( ws, zMatRowBufNC(q,rank), zMatColSizeNC(q) ); /* temporarily store the raw vector */
-    for( j=0; j<rank; j++ )
-      zRawVecCatDRC( zMatRowBufNC(q,rank), -zMatElemNC(l,i,j), zMatRowBufNC(q,j), zMatColSizeNC(q) );
-    zMatSetElemNC( l, i, rank, ( r = zRawVecNorm( zMatRowBufNC(q,rank), zMatColSizeNC(q) ) ) );
-    zRawVecZero( zMatRowBufNC(l,i) + rank + 1, zMatColSizeNC(l) - rank - 1 );
-    if( zIsTol( r, ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
-    zRawVecDivDRC( zMatRowBufNC(q,rank), r, zMatColSizeNC(q) );
-    rank++;
+    zRawVecZero( zMatRowBufNC(l,i) + rank, zMatColSizeNC(l) - rank );
+    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm( v, zMatColSizeNC(q) ) ), norm ) ) continue;
+    zRawVecDivDRC( v, r, zMatColSizeNC(q) );
+    zMatSetElemNC( l, i, rank++, r );
   }
   *ws = r0;
   zRawVecZero( ws + 1, zMatColSizeNC(l) - 1 );
@@ -72,7 +83,7 @@ static int _zMatDecompLQDST_L(zMat l, zMat q) /* l has to be initially set for t
   return rank;
 }
 
-/* LQ decomposition based on Gram=Schmidt's method. */
+/* LQ decomposition based on modified Gram=Schmidt's method. */
 int zMatDecompLQ(const zMat m, zMat l, zMat q)
 {
   int rank;
