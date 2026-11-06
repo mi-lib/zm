@@ -26,11 +26,11 @@ __BEGIN_DECLS
  * \a index is an index vector for order description. The diagonal components of \a l are the pivots,
  * which are found in the rows \a index[0], \a index[1], ... of \a l in this order, while the rows of
  * \a l correspond to those of \a m. The components of \a u at the pivots are one.
- * If \a m is with the size of r x c, \a l and \a u have to be with the sizes of r x r and r x c,
- * respectively.
+ * If \a m is with the size of r x c, \a l and \a u have to be with the sizes of r x s and s x c,
+ * respectively, where s is the minimum of r and c.
  * If \a m is degenerated, the sizes of \a l and \a u are automatically adjusted to be column-full-rank
- * and row-full-rank, respectively. Namely, suppose the rank of \a m is d, the sizes of \a l and \a u
- * will be adjusted to r x d and d x c, respectively.
+ * and row-full-rank, respectively. Namely, suppose the rank of \a m is d (<= s), the sizes of \a l
+ * and \a u will be adjusted to r x d and d x c, respectively.
  * The rank is detected with the relative tolerance ZM_LU_DECOMP_TOL, so that the result does not
  * depend on the scale of \a m.
  *

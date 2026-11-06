@@ -6,8 +6,9 @@
 
 #include <zm/zm_le.h>
 
-/* LU decomposition based on Crout method (destructive). u has to be initially set for the original matrix. */
-static int _zMatDecompLUDST(zMat l, zMat u, zIndex idx, double tol)
+/* LU decomposition of column-long rectangular matrices based on Crout method (destructive).
+ * u has to be initially set for the original matrix. */
+static int _zMatDecompLUDST_U(zMat l, zMat u, zIndex idx, double tol)
 {
   int r, c, i, p, size;
   double ahead, max, tmp, *ur, *ui;
@@ -50,35 +51,92 @@ static int _zMatDecompLUDST(zMat l, zMat u, zIndex idx, double tol)
   return r; /* rank */
 }
 
+/* LU decomposition of row-long rectangular matrices based on Crout method (destructive).
+ * l has to be initially set for the original matrix. */
+static int _zMatDecompLUDST_L(zMat l, zMat u, zIndex idx, double tol)
+{
+  int r, c, i, j, p, size;
+  double ahead, max, tmp, *lp, *ur;
+
+  zMatZero( u );
+  zIndexOrder( idx, 0 );
+  for( r=c=0; r<zMatRowSizeNC(l) && c<zMatColSizeNC(l); c++ ){
+    /* partial pivoting (rows are not physically swapped to keep the correspondence of rows of l to m) */
+    for( p=r, max=fabs( zMatElemNC(l,zIndexElemNC(idx,r),c) ), i=r+1; i<zMatRowSizeNC(l); i++ )
+      if( ( tmp = fabs( zMatElemNC(l,zIndexElemNC(idx,i),c) ) ) > max ){
+        max = tmp;
+        p = i;
+      }
+    if( max <= tol ){ /* the column is dependent on the preceding ones */
+      for( i=r; i<zMatRowSizeNC(l); i++ ) zMatSetElemNC( l, zIndexElemNC(idx,i), c, 0 );
+      continue;
+    }
+    zIndexSwapNC( idx, r, p );
+    lp = zMatRowBufNC(l,zIndexElemNC(idx,r));
+    ahead = lp[c];
+    ur = zMatRowBufNC(u,r);
+    ur[c] = 1;
+    for( j=c+1; j<zMatColSizeNC(l); j++ ) ur[j] = lp[j] / ahead; /* U row */
+    lp[r] = ahead; /* r <= c, where the column r has already been processed. */
+    zRawVecZero( lp + r + 1, zMatColSizeNC(l) - r - 1 );
+    size = zMatColSizeNC(l) - c - 1;
+    for( i=r+1; i<zMatRowSizeNC(l); i++ ){ /* L column and elimination of the other rows */
+      lp = zMatRowBufNC(l,zIndexElemNC(idx,i));
+      lp[r] = lp[c];
+      if( r < c ) lp[c] = 0;
+      zRawVecCatDRC( lp+c+1, -lp[r], ur+c+1, size );
+    }
+    r++;
+  }
+  if( r < zMatColSizeNC(l) ){ /* automatically adjust sizes of factorized matrices */
+    zMatColResize( l, r ); /* to be column-full-rank */
+    zMatRowResize( u, r ); /* to be row-full-rank */
+  }
+  return r; /* rank */
+}
+
 /* LU decomposition of a matrix. */
 int zMatDecompLU(const zMat m, zMat l, zMat u, zIndex idx)
 {
-  if( !zMatIsSqr( l ) ){
-    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
-    return -1;
-  }
-  if( !zMatRowSizeEqual(m,l) || !zMatSizeEqual(m,u) ){
-    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
-    return -1;
-  }
+  double tol;
+
   if( zMatRowSize(m) != zIndexSizeNC(idx) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return -1;
   }
+  tol = ZM_LU_DECOMP_TOL * zMatElemAbsMax( m, NULL, NULL );
+  if( zMatRowSizeNC(m) > zMatColSizeNC(m) ){ /* row-long rectangular matrix */
+    if( !zMatSizeEqual( m, l ) || !zMatRowColSizeEqual( u, l ) || !zMatIsSqr( u ) ){
+      ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+      return -1;
+    }
+    zMatCopyNC( m, l );
+    return _zMatDecompLUDST_L( l, u, idx, tol );
+  }
+  /* column-long rectangular matrix */
+  if( !zMatSizeEqual( m, u ) || !zMatRowSizeEqual( m, l ) || !zMatIsSqr( l ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+    return -1;
+  }
   zMatCopyNC( m, u );
-  return _zMatDecompLUDST( l, u, idx, ZM_LU_DECOMP_TOL * zMatElemAbsMax( m, NULL, NULL ) );
+  return _zMatDecompLUDST_U( l, u, idx, tol );
 }
 
 /* LU decomposition with an automatic matrix allocation. */
 int zMatDecompLUAlloc(const zMat m, zMat *l, zMat *u, zIndex *idx)
 {
-  *l = zMatAllocSqr( zMatRowSizeNC(m) );
-  *u = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
+  int minsize;
+
+  minsize = zMin( zMatRowSizeNC(m), zMatColSizeNC(m) );
+  *l = zMatAlloc( zMatRowSizeNC(m), minsize );
+  *u = zMatAlloc( minsize, zMatColSizeNC(m) );
   *idx = zIndexCreate( zMatRowSizeNC(m) );
   if( !*l || !*u || !*idx ){
     zMatFree( *l );
     zMatFree( *u );
     zIndexFree( *idx );
+    *l = *u = NULL;
+    *idx = NULL;
     return -1;
   }
   return zMatDecompLU( m, *l, *u, *idx );

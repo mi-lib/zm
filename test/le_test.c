@@ -363,6 +363,60 @@ void assert_le_gen(void)
   zAssert( zLESolveSR (ill-conditioned cases), result_illcond[3] );
 }
 
+/* minimum-norm least-square solution of (f1 f2) x = b, where f1 and f2 are column-full-rank and row-full-rank. */
+zVec le_gen_rowlong_ref(const zMat f1, const zMat f2, const zVec b, zVec x)
+{
+  zMat g;
+  zVec y, z;
+
+  g = zMatAllocSqr( zMatColSizeNC(f1) );
+  y = zVecAlloc( zMatColSizeNC(f1) );
+  z = zVecAlloc( zMatColSizeNC(f1) );
+  zMulMatTMat( f1, f1, g );
+  zMulMatTVec( f1, b, y );
+  zLESolveGauss( g, y, z ); /* z = ( f1^T f1 )^-1 f1^T b */
+  zMulMatMatT( f2, f2, g );
+  zLESolveGauss( g, z, y ); /* y = ( f2 f2^T )^-1 z */
+  zMulMatTVec( f2, y, x );
+  zMatFree( g );
+  zVecFreeAtOnce( 2, y, z );
+  return x;
+}
+
+/* generalized linear equation solver for row-long (overdetermined) matrices. */
+void assert_le_gen_rowlong(void)
+{
+  const int rowsize = 8, colsize = 5, testnum = 1000;
+  const double tol = 1.0e-8;
+  zMat a, f1, f2;
+  zVec b, x_ref, x_lq;
+  int i, rank;
+  bool result = true;
+
+  a = zMatAlloc( rowsize, colsize );
+  b = zVecAlloc( rowsize );
+  x_ref = zVecAlloc( colsize );
+  x_lq = zVecAlloc( colsize );
+  for( i=0; i<testnum; i++ ){
+    rank = zRandI( 1, colsize );
+    f1 = zMatAlloc( rowsize, rank );
+    f2 = zMatAlloc( rank, colsize );
+    zMatRandUniform( f1, -1, 1 );
+    zMatRandUniform( f2, -1, 1 );
+    zMulMatMat( f1, f2, a );
+    zVecRandUniform( b, -1, 1 );
+    le_gen_rowlong_ref( f1, f2, b, x_ref );
+    zMatFreeAtOnce( 2, f1, f2 );
+    zVecZero( x_lq );
+    zLESolveMP_LQ( a, b, NULL, NULL, x_lq );
+    if( !zVecEqual( x_lq, x_ref, tol * zMax( zVecElemAbsMax( x_ref, NULL ), 1.0 ) ) ) /* relative error */
+      result = false;
+  }
+  zMatFree( a );
+  zVecFreeAtOnce( 3, b, x_ref, x_lq );
+  zAssert( zLESolveMP_LQ (row-long cases), result );
+}
+
 void assert_le_gen_aux(void)
 {
   zMat a;
@@ -882,6 +936,7 @@ int main(void)
   assert_le_mat_capacity();
   assert_le_gauss_seidel();
   assert_le_gen();
+  assert_le_gen_rowlong();
   assert_le_gen_aux();
   assert_le_mpnull();
   assert_tridiagonal_equation();

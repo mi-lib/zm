@@ -90,9 +90,9 @@ bool assert_mat_decomp_lu(int rowsize, int colsize, int rank, int n)
   const double tol = 1.0e-11;
 
   mat = zMatAlloc( rowsize, colsize );
-  l = zMatAlloc( rowsize, rowsize );
-  u = zMatAlloc( rowsize, colsize );
-  index = zIndexAlloc( zMatColSizeNC(l) );
+  l = zMatAlloc( rowsize, zMin( rowsize, colsize ) );
+  u = zMatAlloc( zMin( rowsize, colsize ), colsize );
+  index = zIndexAlloc( rowsize );
   for( i=0; i<n; i++ ){
     zMatResetSize( l );
     zMatResetSize( u );
@@ -115,8 +115,8 @@ bool check_mat_decomp_lu(zMat m, int rank_expected, double tol)
   int rank;
   bool result = false;
 
-  l = zMatAllocSqr( zMatRowSizeNC(m) );
-  u = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
+  l = zMatAlloc( zMatRowSizeNC(m), zMatMinSize(m) );
+  u = zMatAlloc( zMatMinSize(m), zMatColSizeNC(m) );
   index = zIndexCreate( zMatRowSizeNC(m) );
   if( !l || !u || !index ) goto TERMINATE;
   if( ( rank = zMatDecompLU( m, l, u, index ) ) != rank_expected ){

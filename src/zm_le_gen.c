@@ -107,8 +107,11 @@ static void _zLEWorkspaceFreeMP(zLEWorkspace *workspace)
 /* allocate workspace for a linear equation solver with matrix decomposition. */
 static bool _zLEWorkspaceAllocLR(zLEWorkspace *workspace, int num_equation, int num_variable)
 {
-  workspace->l_facto = zMatAllocSqr( num_equation );
-  workspace->r_facto = zMatAlloc( num_equation, num_variable );
+  int minsize;
+
+  minsize = zMin( num_equation, num_variable );
+  workspace->l_facto = zMatAlloc( num_equation, minsize );
+  workspace->r_facto = zMatAlloc( minsize, num_variable );
   workspace->index_lu = zIndexCreate( num_equation );
   return workspace->l_facto && workspace->r_facto && workspace->index_lu;
 }
