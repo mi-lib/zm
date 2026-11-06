@@ -1,3 +1,4 @@
+2026.11.07. Reimplemented _zMatDecompLQFullDST to accumulate Householder reflections backward. [zm_le_lq]
 2026.11.07. Modified _zMatDecompLQFullDST not to skip columns for linearly dependent rows, so that the last rows of the orthonormal matrix span the null space. [zm_le_lq]
 2026.11.07. Modified _zMatDecompLQFullDST to detect the rank with a relative tolerance, and added ZM_LQ_DECOMP_HOUSEHOLDER_TOL. [zm_le_lq]
 2026.11.07. Modified zMatDecompLQNull to give the identity matrix as the null space of a zero matrix. [zm_le_lq]

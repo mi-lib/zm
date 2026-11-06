@@ -125,11 +125,12 @@ int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q)
 /* full-sized LQ decomposition based on Householder method. (destructive) */
 static int _zMatDecompLQFullDST(zMat m, zMat q)
 {
-  double s, ds, r, norm, norm_inv, reflection;
-  double *u;
+  double s, r, norm, d;
+  double *u, *v;
   int i, j, colsize, rank;
 
-  zMatIdentNC( q );
+  /* forward reflections: the k-th reflection is I - v v^T, where v (|v|^2=2) is stored in the k-th row of q. */
+  zMatZero( q );
   for( rank=0, i=0; i<zMatRowSizeNC(m) && rank<zMatColSizeNC(m); i++ ){
     /* the norm of a row vector is preserved through the orthogonal transformations. */
     norm = zRawVecNorm( zMatRowBufNC(m,i), zMatColSizeNC(m) );
@@ -140,20 +141,32 @@ static int _zMatDecompLQFullDST(zMat m, zMat q)
       continue;
     }
     s = -zSgn(*u) * r;
-    ds = s - *u; /* |ds| = r + |*u| >= r > 0 */
-    norm_inv = 1.0 / ( s * ds );
-    *u = -ds; /* to use u temporarily as a reflection vector */
-    for( j=0; j<zMatColSizeNC(q); j++ ){
-      reflection = -norm_inv * zRawMatColInnerProd( zMatRowBufNC(q,rank), zMatColCapacity(q), u, colsize, zMatColSizeNC(q), j );
-      zRawMatColCatDRC( zMatRowBufNC(q,rank), zMatColCapacity(q), reflection, u, colsize, zMatColSizeNC(q), j );
-    }
-    for( j=zMatRowSizeNC(m)-1; j>i; j-- ){
-      reflection = -norm_inv * zRawVecInnerProd( &zMatElemNC(m,j,rank), u, colsize );
-      zRawVecCatDRC( &zMatElemNC(m,j,rank), reflection, u, colsize );
+    v = &zMatElemNC(q,rank,rank);
+    zRawVecCopy( u, v, colsize );
+    *v -= s; /* reflection vector u - s e1 */
+    zRawVecDivDRC( v, sqrt( s * ( s - *u ) ), colsize ); /* s ( s - u0 ) = r ( r + |u0| ) > 0 */
+    for( j=i+1; j<zMatRowSizeNC(m); j++ ){
+      d = zRawVecInnerProd( &zMatElemNC(m,j,rank), v, colsize );
+      zRawVecCatDRC( &zMatElemNC(m,j,rank), -d, v, colsize );
     }
     *u = s;
     zRawVecZero( u + 1, colsize - 1 );
     rank++;
+  }
+  /* backward accumulation: q = H_{rank-1} ... H_0 is computed by multiplying H_{rank-1}, ..., H_0 from
+   * the right side of the identity matrix, where only the trailing block of q is modified at each step. */
+  for( i=rank; i<zMatColSizeNC(q); i++ )
+    zMatSetElemNC( q, i, i, 1 );
+  for( i=rank-1; i>=0; i-- ){
+    v = &zMatElemNC(q,i,i);
+    colsize = zMatColSizeNC(q) - i;
+    for( j=i+1; j<zMatRowSizeNC(q); j++ ){ /* the i-th component of the j-th row is zero. */
+      d = zRawVecInnerProd( &zMatElemNC(q,j,i), v, colsize );
+      zRawVecCatDRC( &zMatElemNC(q,j,i), -d, v, colsize );
+    }
+    d = -*v; /* the i-th row is e_i - v_0 v */
+    zRawVecMulDRC( v, d, colsize );
+    *v += 1.0;
   }
   return rank;
 }
