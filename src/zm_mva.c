@@ -155,10 +155,12 @@ int zVecListGenRandND(zVecList *vl, int n, zVec mean, zMat cov)
   }
   vo = zVecAlloc( zVecSizeNC(mean) );
   v = zVecAlloc( zVecSizeNC(mean) );
-  if( !vo || !v || !zMatDecompCholeskyAlloc( cov, &b, &idx ) ){
+  if( !vo || !v ){
     ZALLOCERROR();
     goto TERMINATE;
   }
+  /* a degenerated covariance (even the rank of zero) is allowed. */
+  if( zMatDecompCholeskyAlloc( cov, &b, &idx ) < 0 ) goto TERMINATE;
   zListInit( vl );
   for( i=0; i<n; i++ ){
     for( j=0; j<zVecSizeNC(vo); j++ )

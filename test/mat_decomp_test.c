@@ -61,6 +61,7 @@ bool assert_mat_decomp_cholesky(int rowsize, int colsize, int n)
   zMat m, mc, l, s;
   zIndex index;
   int count_success = 0;
+  double tol;
 
   m = zMatAllocSqr( rowsize );
   mc = zMatAllocSqr( rowsize );
@@ -71,15 +72,106 @@ bool assert_mat_decomp_cholesky(int rowsize, int colsize, int n)
     zMatResetSize( l );
     zMatRandUniform( s, -10, 10 );
     zMulMatMatT( s, s, m );
+    tol = 1.0e-11 * zMax( zMatElemAbsMax( m, NULL, NULL ), 1.0 ); /* relative error */
     zMatDecompCholesky( m, l, index );
     zMulMatMatT( l, l, mc );
     zMatSubDRC( m, mc );
-    if( zMatIsTiny( m ) ) count_success++;
+    if( zMatIsTol( m, tol ) ) count_success++;
   }
   eprintf( "success rate (%d x %d).(%d x %d) %d/%d ", rowsize, colsize, colsize, rowsize, count_success, n );
   zMatFreeAtOnce( 4, m, mc, l, s );
   zIndexFree( index );
   return count_success == n;
+}
+
+/* check Cholesky decomposition of a matrix with the expected rank (-1 for not positive semi-definite matrices). */
+bool check_mat_decomp_cholesky(zMat m, int rank_expected, double tol)
+{
+  zMat l, llt = NULL;
+  zIndex index;
+  int rank;
+  bool result = false;
+
+  l = zMatAllocSqr( zMatRowSizeNC(m) );
+  index = zIndexCreate( zMatRowSizeNC(m) );
+  if( !l || !index ) goto TERMINATE;
+  if( ( rank = zMatDecompCholesky( m, l, index ) ) != rank_expected ){
+    eprintf( "assigned rank = %d / detected rank = %d\n", rank_expected, rank );
+    goto TERMINATE;
+  }
+  if( rank <= 0 ){
+    result = rank < 0 || zMatColSizeNC(l) == 0;
+    goto TERMINATE;
+  }
+  if( !( llt = zMatAllocSqr( zMatRowSizeNC(m) ) ) ) goto TERMINATE;
+  zMulMatMatT( l, l, llt );
+  zMatSubDRC( llt, m );
+  if( !( result = zMatIsTol( llt, tol ) ) )
+    eprintf( "matrix unrecovered (maximum error = %g)\n", zMatElemAbsMax( llt, NULL, NULL ) );
+ TERMINATE:
+  zMatFreeAtOnce( 2, l, llt );
+  zIndexFree( index );
+  return result;
+}
+
+/* check if rank detection of Cholesky decomposition is independent of the scale of the matrix. */
+bool assert_mat_decomp_cholesky_scale(int n)
+{
+  zMat s, m;
+  const double scale[] = { 1.0e-14, 1.0, 1.0e6, 1.0e10 };
+  const int nscale = sizeof(scale) / sizeof(double);
+  int i, k;
+  bool result = false;
+
+  s = zMatAlloc( 6, 3 );
+  m = zMatAllocSqr( 6 );
+  if( !s || !m ) goto TERMINATE;
+  result = true;
+  for( k=0; k<nscale; k++ )
+    for( i=0; i<n; i++ ){
+      zMatRandUniform( s, -1, 1 );
+      zMulMatMatT( s, s, m ); /* positive semi-definite matrix with the rank of 3 */
+      zMatMulDRC( m, scale[k] );
+      if( !check_mat_decomp_cholesky( m, 3, 1.0e-11 * zMatElemAbsMax( m, NULL, NULL ) ) ){ /* relative error */
+        eprintf( "failed for scale = %g\n", scale[k] );
+        result = false;
+        break;
+      }
+    }
+ TERMINATE:
+  zMatFreeAtOnce( 2, s, m );
+  return result;
+}
+
+/* indefinite and zero matrices in Cholesky decomposition. */
+bool assert_mat_decomp_cholesky_degenerate(void)
+{
+  zMat m;
+  const double scale[] = { 1.0e-14, 1.0, 1.0e10 };
+  const int nscale = sizeof(scale) / sizeof(double);
+  int k;
+  bool result = true;
+
+  for( k=0; k<nscale; k++ ){
+    if( !( m = zMatCreateList( 3, 3, /* indefinite matrix */
+      2.0, 1.0, 0.0,
+      1.0, 2.0, 3.0,
+      0.0, 3.0, 1.0 ) ) ) return false;
+    zMatMulDRC( m, scale[k] );
+    if( !check_mat_decomp_cholesky( m, -1, 0 ) ){
+      eprintf( "indefinite matrix unrejected for scale = %g\n", scale[k] );
+      result = false;
+    }
+    zMatFree( m );
+  }
+  if( !( m = zMatAllocSqr( 3 ) ) ) return false;
+  zMatZero( m );
+  if( !check_mat_decomp_cholesky( m, 0, 0 ) ){
+    eprintf( "failed for zero matrix\n" );
+    result = false;
+  }
+  zMatFree( m );
+  return result;
 }
 
 bool assert_mat_decomp_lu(int rowsize, int colsize, int rank, int n)
@@ -611,6 +703,8 @@ int main(void)
   zRandInit();
   zAssert( zMatDecompCholesky (8x5), assert_mat_decomp_cholesky( size_large, size_small, n ) );
   zAssert( zMatDecompCholesky (8x8), assert_mat_decomp_cholesky( size_large, size_large, n ) );
+  zAssert( zMatDecompCholesky (scale-independent rank detection), assert_mat_decomp_cholesky_scale( n ) );
+  zAssert( zMatDecompCholesky (indefinite and zero matrices), assert_mat_decomp_cholesky_degenerate() );
   zAssert( zMatDecompLU (5x8), assert_mat_decomp_lu( size_small, size_large, rank, n ) );
   zAssert( zMatDecompLU (8x5), assert_mat_decomp_lu( size_large, size_small, rank, n ) );
   zAssert( zMatDecompLU (8x8), assert_mat_decomp_lu( size_large, size_large, rank, n ) );

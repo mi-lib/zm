@@ -149,42 +149,62 @@ int zMatDecompLUAlloc(const zMat m, zMat *l, zMat *u, zIndex *idx)
   return zMatDecompLU( m, *l, *u, *idx );
 }
 
-/* Cholesky decomposition of a matrix (destructive). */
-int zMatDecompCholeskyDST(zMat m, zMat l, zIndex idx)
+/* rearrange columns of a matrix as l'[i][j] = l[i][idx[j]], and zero the upper part of the pivoted rows. */
+static void _zMatDecompCholeskyArrange(zMat l, zIndex idx)
+{
+  int i, j, j0, k, n;
+  double tmp, *lp;
+
+  n = zIndexSizeNC(idx);
+  for( j0=0; j0<n; j0++ ){
+    if( zIndexElemNC(idx,j0) < 0 ) continue; /* already rearranged */
+    for( i=0; i<n; i++ ){ /* rotate a cycle of the permutation in each row */
+      lp = zMatRowBufNC(l,i);
+      tmp = lp[j0];
+      for( j=j0; ( k = zIndexElemNC(idx,j) ) != j0; j=k ) lp[j] = lp[k];
+      lp[j] = tmp;
+    }
+    for( j=j0; ( k = zIndexElemNC(idx,j) ) >= 0; j=k ) /* mark the cycle */
+      zIndexSetElemNC( idx, j, ~k );
+  }
+  for( j=0; j<n; j++ ) /* unmark */
+    zIndexSetElemNC( idx, j, ~zIndexElemNC(idx,j) );
+  for( i=0; i<n; i++ )
+    zRawVecZero( zMatRowBufNC(l,zIndexElemNC(idx,i)) + i + 1, n - i - 1 );
+}
+
+/* Cholesky decomposition of a matrix (destructive). l has to be initially set for the original matrix. */
+static int _zMatDecompCholeskyDST(zMat l, zIndex idx, double tol)
 {
   int i, j, k, n, p, rank;
   double a;
 
   n = zIndexSizeNC(idx);
-  zMatZero( l );
   zIndexOrder( idx, 0 );
   for( rank=0, i=0; i<n; i++ ){
-    p = zMatPivotingDiag( m, idx, i );
-    if( zIsTiny( ( a = zMatElemNC(m,p,p) ) ) ){
+    p = zMatPivotingDiag( l, idx, i );
+    if( fabs( ( a = zMatElemNC(l,p,p) ) ) <= tol ){
       a = 0;
     } else
     if( a < 0 ){
       ZRUNERROR( ZM_ERR_MAT_NOTPOSITIVESEMIDEFINITE );
       return -1;
     } else{
-      zMatSetElemNC( m, p, p, ( a = sqrt( a ) ) );
+      zMatSetElemNC( l, p, p, ( a = sqrt( a ) ) );
       a = 1.0 / a;
       rank++;
     }
     for( j=i+1; j<n; j++ ){
-      zMatElemNC(m,p,zIndexElemNC(idx,j)) *= a;
-      zMatElemNC(m,zIndexElemNC(idx,j),p) *= a;
+      zMatElemNC(l,p,zIndexElemNC(idx,j)) *= a;
+      zMatElemNC(l,zIndexElemNC(idx,j),p) *= a;
     }
     for( j=i+1; j<n; j++ )
       for( k=i+1; k<n; k++ )
-        zMatElemNC(m,zIndexElemNC(idx,j),zIndexElemNC(idx,k))
-          -= zMatElemNC(m,zIndexElemNC(idx,j),p) * zMatElemNC(m,p,zIndexElemNC(idx,k));
+        zMatElemNC(l,zIndexElemNC(idx,j),zIndexElemNC(idx,k))
+          -= zMatElemNC(l,zIndexElemNC(idx,j),p) * zMatElemNC(l,p,zIndexElemNC(idx,k));
   }
-  for( i=0; i<n; i++ )
-    for( j=0; j<=i; j++ )
-      zMatSetElemNC( l, zIndexElemNC(idx,i), j,
-        zMatElemNC( m, zIndexElemNC(idx,i), zIndexElemNC(idx,j) ) );
-  if( rank < zMatRowSizeNC(m) ) /* automatically adjust size of the factorized matrix */
+  _zMatDecompCholeskyArrange( l, idx );
+  if( rank < n ) /* automatically adjust size of the factorized matrix */
     zMatColResize( l, rank );
   return rank;
 }
@@ -192,8 +212,8 @@ int zMatDecompCholeskyDST(zMat m, zMat l, zIndex idx)
 /* Cholesky decomposition of a matrix */
 int zMatDecompCholesky(const zMat m, zMat l, zIndex idx)
 {
-  int rank;
-  zMat mc;
+  int i;
+  double d, dmax = 0;
 
   if( !zMatIsSqr( m ) || !zMatIsSqr( l ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
@@ -203,10 +223,10 @@ int zMatDecompCholesky(const zMat m, zMat l, zIndex idx)
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return -1;
   }
-  if( !( mc = zMatClone( m ) ) ) return -1;
-  rank = zMatDecompCholeskyDST( mc, l, idx );
-  zMatFree( mc );
-  return rank;
+  for( i=0; i<zMatRowSizeNC(m); i++ ) /* maximum absolute diagonal component */
+    if( ( d = fabs( zMatElemNC(m,i,i) ) ) > dmax ) dmax = d;
+  zMatCopyNC( m, l );
+  return _zMatDecompCholeskyDST( l, idx, ZM_CHOLESKY_DECOMP_TOL * dmax );
 }
 
 /* Cholesky decomposition with an automatic matrix allocation. */
@@ -215,8 +235,11 @@ int zMatDecompCholeskyAlloc(const zMat m, zMat *l, zIndex *idx)
   *l = zMatAllocSqr( zMatRowSizeNC(m) );
   *idx = zIndexCreate( zMatRowSizeNC(m) );
   if( !*l || !*idx ){
+    ZALLOCERROR();
     zMatFree( *l );
     zIndexFree( *idx );
+    *l = NULL;
+    *idx = NULL;
     return -1;
   }
   return zMatDecompCholesky( m, *l, *idx );

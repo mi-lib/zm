@@ -45,24 +45,32 @@ __BEGIN_DECLS
 __ZM_EXPORT int zMatDecompLU(const zMat m, zMat l, zMat u, zIndex index);
 __ZM_EXPORT int zMatDecompLUAlloc(const zMat m, zMat *l, zMat *u, zIndex *index);
 
-/* Cholesky decomposition.
+/*! \brief relative tolerance for rank detection in Cholesky decomposition.
+ *
+ * A pivot is regarded as zero if its absolute value is not greater than this value times the maximum
+ * absolute diagonal component of the original matrix. A negative pivot beyond it means that the matrix
+ * is not positive semi-definite.
+ */
+#define ZM_CHOLESKY_DECOMP_TOL ( 1.0e-12 )
+
+/*! \brief Cholesky decomposition.
  *
  * zMatDecompCholesky() decomposes a positive semi-definite symmetric matrix \a m into \a l \a l ^T.
- * \a index is an index vector for order description
+ * \a index is an index vector for order description. The rows of \a l correspond to those of \a m,
+ * and the rows \a index[0], \a index[1], ... of \a l are lower triangular in this order.
  * \a l has to have the same size with \a m.
  * If \a m is degenerated, the size of \a l is automatically adjusted to be column-full-rank.
- *
- * zMatDecompCholeskyDST() also conducts the Cholesky decomposition, during which the given matrix \a m
- * is destroyed.
+ * The rank is detected with the relative tolerance ZM_CHOLESKY_DECOMP_TOL, so that the result does
+ * not depend on the scale of \a m.
  *
  * zMatDecompCholeskyAlloc() automatically allocates matrix \a l and the index vector \a index, and then
- * conducts the Cholesky decomposition.
+ * conducts the Cholesky decomposition. If it fails to allocate them, both \a l and \a index are set
+ * for the null pointer.
  * \return
- * zMatDecompCholeskyDST(), zMatDecompCholesky(), and zMatDecompCholeskyAlloc() return the rank of \a m.
- * If they fail to allocate internal memory for the computation or find mismatches of sizes of matrices,
- * they return -1.
+ * zMatDecompCholesky() and zMatDecompCholeskyAlloc() return the rank of \a m.
+ * If they fail to allocate internal memory for the computation, find mismatches of sizes of matrices,
+ * or find that \a m is not positive semi-definite, they return -1.
  */
-__ZM_EXPORT int zMatDecompCholeskyDST(zMat m, zMat l, zIndex index);
 __ZM_EXPORT int zMatDecompCholesky(const zMat m, zMat l, zIndex index);
 __ZM_EXPORT int zMatDecompCholeskyAlloc(const zMat m, zMat *l, zIndex *index);
 
