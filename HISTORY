@@ -1,3 +1,7 @@
+2026.11.07. Abolished zMatDecompLUDST, and added _zMatDecompLUDST that works in the given upper triangular matrix with physical row swaps, so that zMatDecompLU does not clone the given matrix. [zm_le_lu]
+2026.11.07. Debugged _zMatDecompLUDST to store the lower triangular matrix in the correct column when a column is skipped. [zm_le_lu]
+2026.11.07. Modified _zMatDecompLUDST to detect the rank with a relative tolerance, and added ZM_LU_DECOMP_TOL. [zm_le_lu]
+2026.11.07. Added tests of zMatDecompLU for dependent columns and scaled matrices, and modified its random test to evaluate the relative error. [test]
 2026.11.07. Reimplemented _zMatDecompLQFullDST to accumulate Householder reflections backward. [zm_le_lq]
 2026.11.07. Modified _zMatDecompLQFullDST not to skip columns for linearly dependent rows, so that the last rows of the orthonormal matrix span the null space. [zm_le_lq]
 2026.11.07. Modified _zMatDecompLQFullDST to detect the rank with a relative tolerance, and added ZM_LQ_DECOMP_HOUSEHOLDER_TOL. [zm_le_lq]

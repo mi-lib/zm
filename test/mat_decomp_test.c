@@ -98,12 +98,117 @@ bool assert_mat_decomp_lu(int rowsize, int colsize, int rank, int n)
     zMatResetSize( u );
     generate_matrix_composition( mat, rank );
     zMatDecompLU( mat, l, u, index );
-    if( check_matrix_composition( mat, l, u, tol ) ) count_success++;
+    if( check_matrix_composition( mat, l, u, tol * zMax( zMatElemAbsMax( mat, NULL, NULL ), 1.0 ) ) ) /* relative error */
+      count_success++;
   }
   eprintf( "success rate (%d x %d) rank=%d, %d/%d ", rowsize, colsize, rank, count_success, n );
   zMatFreeAtOnce( 3, mat, l, u );
   zIndexFree( index );
   return count_success == n;
+}
+
+/* check LU decomposition of a matrix with the expected rank. */
+bool check_mat_decomp_lu(zMat m, int rank_expected, double tol)
+{
+  zMat l, u;
+  zIndex index;
+  int rank;
+  bool result = false;
+
+  l = zMatAllocSqr( zMatRowSizeNC(m) );
+  u = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
+  index = zIndexCreate( zMatRowSizeNC(m) );
+  if( !l || !u || !index ) goto TERMINATE;
+  if( ( rank = zMatDecompLU( m, l, u, index ) ) != rank_expected ){
+    eprintf( "assigned rank = %d / detected rank = %d\n", rank_expected, rank );
+    goto TERMINATE;
+  }
+  if( zMatColSizeNC(l) != rank || zMatRowSizeNC(u) != rank ){
+    eprintf( "invalid sizes of factorized matrices (%d x %d), (%d x %d)\n", zMatRowSizeNC(l), zMatColSizeNC(l), zMatRowSizeNC(u), zMatColSizeNC(u) );
+    goto TERMINATE;
+  }
+  result = rank == 0 ? true : check_matrix_composition( m, l, u, tol );
+ TERMINATE:
+  zMatFreeAtOnce( 2, l, u );
+  zIndexFree( index );
+  return result;
+}
+
+/* columns linearly dependent on the preceding ones in the middle of LU decomposition. */
+bool assert_mat_decomp_lu_dependent_cols(void)
+{
+  zMat m[5];
+  const int rank[] = { 2, 2, 2, 2, 0 };
+  const int num = sizeof(rank) / sizeof(int);
+  int i;
+  bool result = false;
+  const double tol = 1.0e-12;
+
+  m[0] = zMatCreateList( 3, 3, /* the second column is skipped */
+    1.0, 1.0, 1.0,
+    1.0, 1.0, 2.0,
+    1.0, 1.0, 3.0 );
+  m[1] = zMatCreateList( 3, 4, /* the second and third columns are skipped */
+    1.0, 1.0, 1.0, 1.0,
+    2.0, 2.0, 2.0, 3.0,
+    3.0, 3.0, 3.0, 5.0 );
+  m[2] = zMatCreateList( 3, 6, /* the second to fifth columns are skipped (out of bounds of l in the old implementation) */
+    3.0, 3.0, 3.0, 3.0, 3.0, 5.0,
+    2.0, 2.0, 2.0, 2.0, 2.0, 5.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0 );
+  m[3] = zMatCreateList( 4, 3, /* row-long case: the second column is skipped */
+    1.0, 1.0, 1.0,
+    1.0, 1.0, 2.0,
+    1.0, 1.0, 3.0,
+    1.0, 1.0, 4.0 );
+  m[4] = zMatAlloc( 3, 4 ); /* zero matrix */
+  for( i=0; i<num; i++ )
+    if( !m[i] ) goto TERMINATE;
+  zMatZero( m[4] );
+  result = true;
+  for( i=0; i<num; i++ )
+    if( !check_mat_decomp_lu( m[i], rank[i], tol ) ){
+      eprintf( "failed for case %d (%d x %d)\n", i, zMatRowSizeNC(m[i]), zMatColSizeNC(m[i]) );
+      result = false;
+    }
+ TERMINATE:
+  for( i=0; i<num; i++ ) zMatFree( m[i] );
+  return result;
+}
+
+/* check if rank detection of LU decomposition is independent of the scale of the matrix. */
+bool assert_mat_decomp_lu_scale(void)
+{
+  zMat m[2];
+  const double scale[] = { 1.0e-13, 1.0, 1.0e8 };
+  const int nscale = sizeof(scale) / sizeof(double);
+  int i, k;
+  bool result = true;
+
+  for( k=0; k<nscale; k++ ){
+    m[0] = zMatCreateList( 3, 4, /* column-long case: rank 2 (the second row is slightly independent) */
+      1.0, 2.0, 3.0, 4.0,
+      2.0, 4.0, 6.0, 8.000001,
+      3.0, 6.0, 9.0, 12.0 );
+    m[1] = zMatCreateList( 4, 3, /* row-long case: rank 2 (the second row is slightly independent) */
+      1.0, 2.0, 3.0,
+      2.0, 4.0, 6.000001,
+      3.0, 6.0, 9.0,
+      4.0, 8.0, 12.0 );
+    if( !m[0] || !m[1] ){
+      zMatFreeAtOnce( 2, m[0], m[1] );
+      return false;
+    }
+    for( i=0; i<2; i++ ){
+      zMatMulDRC( m[i], scale[k] );
+      if( !check_mat_decomp_lu( m[i], 2, 1.0e-12 * zMax( scale[k], 1.0 ) ) ){
+        eprintf( "failed for scale = %g (%d x %d)\n", scale[k], zMatRowSizeNC(m[i]), zMatColSizeNC(m[i]) );
+        result = false;
+      }
+    }
+    zMatFreeAtOnce( 2, m[0], m[1] );
+  }
+  return result;
 }
 
 bool assert_mat_decomp_lq_one(int rowsize, int colsize, int rank_max, int n)
@@ -509,6 +614,8 @@ int main(void)
   zAssert( zMatDecompLU (5x8), assert_mat_decomp_lu( size_small, size_large, rank, n ) );
   zAssert( zMatDecompLU (8x5), assert_mat_decomp_lu( size_large, size_small, rank, n ) );
   zAssert( zMatDecompLU (8x8), assert_mat_decomp_lu( size_large, size_large, rank, n ) );
+  zAssert( zMatDecompLU (dependent columns), assert_mat_decomp_lu_dependent_cols() );
+  zAssert( zMatDecompLU (scale-independent rank detection), assert_mat_decomp_lu_scale() );
   zAssert( zMatDecompLQ (5x8), assert_mat_decomp_lq_one( size_small, size_large, size_small, n ) );
   zAssert( zMatDecompLQ (8x5), assert_mat_decomp_lq_one( size_large, size_small, size_small, n ) );
   zAssert( zMatDecompLQ (8x8), assert_mat_decomp_lq_one( size_large, size_large, size_small, n ) );

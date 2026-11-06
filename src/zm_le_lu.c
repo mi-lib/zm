@@ -6,34 +6,44 @@
 
 #include <zm/zm_le.h>
 
-/* LU decomposition of a matrix (destructive). */
-int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx)
+/* LU decomposition based on Crout method (destructive). u has to be initially set for the original matrix. */
+static int _zMatDecompLUDST(zMat l, zMat u, zIndex idx, double tol)
 {
-  int r, c, i, j, p, q;
-  double ahead;
+  int r, c, i, p, size;
+  double ahead, max, tmp, *ur, *ui;
 
   zMatZero( l );
-  zMatZero( u );
   zIndexOrder( idx, 0 );
-  for( r=c=0; r<zMatRowSizeNC(m) && c<zMatColSizeNC(m); c++ ){
-    p = zMatPivoting( m, idx, r, c );
-    if( zIsTiny( ( ahead = zMatElemNC( m, p, c ) ) ) ) continue;
-    zMatSetElemNC( l, p, r, ahead );
-    zMatSetElemNC( u, r, c, 1 );
-    for( i=r+1; i<zMatRowSizeNC(l); i++ ){ /* L column */
-      q = zIndexElemNC( idx, i );
-      zMatSetElemNC( l, q, c, zMatElemNC( m, q, c ) );
-    }
-    for( i=c+1; i<zMatColSizeNC(u); i++ ) /* U row */
-      zMatSetElemNC( u, r, i, zMatElemNC( m, p, i ) / ahead );
-    for( j=c+1; j<zMatColSizeNC(m); j++ ) /* other mod. */
-      for( i=r+1; i<zMatRowSizeNC(m); i++ ){
-        q = zIndexElemNC( idx, i );
-        zMatElemNC(m,q,j) -= zMatElemNC(l,q,c) * zMatElemNC(u,r,j);
+  for( r=c=0; r<zMatRowSizeNC(u) && c<zMatColSizeNC(u); c++ ){
+    /* partial pivoting with a physical row swap */
+    for( p=r, max=fabs( zMatElemNC(u,r,c) ), i=r+1; i<zMatRowSizeNC(u); i++ )
+      if( ( tmp = fabs( zMatElemNC(u,i,c) ) ) > max ){
+        max = tmp;
+        p = i;
       }
+    if( max <= tol ){ /* the column is dependent on the preceding ones */
+      for( i=r; i<zMatRowSizeNC(u); i++ ) zMatSetElemNC( u, i, c, 0 );
+      continue;
+    }
+    if( p != r ){
+      zMatSwapRowNC( u, r, p );
+      zIndexSwapNC( idx, r, p );
+    }
+    ur = zMatRowBufNC(u,r);
+    ahead = ur[c];
+    zMatSetElemNC( l, zIndexElemNC(idx,r), r, ahead );
+    ur[c] = 1;
+    size = zMatColSizeNC(u) - c - 1;
+    for( i=c+1; i<zMatColSizeNC(u); i++ ) ur[i] /= ahead; /* U row */
+    for( i=r+1; i<zMatRowSizeNC(u); i++ ){ /* L column and elimination of the other rows */
+      ui = zMatRowBufNC(u,i);
+      zMatSetElemNC( l, zIndexElemNC(idx,i), r, ui[c] );
+      zRawVecCatDRC( ui+c+1, -ui[c], ur+c+1, size );
+      ui[c] = 0;
+    }
     r++;
   }
-  if( r < zMatRowSizeNC(m) ){ /* automatically adjust sizes of factorized matrices */
+  if( r < zMatRowSizeNC(u) ){ /* automatically adjust sizes of factorized matrices */
     zMatColResize( l, r ); /* to be column-full-rank */
     zMatRowResize( u, r ); /* to be row-full-rank */
   }
@@ -43,9 +53,6 @@ int zMatDecompLUDST(zMat m, zMat l, zMat u, zIndex idx)
 /* LU decomposition of a matrix. */
 int zMatDecompLU(const zMat m, zMat l, zMat u, zIndex idx)
 {
-  int rank;
-  zMat mc;
-
   if( !zMatIsSqr( l ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return -1;
@@ -58,10 +65,8 @@ int zMatDecompLU(const zMat m, zMat l, zMat u, zIndex idx)
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return -1;
   }
-  if( !( mc = zMatClone(m) ) ) return -1;
-  rank = zMatDecompLUDST( mc, l, u, idx );
-  zMatFree( mc );
-  return rank;
+  zMatCopyNC( m, u );
+  return _zMatDecompLUDST( l, u, idx, ZM_LU_DECOMP_TOL * zMatElemAbsMax( m, NULL, NULL ) );
 }
 
 /* LU decomposition with an automatic matrix allocation. */
