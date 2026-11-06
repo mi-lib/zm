@@ -31,6 +31,7 @@ static int _zMatDecompLQDST_Q(zMat l, zMat q) /* q has to be initially set for t
     zRawVecDiv( qp, r, zMatRowBufNC(q,rank), zMatColSizeNC(q) );
     zMatSetElemNC( l, i, rank++, r ); /* rank <= i < row size <= column size */
   }
+  if( rank == 0 ) ZRUNERROR( ZM_ERR_MAT_CANNOTDECOMPOSEZEROMAT );
   if( rank < zMatRowSizeNC(q) ){ /* automatically adjust sizes of factorized matrices */
     zMatColResize( l, rank ); /* to be column-full-rank */
     zMatRowResize( q, rank ); /* to be row-full-rank */

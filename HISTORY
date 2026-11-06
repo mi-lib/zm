@@ -1,3 +1,4 @@
+2026.11.06. Modified _zMatDecompLQDST_Q to report an error for zero matrices as well as _zMatDecompLQDST_L. [zm_le_lq]
 2026.11.06. Modified _zMatDecompLQDST_Q and _zMatDecompLQDST_L to detect the rank with a relative tolerance. [zm_le_lq]
 2026.11.06. Reimplemented _zMatDecompLQDST_L based on modified Gram=Schmidt's method. [zm_le_lq]
 2026.11.06. Modified _zMatDecompLQDST_L to adjust sizes of factorized matrices for zero matrices. [zm_le_lq]
