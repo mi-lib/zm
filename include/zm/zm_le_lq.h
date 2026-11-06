@@ -18,6 +18,14 @@ __BEGIN_DECLS
  */
 #define ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ( 1.0e-10 )
 
+/*! \brief relative tolerance for rank detection in LQ decomposition based on Householder's method.
+ *
+ * A row vector is regarded as linearly dependent on the preceding ones if the norm of its components
+ * remaining after the preceding Householder reflections is not greater than this value times the norm
+ * of the original row vector.
+ */
+#define ZM_LQ_DECOMP_HOUSEHOLDER_TOL ( 1.0e-10 )
+
 /*! \brief LQ decomposition of a matrix.
  *
  * zMatDecompLQ() decomposes a matrix \a m into a lower triangular matrix \a l and a row-orthonormal
@@ -47,6 +55,10 @@ __ZM_EXPORT int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q);
  * matrix \a q based on Householder's method, namely,
  *  \a l \a q = \a m.
  * If \a m is with the size of r x c, \a l and \a q have to be with the sizes of r x c and c x c, respectively.
+ * Row vectors of \a m are processed in order, and a row vector linearly dependent on the preceding ones
+ * (judged with the relative tolerance ZM_LQ_DECOMP_HOUSEHOLDER_TOL) does not consume a column of \a l.
+ * Hence, suppose the rank of \a m is d, the last c-d columns of \a l are zero, and the last c-d rows of
+ * \a q span the null space of \a m.
  *
  * zMatDecompLQFullAlloc() automatically allocates matrices \a l and \a q, and then conducts the full-sized
  * LQ decomposition.
@@ -66,9 +78,9 @@ __ZM_EXPORT int zMatDecompLQFullAlloc(const zMat m, zMat *l, zMat *q);
  *  \a m \a qnull = O.
  * If \a m is with the size of r x c, \a l, \a q, and \a qnull have to be with the sizes r x c, c x c, and
  * c x c, respectively, while their sizes will be adjusted to r x d, d x c, and c x (c-d), respectively,
- * where d is the rank of \a m.
+ * where d is the rank of \a m. If \a m is a zero matrix, \a qnull is the identity matrix.
  * \return
- * zMatDecompLQNull() returns the rank of \a m.
+ * zMatDecompLQNull() returns the rank of \a m, or -1 if it finds mismatches of sizes of matrices.
  */
 __ZM_EXPORT int zMatDecompLQNull(const zMat m, zMat l, zMat q, zMat qnull);
 

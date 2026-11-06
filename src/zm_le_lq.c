@@ -7,9 +7,9 @@
 #include <zm/zm_le.h>
 
 /* check if the residual of a row vector after orthogonalization is negligible relative to its original norm. */
-static bool _zMatDecompLQIsDependent(double residual, double norm)
+static bool _zMatDecompLQIsDependent(double residual, double norm, double tol)
 {
-  return residual <= ZM_LQ_DECOMP_GRAMSCHMIDT_TOL * norm;
+  return residual <= tol * norm;
 }
 
 /* LQ decomposition of column-long rectangular matrices based on modified Gram=Schmidt's method. (destructive) */
@@ -27,7 +27,7 @@ static int _zMatDecompLQDST_Q(zMat l, zMat q) /* q has to be initially set for t
       zRawVecCatDRC( qp, -r, zMatRowBufNC(q,j), zMatColSizeNC(q) );
       zMatSetElemNC( l, i, j, r );
     }
-    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm(qp,zMatColSizeNC(q)) ), norm ) ) continue;
+    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm(qp,zMatColSizeNC(q)) ), norm, ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
     zRawVecDiv( qp, r, zMatRowBufNC(q,rank), zMatColSizeNC(q) );
     zMatSetElemNC( l, i, rank++, r );
   }
@@ -69,7 +69,7 @@ static int _zMatDecompLQDST_L(zMat l, zMat q) /* l has to be initially set for t
     }
     if( rank >= zMatColSizeNC(l) ) continue;
     zRawVecZero( zMatRowBufNC(l,i) + rank, zMatColSizeNC(l) - rank );
-    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm( v, zMatColSizeNC(q) ) ), norm ) ) continue;
+    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm( v, zMatColSizeNC(q) ) ), norm, ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
     zRawVecDivDRC( v, r, zMatColSizeNC(q) );
     zMatSetElemNC( l, i, rank++, r );
   }
@@ -125,26 +125,31 @@ int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q)
 /* full-sized LQ decomposition based on Householder method. (destructive) */
 static int _zMatDecompLQFullDST(zMat m, zMat q)
 {
-  double s, ds, norm_inv, reflection;
+  double s, ds, r, norm, norm_inv, reflection;
   double *u;
-  int i, j, size, colsize, rank;
+  int i, j, colsize, rank;
 
   zMatIdentNC( q );
-  size = zMatMinSize( m );
-  for( rank=0, i=0; i<size; i++ ){
-    u = &zMatElemNC(m,i,i);
-    colsize = zMatColSizeNC(m) - i;
-    if( zIsTiny( ( s = -zSgn( zMatElemNC(m,i,i) ) * zRawVecNorm( u, colsize ) ) ) ||
-        zIsTiny( ( ds = s - zMatElemNC(m,i,i) ) ) ) continue;
+  for( rank=0, i=0; i<zMatRowSizeNC(m) && rank<zMatColSizeNC(m); i++ ){
+    /* the norm of a row vector is preserved through the orthogonal transformations. */
+    norm = zRawVecNorm( zMatRowBufNC(m,i), zMatColSizeNC(m) );
+    u = &zMatElemNC(m,i,rank);
+    colsize = zMatColSizeNC(m) - rank;
+    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm( u, colsize ) ), norm, ZM_LQ_DECOMP_HOUSEHOLDER_TOL ) ){
+      zRawVecZero( u, colsize ); /* linearly dependent on the preceding rows */
+      continue;
+    }
+    s = -zSgn(*u) * r;
+    ds = s - *u; /* |ds| = r + |*u| >= r > 0 */
     norm_inv = 1.0 / ( s * ds );
     *u = -ds; /* to use u temporarily as a reflection vector */
     for( j=0; j<zMatColSizeNC(q); j++ ){
-      reflection = -norm_inv * zRawMatColInnerProd( zMatRowBufNC(q,i), zMatColCapacity(q), u, zMatRowSizeNC(q)-i, zMatColSizeNC(q), j );
-      zRawMatColCatDRC( zMatRowBufNC(q,i), zMatColCapacity(q), reflection, u, zMatRowSizeNC(q)-i, zMatColSizeNC(q), j );
+      reflection = -norm_inv * zRawMatColInnerProd( zMatRowBufNC(q,rank), zMatColCapacity(q), u, colsize, zMatColSizeNC(q), j );
+      zRawMatColCatDRC( zMatRowBufNC(q,rank), zMatColCapacity(q), reflection, u, colsize, zMatColSizeNC(q), j );
     }
     for( j=zMatRowSizeNC(m)-1; j>i; j-- ){
-      reflection = -norm_inv * zRawVecInnerProd( &zMatElemNC(m,j,i), u, colsize );
-      zRawVecCatDRC( &zMatElemNC(m,j,i), reflection, u, colsize );
+      reflection = -norm_inv * zRawVecInnerProd( &zMatElemNC(m,j,rank), u, colsize );
+      zRawVecCatDRC( &zMatElemNC(m,j,rank), reflection, u, colsize );
     }
     *u = s;
     zRawVecZero( u + 1, colsize - 1 );
@@ -182,7 +187,7 @@ int zMatDecompLQNull(const zMat m, zMat l, zMat q, zMat qnull)
 {
   int rank;
 
-  if( ( rank = zMatDecompLQFull( m, l, q ) ) > 0 && qnull ){
+  if( ( rank = zMatDecompLQFull( m, l, q ) ) >= 0 && qnull ){
     zMatSetColSizeNC( qnull, zMatColSizeNC(m) - rank );
     zMatTGetNC( q, rank, 0, qnull );
     zMatSetColSizeNC( l, rank );

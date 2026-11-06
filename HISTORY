@@ -1,3 +1,7 @@
+2026.11.07. Modified _zMatDecompLQFullDST not to skip columns for linearly dependent rows, so that the last rows of the orthonormal matrix span the null space. [zm_le_lq]
+2026.11.07. Modified _zMatDecompLQFullDST to detect the rank with a relative tolerance, and added ZM_LQ_DECOMP_HOUSEHOLDER_TOL. [zm_le_lq]
+2026.11.07. Modified zMatDecompLQNull to give the identity matrix as the null space of a zero matrix. [zm_le_lq]
+2026.11.07. Added tests of zMatDecompLQFull and zMatDecompLQNull for dependent rows and scaled matrices, and modified their random tests to evaluate relative errors. [test]
 2026.11.07. Modified tolerance for assert_mat_mat_sweep_out and assert_mat_vec_sweep_out from 1.0e-6 to 1.0e-8. [test]
 2026.11.07. Debugged pivoting in the test of zMatVecSweepOut in le_test, and modified it to evaluate the relative error. [test]
 2026.11.07. Added pivoting to the test of zMatMatSweepOut in le_test. [test]
