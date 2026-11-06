@@ -8,7 +8,7 @@ void assert_mat_mat_sweep_out(void)
   zIndex index;
   bool result = true;
   const int size = 10, testnum = 1000;
-  const double tol = 1.0e-6;
+  const double tol = 1.0e-8;
   int i, k;
 
   m  = zMatAllocSqr( size );
@@ -44,7 +44,7 @@ void assert_mat_vec_sweep_out(void)
   zVec v, x;
   zIndex index;
   bool result = true;
-  const double tol = 1.0e-6;
+  const double tol = 1.0e-8;
   const int size = 10, testnum = 1000;
   int i, k;
   double xmax;
