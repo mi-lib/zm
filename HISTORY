@@ -1,3 +1,8 @@
+2026.11.07. Added tests of zOptDM on the updates by DFP and BFGS formulae, and on the restart for non-descent directions. [test]
+2026.11.07. Fixed the direction of Levenberg-Marquardt's method in zOptDM not to destroy the gradient vector, which was passed to zLESolveGaussDST as the right-hand-side vector. [zm_opt_dm]
+2026.11.07. Modified zOptDMSolve to restart from the steepest descent direction if the search direction is not descent. [zm_opt_dm]
+2026.11.07. Modified the updates of the quasi-Hessian matrix by DFP and BFGS formulae in zOptDM to be skipped unless the inner product of the step and the difference of gradients is positive, since the matrix lost the positive definiteness. [zm_opt_dm]
+2026.11.07. Fixed the update of the quasi-Hessian matrix by DFP formula in zOptDM, which was actually BFGS formula. [zm_opt_dm]
 2026.11.07. Renamed Z_OPT_DM_STEP_MIN to ZM_OPT_DM_STEP_MIN. [zm_opt_dm]
 2026.11.07. Added a test of zOptDMSolve with Dennis-Schnabel's backtracking on scaled quadratic functions and Rosenbrock function. [test]
 2026.11.07. Fixed the line search by Dennis-Schnabel's backtracking in zOptDM to evaluate the cubic approximation at the correct step length, to limit each trial step length within 0.1 to 0.5 times the previous one, and to fail when the step length falls below zTOL, since the trial step length could be stuck at a constant and fell into an infinite loop. [zm_opt_dm]

@@ -282,23 +282,28 @@ static zMat _zOptDMUpdateNone(zOptDM *opt, int count){
     opt->_b = 0; /* for CG restart */
   return opt->_h;
 }
+/* the inverse of the Hessian matrix H is updated by the step p and the difference of gradients q.
+   the update is skipped unless p^T q > 0, since H would lose the positive definiteness. */
 static zMat _zOptDMUpdateDFP(zOptDM *opt, int count) /* Davidon-Fletcher-Powell */
 {
   double k, l;
 
-  l = 1.0 / ( k = zVecInnerProdNC( opt->_p, opt->_q ) );
+  /* H += p p^T / p^T q - H q q^T H / q^T H q */
+  if( ( k = zVecInnerProdNC( opt->_p, opt->_q ) ) <= 0 ) return opt->_h;
   zMulMatVecNC( opt->_h, opt->_q, opt->_r );
-  zMatCatDyadNC( opt->_h, (1+zVecInnerProdNC(opt->_r,opt->_q)/k)*l, opt->_p, opt->_p );
-  zMatCatDyadNC( opt->_h,-l, opt->_p, opt->_r );
-  return zMatCatDyadNC( opt->_h,-l, opt->_r, opt->_p );
+  if( ( l = zVecInnerProdNC( opt->_q, opt->_r ) ) <= 0 ) return opt->_h;
+  zMatCatDyadNC( opt->_h, 1.0/k, opt->_p, opt->_p );
+  return zMatCatDyadNC( opt->_h,-1.0/l, opt->_r, opt->_r );
 }
 static zMat _zOptDMUpdateBFGS(zOptDM *opt, int count) /* Broyden-Fletcher-Goldfalb-Shanno */
 {
   int i, j;
   double k, l, pi, pj, ri, rj;
 
+  /* H += ( ( 1 + q^T H q / p^T q ) p p^T - p q^T H - H q p^T ) / p^T q */
+  if( ( k = zVecInnerProdNC( opt->_p, opt->_q ) ) <= 0 ) return opt->_h;
+  k = 1.0 / k;
   zMulMatVecNC( opt->_h, opt->_q, opt->_r );
-  k = 1.0 / zVecInnerProdNC( opt->_p, opt->_q );
   l = zVecInnerProdNC( opt->_q, opt->_r )*k + 1.0;
   for( i=0; i<zVecSizeNC(opt->_p); i++ ){
     pi = zVecElemNC( opt->_p, i );
@@ -330,7 +335,9 @@ static zVec _zOptDMVecLM(zOptDM *opt, const zVec var, zVec d, void *util)
   m = zVecSqrNorm( opt->_g );
   for( i=0; i<zVecSizeNC(opt->_g); i++ )
     zMatElemNC(opt->_h,i,i) += m;
-  return zLESolveGaussDST( opt->_h, opt->_g, opt->_d, opt->_idx, opt->_r );
+  /* the right-hand-side vector is copied to _q since zLESolveGaussDST destroys it. */
+  zVecCopyNC( opt->_g, opt->_q );
+  return zLESolveGaussDST( opt->_h, opt->_q, opt->_d, opt->_idx, opt->_r );
 }
 
 /* variable metric method */
@@ -457,6 +464,11 @@ int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, d
     return 0; /* no need for iteration. */
   for( i=0; i<iter; i++ ){
     opt->_vec( opt, var, opt->_d, util ); /* descent vector */
+    if( zVecInnerProdNC( opt->_g, opt->_d ) <= 0 ){
+      /* restart from the steepest descent direction if not descent. */
+      zMatIdent( opt->_h );
+      zVecCopyNC( opt->_g, opt->_d );
+    }
     if( !opt->_step( opt, var, util, *eval, &e ) ) break; /* line search */
     *eval = e;
     if( zVecIsTol(opt->_g,tol) || zVecIsTol(opt->_p,tol) )
