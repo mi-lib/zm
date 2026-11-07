@@ -1,3 +1,4 @@
+2026.11.07. Fixed zQPSolveASM to update the current feasible solution after a full step, delete only the constraint with the most negative Lagrange multiplier, skip adding constraints at a vertex, clamp negative step lengths, and choose the blocking constraint most transversal to the step among ties, so that the active set does not cycle nor become nearly dependent. [zm_opt_qp_asm]
 2026.11.07. Modified zLPIneq2Std and zLPUnb2Std to set null pointers for the matrix and vectors that failed to be allocated. [zm_opt_lp_stdcnv]
 2026.11.07. Modified _zQP2LCP to set null pointers for the matrix and vectors that failed to be allocated. [zm_opt_qp]
 2026.11.07. Modified zMatDecompLQAlloc and zMatDecompLQFullAlloc to set null pointers for matrices that failed to be allocated. [zm_le_lq]

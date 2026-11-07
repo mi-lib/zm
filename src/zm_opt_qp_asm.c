@@ -166,47 +166,67 @@ static bool _zQPASMSolveEq(zQPASM *qpasm, const zMat a, const zVec b, zVec x)
   return true;
 }
 
-/* add an equality constraint to active set. */
+/* move the current feasible solution toward the temporary solution, and add a blocking
+ * constraint to active set if any. If no constraint blocks, the current solution is
+ * replaced with the temporary solution and the false value is returned. */
 static bool _zQPASMAddEq(zQPASM *qpasm, const zMat a, const zVec b, const zVec x)
 {
   int i, imin;
-  double ax, axtmp, d, dmin;
+  double ax, axtmp, d, dmin, cmin = 0, c;
   bool is_violated = false;
 
+  /* the temporary solution coincides with the current solution if active set
+   * determines the solution uniquely. */
+  if( zIndexSizeNC(qpasm->ia) >= zVecSizeNC(x) ) return false;
   for( dmin=HUGE_VAL, imin=-1, i=0; i<zIndexSizeNC(qpasm->in); i++ ){
     ax = zRawVecInnerProd( zMatRowBufNC(a,zIndexElemNC(qpasm->in,i)), zVecBufNC(x), zVecSizeNC(x) );
     if( zVecElemNC(b,zIndexElemNC(qpasm->in,i)) <= ax ) continue;
     ax -= ( axtmp = zRawVecInnerProd( zMatRowBufNC(a,zIndexElemNC(qpasm->in,i)), zVecBufNC(qpasm->xtmp), zVecSizeNC(qpasm->xtmp) ) );
-    if( zIsTiny( ax ) ) continue;
+    if( ax > -zTOL ) continue; /* not a blocking constraint */
     is_violated = true;
-    if( ( d = ( zVecElemNC(b,zIndexElemNC(qpasm->in,i)) - axtmp ) / ax ) < dmin ){
+    if( ( d = ( zVecElemNC(b,zIndexElemNC(qpasm->in,i)) - axtmp ) / ax ) < 0 ) d = 0;
+    if( d < dmin - zTOL ){
       dmin = d;
       imin = zIndexElemNC(qpasm->in,i);
+      cmin = 0; /* not computed yet */
+    } else
+    if( d < dmin + zTOL ){ /* tie (degenerate case): prefer a constraint more transversal to the step */
+      if( cmin == 0 )
+        cmin = ( zRawVecInnerProd( zMatRowBufNC(a,imin), zVecBufNC(x), zVecSizeNC(x) )
+               - zRawVecInnerProd( zMatRowBufNC(a,imin), zVecBufNC(qpasm->xtmp), zVecSizeNC(x) ) )
+               / zRawVecNorm( zMatRowBufNC(a,imin), zVecSizeNC(x) );
+      if( ( c = ax / zRawVecNorm( zMatRowBufNC(a,zIndexElemNC(qpasm->in,i)), zVecSizeNC(x) ) ) < cmin ){
+        cmin = c;
+        imin = zIndexElemNC(qpasm->in,i);
+      }
+      if( d < dmin ) dmin = d;
     }
   }
-  if( !is_violated ) return false;
+  if( !is_violated ){ /* full step */
+    zVecCopyNC( x, qpasm->xtmp );
+    return false;
+  }
   zIndexRemoveVal( qpasm->in, imin );
   zIndexInsertVal( qpasm->ia, imin );
   zVecInterDivDRC( qpasm->xtmp, x, dmin );
   return true;
 }
 
-/* delete an equality constraint from active set. */
+/* delete an equality constraint with the most negative Lagrange multiplier from active set. */
 static bool _zQPASMDelEq(zQPASM *qpasm, const zMat a)
 {
-  int i, ic, i_to_activate;
-  bool is_violated = false;
+  int i, imin;
+  double lambda_min;
 
-  for( i=ic=0; i<zVecSizeNC(qpasm->_lambda); i++ ){
-    if( zVecElemNC(qpasm->_lambda,i) < 0 ){
-      is_violated = true;
-      i_to_activate = zIndexElemNC(qpasm->ia,ic);
-      zIndexRemove( qpasm->ia, ic );
-      zIndexInsertVal( qpasm->in, i_to_activate );
-    } else
-      ic++;
-  }
-  return is_violated;
+  for( lambda_min=0, imin=-1, i=0; i<zVecSizeNC(qpasm->_lambda); i++ )
+    if( zVecElemNC(qpasm->_lambda,i) < lambda_min ){
+      lambda_min = zVecElemNC(qpasm->_lambda,i);
+      imin = i;
+    }
+  if( imin < 0 ) return false;
+  zIndexInsertVal( qpasm->in, zIndexElemNC(qpasm->ia,imin) );
+  zIndexRemove( qpasm->ia, imin );
+  return true;
 }
 
 /* check if vector/matrix sizes are consistent and the quadratic term matrix is positive-definite. */
