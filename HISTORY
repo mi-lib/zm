@@ -1,3 +1,4 @@
+2026.11.07. Debugged assert_mat_vec_sweep_out to free the solution vector. [test]
 2026.11.07. Added _zMatDecompLUPivot that is commonly used in _zMatDecompLUDST_U and _zMatDecompLUDST_L for partial pivoting and rank detection. [zm_le_lu]
 2026.11.07. Added _zMatDecompLUDST_L for row-long matrices, and renamed _zMatDecompLUDST to _zMatDecompLUDST_U, so that zMatDecompLU accepts the lower and upper triangular matrices with the sizes of r x s and s x c, where s is the minimum of r and c. [zm_le_lu]
 2026.11.07. Modified zMatDecompLUAlloc to allocate the lower and upper triangular matrices with the sizes of r x s and s x c. [zm_le_lu]

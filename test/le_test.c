@@ -70,7 +70,7 @@ void assert_mat_vec_sweep_out(void)
     }
   }
   zMatFree( m );
-  zVecFree( v );
+  zVecFreeAtOnce( 2, v, x );
   zIndexFree( index );
   zAssert( zMatVecSweepOut, result );
 }
