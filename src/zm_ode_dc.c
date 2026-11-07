@@ -30,18 +30,20 @@ void zODEDestroyDC(zODE *ode)
 /* update state vector by solving ODE enabling deferred correction. */
 zVec zODEUpdateDC(zODE *ode, double t, zVec x, double dt, void *util)
 {
+  double hdt;
+
   /* full-step update */
   zVecCopyNC( x, ode->_x1 );
   zODEUpdate( ode, t, ode->_x1, dt, util );
   /* half-step-twice update */
   zVecCopyNC( x, ode->_x2 );
-  dt *= 0.5;
-  zODEUpdate( ode, t,    ode->_x2, dt, util );
-  zODEUpdate( ode, t+dt, ode->_x2, dt, util );
-  /* evaluation */
-  if( zVecDist( ode->_x1, ode->_x2 ) > ZM_ODE_TOL ){
-    zODEUpdateDC( ode, t,    x, dt, util );
-    zODEUpdateDC( ode, t+dt, x, dt, util );
+  hdt = 0.5 * dt;
+  zODEUpdate( ode, t,     ode->_x2, hdt, util );
+  zODEUpdate( ode, t+hdt, ode->_x2, hdt, util );
+  /* evaluation (the step is not divided any more if it is already small enough) */
+  if( dt > ZM_ODE_DT_TOL && zVecDist( ode->_x1, ode->_x2 ) > ZM_ODE_TOL ){
+    zODEUpdateDC( ode, t,     x, hdt, util );
+    zODEUpdateDC( ode, t+hdt, x, hdt, util );
   } else{ /* Richardson's extrapolation */
     zVecMul( ode->_x2, 2, x );
     ode->sub( x, ode->_x1, x, util );

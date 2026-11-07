@@ -111,7 +111,8 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
 
 /*! \brief minimum time step for adaptive step size control of ODE quadratures.
  *
- * In embedded Runge-Kutta methods, a time step is not divided any more if it is not greater than this value.
+ * In ODE quadratures with an adaptive step size control (deferred correction and embedded Runge-Kutta
+ * methods), a time step is not divided any more if it is not greater than this value.
  */
 #define ZM_ODE_DT_TOL ( 1.0e-8 )
 
