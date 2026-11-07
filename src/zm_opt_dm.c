@@ -91,67 +91,160 @@ static zVec _zOptDMStepPlain(zOptDM *opt, const zVec var, void *util, double e0,
   return var;
 }
 
-/* line search by More-Thuente's method */
+/* line search by More-Thuente's method
+ * (J. J. More and D. J. Thuente, Line Search Algorithms with Guaranteed Sufficient Decrease,
+ *  ACM Transactions on Mathematical Software, 20(3), pp. 286-307, 1994)
+ * A step length a along the line phi(a) = f(var - a d) is searched so as to satisfy the strong
+ * Wolfe's conditions
+ *  phi(a) <= phi(0) + _df a phi'(0) (sufficient decrease), and
+ *  |phi'(a)| <= _cf |phi'(0)| (curvature condition).
+ * The auxiliary function psi(a) = phi(a) - phi(0) - _df a phi'(0) is used instead of phi until
+ * a trial step length satisfies psi(a) <= 0 and phi'(a) >= 0.
+ */
+#define ZM_OPT_DM_MT_EVAL_MAX 20
+
+/* evaluate the function and its derivative along the line at a trial step length. */
+static double _zOptDMStepMTEval(zOptDM *opt, const zVec var, void *util, double a, double *g)
+{
+  double f;
+
+  zVecMulNC( opt->_d, -a, opt->_p );
+  zVecAddNC( var, opt->_p, opt->_x );
+  f = opt->eval( opt->_x, util );
+  if( zIsInf( f ) || zIsNan( f ) ) return f;
+  opt->_grad( opt, opt->_x, opt->_r, util );
+  *g = -zVecInnerProdNC( opt->_r, opt->_d );
+  return f;
+}
+
+/* minimizer of the cubic that interpolates f1, g1 at a1 and f2, g2 at a2.
+ * the cubic is f1 + g1 t + c2 t^2 + c1/3 t^3 for t = a - a1, and its minimizer is
+ * t = (-c2+sqrt(c2^2-c1 g1))/c1, which is rationalized to be valid also for c1=0.
+ * the coefficient c1 is stored in c if c is not the null pointer. */
+static double _zOptDMStepMTCubic(double a1, double f1, double g1, double a2, double f2, double g2, double *c)
+{
+  double da, v1, v2, c1, c2;
+
+  da = a2 - a1;
+  v1 = f2 - f1 - g1*da;
+  v2 = g2 - g1;
+  c1 = 3 * ( v2*da - 2*v1 ) / ( da*da*da );
+  c2 =     ( 3*v1 - v2*da ) / ( da*da );
+  if( c ) *c = c1;
+  return a1 - g1 / ( c2 + sqrt( c2*c2 - c1*g1 ) );
+}
+
+/* minimizer of the quadratic that interpolates f1, g1 at a1 and f2 at a2. */
+static double _zOptDMStepMTQuadratic(double a1, double f1, double g1, double a2, double f2)
+{
+  double da;
+
+  da = a2 - a1;
+  return a1 - 0.5 * g1*da*da / ( f2 - f1 - g1*da );
+}
+
+/* minimizer of the quadratic that interpolates g1 at a1 and g2 at a2 (secant method). */
+static double _zOptDMStepMTSecant(double a1, double g1, double a2, double g2)
+{
+  return a1 - g1 * ( a2 - a1 ) / ( g2 - g1 );
+}
+
+/* choose the next trial step length from the current endpoints al, au of the interval of
+ * uncertainty and the current trial step length at (Section 4 of More and Thuente). */
+static double _zOptDMStepMTTrial(double al, double fl, double gl, double au, double fu, double gu, double at, double ft, double gt, bool bracketed, double amax)
+{
+  double ac, aq, as, c;
+
+  if( ft > fl ){ /* case 1 */
+    ac = _zOptDMStepMTCubic( al, fl, gl, at, ft, gt, NULL );
+    aq = _zOptDMStepMTQuadratic( al, fl, gl, at, ft );
+    return fabs( ac - al ) < fabs( aq - al ) ? ac : 0.5 * ( aq + ac );
+  }
+  if( gt * gl < 0 ){ /* case 2 */
+    ac = _zOptDMStepMTCubic( al, fl, gl, at, ft, gt, NULL );
+    as = _zOptDMStepMTSecant( al, gl, at, gt );
+    return fabs( ac - at ) >= fabs( as - at ) ? ac : as;
+  }
+  if( fabs( gt ) <= fabs( gl ) ){ /* case 3 */
+    ac = _zOptDMStepMTCubic( al, fl, gl, at, ft, gt, &c );
+    as = _zOptDMStepMTSecant( al, gl, at, gt );
+    /* the cubic minimizer is adopted only if the cubic tends to infinity in the direction
+       of the step, the minimizer is beyond at, and it is closer to at than the secant step. */
+    if( !( c * ( at - al ) > 0 && ( ac - at ) * ( at - al ) > 0 && fabs( ac - at ) < fabs( as - at ) ) )
+      ac = as;
+    if( bracketed )
+      return at > al ? _zMin( at + 0.66 * ( au - at ), ac ) : _zMax( at + 0.66 * ( au - at ), ac );
+  } else /* case 4 */
+    ac = bracketed ? _zOptDMStepMTCubic( at, ft, gt, au, fu, gu, NULL ) : amax;
+  if( bracketed ) return ac;
+  /* extrapolation within [at+1.1(at-al),at+4(at-al)] */
+  if( zIsNan( ac ) ) ac = amax;
+  return _zMin( zLimit( ac, at + 1.1 * ( at - al ), at + 4 * ( at - al ) ), amax );
+}
+
 static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
 {
-  double al = 0.0, au = 1.0, at, ac, aq, as, da, s, df;
-  double fl, gl, gt, c1, c2, v1, v2;
+  double g0, gtest, gtol, amax, m = 0, w, w1, wn;
+  double al, fl, gl, au = 0, fu = 0, gu = 0, at, ft, gt = 0, ae, an;
+  bool bracketed = false, stage1 = true;
+  int i;
 
   if( zIsNan( e0 ) ){
     ZRUNWARN( ZM_WARN_OPT_BADINI );
     return NULL;
   }
-  s = zVecInnerProdNC( opt->_g, opt->_d ); /* ascendant direction */
-  df = opt->_df * s;
-  /* initial test from full-length step */
-  if( _zOptDMStepTest( opt, var, util, &au, e0, df, e1 ) ) goto TERMINATE;
-  fl = e0;
-  gl =-s;
-  at = au;
-  opt->_grad( opt, opt->_x, opt->_r, util );
-  gt =-zVecInnerProdNC( opt->_g, opt->_d );
-  da = 1.0;
-  while( da > zTOL ){
-    /* STEP1: choose well-estimated trial value (at) in [al,au] */
-    v1 =*e1 - fl - gl*da;
-    v2 = gt - gl;
-    c1 = 3 * (-2*v1 + v2*da ) / ( da*da*da );
-    c2 =     ( 3*v1 - v2*da ) / ( da*da );
-    ac = al + ( -c2 + sqrt(c2*c2-c1*gl) ) / c1; /* cubic minimizer */
-    aq = al - 0.5 * gl*da*da / v1;  /* quadratic minimizer (type1) */
-    as = al -       gl*da    / v2;  /* quadratic minimizer (type2) */
-    if( *e1 > fl )
-      at = ( fabs( ac - al ) < fabs( aq - al ) ) ? ac : 0.5*(aq+ac);
-    else{
-      if( gt * gl < 0 )
-        at = ( fabs( ac - at ) >= fabs( as - at ) ) ? ac : as;
-      else{
-        if( fabs( gt ) <= fabs( gl ) ){
-          at = ( fabs( ac - at ) < fabs( as - at ) ) ? ac : as;
-          v1 = at + 0.66 * (au-at); /* v1 temporarily used */
-          at = ( at > al ) ? _zMin( v1, at ) : _zMax( v1, at );
-        } else
-          at = ac;
-      }
+  g0 = -zVecInnerProdNC( opt->_g, opt->_d ); /* phi'(0) < 0 */
+  gtest = opt->_df * g0;
+  gtol = -opt->_cf * g0;
+  amax = opt->_scale / zVecElemAbsMax( opt->_d, NULL ); /* every component of a step is limited by _scale */
+  al = 0; fl = e0; gl = g0;
+  at = _zMin( 1.0, amax );
+  w = w1 = HUGE_VAL;
+  for( i=0; i<ZM_OPT_DM_MT_EVAL_MAX; i++ ){
+    ft = _zOptDMStepMTEval( opt, var, util, ( ae = at ), &gt );
+    if( zIsInf( ft ) || zIsNan( ft ) || zIsInf( gt ) || zIsNan( gt ) ){
+      /* shrink the upper bound of step length if the function is not evaluated at the trial point */
+      at = amax = al + 0.5 * ( at - al );
+      continue;
     }
-    /* STEP2: check if (at) satisfies Wolfe's condition */
-    if( _zOptDMStepTest( opt, var, util, &at, e0, df, e1 ) ) goto TERMINATE;
-    /* STEP3: update interval [al,au] */
-    da = at - al;
-    opt->_grad( opt, opt->_x, opt->_r, util );
-    gt =-zVecInnerProdNC( opt->_g, opt->_d );
-    if( *e1 > fl ){
-      au = at;
+    if( ft <= e0 + at*gtest && fabs( gt ) <= gtol ) goto TERMINATE; /* strong Wolfe's conditions */
+    if( at == amax && ft <= e0 + at*gtest && gt < gtest ) goto TERMINATE; /* the upper bound of step length */
+    if( stage1 && ft <= e0 + at*gtest && gt >= 0 ){
+      stage1 = false; /* phi is used instead of psi hereafter */
+      m = 0;
+    } else
+    if( stage1 ) m = gtest; /* psi(a) = phi(a) - m a, psi'(a) = phi'(a) - m except a constant */
+    an = _zOptDMStepMTTrial( al, fl-m*al, gl-m, au, fu-m*au, gu-m, at, ft-m*at, gt-m, bracketed, amax );
+    /* update the interval of uncertainty (Section 2 of More and Thuente) */
+    if( ft - m*at > fl - m*al ){ /* case U1 */
+      au = at; fu = ft; gu = gt;
+      bracketed = true;
     } else{
-      al = at;
-      fl =*e1;
-      gl = gt;
-      if( gt * da > 0 ) au = al;
+      if( ( gt - m ) * ( al - at ) < 0 ){ /* case U3 */
+        au = al; fu = fl; gu = gl;
+        bracketed = true;
+      } /* otherwise, case U2 */
+      al = at; fl = ft; gl = gt;
     }
+    if( bracketed ){
+      if( ( wn = fabs( au - al ) ) <= zTOL * _zMax( fabs( al ), fabs( au ) ) ) break; /* no further progress */
+      /* bisection if the interval does not shrink enough by two trials or the trial step length is not inside */
+      if( wn > 0.66 * w1 || zIsNan( an ) || ( an - al ) * ( an - au ) >= 0 )
+        an = 0.5 * ( al + au );
+      w1 = w;
+      w = wn;
+    }
+    at = an;
   }
+  /* the best step length so far is accepted if it satisfies the sufficient decrease condition. */
+  if( al <= 0 || fl > e0 + al*gtest ){
+    ZRUNERROR( ZM_ERR_OPT_CANNOTFINDSTEP );
+    return NULL;
+  }
+  if( ae != al ) ft = _zOptDMStepMTEval( opt, var, util, al, &gt );
 
  TERMINATE:
-  opt->_grad( opt, opt->_x, opt->_r, util );
+  *e1 = ft;
   zVecSubNC( opt->_r, opt->_g, opt->_q );
   zVecCopyNC( opt->_r, opt->_g );
   return zVecCopyNC( opt->_x, var );

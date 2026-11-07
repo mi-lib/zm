@@ -281,6 +281,95 @@ void assert_opt_dm_descent(void)
   zAssert( zOptDMSolve (restart for non-descent direction), result );
 }
 
+/* More-Thuente's line search has to find a step length that satisfies the strong Wolfe's conditions. */
+void assert_opt_dm_mt_wolfe(void)
+{
+  zOptDM opt;
+  zVec x0, x1, g0, g1, dx;
+  double a, s0;
+  int i;
+  bool result = true;
+  const int n = 100;
+
+  x0 = zVecAlloc( DIM );
+  x1 = zVecAlloc( DIM );
+  g0 = zVecAlloc( DIM );
+  g1 = zVecAlloc( DIM );
+  dx = zVecAlloc( DIM );
+  zOptDMCreate( &opt, DIM, 0, rosenbrock_eval, rosenbrock_grad, NULL );
+  zOptDMAssignSD( &opt, "MT" );
+  zEchoOff(); /* to suppress warnings of unconverged iterations */
+  for( i=0; i<n; i++ ){
+    zVecRandUniform( x0, -2, 2 );
+    zVecCopy( x0, x1 );
+    zOptDMSolve( &opt, x1, NULL, zTOL, 1, NULL ); /* one step along the steepest descent direction */
+    rosenbrock_grad( x0, g0, NULL );
+    rosenbrock_grad( x1, g1, NULL );
+    zVecSub( x1, x0, dx );
+    s0 = zVecSqrNorm( g0 );
+    a = -zVecInnerProd( dx, g0 ) / s0;
+    if( rosenbrock_eval( x1, NULL ) > rosenbrock_eval( x0, NULL ) - opt._df * a * s0 ||
+        fabs( zVecInnerProd( g1, g0 ) ) > opt._cf * s0 ){
+      result = false;
+      break;
+    }
+  }
+  zEchoOn();
+  zOptDMDestroy( &opt );
+  zVecFreeAtOnce( 5, x0, x1, g0, g1, dx );
+  zAssert( zOptDM (More-Thuente's line search: strong Wolfe's conditions), result );
+}
+
+/* More-Thuente's line search has to converge regardless of the scale of the function. */
+void assert_opt_dm_mt(void)
+{
+  zOptDM opt;
+  zVec var, ans;
+  double k[] = { 1.0e-2, 1.0, 1.0e2, 1.0e4, 1.0e6, 0 }, *kp;
+  bool result = true;
+  int i;
+  const double tol = 1.0e-8;
+
+  var = zVecAlloc( DIM );
+  ans = zVecAlloc( DIM );
+  /* scaled quadratic functions */
+  for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i );
+  zOptDMCreate( &opt, DIM, 0, quad_eval, quad_grad, NULL );
+  for( kp=k; *kp>0; kp++ ){
+    for( i=0; i<3; i++ ){
+      if( i == 0 )
+        zOptDMAssignSD( &opt, "MT" );
+      else if( i == 1 )
+        zOptDMAssignLM( &opt, "MT" );
+      else
+        zOptDMAssignVM( &opt, "MT", "BFGS" );
+      zVecSetAll( var, 1.0 );
+      if( zOptDMSolve( &opt, var, kp, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
+        eprintf( "%s (MT), k=%g: |x-x*| = %g\n", i == 0 ? "SD" : i == 1 ? "LM" : "VM", *kp, zVecDist( var, ans ) );
+        result = false;
+      }
+    }
+  }
+  zOptDMDestroy( &opt );
+  /* Rosenbrock function */
+  zVecSetAll( ans, 1.0 );
+  zOptDMCreate( &opt, DIM, 0, rosenbrock_eval, rosenbrock_grad, NULL );
+  for( i=0; i<2; i++ ){
+    if( i == 0 )
+      zOptDMAssignLM( &opt, "MT" );
+    else
+      zOptDMAssignVM( &opt, "MT", "BFGS" );
+    zVecSetAll( var, -1.2 );
+    if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
+      eprintf( "%s (MT), Rosenbrock: |x-x*| = %g\n", i == 0 ? "LM" : "VM", zVecDist( var, ans ) );
+      result = false;
+    }
+  }
+  zOptDMDestroy( &opt );
+  zVecFreeAtOnce( 2, var, ans );
+  zAssert( zOptDMSolve (More-Thuente), result );
+}
+
 int main(void)
 {
   zRandInit();
@@ -288,5 +377,7 @@ int main(void)
   assert_opt_dm_ds();
   assert_opt_dm_update();
   assert_opt_dm_descent();
+  assert_opt_dm_mt_wolfe();
+  assert_opt_dm_mt();
   return 0;
 }
