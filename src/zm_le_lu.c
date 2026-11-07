@@ -15,17 +15,17 @@ static int _zMatDecompLUPivot(zMat m, zIndex idx, int r, int c, double tol)
   int i, p;
   double max, tmp;
 
-#define _zMatDecompLUPivotRow(i) ( idx ? zIndexElemNC(idx,i) : (i) )
-  for( p=r, max=fabs( zMatElemNC(m,_zMatDecompLUPivotRow(r),c) ), i=r+1; i<zMatRowSizeNC(m); i++ )
-    if( ( tmp = fabs( zMatElemNC(m,_zMatDecompLUPivotRow(i),c) ) ) > max ){
+#define _zmat_decomp_row_pivot(i) ( idx ? zIndexElemNC(idx,i) : (i) )
+  for( p=r, max=fabs( zMatElemNC(m,_zmat_decomp_row_pivot(r),c) ), i=r+1; i<zMatRowSizeNC(m); i++ )
+    if( ( tmp = fabs( zMatElemNC(m,_zmat_decomp_row_pivot(i),c) ) ) > max ){
       max = tmp;
       p = i;
     }
   if( max <= tol ){
-    for( i=r; i<zMatRowSizeNC(m); i++ ) zMatSetElemNC( m, _zMatDecompLUPivotRow(i), c, 0 );
+    for( i=r; i<zMatRowSizeNC(m); i++ ) zMatSetElemNC( m, _zmat_decomp_row_pivot(i), c, 0 );
     p = -1;
   }
-#undef _zMatDecompLUPivotRow
+#undef _zmat_decomp_row_pivot
   return p;
 }
 
@@ -63,7 +63,7 @@ static int _zMatDecompLUDST_U(zMat l, zMat u, zIndex idx, double tol)
     zMatColResize( l, r ); /* to be column-full-rank */
     zMatRowResize( u, r ); /* to be row-full-rank */
   }
-  return r; /* rank */
+  return r; /* now, r means rank of the original matrix. */
 }
 
 /* LU decomposition of row-long rectangular matrices based on Crout method (destructive).
@@ -99,7 +99,7 @@ static int _zMatDecompLUDST_L(zMat l, zMat u, zIndex idx, double tol)
     zMatColResize( l, r ); /* to be column-full-rank */
     zMatRowResize( u, r ); /* to be row-full-rank */
   }
-  return r; /* rank */
+  return r; /* now, r means rank of the original matrix. */
 }
 
 /* LU decomposition of a matrix. */
