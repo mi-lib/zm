@@ -1,3 +1,6 @@
+2026.11.07. Fixed zLPMegiddoDyerDestroy to free the pointer cells held by pairs of constraints, which leaked. [zm_opt_lp_megiddodyer]
+2026.11.07. Modified _zLPMegiddoDyerUpdateXRegion to resolve pairs of constraints intersecting outside the current region before choosing the median, since a median outside the region could make the region empty. [zm_opt_lp_megiddodyer]
+2026.11.07. Modified _zLPMegiddoDyerConstraintListValGrad to detect simultaneously active boundaries with a tolerance relative to the magnitudes of their terms, since a steep boundary amplified round-off errors and the optimal vertex was overlooked. [zm_opt_lp_megiddodyer]
 2026.11.07. Added a test to compare the solution of zLPMegiddoDyerSolve with that of zLPSolveSimplex. [test]
 2026.11.07. Modified zLPTableauFindFeasibleBase to terminate the first stage as soon as all artificial variables leave the bases, and to judge the feasibility by the sum of artificial variables in the bases computed directly, since the cost accumulated through the iteration drifted due to the round-off errors. [zm_opt_lp_simplex]
 2026.11.07. Relaxed the upper limit of the number of iterations of simplex method to twice the number of columns of the tableau, since problems with more constraints than variables required more iterations. [zm_opt_lp_simplex]

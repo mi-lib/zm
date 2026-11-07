@@ -43,22 +43,32 @@ static double _zLPMegiddoDyerConstraintListVal(const zLPMegiddoDyerConstraintLis
   return val;
 }
 
+/* magnitude of the terms of a boundary line at x, to which round-off errors of the value are proportional. */
+static double _zLPMegiddoDyerConstraintScale(const zLPMegiddoDyerConstraint *constraint, double x)
+{
+  return fabs( constraint->m * x ) + fabs( constraint->y0 );
+}
+
 static double _zLPMegiddoDyerConstraintListValGrad(const zLPMegiddoDyerConstraintList *list, double x, bool (* cmp)(double,double), double val_init, double *m_min, double *m_max)
 {
   zLPMegiddoDyerConstraintListCell *cp;
-  double val, tmp;
+  double val, tmp, scale, val_scale = 0;
 
   *m_min = HUGE_VAL;
   *m_max =-HUGE_VAL;
   val = val_init;
   zListForEach( list, cp ){
     tmp = _zLPMegiddoDyerConstraintVal( &cp->data, x );
-    if( zEqual( tmp, val, zTOL ) ){
+    scale = _zLPMegiddoDyerConstraintScale( &cp->data, x );
+    /* boundaries are regarded as active at the same time if their values coincide within the
+     * tolerance relative to their magnitudes, since a steep boundary amplifies round-off errors. */
+    if( zEqual( tmp, val, zTOL * ( 1 + _zMax( scale, val_scale ) ) ) ){
       if( cp->data.m > *m_max ) *m_max = cp->data.m;
       if( cp->data.m < *m_min ) *m_min = cp->data.m;
     } else
     if( cmp( tmp, val ) ){
       val = tmp;
+      val_scale = scale;
       *m_min = *m_max = cp->data.m;
     }
   }
@@ -138,6 +148,18 @@ void zLPMegiddoDyerInit(zLPMegiddoDyer *lp)
   lp->feasibility_flag = 0;
 }
 
+/* destroy a list of pairs of constraints, including the pointer cells held by the pairs. */
+static void _zLPMegiddoDyerConstraintPairListDestroy(zLPMegiddoDyerConstraintPairList *pairlist)
+{
+  zLPMegiddoDyerConstraintPairListCell *pp;
+
+  zListForEach( pairlist, pp ){
+    free( pp->data.cp1 );
+    free( pp->data.cp2 );
+  }
+  zListDestroy( zLPMegiddoDyerConstraintPairListCell, pairlist );
+}
+
 /* destroy properties for Megiddo-Dyer algorithm. */
 void zLPMegiddoDyerDestroy(zLPMegiddoDyer *lp)
 {
@@ -145,8 +167,8 @@ void zLPMegiddoDyerDestroy(zLPMegiddoDyer *lp)
   zListDestroy( zLPMegiddoDyerConstraintListCell, &lp->lowerbound );
   zListDestroy( zLPMegiddoDyerConstraintPtrListCell, &lp->upperboundpool );
   zListDestroy( zLPMegiddoDyerConstraintPtrListCell, &lp->lowerboundpool );
-  zListDestroy( zLPMegiddoDyerConstraintPairListCell, &lp->upperboundpair );
-  zListDestroy( zLPMegiddoDyerConstraintPairListCell, &lp->lowerboundpair );
+  _zLPMegiddoDyerConstraintPairListDestroy( &lp->upperboundpair );
+  _zLPMegiddoDyerConstraintPairListDestroy( &lp->lowerboundpair );
 }
 
 /* set coefficients of cost function for Megiddo-Dyer algorithm. */
@@ -365,12 +387,9 @@ static void _zLPMegiddoDyerOutputValGrad(double x, double y, double m_min, doubl
 static bool _zLPMegiddoDyerConstraintListIsFeasible(const zLPMegiddoDyerConstraintList *list, double x, double y, double sgn)
 {
   zLPMegiddoDyerConstraintListCell *cp;
-  double mx;
 
-  zListForEach( list, cp ){
-    mx = cp->data.m * x;
-    if( sgn * ( y - mx - cp->data.y0 ) > zTOL * ( 1 + fabs( mx ) + fabs( cp->data.y0 ) ) ) return false;
-  }
+  zListForEach( list, cp )
+    if( sgn * ( y - _zLPMegiddoDyerConstraintVal( &cp->data, x ) ) > zTOL * ( 1 + _zLPMegiddoDyerConstraintScale( &cp->data, x ) ) ) return false;
   return true;
 }
 
@@ -459,6 +478,9 @@ static zLPMegiddoDyerUpdateCode _zLPMegiddoDyerFoundOptimum(zLPMegiddoDyer *lp, 
   return ZM_LP_MEGIDDO_DYER_FOUND_OPTIMUM;
 }
 
+static void _zLPMegiddoDyerDiscardConstraintSmallerX(zLPMegiddoDyer *lp);
+static void _zLPMegiddoDyerDiscardConstraintGreaterX(zLPMegiddoDyer *lp);
+
 static zLPMegiddoDyerUpdateCode _zLPMegiddoDyerUpdateXRegion(zLPMegiddoDyer *lp, double *x, double *y)
 {
   zLPMegiddoDyerConstraintPairListCell *median;
@@ -466,6 +488,10 @@ static zLPMegiddoDyerUpdateCode _zLPMegiddoDyerUpdateXRegion(zLPMegiddoDyer *lp,
 
   _zLPMegiddoDyerCreateUpperboundPairList( lp );
   _zLPMegiddoDyerCreateLowerboundPairList( lp );
+  /* pairs intersecting outside the current region are resolved beforehand, since the median
+   * has to be chosen within the region. */
+  _zLPMegiddoDyerDiscardConstraintSmallerX( lp );
+  _zLPMegiddoDyerDiscardConstraintGreaterX( lp );
   if( !( median = _zLPMegiddoDyerConstraintPairListMedian( &lp->lowerboundpair ) ) ){
     if( !( median = _zLPMegiddoDyerConstraintPairListMedian( &lp->upperboundpair ) ) ){
       ZRUNWARN( ZM_ERR_OPT_LP2_NO_CONSTRAINT_PAIR );
