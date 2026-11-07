@@ -1,3 +1,7 @@
+2026.11.07. Fixed the gradient of the test function 7 in the example of zOptDM, which was that of the test function 6. [example]
+2026.11.07. Modified the labels of the example of zOptDM to indicate the line search methods actually used, and added examples of More-Thuente's method. [example]
+2026.11.07. Added tests of zOptDM on the step without line search. [test]
+2026.11.07. Fixed the step without line search in zOptDM to move the variable in the descent direction and to update the gradient, since it moved in the ascent direction and the iteration terminated after the first step. [zm_opt_dm]
 2026.11.07. Added tests of zOptDM on More-Thuente's line search. [test]
 2026.11.07. Reimplemented the line search by More-Thuente's method in zOptDM. [zm_opt_dm]
 2026.11.07. Added tests of zOptDM on the updates by DFP and BFGS formulae, and on the restart for non-descent directions. [test]

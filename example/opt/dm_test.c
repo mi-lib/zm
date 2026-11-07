@@ -193,8 +193,8 @@ zVec grad(zVec var, zVec g, void *dummy)
   for( i=0; i<zVecSizeNC(var); i+=2 ){
     x = zVecElem(var,i);
     y = zVecElem(var,i+1);
-    zVecSetElem( g, i,   6*pow(x-2,5)+2*(x-2)*y*y );
-    zVecSetElem( g, i+1, 2*zSqr(x-2)*y+4*pow(y+1,3) );
+    zVecSetElem( g, i,   2*x*( cos(x*x+y*y) - sin(x*x-3*y) ) );
+    zVecSetElem( g, i+1, 3*sin(x*x-3*y) + 2*y*cos(x*x+y*y) );
   }
   return g;
 }
@@ -243,16 +243,22 @@ int main(int argc, char *argv[])
   zOptDMCreate( &opt, DIM, SCALE, eval, grad, NULL );
 
   zOptDMAssignSD( &opt, NULL );
-  test( &opt, var, "SD" );
+  test( &opt, var, "SD (plain)" );
   zOptDMAssignLM( &opt, NULL );
+  test( &opt, var, "LM (plain)" );
+  zOptDMAssignLM( &opt, "MT" );
   test( &opt, var, "LM (MT)" );
   zOptDMAssignLM( &opt, "DS" );
   test( &opt, var, "LM (DS)" );
   zOptDMAssignLM( &opt, "Noc" );
   test( &opt, var, "LM (Noc)" );
   zOptDMAssignVM( &opt, NULL, NULL );
-  test( &opt, var, "VM (MT:BFGS)" );
+  test( &opt, var, "VM (plain:BFGS)" );
   zOptDMAssignVM( &opt, NULL, "DFP" );
+  test( &opt, var, "VM (plain:DFP)" );
+  zOptDMAssignVM( &opt, "MT", NULL );
+  test( &opt, var, "VM (MT:BFGS)" );
+  zOptDMAssignVM( &opt, "MT", "DFP" );
   test( &opt, var, "VM (MT:DFP)" );
   zOptDMAssignVM( &opt, "DS", "DFP" );
   test( &opt, var, "VM (DS:DFP)" );

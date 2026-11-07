@@ -86,9 +86,17 @@ static bool _zOptDMStepTest(zOptDM *opt, const zVec var, void *util, double *a, 
 /* directly add a step vector to a variable */
 static zVec _zOptDMStepPlain(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
 {
-  zVecAddNCDRC( var, opt->_d );
-  *e1 = opt->eval( var, util );
-  return var;
+  zVecRevNC( opt->_d, opt->_p ); /* descent step */
+  zVecAddNC( var, opt->_p, opt->_x );
+  *e1 = opt->eval( opt->_x, util );
+  if( zIsInf( *e1 ) || zIsNan( *e1 ) ){
+    ZRUNERROR( ZM_ERR_OPT_CANNOTFINDSTEP );
+    return NULL;
+  }
+  opt->_grad( opt, opt->_x, opt->_r, util );
+  zVecSubNC( opt->_r, opt->_g, opt->_q );
+  zVecCopyNC( opt->_r, opt->_g );
+  return zVecCopyNC( opt->_x, var );
 }
 
 /* line search by More-Thuente's method

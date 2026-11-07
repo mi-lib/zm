@@ -370,6 +370,57 @@ void assert_opt_dm_mt(void)
   zAssert( zOptDMSolve (More-Thuente), result );
 }
 
+/* the step without line search has to be the descent vector itself in the opposite direction. */
+void assert_opt_dm_plain(void)
+{
+  zOptDM opt;
+  zVec var, ans, x0, g0;
+  double k;
+  int i;
+  bool result1 = true, result2 = true;
+  const double tol = 1.0e-8;
+
+  var = zVecAlloc( DIM );
+  ans = zVecAlloc( DIM );
+  x0 = zVecAlloc( DIM );
+  g0 = zVecAlloc( DIM );
+  for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i );
+  zOptDMCreate( &opt, DIM, 0, quad_eval, quad_grad, NULL );
+  /* one step of steepest descent method */
+  zOptDMAssignSD( &opt, NULL );
+  zVecSetAll( x0, 1.0 );
+  zVecCopy( x0, var );
+  zEchoOff(); /* to suppress a warning of unconverged iteration */
+  zOptDMSolve( &opt, var, NULL, zTOL, 1, NULL );
+  zEchoOn();
+  quad_grad( x0, g0, NULL );
+  zVecSubDRC( x0, g0 );
+  if( !zVecEqual( var, x0, zTOL ) ){
+    eprintf( "SD (no line search): wrong step\n" );
+    result1 = false;
+  }
+  /* convergence. the steepest descent method with the unit step converges only if the curvature is less than 2. */
+  for( i=0; i<4; i++ ){
+    k = 1.0;
+    if( i == 0 ){
+      zOptDMAssignSD( &opt, NULL );
+      k = 0.25;
+    } else if( i == 1 )
+      zOptDMAssignLM( &opt, NULL );
+    else
+      zOptDMAssignVM( &opt, NULL, i == 2 ? "BFGS" : "DFP" );
+    zVecSetAll( var, 1.0 );
+    if( zOptDMSolve( &opt, var, &k, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
+      eprintf( "%s (no line search): |x-x*| = %g\n", i == 0 ? "SD" : i == 1 ? "LM" : i == 2 ? "VM (BFGS)" : "VM (DFP)", zVecDist( var, ans ) );
+      result2 = false;
+    }
+  }
+  zOptDMDestroy( &opt );
+  zVecFreeAtOnce( 4, var, ans, x0, g0 );
+  zAssert( zOptDM (step without line search), result1 );
+  zAssert( zOptDMSolve (without line search), result2 );
+}
+
 int main(void)
 {
   zRandInit();
@@ -379,5 +430,6 @@ int main(void)
   assert_opt_dm_descent();
   assert_opt_dm_mt_wolfe();
   assert_opt_dm_mt();
+  assert_opt_dm_plain();
   return 0;
 }
