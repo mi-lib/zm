@@ -1,5 +1,5 @@
 2026.11.07. Added a test of ODE solvers on the orders of accuracy, the norm of harmonic oscillation, the stability for a stiff equation, the symplecticity, and the accuracy and termination of deferred correction. [test]
-2026.11.07. Excluded multistep methods from the sample of deferred correction, since their histories are disturbed by trial updates. [example/ode/cmp_dc_test]
+2026.11.07. Excluded multistep methods from the sample of deferred correction, since their histories are disturbed by trial updates. [example]
 2026.11.07. Debugged zODEUpdateCK45 to adopt the fifth-order solution, where the weights of the fourth-order and fifth-order solutions were swapped. [zm_ode_erk]
 2026.11.07. Modified zODEUpdateDC not to divide the time step any more if it is not greater than ZM_ODE_DT_TOL, so that it terminates even if the error never becomes smaller than ZM_ODE_TOL due to the round-off error. [zm_ode_dc]
 2026.11.07. Debugged _zNLEJacobiNG to store the derivative with respect to each variable in the corresponding column of the Jacobian matrix, which was transposed and overflowed the matrix if the number of variables is greater than that of equations. [zm_nle_dm]
