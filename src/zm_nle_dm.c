@@ -21,8 +21,7 @@ static zMat _zNLEJacobiNG(zNLE *nle, const zVec var, zMat j, void *util)
     nle->f( var, nle->_adg, util );
     zVecSetElemNC( var, i, org-ZM_OPT_EPS );
     nle->f( var, nle->_prg, util );
-    zRawVecSub( zVecBuf(nle->_adg), zVecBuf(nle->_prg),
-      &zMatBuf(j)[zMatColSizeNC(j)*i], zMatRowSizeNC(j) );
+    zMatPutColNC( j, i, zVecSubDRC( nle->_adg, nle->_prg ) ); /* the i-th column is the derivative with respect to the i-th variable */
     zVecSetElemNC( var, i, org );
   }
   zMatMulDRC( j, 0.5/ZM_OPT_EPS );
