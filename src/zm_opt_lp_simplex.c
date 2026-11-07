@@ -188,12 +188,12 @@ static void _zLPTableauSwapPivot(zLPTableau *tab, int np, int na)
  *
  *   Ib= [1 ... m], In= [m+1 ... n+m]
  */
-bool zLPTableauSimplex(zLPTableau *tab)
-{
+static bool _zLPTableauSimplex(zLPTableau *tab, double tol)
+{ /* the iteration terminates if the cost becomes smaller than tol in the absolute value */
   int i = 0, na, np;
 
   _zLPTableauSweepC( tab );
-  while( ( na = _zLPTableauFindNA( tab ) ) >= 0 ){
+  while( !zIsTol( tab->d, tol ) && ( na = _zLPTableauFindNA( tab ) ) >= 0 ){
     if( i++ > zMatColSizeNC(tab->a) ) /* probably degenerated case */
       return false;
     if( ( np = _zLPTableauFindNP( tab, &na ) ) < 0 ) /* non-convex case */
@@ -204,6 +204,10 @@ bool zLPTableauSimplex(zLPTableau *tab)
   }
   return true;
 }
+bool zLPTableauSimplex(zLPTableau *tab)
+{
+  return _zLPTableauSimplex( tab, -1 ); /* never terminates by the cost */
+}
 
 /* the first stage of simplex method to find a feasible base. */
 bool zLPTableauFindFeasibleBase(zLPTableau *tab)
@@ -213,7 +217,10 @@ bool zLPTableauFindFeasibleBase(zLPTableau *tab)
 
   for( i=0; i<zVecSizeNC(tab->b); i++ )
     scale += fabs( zVecElemNC(tab->b,i) );
-  return zLPTableauSimplex( tab ) && zIsTol( tab->d, zTOL * scale );
+  /* the iteration terminates as soon as the sum of artificial variables vanishes, since
+   * the first stage has a degenerate optimum, at which the round-off errors of reduced
+   * costs would let the iteration go astray. */
+  return _zLPTableauSimplex( tab, zTOL * scale ) && zIsTol( tab->d, zTOL * scale );
 }
 
 /* find initial feasible base for the second stage from tableau. */
