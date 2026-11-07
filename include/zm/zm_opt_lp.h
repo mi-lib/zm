@@ -28,6 +28,17 @@ __ZM_EXPORT bool zLPTableauCreate(zLPTableau *tab, const zMat a, const zVec b);
 __ZM_EXPORT void zLPTableauDestroy(zLPTableau *tab);
 /*! \brief simplex method for initialized tableau. */
 __ZM_EXPORT bool zLPTableauSimplex(zLPTableau *tab);
+/*! \brief the first stage of simplex method to find a feasible base.
+ *
+ * zLPTableauFindFeasibleBase() applies simplex method to a tableau \a tab, which has
+ * to be initialized for the first stage, and checks if the resulting cost (the
+ * sum of artificial variables) is zero within the tolerance relative to the
+ * initial sum of the constraint vector, namely, zTOL*(1+|b|_1).
+ * \return
+ * zLPTableauFindFeasibleBase() returns the true value if a feasible base is found.
+ * Otherwise, the false value is returned.
+ */
+__ZM_EXPORT bool zLPTableauFindFeasibleBase(zLPTableau *tab);
 /*! \brief find initial feasible base for the second stage from tableau. */
 __ZM_EXPORT bool zLPTableauFindBase(zLPTableau *tab);
 

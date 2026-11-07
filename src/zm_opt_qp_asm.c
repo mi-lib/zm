@@ -105,7 +105,7 @@ static bool _zQPASMInitBase(zQPASM *qpasm, const zMat a, const zVec b)
   zIndexOrder( tab.ib, zIndexSizeNC(tab.in) );
   zIndexOrder( tab.in, 0 );
   zIndexOrder( tab.ir, 0 );
-  if( !zLPTableauSimplex( &tab ) || !zIsTiny(tab.d) ){
+  if( !zLPTableauFindFeasibleBase( &tab ) ){
     ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
     ret = false;
     goto TERMINATE;

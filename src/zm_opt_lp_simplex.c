@@ -205,6 +205,17 @@ bool zLPTableauSimplex(zLPTableau *tab)
   return true;
 }
 
+/* the first stage of simplex method to find a feasible base. */
+bool zLPTableauFindFeasibleBase(zLPTableau *tab)
+{
+  int i;
+  double scale = 1.0; /* initial sum of artificial variables (+1) */
+
+  for( i=0; i<zVecSizeNC(tab->b); i++ )
+    scale += fabs( zVecElemNC(tab->b,i) );
+  return zLPTableauSimplex( tab ) && zIsTol( tab->d, zTOL * scale );
+}
+
 /* find initial feasible base for the second stage from tableau. */
 bool zLPTableauFindBase(zLPTableau *tab)
 {
@@ -270,7 +281,7 @@ bool zLPSolveSimplex(const zMat a, const zVec b, const zVec c, zVec ans, double 
     goto TERMINATE;
   }
   /* first phase: initial feasible base */
-  if( !zLPTableauSimplex( &tab ) || !zIsTiny(tab.d) ){
+  if( !zLPTableauFindFeasibleBase( &tab ) ){
     ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
     goto TERMINATE;
   }
@@ -303,7 +314,7 @@ bool zLPFeasibleBase(const zMat a, const zVec b, zVec base)
     ZALLOCERROR();
     return false;
   }
-  if( !zLPTableauSimplex( &tab ) || !zIsTiny(tab.d) ){
+  if( !zLPTableauFindFeasibleBase( &tab ) ){
     ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
   } else{
     _zLPTableauAns( &tab, base );
