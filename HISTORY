@@ -1,3 +1,6 @@
+2026.11.07. Unified ZM_LQ_DECOMP_GRAMSCHMIDT_TOL and ZM_LQ_DECOMP_HOUSEHOLDER_TOL into ZM_LQ_DECOMP_TOL. [zm_le_lq]
+2026.11.07. Abolished ZNLE_VDB_TOL, and replaced it with zTOL. [zm_nle_se]
+2026.11.07. Unified ZODE_DC_TOL and ZODE_ERK_TOL into ZM_ODE_TOL, and renamed ZODE_ERK_DT_TOL to ZM_ODE_DT_TOL, both of which are defined in zm_ode.h. [zm_ode_dc, zm_ode_erk]
 2026.11.07. Renamed macro _zMatDecompLUPivotRow defined in _zMatDecompLUPivot to _zmat_decomp_row_pivot. [zm_le_lu]
 2026.11.07. Abolished zMatDecompCholeskyDST, and added _zMatDecompCholeskyDST that works in the given lower triangular matrix, so that zMatDecompCholesky does not clone the given matrix. [zm_le_lu]
 2026.11.07. Modified _zMatDecompCholeskyDST to detect the rank with a relative tolerance, and added ZM_CHOLESKY_DECOMP_TOL. [zm_le_lu]

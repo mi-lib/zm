@@ -121,7 +121,6 @@ double zNLE_RF(double (* f)(double,void*), double x1, double x2, void *priv, dou
 /* Van Wijngaarden-Dekker-Brent method */
 double zNLE_VDB(double (* f)(double,void*), double x1, double x2, void *priv, double tol, int iter)
 {
-#define ZNLE_VDB_TOL zTOL
   long count;
   double x3, dx1, dx2, min1, min2;
   double f1, f2, f3, p, q, r, s, tol2, xm;
@@ -145,7 +144,7 @@ double zNLE_VDB(double (* f)(double,void*), double x1, double x2, void *priv, do
       x1 = x2; x2 = x3; x3 = x1;
       f1 = f2; f2 = f3; f3 = f1;
     }
-    tol2 = 2*zTOL*fabs(x2) + 0.5*ZNLE_VDB_TOL;
+    tol2 = 2*zTOL*fabs(x2) + 0.5*zTOL;
     dx1 = dx2 = xm = 0.5*( x3 - x2 );
     if( fabs(xm) <= tol2 || zIsTol(f2,tol) ) return x2;
     if( fabs(dx2) >= tol2 && fabs(f1) > fabs(f2) ){

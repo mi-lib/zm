@@ -7,8 +7,6 @@
 
 #include <zm/zm_ode.h>
 
-#define ZODE_ERK_TOL  ( 1.0e-6 )
-#define ZODE_ERK_DT_TOL  ( 1.0e-8 )
 typedef struct{
   int stepsize;
   zVec _xc, _xf; /* course and fine estimations */
@@ -76,7 +74,7 @@ static zVec _zODEUpdateERK(zODE *ode, double t, zVec x, double dt, double a[], d
     ode->cat( ws->_xc, bc[i]*dt, ws->k[i], ws->_xc, util );
     ode->cat( ws->_xf, bf[i]*dt, ws->k[i], ws->_xf, util );
   }
-  if( dt > ZODE_ERK_DT_TOL && zVecDist( ws->_xc, ws->_xf ) > ZODE_ERK_TOL ){
+  if( dt > ZM_ODE_DT_TOL && zVecDist( ws->_xc, ws->_xf ) > ZM_ODE_TOL ){
     dt *= 0.5;
     _zODEUpdateERK( ode, t, x, dt, a, bc, bf, c, util );
     _zODEUpdateERK( ode, t+dt, x, dt, a, bc, bf, c, util );

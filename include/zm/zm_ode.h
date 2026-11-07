@@ -25,6 +25,20 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zODE ){
 
 __BEGIN_DECLS
 
+/*! \brief tolerance for adaptive step size control of ODE quadratures.
+ *
+ * In ODE quadratures with an adaptive step size control (deferred correction and embedded Runge-Kutta
+ * methods), a time step is divided into two halves if the distance between two estimations of the state
+ * vector is greater than this value.
+ */
+#define ZM_ODE_TOL ( 1.0e-6 )
+
+/*! \brief minimum time step for adaptive step size control of ODE quadratures.
+ *
+ * In embedded Runge-Kutta methods, a time step is not divided any more if it is not greater than this value.
+ */
+#define ZM_ODE_DT_TOL ( 1.0e-8 )
+
 /*! \brief initialize an ODE solver. */
 #define zODEInit(ode) do{ \
   (ode)->f = NULL; \

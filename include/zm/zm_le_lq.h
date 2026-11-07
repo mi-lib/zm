@@ -11,20 +11,14 @@
 
 __BEGIN_DECLS
 
-/*! \brief relative tolerance for rank detection in LQ decomposition based on Gram=Schmidt's method.
+/*! \brief relative tolerance for rank detection in LQ decomposition.
  *
  * A row vector is regarded as linearly dependent on the preceding ones if the norm of its residual
- * after orthogonalization is not greater than this value times the norm of the original row vector.
+ * after orthogonalization (by Gram=Schmidt's method) or the norm of its components remaining after the
+ * preceding reflections (by Householder's method) is not greater than this value times the norm of
+ * the original row vector.
  */
-#define ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ( 1.0e-10 )
-
-/*! \brief relative tolerance for rank detection in LQ decomposition based on Householder's method.
- *
- * A row vector is regarded as linearly dependent on the preceding ones if the norm of its components
- * remaining after the preceding Householder reflections is not greater than this value times the norm
- * of the original row vector.
- */
-#define ZM_LQ_DECOMP_HOUSEHOLDER_TOL ( 1.0e-10 )
+#define ZM_LQ_DECOMP_TOL ( 1.0e-10 )
 
 /*! \brief LQ decomposition of a matrix.
  *
@@ -36,7 +30,7 @@ __BEGIN_DECLS
  * If \a m is degenerated, the sizes of \a l and \a q are automatically adjusted to be column-full-rank
  * and row-full-rank, respectively. Namely, suppose the rank of \a m is d (<= s), the sizes of \a l
  * and \a q will be adjusted to r x d and d x c, respectively.
- * The rank is detected with the relative tolerance ZM_LQ_DECOMP_GRAMSCHMIDT_TOL, so that the result
+ * The rank is detected with the relative tolerance ZM_LQ_DECOMP_TOL, so that the result
  * does not depend on the scale of \a m.
  *
  * zMatDecompLQAlloc() automatically allocates matrices \a l and \a q, and then conducts the LQ decomposition.
@@ -56,7 +50,7 @@ __ZM_EXPORT int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q);
  *  \a l \a q = \a m.
  * If \a m is with the size of r x c, \a l and \a q have to be with the sizes of r x c and c x c, respectively.
  * Row vectors of \a m are processed in order, and a row vector linearly dependent on the preceding ones
- * (judged with the relative tolerance ZM_LQ_DECOMP_HOUSEHOLDER_TOL) does not consume a column of \a l.
+ * (judged with the relative tolerance ZM_LQ_DECOMP_TOL) does not consume a column of \a l.
  * Hence, suppose the rank of \a m is d, the last c-d columns of \a l are zero, and the last c-d rows of
  * \a q span the null space of \a m.
  *

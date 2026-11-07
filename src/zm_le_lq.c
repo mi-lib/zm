@@ -27,7 +27,7 @@ static int _zMatDecompLQDST_Q(zMat l, zMat q) /* q has to be initially set for t
       zRawVecCatDRC( qp, -r, zMatRowBufNC(q,j), zMatColSizeNC(q) );
       zMatSetElemNC( l, i, j, r );
     }
-    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm(qp,zMatColSizeNC(q)) ), norm, ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
+    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm(qp,zMatColSizeNC(q)) ), norm, ZM_LQ_DECOMP_TOL ) ) continue;
     zRawVecDiv( qp, r, zMatRowBufNC(q,rank), zMatColSizeNC(q) );
     zMatSetElemNC( l, i, rank++, r );
   }
@@ -69,7 +69,7 @@ static int _zMatDecompLQDST_L(zMat l, zMat q) /* l has to be initially set for t
     }
     if( rank >= zMatColSizeNC(l) ) continue;
     zRawVecZero( zMatRowBufNC(l,i) + rank, zMatColSizeNC(l) - rank );
-    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm( v, zMatColSizeNC(q) ) ), norm, ZM_LQ_DECOMP_GRAMSCHMIDT_TOL ) ) continue;
+    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm( v, zMatColSizeNC(q) ) ), norm, ZM_LQ_DECOMP_TOL ) ) continue;
     zRawVecDivDRC( v, r, zMatColSizeNC(q) );
     zMatSetElemNC( l, i, rank++, r );
   }
@@ -136,7 +136,7 @@ static int _zMatDecompLQFullDST(zMat m, zMat q)
     norm = zRawVecNorm( zMatRowBufNC(m,i), zMatColSizeNC(m) );
     u = &zMatElemNC(m,i,rank);
     colsize = zMatColSizeNC(m) - rank;
-    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm( u, colsize ) ), norm, ZM_LQ_DECOMP_HOUSEHOLDER_TOL ) ){
+    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm( u, colsize ) ), norm, ZM_LQ_DECOMP_TOL ) ){
       zRawVecZero( u, colsize ); /* linearly dependent on the preceding rows */
       continue;
     }

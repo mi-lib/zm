@@ -27,7 +27,6 @@ void zODEDestroyDC(zODE *ode)
   zODEDestroy( ode );
 }
 
-#define ZODE_DC_TOL ( 1.0e-6 )
 /* update state vector by solving ODE enabling deferred correction. */
 zVec zODEUpdateDC(zODE *ode, double t, zVec x, double dt, void *util)
 {
@@ -40,7 +39,7 @@ zVec zODEUpdateDC(zODE *ode, double t, zVec x, double dt, void *util)
   zODEUpdate( ode, t,    ode->_x2, dt, util );
   zODEUpdate( ode, t+dt, ode->_x2, dt, util );
   /* evaluation */
-  if( zVecDist( ode->_x1, ode->_x2 ) > ZODE_DC_TOL ){
+  if( zVecDist( ode->_x1, ode->_x2 ) > ZM_ODE_TOL ){
     zODEUpdateDC( ode, t,    x, dt, util );
     zODEUpdateDC( ode, t+dt, x, dt, util );
   } else{ /* Richardson's extrapolation */
