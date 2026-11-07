@@ -11,7 +11,10 @@ zVec dp(double t, zVec p, void *dummy, zVec v)
 #define DT 0.5
 #define T  100.0
 
-#define ODES 11
+/* NOTE: multistep methods (Adams and Gear) are excluded, since their histories are disturbed by
+ * trial updates in deferred correction. Gear method with deferred correction, for example, keeps
+ * dividing the time step and takes an extremely long time. */
+#define ODES 9
 
 void output_all(zVec *x)
 {
@@ -34,29 +37,24 @@ int main(void)
   zODEAssign( &ode[2], RK4, NULL, NULL );
   zODEAssign( &ode[3], RKG, NULL, NULL );
   zODEAssign( &ode[4], RKF45, NULL, NULL );
-  zODEAssign( &ode[5], Adams, NULL, NULL );
-  zODEAssign( &ode[6], BEuler, NULL, NULL );
-  zODEAssign( &ode[7], Gauss, NULL, NULL );
-  zODEAssign( &ode[8], Radau, NULL, NULL );
-  zODEAssign( &ode[9], Gear, NULL, NULL );
-  zODEAssign( &ode[10],TR, NULL, NULL );
+  zODEAssign( &ode[5], BEuler, NULL, NULL );
+  zODEAssign( &ode[6], Gauss, NULL, NULL );
+  zODEAssign( &ode[7], Radau, NULL, NULL );
+  zODEAssign( &ode[8], TR, NULL, NULL );
 
   zODECreateDC( &ode[0], 2, 0, dp ); /* Euler method */
   zODECreateDC( &ode[1], 2, 0, dp ); /* Heun method */
   zODECreateDC( &ode[2], 2, 0, dp ); /* classical Runge-Kutta method */
   zODECreateDC( &ode[3], 2, 0, dp ); /* Runge-Kutta-Gill method */
   zODECreateDC( &ode[4], 2, 0, dp ); /* Runge-Kutta_Fehlberg method */
-  zODECreateDC( &ode[5], 2, 5, dp ); /* PC on AB/AM formula */
-  zODECreateDC( &ode[6], 2, 0, dp ); /* backward Euler method */
-  zODECreateDC( &ode[7], 2, 0, dp ); /* Gauss method */
-  zODECreateDC( &ode[8], 2, 0, dp ); /* Radau method */
-  zODECreateDC( &ode[9], 2, 3, dp ); /* Gear method */
-  zODECreateDC( &ode[10],2, 0, dp ); /* trapezoidal method */
+  zODECreateDC( &ode[5], 2, 0, dp ); /* backward Euler method */
+  zODECreateDC( &ode[6], 2, 0, dp ); /* Gauss method */
+  zODECreateDC( &ode[7], 2, 0, dp ); /* Radau method */
+  zODECreateDC( &ode[8], 2, 0, dp ); /* trapezoidal method */
 
   x[0] = zVecCreateList( 2, 1.0, 0.0 );
   for( i=1; i<ODES; i++ )
     x[i] = zVecClone( x[0] );
-  zODEInitHistoryGear( &ode[9], x[9] );
 
   output_all( x );
   for( t=0; t<T; t+=DT ){
@@ -71,12 +69,10 @@ int main(void)
   eprintf( "RK4  : err= %f\n", zVecNorm(x[2])-1 );
   eprintf( "RKG  : err= %f\n", zVecNorm(x[3])-1 );
   eprintf( "RKF45: err= %f\n", zVecNorm(x[4])-1 );
-  eprintf( "Adams: err= %f\n", zVecNorm(x[5])-1 );
-  eprintf( "BEuler:err= %f\n", zVecNorm(x[6])-1 );
-  eprintf( "Gauss: err= %f\n", zVecNorm(x[7])-1 );
-  eprintf( "Radau: err= %f\n", zVecNorm(x[8])-1 );
-  eprintf( "Gear : err= %f\n", zVecNorm(x[9])-1 );
-  eprintf( "TR   : err= %f\n", zVecNorm(x[10])-1 );
+  eprintf( "BEuler:err= %f\n", zVecNorm(x[5])-1 );
+  eprintf( "Gauss: err= %f\n", zVecNorm(x[6])-1 );
+  eprintf( "Radau: err= %f\n", zVecNorm(x[7])-1 );
+  eprintf( "TR   : err= %f\n", zVecNorm(x[8])-1 );
   for( i=0; i<ODES; i++ ){
     zVecFree( x[i] );
     zODEDestroyDC( &ode[i] );
