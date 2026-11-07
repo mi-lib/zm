@@ -37,7 +37,7 @@ static bool _zQPASMInit(zQPASM *qpasm, const zMat q, const zVec c, const zMat a,
   qpasm->_v = zVecAlloc( zMatRowSizeNC(a) );
   qpasm->_lambda = zVecAlloc( zMatRowSizeNC(a) );
   qpasm->_idx = zIndexAlloc( zMatRowSizeNC(a) );
-  qpasm->_s = zVecAlloc( zMatRowSizeNC(a) );
+  qpasm->_s = zVecAlloc( _zMax( zVecSizeNC(c), zMatRowSizeNC(a) ) ); /* used for both active set and solution */
   if( !qpasm->qinv || !qpasm->aqinvat || !qpasm->qinvc || !qpasm->aqinvc_plus_b ||
       !qpasm->xtmp || !qpasm->ia || !qpasm->in ||
       !qpasm->_m || !qpasm->_v || !qpasm->_lambda || !qpasm->_idx || !qpasm->_s ) return false;
@@ -137,33 +137,66 @@ static bool _zQPASMInitBase(zQPASM *qpasm, const zMat a, const zVec b)
   return ret;
 }
 
-/* solve an equation to find temporary solution and adjoint variables. */
-static bool _zQPASMSolveEq(zQPASM *qpasm, const zMat a, const zVec b, zVec x)
+/* solve an equation A_a Q^-1 A_a^T lambda = v with respect to lambda for active set a,
+ * and find dx = Q^-1 A_a^T lambda, where v has to be preset in the workspace. */
+static void _zQPASMSolveActive(zQPASM *qpasm, const zMat a, zVec dx)
 {
   int i, j;
 
   zMatSetSizeNC( qpasm->_m, zIndexSizeNC(qpasm->ia), zIndexSizeNC(qpasm->ia) );
-  zVecSetSizeNC( qpasm->_v, zIndexSizeNC(qpasm->ia) );
   zVecSetSizeNC( qpasm->_lambda, zIndexSizeNC(qpasm->ia) );
   zVecSetSizeNC( qpasm->_s, zIndexSizeNC(qpasm->ia) );
   zIndexSetSize( qpasm->_idx, zIndexSizeNC(qpasm->ia) );
   zIndexOrder( qpasm->_idx, 0 );
-  for( i=0; i<zIndexSizeNC(qpasm->ia); i++ ){
-    for( j=0; j<zIndexSizeNC(qpasm->ia); j++ ){
+  for( i=0; i<zIndexSizeNC(qpasm->ia); i++ )
+    for( j=0; j<zIndexSizeNC(qpasm->ia); j++ )
       zMatElemNC(qpasm->_m,i,j) = zMatElemNC(qpasm->aqinvat,zIndexElemNC(qpasm->ia,i),zIndexElemNC(qpasm->ia,j));
-    }
-    zVecElemNC(qpasm->_v,i) = zVecElemNC(qpasm->aqinvc_plus_b,zIndexElemNC(qpasm->ia,i));
-  }
   zLESolveGaussDST( qpasm->_m, qpasm->_v, qpasm->_lambda, qpasm->_idx, qpasm->_s );
-  zVecSetSizeNC( qpasm->_s, zVecSizeNC(x) );
+  zVecSetSizeNC( qpasm->_s, zVecSizeNC(dx) );
   for( i=0; i<zVecSizeNC(qpasm->_s); i++ ){
     zVecSetElemNC( qpasm->_s, i, 0 );
     for( j=0; j<zIndexSizeNC(qpasm->ia); j++ )
       zVecElemNC(qpasm->_s,i) += zMatElemNC(a,zIndexElemNC(qpasm->ia,j),i) * zVecElemNC(qpasm->_lambda,j);
   }
-  zMulMatVecNC( qpasm->qinv, qpasm->_s, x );
+  zMulMatVecNC( qpasm->qinv, qpasm->_s, dx );
+}
+
+/* solve an equation to find temporary solution and adjoint variables. */
+static bool _zQPASMSolveEq(zQPASM *qpasm, const zMat a, const zVec b, zVec x)
+{
+  int i;
+
+  zVecSetSizeNC( qpasm->_v, zIndexSizeNC(qpasm->ia) );
+  for( i=0; i<zIndexSizeNC(qpasm->ia); i++ )
+    zVecElemNC(qpasm->_v,i) = zVecElemNC(qpasm->aqinvc_plus_b,zIndexElemNC(qpasm->ia,i));
+  _zQPASMSolveActive( qpasm, a, x );
   zVecSubNCDRC( x, qpasm->qinvc );
   return true;
+}
+
+/* refine the solution by one step if it does not satisfy the active constraints accurately
+ * due to the round-off error in an ill-conditioned case. Note that the adjoint variables
+ * and the current solution in the workspace are overwritten. */
+static void _zQPASMRefine(zQPASM *qpasm, const zMat a, const zVec b, zVec x)
+{
+  int i;
+
+  if( zIndexSizeNC(qpasm->ia) == 0 ) return;
+  zVecSetSizeNC( qpasm->_v, zIndexSizeNC(qpasm->ia) );
+  for( i=0; i<zIndexSizeNC(qpasm->ia); i++ ) /* residual of active constraints */
+    zVecElemNC(qpasm->_v,i) = zVecElemNC(b,zIndexElemNC(qpasm->ia,i))
+      - zRawVecInnerProd( zMatRowBufNC(a,zIndexElemNC(qpasm->ia,i)), zVecBufNC(x), zVecSizeNC(x) );
+  if( zVecNorm( qpasm->_v ) <= zTOL ) return;
+  _zQPASMSolveActive( qpasm, a, qpasm->xtmp );
+  zVecAddNCDRC( x, qpasm->xtmp );
+}
+
+/* check if a blocking constraint i is more transversal to the step than another constraint j,
+ * where api and apj are the inner products of the constraint vectors and the step. */
+static bool _zQPASMIsMoreTransversal(const zMat a, int i, double api, int j, double apj)
+{
+  return api / zRawVecNorm( zMatRowBufNC(a,i), zMatColSizeNC(a) )
+       < apj / zRawVecNorm( zMatRowBufNC(a,j), zMatColSizeNC(a) );
 }
 
 /* move the current feasible solution toward the temporary solution, and add a blocking
@@ -172,7 +205,7 @@ static bool _zQPASMSolveEq(zQPASM *qpasm, const zMat a, const zVec b, zVec x)
 static bool _zQPASMAddEq(zQPASM *qpasm, const zMat a, const zVec b, const zVec x)
 {
   int i, imin;
-  double ax, axtmp, d, dmin, cmin = 0, c;
+  double ax, axtmp, d, dmin, axmin = 0;
   bool is_violated = false;
 
   /* the temporary solution coincides with the current solution if active set
@@ -188,16 +221,12 @@ static bool _zQPASMAddEq(zQPASM *qpasm, const zMat a, const zVec b, const zVec x
     if( d < dmin - zTOL ){
       dmin = d;
       imin = zIndexElemNC(qpasm->in,i);
-      cmin = 0; /* not computed yet */
+      axmin = ax;
     } else
     if( d < dmin + zTOL ){ /* tie (degenerate case): prefer a constraint more transversal to the step */
-      if( cmin == 0 )
-        cmin = ( zRawVecInnerProd( zMatRowBufNC(a,imin), zVecBufNC(x), zVecSizeNC(x) )
-               - zRawVecInnerProd( zMatRowBufNC(a,imin), zVecBufNC(qpasm->xtmp), zVecSizeNC(x) ) )
-               / zRawVecNorm( zMatRowBufNC(a,imin), zVecSizeNC(x) );
-      if( ( c = ax / zRawVecNorm( zMatRowBufNC(a,zIndexElemNC(qpasm->in,i)), zVecSizeNC(x) ) ) < cmin ){
-        cmin = c;
+      if( _zQPASMIsMoreTransversal( a, zIndexElemNC(qpasm->in,i), ax, imin, axmin ) ){
         imin = zIndexElemNC(qpasm->in,i);
+        axmin = ax;
       }
       if( d < dmin ) dmin = d;
     }
@@ -266,6 +295,7 @@ bool zQPSolveASM(const zMat q, const zVec c, const zMat a, const zVec b, zVec an
       _zQPASMSolveEq( &qpasm, a, b, ans );
     } while( _zQPASMAddEq( &qpasm, a, b, ans ) );
   } while( _zQPASMDelEq( &qpasm, a ) );
+  _zQPASMRefine( &qpasm, a, b, ans );
   if( cost ) *cost = zQuadraticValue( q, c, ans );
   ret = true;
  TERMINATE:

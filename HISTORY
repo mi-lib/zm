@@ -1,3 +1,6 @@
+2026.11.07. Fixed _zQPASMInit to allocate the workspace vector large enough for the case where the number of variables exceeds the number of constraints, which caused heap buffer overflow in zQPSolveASM. [zm_opt_qp_asm]
+2026.11.07. Added _zQPASMRefine to refine the solution of zQPSolveASM by one step only if the active constraints are not satisfied accurately. [zm_opt_qp_asm]
+2026.11.07. Separated the choice of a blocking constraint among ties into _zQPASMIsMoreTransversal, and the common part of solving the equation for active set into _zQPASMSolveActive. [zm_opt_qp_asm]
 2026.11.07. Fixed zQPSolveASM to update the current feasible solution after a full step, delete only the constraint with the most negative Lagrange multiplier, skip adding constraints at a vertex, clamp negative step lengths, and choose the blocking constraint most transversal to the step among ties, so that the active set does not cycle nor become nearly dependent. [zm_opt_qp_asm]
 2026.11.07. Modified zLPIneq2Std and zLPUnb2Std to set null pointers for the matrix and vectors that failed to be allocated. [zm_opt_lp_stdcnv]
 2026.11.07. Modified _zQP2LCP to set null pointers for the matrix and vectors that failed to be allocated. [zm_opt_qp]
