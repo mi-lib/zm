@@ -112,6 +112,60 @@ bool test_lp_megiddo_dyer(int num_test, int num_constraint)
   return true;
 }
 
+/* compare the solution of Megiddo-Dyer algorithm with that of simplex method, where the problem
+ * with unbounded variables is converted to the standard form for the latter. */
+bool test_lp_megiddo_dyer_simplex(int num_test, int num_constraint)
+{
+  zLPMegiddoDyer lp;
+  zMat a, as;
+  zVec b, c, x, cs, xs;
+  double x1, x2, cost, x1_ans = 0, x2_ans = 0, cost_ans;
+  int i, j;
+  double theta;
+  bool result1, result2, ret = false;
+  const double tol = 1.0e-8; /* relative tolerance */
+
+  a = zMatAlloc( num_constraint, 2 );
+  b = zVecAlloc( num_constraint );
+  c = zVecAlloc( 2 );
+  x = zVecAlloc( 2 );
+  if( !a || !b || !c || !x ) goto TERMINATE;
+  for( i=0; i<num_test; i++ ){
+    zLPMegiddoDyerInit( &lp );
+    zVecSetElemNC( c, 0, zRandF(-5,5) );
+    zVecSetElemNC( c, 1, zRandF(-5,5) );
+    zLPMegiddoDyerSetCostCoefficient( &lp, zVecElemNC(c,0), zVecElemNC(c,1) );
+    for( j=0; j<num_constraint; j++ ){
+      theta = zRandF( -zPI, zPI );
+      zMatSetElemNC( a, j, 0, cos(theta) );
+      zMatSetElemNC( a, j, 1, sin(theta) );
+      zVecSetElemNC( b, j, 5 + 5*cos(theta) );
+      zLPMegiddoDyerAddConstraint( &lp, zMatElemNC(a,j,0), zMatElemNC(a,j,1), zVecElemNC(b,j) );
+    }
+    result1 = zLPMegiddoDyerSolve( &lp, &x1, &x2, &cost );
+    zLPMegiddoDyerDestroy( &lp );
+    if( !zLPUnb2Std( a, c, x, &as, &cs, &xs ) ) goto TERMINATE;
+    if( ( result2 = zLPSolveSimplex( as, b, cs, xs, &cost_ans ) ) ){
+      x1_ans = zVecElemNC(xs,0) - zVecElemNC(xs,2);
+      x2_ans = zVecElemNC(xs,1) - zVecElemNC(xs,3);
+    }
+    zMatFree( as );
+    zVecFreeAtOnce( 2, cs, xs );
+    if( !result1 && !result2 ) continue;
+    if( result1 != result2 ||
+        sqrt( zSqr(x1-x1_ans) + zSqr(x2-x2_ans) ) > tol * ( 1 + sqrt( zSqr(x1) + zSqr(x2) ) ) ){
+      eprintf( "solution          : (x1*,x2*)=(%g,%g) (cost = %g)\n", x1, x2, cost );
+      eprintf( "solution (simplex): (x1*,x2*)=(%g,%g) (cost = %g)\n", x1_ans, x2_ans, cost_ans );
+      goto TERMINATE;
+    }
+  }
+  ret = true;
+ TERMINATE:
+  zMatFree( a );
+  zVecFreeAtOnce( 3, b, c, x );
+  return ret;
+}
+
 void assert_lp_megiddo_dyer(void)
 {
   bool result;
@@ -120,6 +174,10 @@ void assert_lp_megiddo_dyer(void)
   zAssert( zLPMegiddoDyer (regular cases), result );
   result = test_lp_megiddo_dyer( 10, 5 );
   zAssert( zLPMegiddoDyer (likely unsolvable cases), result );
+  result = test_lp_megiddo_dyer_simplex( 100, 20 );
+  zAssert( zLPMegiddoDyer (comparison with simplex method), result );
+  result = test_lp_megiddo_dyer_simplex( 10, 5 );
+  zAssert( zLPMegiddoDyer (comparison with simplex method in likely unsolvable cases), result );
 }
 
 int main(void)

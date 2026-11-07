@@ -178,6 +178,33 @@ static void _zLPTableauSwapPivot(zLPTableau *tab, int np, int na)
   zIndexSetElemNC( tab->ib, np, tmp );
 }
 
+/* index from which artificial variables are numbered in the first stage. */
+#define _zLPTableauArtIndex(tab) ( zVecSizeNC((tab)->c) - zVecSizeNC((tab)->b) )
+
+/* number of artificial variables in the bases. */
+static int _zLPTableauNumArt(const zLPTableau *tab)
+{
+  int i, n = 0;
+
+  for( i=0; i<zIndexSizeNC(tab->ib); i++ )
+    if( zIndexElemNC(tab->ib,i) >= _zLPTableauArtIndex(tab) ) n++;
+  return n;
+}
+
+/* sum of values of artificial variables in the bases, which is the cost of the first stage.
+ * It is computed directly from the bases instead of the cost accumulated through the
+ * iteration, which suffers from round-off errors. */
+static double _zLPTableauSumArtVal(const zLPTableau *tab)
+{
+  int i;
+  double sum = 0;
+
+  for( i=0; i<zIndexSizeNC(tab->ib); i++ )
+    if( zIndexElemNC(tab->ib,i) >= _zLPTableauArtIndex(tab) )
+      sum += zVecElemNC(tab->b,zIndexElemNC(tab->ir,i));
+  return sum;
+}
+
 /* simplex method for initialized tableau.
  *      1  0 a_1(m+1) ... a_1n     b_0
  *   A=  .    .             .   b=  .
@@ -189,18 +216,25 @@ static void _zLPTableauSwapPivot(zLPTableau *tab, int np, int na)
  *   Ib= [1 ... m], In= [m+1 ... n+m]
  */
 static bool _zLPTableauSimplex(zLPTableau *tab, double tol)
-{ /* the iteration terminates if the cost becomes smaller than tol in the absolute value */
-  int i = 0, na, np;
+{ /* if tol >= 0 (the first stage), the iteration terminates as soon as all artificial variables
+   * leave the bases or the cost becomes smaller than tol in the absolute value. */
+  int i = 0, na, np, n_art = 0;
   double ctol; /* tolerance for reduced costs relative to the given cost coefficients */
 
   ctol = ZM_LP_SIMPLEX_TOL * ( 1 + _zVecElemAbsMax( tab->c, NULL ) );
+  if( tol >= 0 ) n_art = _zLPTableauNumArt( tab );
   _zLPTableauSweepC( tab );
-  while( !zIsTol( tab->d, tol ) && ( na = _zLPTableauFindNA( tab, ctol ) ) >= 0 ){
-    if( i++ > zMatColSizeNC(tab->a) ) /* probably degenerated case */
+  while( !( tol >= 0 && ( n_art == 0 || zIsTol( tab->d, tol ) ) ) &&
+         ( na = _zLPTableauFindNA( tab, ctol ) ) >= 0 ){
+    if( i++ > 2 * zMatColSizeNC(tab->a) ) /* probably degenerated case */
       return false;
     if( ( np = _zLPTableauFindNP( tab, &na, ctol ) ) < 0 ) /* non-convex case */
       return false;
     _zLPTableauSweepA( tab, np, na );
+    if( tol >= 0 ){ /* count artificial variables in the bases */
+      if( zIndexElemNC(tab->ib,np) >= _zLPTableauArtIndex(tab) ) n_art--;
+      if( zIndexElemNC(tab->in,na) >= _zLPTableauArtIndex(tab) ) n_art++;
+    }
     _zLPTableauSwapPivot( tab, np, na );
     _zLPTableauSweepC1( tab, np );
   }
@@ -222,7 +256,9 @@ bool zLPTableauFindFeasibleBase(zLPTableau *tab)
   /* the iteration terminates as soon as the sum of artificial variables vanishes, since
    * the first stage has a degenerate optimum, at which the round-off errors of reduced
    * costs would let the iteration go astray. */
-  return _zLPTableauSimplex( tab, zTOL * scale ) && zIsTol( tab->d, zTOL * scale );
+  if( !_zLPTableauSimplex( tab, zTOL * scale ) ) return false;
+  tab->d = _zLPTableauSumArtVal( tab );
+  return zIsTol( tab->d, zTOL * scale );
 }
 
 /* find initial feasible base for the second stage from tableau. */
