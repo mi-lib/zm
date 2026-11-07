@@ -46,6 +46,8 @@ static bool _zQP2LCP(const zMat q, const zVec c, const zMat a, const zVec b, zMa
     zMatFree( *lm );
     zVecFree( *lq );
     zVecFree( *z );
+    *lm = NULL;
+    *lq = *z = NULL;
     return false;
   }
   zMatPut( *lm, 0, 0, q );

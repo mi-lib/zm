@@ -1,3 +1,5 @@
+2026.11.07. Modified zLPIneq2Std and zLPUnb2Std to set null pointers for the matrix and vectors that failed to be allocated. [zm_opt_lp_stdcnv]
+2026.11.07. Modified _zQP2LCP to set null pointers for the matrix and vectors that failed to be allocated. [zm_opt_qp]
 2026.11.07. Modified zMatDecompLQAlloc and zMatDecompLQFullAlloc to set null pointers for matrices that failed to be allocated. [zm_le_lq]
 2026.11.07. Added a test of ODE solvers on the orders of accuracy, the norm of harmonic oscillation, the stability for a stiff equation, the symplecticity, and the accuracy and termination of deferred correction. [test]
 2026.11.07. Excluded multistep methods from the sample of deferred correction, since their histories are disturbed by trial updates. [example]

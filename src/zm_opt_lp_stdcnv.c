@@ -19,6 +19,8 @@ bool zLPIneq2Std(const zMat a, const zVec c, const zVec x, zMat *as, zVec *cs, z
     zMatFree( *as );
     zVecFree( *cs );
     zVecFree( *xs );
+    *as = NULL;
+    *cs = *xs = NULL;
     return false;
   }
   zMatPut( *as, 0, 0, a );
@@ -42,6 +44,8 @@ bool zLPUnb2Std(const zMat a, const zVec c, const zVec x, zMat *as, zVec *cs, zV
     zMatFree( *as );
     zVecFree( *cs );
     zVecFree( *xs );
+    *as = NULL;
+    *cs = *xs = NULL;
     return false;
   }
   for( i=0; i<zMatRowSizeNC(a); i++ ){

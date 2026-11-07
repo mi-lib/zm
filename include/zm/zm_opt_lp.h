@@ -55,7 +55,7 @@ __ZM_EXPORT bool zLPTableauFindBase(zLPTableau *tab);
  *   subject to \a as x = \a bs and x >= 0
  * \return
  * zLPIneq2Std() and zLPUnb2Std() return the true value if succeeding. Or, the false value is returned
- * when they fail to allocate working memory.
+ * when they fail to allocate working memory, where \a as, \a cs, and \a xs are set for the null pointer.
  */
 __ZM_EXPORT bool zLPIneq2Std(const zMat a, const zVec c, const zVec x, zMat *as, zVec *cs, zVec *xs);
 __ZM_EXPORT bool zLPUnb2Std(const zMat a, const zVec c, const zVec x, zMat *as, zVec *cs, zVec *xs);
