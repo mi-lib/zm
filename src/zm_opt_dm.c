@@ -440,9 +440,10 @@ int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, d
   *eval = opt->eval( var, util );
   if( zVecIsTol( opt->_grad( opt, var, opt->_g, util ), tol ) )
     return 0; /* no need for iteration. */
-  for( i=0; i<iter; i++, *eval=e ){
+  for( i=0; i<iter; i++ ){
     opt->_vec( opt, var, opt->_d, util ); /* descent vector */
     if( !opt->_step( opt, var, util, *eval, &e ) ) break; /* line search */
+    *eval = e;
     if( zVecIsTol(opt->_g,tol) || zVecIsTol(opt->_p,tol) )
       return i; /* succeed. */
     opt->_update_h( opt, i ); /* update quasi-hessian matrix */
