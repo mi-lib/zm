@@ -22,6 +22,13 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zLPTableau ){
 
 __BEGIN_DECLS
 
+/*! \brief relative tolerance for reduced costs in simplex method.
+ *
+ * A reduced cost is regarded as negative if it is less than the negative of this value times
+ * (1 + the maximum absolute value of the cost coefficients given to the tableau).
+ */
+#define ZM_LP_SIMPLEX_TOL ( 1.0e-10 )
+
 /*! \brief create initial simplex tableau with slack variables. */
 __ZM_EXPORT bool zLPTableauCreate(zLPTableau *tab, const zMat a, const zVec b);
 /*! \brief destroy simplex tableau. */

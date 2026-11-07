@@ -89,7 +89,7 @@ static void _zLPTableauSweepC(zLPTableau *tab)
 }
 
 /* find next axis column of tableau to be sweeped-out. */
-static int _zLPTableauFindNA(zLPTableau *tab)
+static int _zLPTableauFindNA(zLPTableau *tab, double ctol)
 { /* next axis for normal case */
   int i, na;
   double c_min;
@@ -98,16 +98,16 @@ static int _zLPTableauFindNA(zLPTableau *tab)
   for( i=1; i<zIndexSizeNC(tab->in); i++ )
     if( zVecElemNC(tab->c,zIndexElemNC(tab->in,i)) < c_min )
       c_min = zVecElemNC( tab->c, zIndexElemNC(tab->in,(na=i)) );
-  return c_min < -zTOL ? na : -1;
+  return c_min < -ctol ? na : -1;
 }
 
 /* find next axis column of tableau in degenerate case. */
-static int _zLPTableauFindNA_deg(zLPTableau *tab)
+static int _zLPTableauFindNA_deg(zLPTableau *tab, double ctol)
 { /* next axis for degenerated case */
   int i, na = -1, idx_min = INT_MAX;
 
   for( i=0; i<zIndexSizeNC(tab->in); i++ )
-    if( zVecElemNC(tab->c,zIndexElemNC(tab->in,i)) < -zTOL ){
+    if( zVecElemNC(tab->c,zIndexElemNC(tab->in,i)) < -ctol ){
       if( zIndexElemNC(tab->in,i) < idx_min ){
         idx_min = zIndexElemNC(tab->in,i);
         na = i;
@@ -117,7 +117,7 @@ static int _zLPTableauFindNA_deg(zLPTableau *tab)
 }
 
 /* find next pivot in axis column to be sweeped-out. */
-static int _zLPTableauFindNP(zLPTableau *tab, int *na)
+static int _zLPTableauFindNP(zLPTableau *tab, int *na, double ctol)
 { /* next pivot */
   int i, np;
   double a, p, p_min;
@@ -130,7 +130,7 @@ static int _zLPTableauFindNP(zLPTableau *tab, int *na)
       continue;
     p = zVecElemNC(tab->b,zIndexElemNC(tab->ir,i)) / a;
     if( zIsTiny( p ) && f_try ){ /* degenerated case */
-      *na = _zLPTableauFindNA_deg( tab );
+      *na = _zLPTableauFindNA_deg( tab, ctol );
       f_try = false;
       goto RETRY;
     }
@@ -191,12 +191,14 @@ static void _zLPTableauSwapPivot(zLPTableau *tab, int np, int na)
 static bool _zLPTableauSimplex(zLPTableau *tab, double tol)
 { /* the iteration terminates if the cost becomes smaller than tol in the absolute value */
   int i = 0, na, np;
+  double ctol; /* tolerance for reduced costs relative to the given cost coefficients */
 
+  ctol = ZM_LP_SIMPLEX_TOL * ( 1 + _zVecElemAbsMax( tab->c, NULL ) );
   _zLPTableauSweepC( tab );
-  while( !zIsTol( tab->d, tol ) && ( na = _zLPTableauFindNA( tab ) ) >= 0 ){
+  while( !zIsTol( tab->d, tol ) && ( na = _zLPTableauFindNA( tab, ctol ) ) >= 0 ){
     if( i++ > zMatColSizeNC(tab->a) ) /* probably degenerated case */
       return false;
-    if( ( np = _zLPTableauFindNP( tab, &na ) ) < 0 ) /* non-convex case */
+    if( ( np = _zLPTableauFindNP( tab, &na, ctol ) ) < 0 ) /* non-convex case */
       return false;
     _zLPTableauSweepA( tab, np, na );
     _zLPTableauSwapPivot( tab, np, na );
