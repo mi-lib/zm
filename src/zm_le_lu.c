@@ -6,26 +6,41 @@
 
 #include <zm/zm_le.h>
 
+/* find the pivot on the c-th column among the r-th and the following rows of m, where the i-th row
+ * means the idx[i]-th row of m if idx is given, or the i-th row of m otherwise.
+ * If the maximum absolute value of the candidates is not greater than tol, the column is regarded as
+ * dependent on the preceding ones, the candidates are zeroed, and -1 is returned. */
+static int _zMatDecompLUPivot(zMat m, zIndex idx, int r, int c, double tol)
+{
+  int i, p;
+  double max, tmp;
+
+#define _zMatDecompLUPivotRow(i) ( idx ? zIndexElemNC(idx,i) : (i) )
+  for( p=r, max=fabs( zMatElemNC(m,_zMatDecompLUPivotRow(r),c) ), i=r+1; i<zMatRowSizeNC(m); i++ )
+    if( ( tmp = fabs( zMatElemNC(m,_zMatDecompLUPivotRow(i),c) ) ) > max ){
+      max = tmp;
+      p = i;
+    }
+  if( max <= tol ){
+    for( i=r; i<zMatRowSizeNC(m); i++ ) zMatSetElemNC( m, _zMatDecompLUPivotRow(i), c, 0 );
+    p = -1;
+  }
+#undef _zMatDecompLUPivotRow
+  return p;
+}
+
 /* LU decomposition of column-long rectangular matrices based on Crout method (destructive).
  * u has to be initially set for the original matrix. */
 static int _zMatDecompLUDST_U(zMat l, zMat u, zIndex idx, double tol)
 {
   int r, c, i, p, size;
-  double ahead, max, tmp, *ur, *ui;
+  double ahead, *ur, *ui;
 
   zMatZero( l );
   zIndexOrder( idx, 0 );
   for( r=c=0; r<zMatRowSizeNC(u) && c<zMatColSizeNC(u); c++ ){
     /* partial pivoting with a physical row swap */
-    for( p=r, max=fabs( zMatElemNC(u,r,c) ), i=r+1; i<zMatRowSizeNC(u); i++ )
-      if( ( tmp = fabs( zMatElemNC(u,i,c) ) ) > max ){
-        max = tmp;
-        p = i;
-      }
-    if( max <= tol ){ /* the column is dependent on the preceding ones */
-      for( i=r; i<zMatRowSizeNC(u); i++ ) zMatSetElemNC( u, i, c, 0 );
-      continue;
-    }
+    if( ( p = _zMatDecompLUPivot( u, NULL, r, c, tol ) ) < 0 ) continue;
     if( p != r ){
       zMatSwapRowNC( u, r, p );
       zIndexSwapNC( idx, r, p );
@@ -56,21 +71,13 @@ static int _zMatDecompLUDST_U(zMat l, zMat u, zIndex idx, double tol)
 static int _zMatDecompLUDST_L(zMat l, zMat u, zIndex idx, double tol)
 {
   int r, c, i, j, p, size;
-  double ahead, max, tmp, *lp, *ur;
+  double ahead, *lp, *ur;
 
   zMatZero( u );
   zIndexOrder( idx, 0 );
   for( r=c=0; r<zMatRowSizeNC(l) && c<zMatColSizeNC(l); c++ ){
     /* partial pivoting (rows are not physically swapped to keep the correspondence of rows of l to m) */
-    for( p=r, max=fabs( zMatElemNC(l,zIndexElemNC(idx,r),c) ), i=r+1; i<zMatRowSizeNC(l); i++ )
-      if( ( tmp = fabs( zMatElemNC(l,zIndexElemNC(idx,i),c) ) ) > max ){
-        max = tmp;
-        p = i;
-      }
-    if( max <= tol ){ /* the column is dependent on the preceding ones */
-      for( i=r; i<zMatRowSizeNC(l); i++ ) zMatSetElemNC( l, zIndexElemNC(idx,i), c, 0 );
-      continue;
-    }
+    if( ( p = _zMatDecompLUPivot( l, idx, r, c, tol ) ) < 0 ) continue;
     zIndexSwapNC( idx, r, p );
     lp = zMatRowBufNC(l,zIndexElemNC(idx,r));
     ahead = lp[c];
