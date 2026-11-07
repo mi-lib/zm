@@ -1,3 +1,4 @@
+2026.11.07. Modified zMatDecompLQAlloc and zMatDecompLQFullAlloc to set null pointers for matrices that failed to be allocated. [zm_le_lq]
 2026.11.07. Added a test of ODE solvers on the orders of accuracy, the norm of harmonic oscillation, the stability for a stiff equation, the symplecticity, and the accuracy and termination of deferred correction. [test]
 2026.11.07. Excluded multistep methods from the sample of deferred correction, since their histories are disturbed by trial updates. [example]
 2026.11.07. Debugged zODEUpdateCK45 to adopt the fifth-order solution, where the weights of the fourth-order and fifth-order solutions were swapped. [zm_ode_erk]

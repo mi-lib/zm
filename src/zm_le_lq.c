@@ -117,6 +117,7 @@ int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q)
   if( !*l || !*q ){
     zMatFree( *l );
     zMatFree( *q );
+    *l = *q = NULL;
     return -1;
   }
   return zMatDecompLQ( m, *l, *q );
@@ -190,6 +191,7 @@ int zMatDecompLQFullAlloc(const zMat m, zMat *l, zMat *q)
   if( !*l || !*q ){
     zMatFree( *l );
     zMatFree( *q );
+    *l = *q = NULL;
     return -1;
   }
   return zMatDecompLQFull( m, *l, *q );
