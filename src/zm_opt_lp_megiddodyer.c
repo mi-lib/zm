@@ -233,10 +233,6 @@ bool zLPMegiddoDyerAddConstraint(zLPMegiddoDyer *lp, double a1, double a2, doubl
   return true;
 }
 
-static double _zLPMegiddoDyerUpperboundVal(const zLPMegiddoDyer *lp, double x)
-{
-  return _zLPMegiddoDyerConstraintListVal( &lp->upperbound, x, zIsLess, HUGE_VAL );
-}
 static double _zLPMegiddoDyerLowerboundVal(const zLPMegiddoDyer *lp, double x )
 {
   return _zLPMegiddoDyerConstraintListVal( &lp->lowerbound, x, zIsGreater,-HUGE_VAL );
@@ -363,11 +359,26 @@ static void _zLPMegiddoDyerOutputValGrad(double x, double y, double m_min, doubl
 
 #endif /* DEBUG */ /* -^-^-^- for debug -^-^-^- */
 
+/* check if a point (x,y) satisfies all constraints in a list, where sgn=1 for upperbounds
+ * and sgn=-1 for lowerbounds. The tolerance of each constraint is relative to the magnitudes
+ * of the terms, since a steep boundary amplifies round-off errors. */
+static bool _zLPMegiddoDyerConstraintListIsFeasible(const zLPMegiddoDyerConstraintList *list, double x, double y, double sgn)
+{
+  zLPMegiddoDyerConstraintListCell *cp;
+  double mx;
+
+  zListForEach( list, cp ){
+    mx = cp->data.m * x;
+    if( sgn * ( y - mx - cp->data.y0 ) > zTOL * ( 1 + fabs( mx ) + fabs( cp->data.y0 ) ) ) return false;
+  }
+  return true;
+}
+
 static bool _zLPMegiddoDyerXYIsFeasible(const zLPMegiddoDyer *lp, double x, double y)
 {
   return x >= lp->x_min - zTOL && x <= lp->x_max + zTOL &&
-         y <= _zLPMegiddoDyerUpperboundVal( lp, x ) + zTOL &&
-         y >= _zLPMegiddoDyerLowerboundVal( lp, x ) - zTOL;
+         _zLPMegiddoDyerConstraintListIsFeasible( &lp->upperbound, x, y, 1 ) &&
+         _zLPMegiddoDyerConstraintListIsFeasible( &lp->lowerbound, x, y, -1 );
 }
 
 static bool _zLPMegiddoDyerTestAndUpdateDirect(const zLPMegiddoDyer *lp, double *x, double *y, double test_x, double test_y)

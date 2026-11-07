@@ -90,6 +90,7 @@ bool test_lp_megiddo_dyer(int num_test, int num_constraint)
   int i, j;
   double theta;
   bool result1, result2;
+  const double tol = 1.0e-10;
 
   for( i=0; i<num_test; i++ ){
     zLPMegiddoDyerInit( &lp );
@@ -102,7 +103,7 @@ bool test_lp_megiddo_dyer(int num_test, int num_constraint)
     result2 = zLPMegiddoDyerSolve( &lp, &x1, &x2, &cost );
     zLPMegiddoDyerDestroy( &lp );
     if( !result1 && !result2 ) continue;
-    if( !zEqual( x1, x1_ans, zTOL ) || !zEqual( x2, x2_ans, zTOL ) ){
+    if( !zEqual( x1, x1_ans, tol ) || !zEqual( x2, x2_ans, tol ) ){
       eprintf( "solution         : (x1*,x2*)=(%g,%g) (cost = %g)\n", x1, x2, cost );
       eprintf( "solution (direct): (x1*,x2*)=(%g,%g) (cost = %g)\n", x1_ans, x2_ans, cost_ans );
       return false;

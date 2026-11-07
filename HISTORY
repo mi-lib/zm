@@ -1,3 +1,5 @@
+2026.11.07. Modified the test of zLPMegiddoDyer to compare solutions with a tolerance 1.0e-10 instead of zTOL, since round-off errors along steep boundaries can exceed zTOL. [test]
+2026.11.07. Modified _zLPMegiddoDyerXYIsFeasible to check each constraint with a tolerance relative to the magnitudes of its terms, since a steep boundary amplified round-off errors and the optimal vertex was misjudged as infeasible. [zm_opt_lp_megiddodyer]
 2026.11.07. Modified zLPTableauSimplex to judge the negativity of reduced costs by a tolerance relative to the given cost coefficients, namely, ZM_LP_SIMPLEX_TOL*(1+max|c|), since the absolute tolerance zTOL picked up round-off errors at a dual-degenerate optimum. [zm_opt_lp_simplex]
 2026.11.07. Modified zLPTableauFindFeasibleBase to terminate the first stage of simplex method as soon as the sum of artificial variables vanishes, since the round-off errors of reduced costs at the degenerate optimum let the iteration go astray. [zm_opt_lp_simplex]
 2026.11.07. Added zLPTableauFindFeasibleBase to apply the first stage of simplex method and check the feasibility with a tolerance relative to the constraint vector. [zm_opt_lp_simplex]
