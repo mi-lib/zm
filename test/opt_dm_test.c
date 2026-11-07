@@ -2,23 +2,52 @@
 
 #define DIM 4
 
-/* quadratic function: f(x) = 1/2 sum_i (i+1)(x_i-i)^2, minimum at x_i = i */
-double quad_eval(const zVec var, void *dummy)
+/* quadratic function: f(x) = k/2 sum_i (i+1)(x_i-i)^2, minimum at x_i = i, where k is given via util (1 if null) */
+#define quad_scale(u) ( (u) ? *(double *)(u) : 1.0 )
+double quad_eval(const zVec var, void *util)
 {
   int i;
   double val = 0;
 
   for( i=0; i<zVecSizeNC(var); i++ )
     val += (i+1)*zSqr( zVecElemNC(var,i) - i );
-  return 0.5*val;
+  return 0.5*quad_scale(util)*val;
 }
 
-zVec quad_grad(const zVec var, zVec g, void *dummy)
+zVec quad_grad(const zVec var, zVec g, void *util)
 {
   int i;
 
   for( i=0; i<zVecSizeNC(var); i++ )
-    zVecSetElemNC( g, i, (i+1)*( zVecElemNC(var,i) - i ) );
+    zVecSetElemNC( g, i, quad_scale(util)*(i+1)*( zVecElemNC(var,i) - i ) );
+  return g;
+}
+
+/* Rosenbrock function: f(x) = sum_i 100(x_2i+1-x_2i^2)^2+(1-x_2i)^2, minimum at x_i = 1 */
+double rosenbrock_eval(const zVec var, void *dummy)
+{
+  int i;
+  double x, y, val = 0;
+
+  for( i=0; i<zVecSizeNC(var); i+=2 ){
+    x = zVecElemNC(var,i);
+    y = zVecElemNC(var,i+1);
+    val += 100*zSqr( y - x*x ) + zSqr( 1 - x );
+  }
+  return val;
+}
+
+zVec rosenbrock_grad(const zVec var, zVec g, void *dummy)
+{
+  int i;
+  double x, y;
+
+  for( i=0; i<zVecSizeNC(var); i+=2 ){
+    x = zVecElemNC(var,i);
+    y = zVecElemNC(var,i+1);
+    zVecSetElemNC( g, i,  -400*x*(y-x*x) + 2*(x-1) );
+    zVecSetElemNC( g, i+1, 200*(y-x*x) );
+  }
   return g;
 }
 
@@ -78,8 +107,52 @@ void assert_opt_dm_eval(void)
   zAssert( zOptDMSolve (returned evaluation), result );
 }
 
+/* Dennis-Schnabel's backtracking has to terminate and converge regardless of the scale of the function. */
+void assert_opt_dm_ds(void)
+{
+  zOptDM opt;
+  zVec var, ans;
+  double k[] = { 1.0, 1.0e2, 1.0e4, 1.0e6, 0 }, *kp;
+  bool result = true;
+  int i;
+  const double tol = 1.0e-8;
+
+  var = zVecAlloc( DIM );
+  ans = zVecAlloc( DIM );
+  /* scaled quadratic functions */
+  for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i );
+  zOptDMCreate( &opt, DIM, 0, quad_eval, quad_grad, NULL );
+  for( kp=k; *kp>0; kp++ ){
+    for( i=0; i<2; i++ ){
+      if( i == 0 )
+        zOptDMAssignSD( &opt, "DS" );
+      else
+        zOptDMAssignVM( &opt, "DS", "BFGS" );
+      zVecSetAll( var, 1.0 );
+      if( zOptDMSolve( &opt, var, kp, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
+        eprintf( "%s (DS), k=%g: |x-x*| = %g\n", i == 0 ? "SD" : "VM", *kp, zVecDist( var, ans ) );
+        result = false;
+      }
+    }
+  }
+  zOptDMDestroy( &opt );
+  /* Rosenbrock function, where the original implementation fell into an infinite loop */
+  zVecSetAll( ans, 1.0 );
+  zOptDMCreate( &opt, DIM, 0, rosenbrock_eval, rosenbrock_grad, NULL );
+  zOptDMAssignVM( &opt, "DS", "BFGS" );
+  zVecSetAll( var, -1.2 );
+  if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
+    eprintf( "VM (DS), Rosenbrock: |x-x*| = %g\n", zVecDist( var, ans ) );
+    result = false;
+  }
+  zOptDMDestroy( &opt );
+  zVecFreeAtOnce( 2, var, ans );
+  zAssert( zOptDMSolve (Dennis-Schnabel), result );
+}
+
 int main(void)
 {
   assert_opt_dm_eval();
+  assert_opt_dm_ds();
   return 0;
 }
