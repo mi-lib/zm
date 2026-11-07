@@ -334,7 +334,7 @@ static zVec _zOptDMStepNoc(zOptDM *opt, const zVec var, void *util, double e0, d
     zVecCopyNC( opt->_r, opt->_g );
     return zVecCopyNC( opt->_x, var );
   }
-  ZRUNWARN( ZM_WARN_OPT_BADINI );
+  ZRUNERROR( ZM_ERR_OPT_CANNOTFINDSTEP );
   return NULL;
 }
 
@@ -552,17 +552,24 @@ void zOptDMDestroy(zOptDM *opt)
   opt->_update_h = NULL;
 }
 
+/* the iteration terminates if
+ * - the gradient vector becomes small relatively to the initial one, namely, |g|inf <= ZM_OPT_DM_GRAD_MIN |g0|inf,
+ * - the step becomes small relatively to the variable, namely, |p|inf <= tol ( 1 + |x|inf ), or
+ * - the number of iterations exceeds the given upper limit iter.
+ * it also fails if the line search does not find any step. */
 int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, double *eval)
 {
   int i;
-  double _e_dummy, e;
+  double _e_dummy, e, gmin;
 
   if( !eval ) eval = &_e_dummy;
   zMatIdent( opt->_h );
   ZITERINIT( iter );
   *eval = opt->eval( var, util );
-  if( zVecIsTol( opt->_grad( opt, var, opt->_g, util ), tol ) )
+  opt->_grad( opt, var, opt->_g, util );
+  if( ( gmin = zVecElemAbsMax( opt->_g, NULL ) ) == 0 )
     return 0; /* no need for iteration. */
+  gmin *= ZM_OPT_DM_GRAD_MIN;
   for( i=0; i<iter; i++ ){
     opt->_vec( opt, var, opt->_d, util ); /* descent vector */
     if( zVecInnerProdNC( opt->_g, opt->_d ) <= 0 ){
@@ -570,10 +577,11 @@ int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, d
       zMatIdent( opt->_h );
       zVecCopyNC( opt->_g, opt->_d );
     }
-    if( !opt->_step( opt, var, util, *eval, &e ) ) break; /* line search */
+    if( !opt->_step( opt, var, util, *eval, &e ) ) return -1; /* line search failed. */
     *eval = e;
-    if( zVecIsTol(opt->_g,tol) || zVecIsTol(opt->_p,tol) )
-      return i; /* succeed. */
+    if( zVecElemAbsMax( opt->_g, NULL ) <= gmin ||
+        zVecElemAbsMax( opt->_p, NULL ) <= tol * ( 1 + zVecElemAbsMax( var, NULL ) ) )
+      return i + 1; /* succeed. */
     opt->_update_h( opt, i ); /* update quasi-hessian matrix */
   }
   ZITERWARN( iter );

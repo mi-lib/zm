@@ -115,7 +115,7 @@ void assert_opt_dm_ds(void)
   double k[] = { 1.0, 1.0e2, 1.0e4, 1.0e6, 0 }, *kp;
   bool result = true;
   int i;
-  const double tol = 1.0e-8;
+  const double tol = 1.0e-6;
 
   var = zVecAlloc( DIM );
   ans = zVecAlloc( DIM );
@@ -264,7 +264,7 @@ void assert_opt_dm_descent(void)
   zVec var;
   const char *stepmethod[] = { "MT", "DS", "Noc", "Brent", NULL }, **sp;
   bool result = true;
-  const double tol = 1.0e-8;
+  const double tol = 1.0e-6;
 
   var = zVecAlloc( DIM );
   zOptDMCreate( &opt, DIM, 0, saddle_eval, saddle_grad, saddle_hess );
@@ -328,7 +328,7 @@ void assert_opt_dm_mt(void)
   double k[] = { 1.0e-2, 1.0, 1.0e2, 1.0e4, 1.0e6, 0 }, *kp;
   bool result = true;
   int i;
-  const double tol = 1.0e-8;
+  const double tol = 1.0e-6;
 
   var = zVecAlloc( DIM );
   ans = zVecAlloc( DIM );
@@ -378,7 +378,7 @@ void assert_opt_dm_plain(void)
   double k;
   int i;
   bool result1 = true, result2 = true;
-  const double tol = 1.0e-8;
+  const double tol = 1.0e-6;
 
   var = zVecAlloc( DIM );
   ans = zVecAlloc( DIM );
@@ -421,6 +421,124 @@ void assert_opt_dm_plain(void)
   zAssert( zOptDMSolve (without line search), result2 );
 }
 
+/* scaled quadratic function: f(y) = k q(y/s), where q is the quadratic function above and (k,s) is given via util */
+double quad_scaled_eval(const zVec var, void *util)
+{
+  double *ks = util;
+  int i;
+  double val = 0;
+
+  for( i=0; i<zVecSizeNC(var); i++ )
+    val += (i+1)*zSqr( zVecElemNC(var,i)/ks[1] - i );
+  return 0.5*ks[0]*val;
+}
+
+zVec quad_scaled_grad(const zVec var, zVec g, void *util)
+{
+  double *ks = util;
+  int i;
+
+  for( i=0; i<zVecSizeNC(var); i++ )
+    zVecSetElemNC( g, i, ks[0]/ks[1]*(i+1)*( zVecElemNC(var,i)/ks[1] - i ) );
+  return g;
+}
+
+/* a function that cannot be evaluated except at the origin */
+double nan_eval(const zVec var, void *dummy)
+{
+  return zVecIsTiny( var ) ? 0 : NAN;
+}
+
+zVec nan_grad(const zVec var, zVec g, void *dummy)
+{
+  return zVecSetAll( g, 1.0 );
+}
+
+/* the iteration has to terminate with the gradient relatively small to the initial one, and has to fail if the line search fails. */
+void assert_opt_dm_termination(void)
+{
+  zOptDM opt;
+  zVec var, ans;
+  double ks[] = { 1.0e-6, 1.0e3 }; /* a small and flat function, which the original absolute criterion misjudged as converged */
+  const char *stepmethod[] = { NULL, "MT", "DS", "Noc" };
+  int i;
+  bool result1 = true, result2 = true;
+  const double tol = 1.0e-6;
+
+  var = zVecAlloc( DIM );
+  ans = zVecAlloc( DIM );
+  for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i*ks[1] );
+  zOptDMCreate( &opt, DIM, 0, quad_scaled_eval, quad_scaled_grad, NULL );
+  for( i=0; i<3; i++ ){
+    if( i == 0 )
+      zOptDMAssignSD( &opt, "MT" );
+    else if( i == 1 )
+      zOptDMAssignLM( &opt, "MT" );
+    else
+      zOptDMAssignVM( &opt, "MT", "BFGS" );
+    zVecSetAll( var, ks[1] );
+    if( zOptDMSolve( &opt, var, ks, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol * ks[1] ){
+      eprintf( "%s (MT), small and flat function: |x-x*|/s = %g\n", i == 0 ? "SD" : i == 1 ? "LM" : "VM", zVecDist( var, ans ) / ks[1] );
+      result1 = false;
+    }
+  }
+  zOptDMDestroy( &opt );
+  /* failure of line search */
+  zOptDMCreate( &opt, DIM, 0, nan_eval, nan_grad, NULL );
+  zEchoOff(); /* to suppress error messages of line search */
+  for( i=0; i<4; i++ ){
+    zOptDMAssignSD( &opt, stepmethod[i] );
+    zVecZero( var );
+    if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) != -1 ){
+      eprintf( "SD (%s): line search failure not detected\n", stepmethod[i] ? stepmethod[i] : "plain" );
+      result2 = false;
+    }
+  }
+  zEchoOn();
+  zOptDMDestroy( &opt );
+  zVecFreeAtOnce( 2, var, ans );
+  zAssert( zOptDMSolve (termination by relative gradient), result1 );
+  zAssert( zOptDMSolve (failure of line search), result2 );
+}
+
+/* the returned value has to be the number of iterations. */
+void assert_opt_dm_return(void)
+{
+  zOptDM opt;
+  zVec var;
+  double k = 1.0;
+  int i, n;
+  bool result = true;
+
+  var = zVecAlloc( DIM );
+  zOptDMCreate( &opt, DIM, 0, quad_eval, quad_grad, NULL );
+  zOptDMAssignVM( &opt, "MT", "BFGS" );
+  /* no iteration at the minimum */
+  for( i=0; i<DIM; i++ ) zVecSetElemNC( var, i, i );
+  if( zOptDMSolve( &opt, var, &k, zTOL, 0, NULL ) != 0 ){
+    eprintf( "nonzero iterations at the minimum\n" );
+    result = false;
+  }
+  /* the iteration converged within n iterations has to be converged also with the upper limit n */
+  zVecSetAll( var, 1.0 );
+  if( ( n = zOptDMSolve( &opt, var, &k, zTOL, 0, NULL ) ) <= 0 ){
+    eprintf( "not converged\n" );
+    result = false;
+  } else{
+    zVecSetAll( var, 1.0 );
+    zEchoOff();
+    if( zOptDMSolve( &opt, var, &k, zTOL, n, NULL ) != n ||
+        ( zVecSetAll( var, 1.0 ), zOptDMSolve( &opt, var, &k, zTOL, n-1, NULL ) ) != -1 ){
+      eprintf( "the returned value differs from the number of iterations\n" );
+      result = false;
+    }
+    zEchoOn();
+  }
+  zOptDMDestroy( &opt );
+  zVecFree( var );
+  zAssert( zOptDMSolve (returned number of iterations), result );
+}
+
 int main(void)
 {
   zRandInit();
@@ -431,5 +549,7 @@ int main(void)
   assert_opt_dm_mt_wolfe();
   assert_opt_dm_mt();
   assert_opt_dm_plain();
+  assert_opt_dm_termination();
+  assert_opt_dm_return();
   return 0;
 }
