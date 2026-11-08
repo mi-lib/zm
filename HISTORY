@@ -1,3 +1,7 @@
+2026.11.08. Fixed _zODE_BK4_Func to compute the residual from the given argument instead of the internal workspace. [zm_ode_bk4]
+2026.11.08. Modified zNLESolve to take the threshold of the step tol_step and that of the residual tol_err separately. [zm_nle_dm, zm_ode_beuler, zm_ode_bk4, zm_ode_gear]
+2026.11.08. Modified _zNLESolveNR and _zNLESolveBroyden to fail if the step becomes smaller than tol_step relatively to the variable, and to return the number of iterations. [zm_nle_dm]
+2026.11.08. Modified zNLECreate to disable the criterion of zOptDM with the gradient vector, since the gradient vector can be small even far from the solution if the Jacobian matrix is nearly singular. [zm_nle_dm]
 2026.11.08. Modified a member _damp of zOptDM and corresponding _zOptDMDampGrad and _zOptDMDampDec to accept utility pointer. [zm_opt_dm]
 2026.11.08. Added zOptDMSetTolGrad to set the threshold of the gradient vector. [zm_opt_dm]
 2026.11.08. Added a member tol_grad to zOptDM. [zm_opt_dm]

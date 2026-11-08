@@ -23,23 +23,25 @@ static zVec _zODE_BK4_Func(zVec x, zVec y, void *util)
 {
   zODE *ode;
   _zODE_BK4 *ws;
-  zVecStruct y1, y2;
+  zVecStruct k1, k2, y1, y2;
 
   ode = (zODE *)util;
   ws = (_zODE_BK4 *)ode->_ws;
-  /* divide y vector and assign them to half-size vectors */
+  /* divide x and y vectors and assign them to half-size vectors */
+  zVecAssignArray( &k1, zVecSizeNC(ws->x), zVecBufNC(x) );
+  zVecAssignArray( &k2, zVecSizeNC(ws->x), zVecBufNC(x) + zVecSizeNC(ws->x) );
   zVecAssignArray( &y1, zVecSizeNC(ws->x), zVecBufNC(y) );
   zVecAssignArray( &y2, zVecSizeNC(ws->x), zVecBufNC(y) + zVecSizeNC(ws->x) );
   /* k1 */
-  ode->cat( ws->x, ws->a11, &ws->k1, ws->xt, ws->util );
-  ode->cat( ws->xt, ws->a12, &ws->k2, ws->xt, ws->util );
+  ode->cat( ws->x, ws->a11, &k1, ws->xt, ws->util );
+  ode->cat( ws->xt, ws->a12, &k2, ws->xt, ws->util );
   ode->f( ws->t1, ws->xt, ws->util, ws->v );
-  ode->sub( &ws->k1, ws->v, &y1, ws->util );
+  ode->sub( &k1, ws->v, &y1, ws->util );
   /* k2 */
-  ode->cat( ws->x, ws->a21, &ws->k1, ws->xt, ws->util );
-  ode->cat( ws->xt, ws->a22, &ws->k2, ws->xt, ws->util );
+  ode->cat( ws->x, ws->a21, &k1, ws->xt, ws->util );
+  ode->cat( ws->xt, ws->a22, &k2, ws->xt, ws->util );
   ode->f( ws->t2, ws->xt, ws->util, ws->v );
-  ode->sub( &ws->k2, ws->v, &y2, ws->util );
+  ode->sub( &k2, ws->v, &y2, ws->util );
   return y;
 }
 
@@ -96,7 +98,7 @@ zVec zODEUpdateGauss(zODE *ode, double t, zVec x, double dt, void *util)
   ws->util = util;
   zVecCopyNC( x, ws->x );
   zVecZero( ws->k );
-  zNLESolve( &ws->nle, ws->k, ode, zTOL, ws->iter, NULL );
+  zNLESolve( &ws->nle, ws->k, ode, zTOL, zTOL, ws->iter, NULL );
   ode->cat( x, dt, &ws->k1, x, util );
   ode->cat( x, dt, &ws->k2, x, util );
   return x;
@@ -117,7 +119,7 @@ zVec zODEUpdateRadau(zODE *ode, double t, zVec x, double dt, void *util)
   ws->util = util;
   zVecCopyNC( x, ws->x );
   zVecZero( ws->k );
-  zNLESolve( &ws->nle, ws->k, ode, zTOL, ws->iter, NULL );
+  zNLESolve( &ws->nle, ws->k, ode, zTOL, zTOL, ws->iter, NULL );
   ode->cat( x, ws->a21, &ws->k1, x, util );
   ode->cat( x, ws->a22, &ws->k2, x, util );
   return x;

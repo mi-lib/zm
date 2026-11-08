@@ -133,7 +133,7 @@ zMat (* jac[])(zVec,zMat,void*) = {
 
 void check(const char *label, zNLE *nle, int id, zVec var, zVec r, void *util)
 {
-  zNLESolve( nle, var, util, zTOL, 0, NULL );
+  zNLESolve( nle, var, util, zTOL, zTOL, 0, NULL );
   printf( "(%s) answer: ", label );
   zVecTouchup( var, zTOL );
   zVecPrint( var );

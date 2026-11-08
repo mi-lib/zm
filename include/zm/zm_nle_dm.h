@@ -36,7 +36,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNLE ){
   zVec we;
   /*! >cond */
   zMat (*_jac)(zNLE*,zVec,zMat,void*);
-  int ( *_solve)(zNLE*,zVec,void*,double,int,double*);
+  int ( *_solve)(zNLE*,zVec,void*,double,double,int,double*);
   zVec _f;
   zVec _fw;
   zVec _fp;
@@ -93,15 +93,25 @@ __ZM_EXPORT zNLE *zNLEAssignBroyden(zNLE *nle);
  * be initialized for suitable iteration.
  * \a util is for a programmer's utility to attach any
  * type of data chunk.
- * \a tol is the error tolerance for the termination of
- * iteration.
+ * The iteration succeeds if the maximum absolute component
+ * of the residual vector becomes smaller than \a tol_err.
+ * It fails if the maximum absolute component of the step
+ * becomes smaller than \a tol_step ( 1 + |\a var|inf ),
+ * namely, the iteration stagnates at a point where the
+ * residual is not small enough, e.g., a local minimum of
+ * the norm of the residual.
  * \a iter is the maximum iteration number. Iteration
  * would be done up to \a iter times. When \a iter is
  * zero, Z_MAX_ITER_NUM defined in zm_misc.h is chosen
  * instead.
- * \return the number of iteration, or -1 if something is wrong.
+ * A half of the weighted squared norm of the residual
+ * vector at the answer is stored where \a err points, if
+ * it is not the null pointer.
+ * \return the number of iterations if it succeeds, or -1
+ * if it fails, i.e., the iteration stagnates, the number
+ * of iterations exceeds \a iter, or something is wrong.
  */
-#define zNLESolve(nle,var,util,tol,iter,err) (nle)->_solve( nle, var, util, tol, iter, err )
+#define zNLESolve(nle,var,util,tol_step,tol_err,iter,err) (nle)->_solve( nle, var, util, tol_step, tol_err, iter, err )
 
 __END_DECLS
 

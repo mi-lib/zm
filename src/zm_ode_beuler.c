@@ -70,7 +70,7 @@ zVec zODEUpdateBEuler(zODE *ode, double t, zVec x, double dt, void *util)
   ws->dt = dt;
   ws->util = util;
   zVecCopyNC( x, ws->x );
-  zNLESolve( &ws->nle, x, ode, zTOL, ws->iter, NULL );
+  zNLESolve( &ws->nle, x, ode, zTOL, zTOL, ws->iter, NULL );
   return x;
 }
 
@@ -88,6 +88,6 @@ zVec zODEUpdateTR(zODE *ode, double t, zVec x, double dt, void *util)
   zVecCopyNC( x, ws->x );
   ode->f( t, ws->x, ws->util, ws->v );  /* NOTE: ws->t != t */
   ode->cat( ws->x, ws->dt, ws->v, ws->x, ws->util ); /* NOTE: ws->dt != dt */
-  zNLESolve( &ws->nle, x, ode, zTOL, ws->iter, NULL );
+  zNLESolve( &ws->nle, x, ode, zTOL, zTOL, ws->iter, NULL );
   return x;
 }

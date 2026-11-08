@@ -104,7 +104,7 @@ zVec zODEUpdateGear(zODE *ode, double t, zVec x, double dt, void *util)
   ws->dt = dt;
   ws->util = util;
   zVecCopyNC( x, *zRingHead(&ws->hist) );
-  zNLESolve( &ws->nle, x, ode, zTOL, 0, NULL ); /* use default maximum iteration number */
+  zNLESolve( &ws->nle, x, ode, zTOL, zTOL, 0, NULL ); /* use default maximum iteration number */
   zRingDecHead( &ws->hist );
   return x;
 }
