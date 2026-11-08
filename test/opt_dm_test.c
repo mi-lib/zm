@@ -794,6 +794,112 @@ void assert_opt_dm_lm(void)
   zAssert( zOptDMSolve (Levenberg-Marquardt), result );
 }
 
+/* a smooth function f(x) = sum_i (i+1) sin(x_i/s) exp(0.3 x_{i+1}/s) with the length scale s given via util */
+double smooth_eval(const zVec var, void *util)
+{
+  double s = *(double *)util, val = 0;
+  int i;
+
+  for( i=0; i<DIM; i++ )
+    val += (i+1) * sin( zVecElemNC(var,i)/s ) * exp( 0.3*zVecElemNC(var,(i+1)%DIM)/s );
+  return val;
+}
+
+zVec smooth_grad(const zVec var, zVec g, void *util)
+{
+  double s = *(double *)util, e;
+  int i, j;
+
+  zVecZero( g );
+  for( i=0; i<DIM; i++ ){
+    j = ( i + 1 ) % DIM;
+    e = exp( 0.3*zVecElemNC(var,j)/s );
+    zVecElemNC(g,i) += (i+1) * cos( zVecElemNC(var,i)/s ) / s * e;
+    zVecElemNC(g,j) += (i+1) * sin( zVecElemNC(var,i)/s ) * 0.3 / s * e;
+  }
+  return g;
+}
+
+zMat smooth_hess(const zVec var, zMat h, void *util)
+{
+  double s = *(double *)util, c, e, si, ci;
+  int i, j;
+
+  zMatZero( h );
+  for( i=0; i<DIM; i++ ){
+    j = ( i + 1 ) % DIM;
+    c = (i+1) / ( s*s );
+    e = exp( 0.3*zVecElemNC(var,j)/s );
+    si = sin( zVecElemNC(var,i)/s );
+    ci = cos( zVecElemNC(var,i)/s );
+    zMatElemNC(h,i,i) -= c * si * e;
+    zMatElemNC(h,i,j) += c * ci * 0.3 * e;
+    zMatElemNC(h,j,i) += c * ci * 0.3 * e;
+    zMatElemNC(h,j,j) += c * si * 0.09 * e;
+  }
+  return h;
+}
+
+/* the numerical gradient vector and Hessian matrix have to be accurate regardless of the scale of the variable. */
+void assert_opt_dm_numdiff(void)
+{
+  zOptDM opt1, opt2;
+  zVec var, ga, gn;
+  zMat ha, h1, h2;
+  double s[] = { 1.0e-6, 1.0e-3, 1.0, 1.0e3, 1.0e6, 0 }, *sp;
+  int i, j;
+  bool result1 = true, result2 = true, result3 = true, result4 = true;
+  const double tol1 = 1.0e-8, tol2 = 1.0e-5;
+
+  var = zVecAlloc( DIM );
+  ga = zVecAlloc( DIM );
+  gn = zVecAlloc( DIM );
+  ha = zMatAllocSqr( DIM );
+  h1 = zMatAllocSqr( DIM );
+  h2 = zMatAllocSqr( DIM );
+  zOptDMCreate( &opt1, DIM, smooth_eval, smooth_grad, NULL ); /* Hessian matrix from the gradient vector */
+  zOptDMCreate( &opt2, DIM, smooth_eval, NULL, NULL );        /* gradient vector and Hessian matrix from the function value */
+  for( sp=s; *sp>0; sp++ ){
+    for( j=0; j<2; j++ ){
+      for( i=0; i<DIM; i++ ) zVecSetElemNC( var, i, *sp*(0.3+0.2*i) );
+      if( j == 1 ) zVecSetElemNC( var, 2, 1.0e-12 ); /* a component near zero */
+      smooth_grad( var, ga, sp );
+      smooth_hess( var, ha, sp );
+      opt2._grad( &opt2, var, gn, sp );
+      opt1._hess( &opt1, var, h1, sp );
+      opt2._hess( &opt2, var, h2, sp );
+      if( zVecDist( gn, ga ) > tol1 * zVecNorm( ga ) ){
+        eprintf( "numerical gradient, s=%g: relative error = %g\n", *sp, zVecDist( gn, ga ) / zVecNorm( ga ) );
+        result1 = false;
+      }
+      zMatSubDRC( h1, ha );
+      if( zMatNorm( h1 ) > tol1 * zMatNorm( ha ) ){
+        eprintf( "numerical Hessian from gradient, s=%g: relative error = %g\n", *sp, zMatNorm( h1 ) / zMatNorm( ha ) );
+        result2 = false;
+      }
+      if( !zMatIsSymmetric( h2 ) ) result4 = false;
+      zMatSubDRC( h2, ha );
+      if( zMatNorm( h2 ) > tol2 * zMatNorm( ha ) ){
+        eprintf( "numerical Hessian from function, s=%g: relative error = %g\n", *sp, zMatNorm( h2 ) / zMatNorm( ha ) );
+        result3 = false;
+      }
+    }
+  }
+  opt1._hess( &opt1, var, h1, sp-1 );
+  if( !zMatIsSymmetric( h1 ) ) result4 = false;
+  /* the ratio of the step can be set */
+  zOptDMSetEPSMin( &opt2, 1.0e-3 );
+  if( opt2.eps_min != 1.0e-3 ) result4 = false;
+  zOptDMDestroy( &opt1 );
+  zOptDMDestroy( &opt2 );
+  zVecFreeAtOnce( 3, var, ga, gn );
+  zMatFreeAtOnce( 3, ha, h1, h2 );
+  zAssert( zOptDM (numerical gradient), result1 );
+  zAssert( zOptDM (numerical Hessian from gradient), result2 );
+  zAssert( zOptDM (numerical Hessian from function), result3 );
+  zAssert( zOptDM (symmetry of numerical Hessian and the ratio of the step), result4 );
+}
+
 int main(void)
 {
   zRandInit();
@@ -811,5 +917,6 @@ int main(void)
   assert_opt_dm_cg();
   assert_opt_dm_brent();
   assert_opt_dm_lm();
+  assert_opt_dm_numdiff();
   return 0;
 }

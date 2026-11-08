@@ -6,23 +6,38 @@
 
 #include <zm/zm_opt.h>
 
+/* step of numerical differentiation for the i-th component of the variable var, which is eps s_i for
+   s_i = max{ |x_i|, ratio |x|inf } (s_i = 1 if x = 0), where xmax is |x|inf.
+   the actual step is returned to cancel the round-off error in representing the variable. */
+static double _zOptDMDiffStep(const zVec var, int i, double xmax, double eps, double ratio)
+{
+  double x, xh;
+
+  x = zVecElemNC(var,i);
+  xh = x + eps * ( xmax == 0 ? 1.0 : _zMax( fabs( x ), ratio * xmax ) );
+  return xh - x;
+}
+
 /* gradient vector function */
 
 static zVec _zOptDMGrad(zOptDM *opt, const zVec var, zVec g, void *util){
   return opt->grad( var, g, util );
 }
+/* numerical gradient vector by the central difference of the function. */
 static zVec _zOptDMGradNG(zOptDM *opt, const zVec var, zVec g, void *util)
 {
   int i;
-  double adv, prv, org;
+  double adv, prv, org, h, xmax;
 
+  xmax = zVecElemAbsMax( var, NULL );
   for( i=0; i<zVecSizeNC(var); i++ ){
+    h = _zOptDMDiffStep( var, i, xmax, opt->eps_min, ZM_OPT_DM_DIFF_SCALE_RATIO );
     org = zVecElemNC(var,i);
-    zVecSetElemNC( var, i, org + ZM_OPT_EPS );
+    zVecSetElemNC( var, i, org + h );
     adv = opt->eval( var, util );
-    zVecSetElemNC( var, i, org - ZM_OPT_EPS );
+    zVecSetElemNC( var, i, org - h );
     prv = opt->eval( var, util );
-    zVecSetElemNC( g, i, 0.5 * ( adv - prv ) / ZM_OPT_EPS );
+    zVecSetElemNC( g, i, 0.5 * ( adv - prv ) / h );
     zVecSetElemNC( var, i, org );
   }
   return g;
@@ -33,32 +48,61 @@ static zVec _zOptDMGradNG(zOptDM *opt, const zVec var, zVec g, void *util)
 static zMat _zOptDMHess(zOptDM *opt, const zVec var, zMat h, void *util){
   return opt->hess( var, h, util );
 }
+/* numerical Hessian matrix by the central difference of the given gradient vector,
+   where _p and _q are used as workspaces. */
 static zMat _zOptDMHessNG(zOptDM *opt, const zVec var, zMat h, void *util)
 {
-  int i;
-  double org;
-  zVec adg, prg;
+  int i, j;
+  double org, d, xmax;
 
-  adg = zVecAlloc( zVecSizeNC(var) );
-  prg = zVecAlloc( zVecSizeNC(var) );
-  if( !adg || !prg ){
-    ZALLOCERROR();
-    h = NULL;
-    goto TERMINATE;
-  }
+  xmax = zVecElemAbsMax( var, NULL );
   for( i=0; i<zVecSizeNC(var); i++ ){
+    d = _zOptDMDiffStep( var, i, xmax, opt->eps_min, ZM_OPT_DM_DIFF_SCALE_RATIO );
     org = zVecElemNC(var,i);
-    zVecSetElemNC( var, i, org + ZM_OPT_EPS );
-    opt->_grad( opt, var, adg, util );
-    zVecSetElemNC( var, i, org - ZM_OPT_EPS );
-    opt->_grad( opt, var, prg, util );
-    zRawVecSub( zVecBuf(adg), zVecBuf(prg), zMatRowBuf(h,i), zMatRowSizeNC(h) );
+    zVecSetElemNC( var, i, org + d );
+    opt->grad( var, opt->_p, util );
+    zVecSetElemNC( var, i, org - d );
+    opt->grad( var, opt->_q, util );
     zVecSetElemNC( var, i, org );
+    zRawVecSub( zVecBufNC(opt->_p), zVecBufNC(opt->_q), zMatRowBuf(h,i), zMatRowSizeNC(h) );
+    zRawVecDivDRC( zMatRowBuf(h,i), 2*d, zMatRowSizeNC(h) );
   }
-  zMatMulDRC( h, 0.5/ZM_OPT_EPS );
- TERMINATE:
-  zVecFree( adg );
-  zVecFree( prg );
+  for( i=0; i<zMatRowSizeNC(h); i++ ) /* symmetrize */
+    for( j=i+1; j<zMatColSizeNC(h); j++ )
+      zMatElemNC(h,i,j) = zMatElemNC(h,j,i) = 0.5 * ( zMatElemNC(h,i,j) + zMatElemNC(h,j,i) );
+  return h;
+}
+/* numerical Hessian matrix by the second-order central difference of the function. */
+static zMat _zOptDMHessNG2(zOptDM *opt, const zVec var, zMat h, void *util)
+{
+  int i, j;
+  double orgi, orgj, di, dj, f0, fpp, fpm, fmp, fmm, xmax, eps, ratio;
+
+  xmax = zVecElemAbsMax( var, NULL );
+  eps = pow( opt->eps_min, 0.75 ); /* the optimal ratio for the second-order difference */
+  ratio = sqrt( ZM_OPT_DM_DIFF_SCALE_RATIO ); /* see the comment of ZM_OPT_DM_DIFF_SCALE_RATIO */
+  f0 = opt->eval( var, util );
+  for( i=0; i<zVecSizeNC(var); i++ ){
+    di = _zOptDMDiffStep( var, i, xmax, eps, ratio );
+    orgi = zVecElemNC(var,i);
+    zVecSetElemNC( var, i, orgi + di );
+    fpp = opt->eval( var, util );
+    zVecSetElemNC( var, i, orgi - di );
+    fmm = opt->eval( var, util );
+    zMatSetElemNC( h, i, i, ( fpp - 2*f0 + fmm ) / ( di*di ) );
+    for( j=i+1; j<zVecSizeNC(var); j++ ){
+      dj = _zOptDMDiffStep( var, j, xmax, eps, ratio );
+      orgj = zVecElemNC(var,j);
+      zVecSetElemNC( var, i, orgi + di ); zVecSetElemNC( var, j, orgj + dj ); fpp = opt->eval( var, util );
+      zVecSetElemNC( var, j, orgj - dj ); fpm = opt->eval( var, util );
+      zVecSetElemNC( var, i, orgi - di ); fmm = opt->eval( var, util );
+      zVecSetElemNC( var, j, orgj + dj ); fmp = opt->eval( var, util );
+      zVecSetElemNC( var, j, orgj );
+      zMatSetElemNC( h, i, j, ( fpp - fpm - fmp + fmm ) / ( 4*di*dj ) );
+      zMatSetElemNC( h, j, i, zMatElemNC(h,i,j) );
+    }
+    zVecSetElemNC( var, i, orgi );
+  }
   return h;
 }
 
@@ -529,7 +573,8 @@ zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVec,void*), zV
     return NULL;
   }
   opt->_grad = ( opt->grad = grad ) ? _zOptDMGrad : _zOptDMGradNG;
-  opt->_hess = ( opt->hess = hess ) ? _zOptDMHess : _zOptDMHessNG;
+  opt->_hess = ( opt->hess = hess ) ? _zOptDMHess : ( grad ? _zOptDMHessNG : _zOptDMHessNG2 );
+  opt->eps_min = ZM_OPT_DM_EPS;
   opt->_damp = _zOptDMDampGrad;
   opt->_hw = NULL;
   opt->_x = zVecAlloc( dim );

@@ -29,6 +29,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
   double (* eval)(const zVec,void*);
   zVec (* grad)(const zVec,zVec,void*);
   zMat (* hess)(const zVec,zMat,void*);
+  double eps_min; /* ratio of the step of numerical differentiation to the magnitude of the variable */
   /*!< cond */
   zVec (* _grad)(zOptDM*,const zVec,zVec,void*);
   zMat (* _hess)(zOptDM*,const zVec,zMat,void*);
@@ -57,6 +58,40 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
  * only to the order of the square root of the machine epsilon relatively.
  */
 #define ZM_OPT_DM_GRAD_MIN  ( 1.0e-8 )
+
+/*! \brief default ratio of the step of numerical differentiation to the magnitude of the variable.
+ *
+ * If the gradient vector or the Hessian matrix is not given to zOptDMCreate(), it is computed by the
+ * central difference. The step for the i-th component of the variable x is eps_min s_i for the gradient
+ * vector and the Hessian matrix computed from the gradient vector, and eps_min^(3/4) s_i for the Hessian
+ * matrix computed from the function value, where s_i is the magnitude of x_i defined with
+ * ZM_OPT_DM_DIFF_SCALE_RATIO.
+ * eps_min of zOptDM is initialized by ZM_OPT_DM_EPS, which is suitable if the function is computed with
+ * the accuracy of the machine epsilon. It should be larger for a function with noise, which is set by
+ * zOptDMSetEPSMin().
+ * Note that the numerical differentiation is not accurate if the magnitude of the variable does not
+ * represent the scale of variation of the function. Then, the gradient vector should be given, or the
+ * variable should be scaled.
+ */
+#define ZM_OPT_DM_EPS ( 1.0e-5 )
+
+/*! \brief ratio of the lower bound of the magnitude of a component of the variable to that of the
+ * variable for numerical differentiation.
+ *
+ * The step of numerical differentiation for the i-th component of the variable x is proportional to
+ * the magnitude s_i of x_i. Since |x_i| itself vanishes when x_i crosses zero, it is bounded below
+ * relatively to the magnitude of the whole variable |x|inf (the maximum absolute value of the
+ * components), namely, s_i = max{ |x_i|, r |x|inf }, where r is ZM_OPT_DM_DIFF_SCALE_RATIO for the
+ * gradient vector and the Hessian matrix computed from the gradient vector. For the Hessian matrix
+ * computed from the function value, r is the square root of ZM_OPT_DM_DIFF_SCALE_RATIO, since the
+ * round-off error of the second-order difference is inversely proportional to the square of the step,
+ * while that of the first-order difference is inversely proportional to the step; the maximum
+ * amplification of the round-off error by the lower bound is equalized for the both. s_i = 1 if x = 0.
+ */
+#define ZM_OPT_DM_DIFF_SCALE_RATIO ( 1.0e-2 )
+
+/*! \brief set the ratio of the step of numerical differentiation. */
+#define zOptDMSetEPSMin(opt,e) ( (opt)->eps_min = (e) )
 
 /*! \brief default scale of search range for More-Thuente's method and Dennis-Schnabel's method. */
 #define ZM_OPT_DM_DEFAULT_SCALE  ( 1.0e3 )
