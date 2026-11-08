@@ -37,7 +37,7 @@ zODE* zODECreateBEuler(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void
   if( !( ws = zAlloc( _zODE_BEuler, 1 ) ) ||
       !( ws->v = zVecAlloc( dim ) ) ||
       !( ws->x = zVecAlloc( dim ) ) ||
-      !zNLECreate( &ws->nle, dim, dim, 0, _zODE_BEuler_Func, NULL ) ){
+      !zNLECreate( &ws->nle, dim, dim, _zODE_BEuler_Func, NULL ) ){
     ZALLOCERROR();
     return NULL;
   }

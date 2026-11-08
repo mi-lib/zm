@@ -58,10 +58,10 @@ typedef struct{
   const char *updatemethod;
 } method_t;
 
-zOptDM *assign_sd(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignSD( opt, stepmethod ); }
-zOptDM *assign_lm(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignLM( opt, stepmethod ); }
-zOptDM *assign_vm(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignVM( opt, stepmethod, updatemethod ); }
-zOptDM *assign_cg(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignCG( opt ); }
+zOptDM *assign_sd(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignSD( opt, stepmethod, 0 ); }
+zOptDM *assign_lm(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignLM( opt, stepmethod, 0 ); }
+zOptDM *assign_vm(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignVM( opt, stepmethod, updatemethod, 0 ); }
+zOptDM *assign_cg(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignCG( opt, stepmethod, 0 ); }
 
 method_t method[] = {
   { "SD (MT)",         assign_sd, "MT",    NULL },
@@ -72,7 +72,8 @@ method_t method[] = {
   { "VM (MT, BFGS)",   assign_vm, "MT",    "BFGS" },
   { "VM (DS, BFGS)",   assign_vm, "DS",    "BFGS" },
   { "VM (Brent, BFGS)",assign_vm, "Brent", "BFGS" },
-  { "CG",              assign_cg, NULL,    NULL },
+  { "CG (Brent)",      assign_cg, NULL,    NULL },
+  { "CG (MT)",         assign_cg, "MT",    NULL },
   { NULL, NULL, NULL, NULL },
 };
 
@@ -86,7 +87,7 @@ void assert_opt_dm_eval(void)
   bool result = true;
 
   var = zVecAlloc( DIM );
-  zOptDMCreate( &opt, DIM, 0, quad_eval, quad_grad, NULL );
+  zOptDMCreate( &opt, DIM, quad_eval, quad_grad, NULL );
   for( m=method; m->label; m++ ){
     m->assign( &opt, m->stepmethod, m->updatemethod );
     zVecSetAll( var, 1.0 );
@@ -118,13 +119,13 @@ void assert_opt_dm_ds(void)
   ans = zVecAlloc( DIM );
   /* scaled quadratic functions */
   for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i );
-  zOptDMCreate( &opt, DIM, 0, quad_eval, quad_grad, NULL );
+  zOptDMCreate( &opt, DIM, quad_eval, quad_grad, NULL );
   for( kp=k; *kp>0; kp++ ){
     for( i=0; i<2; i++ ){
       if( i == 0 )
-        zOptDMAssignSD( &opt, "DS" );
+        zOptDMAssignSD( &opt, "DS", 0 );
       else
-        zOptDMAssignVM( &opt, "DS", "BFGS" );
+        zOptDMAssignVM( &opt, "DS", "BFGS", 0 );
       zVecSetAll( var, 1.0 );
       if( zOptDMSolve( &opt, var, kp, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
         eprintf( "%s (DS), k=%g: |x-x*| = %g\n", i == 0 ? "SD" : "VM", *kp, zVecDist( var, ans ) );
@@ -135,8 +136,8 @@ void assert_opt_dm_ds(void)
   zOptDMDestroy( &opt );
   /* Rosenbrock function, where the original implementation fell into an infinite loop */
   zVecSetAll( ans, 1.0 );
-  zOptDMCreate( &opt, DIM, 0, rosenbrock_eval, rosenbrock_grad, NULL );
-  zOptDMAssignVM( &opt, "DS", "BFGS" );
+  zOptDMCreate( &opt, DIM, rosenbrock_eval, rosenbrock_grad, NULL );
+  zOptDMAssignVM( &opt, "DS", "BFGS", 0 );
   zVecSetAll( var, -1.2 );
   if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
     eprintf( "VM (DS), Rosenbrock: |x-x*| = %g\n", zVecDist( var, ans ) );
@@ -158,7 +159,7 @@ void assert_opt_dm_update(void)
 
   h = zMatAllocSqr( DIM );
   hp = zMatAllocSqr( DIM );
-  zOptDMCreate( &opt, DIM, 0, quad_eval, quad_grad, NULL );
+  zOptDMCreate( &opt, DIM, quad_eval, quad_grad, NULL );
   for( i=0; i<DIM; i++ ){
     zVecSetElemNC( opt._p, i, zRandF(-1,1) );
     zVecSetElemNC( opt._q, i, zRandF(-1,1) );
@@ -169,7 +170,7 @@ void assert_opt_dm_update(void)
   }
   qq = zVecSqrNorm( opt._q );
   /* DFP: H = I + p p^T / p^T q - q q^T / q^T q */
-  zOptDMAssignVM( &opt, NULL, "DFP" );
+  zOptDMAssignVM( &opt, NULL, "DFP", 0 );
   zMatIdent( opt._h );
   opt._update_h( &opt, 0 );
   for( i=0; i<DIM; i++ )
@@ -180,7 +181,7 @@ void assert_opt_dm_update(void)
     result1 = false;
   }
   /* BFGS: H = I + ( ( 1 + q^T q / p^T q ) p p^T - p q^T - q p^T ) / p^T q */
-  zOptDMAssignVM( &opt, NULL, "BFGS" );
+  zOptDMAssignVM( &opt, NULL, "BFGS", 0 );
   zMatIdent( opt._h );
   opt._update_h( &opt, 0 );
   for( i=0; i<DIM; i++ )
@@ -198,7 +199,7 @@ void assert_opt_dm_update(void)
     eprintf( "BFGS update not skipped for p^T q < 0\n" );
     result3 = false;
   }
-  zOptDMAssignVM( &opt, NULL, "DFP" );
+  zOptDMAssignVM( &opt, NULL, "DFP", 0 );
   opt._update_h( &opt, 0 );
   if( !zMatEqual( opt._h, hp, 0 ) ){
     eprintf( "DFP update not skipped for p^T q < 0\n" );
@@ -264,9 +265,9 @@ void assert_opt_dm_descent(void)
   const double tol = 1.0e-6;
 
   var = zVecAlloc( DIM );
-  zOptDMCreate( &opt, DIM, 0, saddle_eval, saddle_grad, saddle_hess );
+  zOptDMCreate( &opt, DIM, saddle_eval, saddle_grad, saddle_hess );
   for( sp=stepmethod; *sp; sp++ ){
-    zOptDMAssignLM( &opt, *sp );
+    zOptDMAssignLM( &opt, *sp, 0 );
     zVecSetElemList( var, 0.001, 0.1, 0.001, -0.1 );
     if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || !zEqual( saddle_eval( var, NULL ), -0.5, tol ) ){
       eprintf( "LM (%s), saddle: f = %g (to be -0.5)\n", *sp, saddle_eval( var, NULL ) );
@@ -293,8 +294,8 @@ void assert_opt_dm_mt_wolfe(void)
   g0 = zVecAlloc( DIM );
   g1 = zVecAlloc( DIM );
   dx = zVecAlloc( DIM );
-  zOptDMCreate( &opt, DIM, 0, rosenbrock_eval, rosenbrock_grad, NULL );
-  zOptDMAssignSD( &opt, "MT" );
+  zOptDMCreate( &opt, DIM, rosenbrock_eval, rosenbrock_grad, NULL );
+  zOptDMAssignSD( &opt, "MT", 0 );
   zEchoOff(); /* to suppress warnings of unconverged iterations */
   for( i=0; i<n; i++ ){
     zVecRandUniform( x0, -2, 2 );
@@ -331,15 +332,15 @@ void assert_opt_dm_mt(void)
   ans = zVecAlloc( DIM );
   /* scaled quadratic functions */
   for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i );
-  zOptDMCreate( &opt, DIM, 0, quad_eval, quad_grad, NULL );
+  zOptDMCreate( &opt, DIM, quad_eval, quad_grad, NULL );
   for( kp=k; *kp>0; kp++ ){
     for( i=0; i<3; i++ ){
       if( i == 0 )
-        zOptDMAssignSD( &opt, "MT" );
+        zOptDMAssignSD( &opt, "MT", 0 );
       else if( i == 1 )
-        zOptDMAssignLM( &opt, "MT" );
+        zOptDMAssignLM( &opt, "MT", 0 );
       else
-        zOptDMAssignVM( &opt, "MT", "BFGS" );
+        zOptDMAssignVM( &opt, "MT", "BFGS", 0 );
       zVecSetAll( var, 1.0 );
       if( zOptDMSolve( &opt, var, kp, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
         eprintf( "%s (MT), k=%g: |x-x*| = %g\n", i == 0 ? "SD" : i == 1 ? "LM" : "VM", *kp, zVecDist( var, ans ) );
@@ -350,12 +351,12 @@ void assert_opt_dm_mt(void)
   zOptDMDestroy( &opt );
   /* Rosenbrock function */
   zVecSetAll( ans, 1.0 );
-  zOptDMCreate( &opt, DIM, 0, rosenbrock_eval, rosenbrock_grad, NULL );
+  zOptDMCreate( &opt, DIM, rosenbrock_eval, rosenbrock_grad, NULL );
   for( i=0; i<2; i++ ){
     if( i == 0 )
-      zOptDMAssignLM( &opt, "MT" );
+      zOptDMAssignLM( &opt, "MT", 0 );
     else
-      zOptDMAssignVM( &opt, "MT", "BFGS" );
+      zOptDMAssignVM( &opt, "MT", "BFGS", 0 );
     zVecSetAll( var, -1.2 );
     if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
       eprintf( "%s (MT), Rosenbrock: |x-x*| = %g\n", i == 0 ? "LM" : "VM", zVecDist( var, ans ) );
@@ -367,8 +368,8 @@ void assert_opt_dm_mt(void)
   zAssert( zOptDMSolve (More-Thuente), result );
 }
 
-/* the step without line search has to be the descent vector itself in the opposite direction. */
-void assert_opt_dm_plain(void)
+/* the fixed step without line search has to be the descent vector itself in the opposite direction. */
+void assert_opt_dm_fixed(void)
 {
   zOptDM opt;
   zVec var, ans, x0, g0;
@@ -382,9 +383,9 @@ void assert_opt_dm_plain(void)
   x0 = zVecAlloc( DIM );
   g0 = zVecAlloc( DIM );
   for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i );
-  zOptDMCreate( &opt, DIM, 0, quad_eval, quad_grad, NULL );
+  zOptDMCreate( &opt, DIM, quad_eval, quad_grad, NULL );
   /* one step of steepest descent method */
-  zOptDMAssignSD( &opt, NULL );
+  zOptDMAssignSD( &opt, "fixed", 0 );
   zVecSetAll( x0, 1.0 );
   zVecCopy( x0, var );
   zEchoOff(); /* to suppress a warning of unconverged iteration */
@@ -393,29 +394,42 @@ void assert_opt_dm_plain(void)
   quad_grad( x0, g0, NULL );
   zVecSubDRC( x0, g0 );
   if( !zVecEqual( var, x0, zTOL ) ){
-    eprintf( "SD (no line search): wrong step\n" );
+    eprintf( "SD (fixed): wrong step\n" );
+    result1 = false;
+  }
+  /* one step with a given step length */
+  zOptDMAssignSD( &opt, "fixed", 0.5 );
+  zVecSetAll( x0, 1.0 );
+  zVecCopy( x0, var );
+  zEchoOff();
+  zOptDMSolve( &opt, var, NULL, zTOL, 1, NULL );
+  zEchoOn();
+  quad_grad( x0, g0, NULL );
+  zVecCatNCDRC( x0, -0.5, g0 );
+  if( !zVecEqual( var, x0, zTOL ) ){
+    eprintf( "SD (fixed, 0.5): wrong step\n" );
     result1 = false;
   }
   /* convergence. the steepest descent method with the unit step converges only if the curvature is less than 2. */
   for( i=0; i<4; i++ ){
     k = 1.0;
     if( i == 0 ){
-      zOptDMAssignSD( &opt, NULL );
+      zOptDMAssignSD( &opt, "fixed", 0 );
       k = 0.25;
     } else if( i == 1 )
-      zOptDMAssignLM( &opt, NULL );
+      zOptDMAssignLM( &opt, "fixed", 0 );
     else
-      zOptDMAssignVM( &opt, NULL, i == 2 ? "BFGS" : "DFP" );
+      zOptDMAssignVM( &opt, "fixed", i == 2 ? "BFGS" : "DFP", 0 );
     zVecSetAll( var, 1.0 );
     if( zOptDMSolve( &opt, var, &k, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
-      eprintf( "%s (no line search): |x-x*| = %g\n", i == 0 ? "SD" : i == 1 ? "LM" : i == 2 ? "VM (BFGS)" : "VM (DFP)", zVecDist( var, ans ) );
+      eprintf( "%s (fixed): |x-x*| = %g\n", i == 0 ? "SD" : i == 1 ? "LM" : i == 2 ? "VM (BFGS)" : "VM (DFP)", zVecDist( var, ans ) );
       result2 = false;
     }
   }
   zOptDMDestroy( &opt );
   zVecFreeAtOnce( 4, var, ans, x0, g0 );
-  zAssert( zOptDM (step without line search), result1 );
-  zAssert( zOptDMSolve (without line search), result2 );
+  zAssert( zOptDM (fixed step), result1 );
+  zAssert( zOptDMSolve (fixed step), result2 );
 }
 
 /* scaled quadratic function: f(y) = k q(y/s), where q is the quadratic function above and (k,s) is given via util */
@@ -443,7 +457,11 @@ zVec quad_scaled_grad(const zVec var, zVec g, void *util)
 /* a function that cannot be evaluated except at the origin */
 double nan_eval(const zVec var, void *dummy)
 {
-  return zVecIsTiny( var ) ? 0 : NAN;
+  int i;
+
+  for( i=0; i<zVecSizeNC(var); i++ )
+    if( zVecElemNC(var,i) != 0 ) return NAN;
+  return 0;
 }
 
 zVec nan_grad(const zVec var, zVec g, void *dummy)
@@ -457,7 +475,7 @@ void assert_opt_dm_termination(void)
   zOptDM opt;
   zVec var, ans;
   double ks[] = { 1.0e-6, 1.0e3 }; /* a small and flat function, which the original absolute criterion misjudged as converged */
-  const char *stepmethod[] = { NULL, "MT", "DS" };
+  const char *stepmethod[] = { "fixed", "MT", "DS" };
   int i;
   bool result1 = true, result2 = true;
   const double tol = 1.0e-6;
@@ -465,14 +483,14 @@ void assert_opt_dm_termination(void)
   var = zVecAlloc( DIM );
   ans = zVecAlloc( DIM );
   for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i*ks[1] );
-  zOptDMCreate( &opt, DIM, 0, quad_scaled_eval, quad_scaled_grad, NULL );
+  zOptDMCreate( &opt, DIM, quad_scaled_eval, quad_scaled_grad, NULL );
   for( i=0; i<3; i++ ){
     if( i == 0 )
-      zOptDMAssignSD( &opt, "MT" );
+      zOptDMAssignSD( &opt, "MT", 0 );
     else if( i == 1 )
-      zOptDMAssignLM( &opt, "MT" );
+      zOptDMAssignLM( &opt, "MT", 0 );
     else
-      zOptDMAssignVM( &opt, "MT", "BFGS" );
+      zOptDMAssignVM( &opt, "MT", "BFGS", 0 );
     zVecSetAll( var, ks[1] );
     if( zOptDMSolve( &opt, var, ks, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol * ks[1] ){
       eprintf( "%s (MT), small and flat function: |x-x*|/s = %g\n", i == 0 ? "SD" : i == 1 ? "LM" : "VM", zVecDist( var, ans ) / ks[1] );
@@ -481,13 +499,13 @@ void assert_opt_dm_termination(void)
   }
   zOptDMDestroy( &opt );
   /* failure of line search */
-  zOptDMCreate( &opt, DIM, 0, nan_eval, nan_grad, NULL );
+  zOptDMCreate( &opt, DIM, nan_eval, nan_grad, NULL );
   zEchoOff(); /* to suppress error messages of line search */
   for( i=0; i<3; i++ ){
-    zOptDMAssignSD( &opt, stepmethod[i] );
+    zOptDMAssignSD( &opt, stepmethod[i], 0 );
     zVecZero( var );
     if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) != -1 ){
-      eprintf( "SD (%s): line search failure not detected\n", stepmethod[i] ? stepmethod[i] : "plain" );
+      eprintf( "SD (%s): line search failure not detected\n", stepmethod[i] );
       result2 = false;
     }
   }
@@ -508,8 +526,8 @@ void assert_opt_dm_return(void)
   bool result = true;
 
   var = zVecAlloc( DIM );
-  zOptDMCreate( &opt, DIM, 0, quad_eval, quad_grad, NULL );
-  zOptDMAssignVM( &opt, "MT", "BFGS" );
+  zOptDMCreate( &opt, DIM, quad_eval, quad_grad, NULL );
+  zOptDMAssignVM( &opt, "MT", "BFGS", 0 );
   /* no iteration at the minimum */
   for( i=0; i<DIM; i++ ) zVecSetElemNC( var, i, i );
   if( zOptDMSolve( &opt, var, &k, zTOL, 0, NULL ) != 0 ){
@@ -571,10 +589,10 @@ void assert_opt_dm_scale(void)
   var = zVecAlloc( DIM );
   sc.x0 = zVecAlloc( DIM );
   sc.scale = 0.1; /* smaller than the steepest descent step */
-  zOptDMCreate( &opt, DIM, sc.scale, quad_scale_check_eval, quad_scale_check_grad, NULL );
+  zOptDMCreate( &opt, DIM, quad_scale_check_eval, quad_scale_check_grad, NULL );
   zEchoOff(); /* to suppress a warning of unconverged iteration */
   for( i=0; i<2; i++ ){
-    zOptDMAssignSD( &opt, stepmethod[i] );
+    zOptDMAssignSD( &opt, stepmethod[i], sc.scale );
     zVecSetAll( sc.x0, 1.0 );
     zVecCopy( sc.x0, var );
     sc.outside = false;
@@ -590,6 +608,109 @@ void assert_opt_dm_scale(void)
   zAssert( zOptDM (evaluation within the range of the scale), result );
 }
 
+/* a function from the tutorial of Mathematica, which has a local minimum at (1.37638,1.67868) */
+double mma_eval(const zVec var, void *dummy)
+{
+  int i;
+  double x, y, val = 0;
+
+  for( i=0; i<zVecSizeNC(var); i+=2 ){
+    x = zVecElemNC(var,i);
+    y = zVecElemNC(var,i+1);
+    val += cos(x*x-3*y) + sin(x*x+y*y);
+  }
+  return val;
+}
+
+zVec mma_grad(const zVec var, zVec g, void *dummy)
+{
+  int i;
+  double x, y;
+
+  for( i=0; i<zVecSizeNC(var); i+=2 ){
+    x = zVecElemNC(var,i);
+    y = zVecElemNC(var,i+1);
+    zVecSetElemNC( g, i,   2*x*( cos(x*x+y*y) - sin(x*x-3*y) ) );
+    zVecSetElemNC( g, i+1, 3*sin(x*x-3*y) + 2*y*cos(x*x+y*y) );
+  }
+  return g;
+}
+
+/* the iteration has to be regarded as converged if no further decrease of the function is detected near the minimum. */
+void assert_opt_dm_stay(void)
+{
+  zOptDM opt;
+  zVec var, g;
+  bool result = true;
+  const double tol = 1.0e-6;
+
+  var = zVecAlloc( DIM );
+  g = zVecAlloc( DIM );
+  zOptDMCreate( &opt, DIM, mma_eval, mma_grad, NULL );
+  /* the original implementation of Dennis-Schnabel's method failed after reaching the minimum. */
+  zOptDMAssignLM( &opt, "DS", 0 );
+  zVecSetAll( var, 1.0 );
+  if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || zVecElemAbsMax( mma_grad( var, g, NULL ), NULL ) > tol ){
+    eprintf( "LM (DS): |g| = %g\n", zVecElemAbsMax( mma_grad( var, g, NULL ), NULL ) );
+    result = false;
+  }
+  zOptDMDestroy( &opt );
+  zVecFreeAtOnce( 2, var, g );
+  zAssert( zOptDMSolve (convergence without further decrease), result );
+}
+
+/* conjugate gradient method has to compute Fletcher-Reeves' coefficient with any line search, and converge. */
+void assert_opt_dm_cg(void)
+{
+  zOptDM opt;
+  zVec var, ans, g0, g1;
+  const char *stepmethod[] = { "Brent", "MT", "DS" };
+  int i, n;
+  bool result1 = true, result2 = true;
+  const double tol = 1.0e-6;
+
+  var = zVecAlloc( DIM );
+  ans = zVecAlloc( DIM );
+  g0 = zVecAlloc( DIM );
+  g1 = zVecAlloc( DIM );
+  for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i );
+  zOptDMCreate( &opt, DIM, quad_eval, quad_grad, NULL );
+  for( i=0; i<3; i++ ){
+    zOptDMAssignCG( &opt, stepmethod[i], 0 );
+    /* Fletcher-Reeves' coefficient after one iteration */
+    zVecSetAll( var, 1.0 );
+    quad_grad( var, g0, NULL );
+    zEchoOff(); /* to suppress a warning of unconverged iteration */
+    zOptDMSolve( &opt, var, NULL, zTOL, 1, NULL );
+    zEchoOn();
+    quad_grad( var, g1, NULL );
+    if( !zEqual( opt._b, zVecSqrNorm( g1 ) / zVecSqrNorm( g0 ), zTOL ) ){
+      eprintf( "CG (%s): coefficient = %g (to be %g)\n", stepmethod[i], opt._b, zVecSqrNorm( g1 ) / zVecSqrNorm( g0 ) );
+      result1 = false;
+    }
+    /* convergence. with the strict line search, it converges within the dimension for a quadratic function. */
+    zVecSetAll( var, 1.0 );
+    if( ( n = zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) ) < 0 || zVecDist( var, ans ) > tol || ( i == 0 && n > DIM ) ){
+      eprintf( "CG (%s): %d iterations, |x-x*| = %g\n", stepmethod[i], n, zVecDist( var, ans ) );
+      result2 = false;
+    }
+  }
+  zOptDMDestroy( &opt );
+  /* Rosenbrock function */
+  zVecSetAll( ans, 1.0 );
+  zOptDMCreate( &opt, DIM, rosenbrock_eval, rosenbrock_grad, NULL );
+  zOptDMAssignCG( &opt, "MT", 0 );
+  zVecSetElemList( var, -1.2, 1.0, -1.2, 1.0 ); /* the standard initial guess */
+  if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
+    eprintf( "CG (MT), Rosenbrock: |x-x*| = %g\n", zVecDist( var, ans ) );
+    result2 = false;
+  }
+  zOptDMDestroy( &opt );
+  zVecFreeAtOnce( 4, var, ans, g0, g1 );
+  zAssert( zOptDM (coefficient of Fletcher-Reeves formula), result1 );
+  zAssert( zOptDMSolve (conjugate gradient method), result2 );
+}
+
 int main(void)
 {
   zRandInit();
@@ -599,9 +720,11 @@ int main(void)
   assert_opt_dm_descent();
   assert_opt_dm_mt_wolfe();
   assert_opt_dm_mt();
-  assert_opt_dm_plain();
+  assert_opt_dm_fixed();
   assert_opt_dm_termination();
   assert_opt_dm_return();
   assert_opt_dm_scale();
+  assert_opt_dm_stay();
+  assert_opt_dm_cg();
   return 0;
 }

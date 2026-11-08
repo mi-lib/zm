@@ -53,7 +53,7 @@ zODE* zODECreateBK4(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*,z
       !( ws->x = zVecAlloc( dim ) ) ||
       !( ws->xt = zVecAlloc( dim ) ) ||
       !( ws->k = zVecAlloc( dim*2 ) ) ||
-      !zNLECreate( &ws->nle, dim*2, dim*2, 0, _zODE_BK4_Func, NULL ) ){
+      !zNLECreate( &ws->nle, dim*2, dim*2, _zODE_BK4_Func, NULL ) ){
     ZALLOCERROR();
     return NULL;
   }

@@ -64,7 +64,7 @@ zODE* zODECreateGear(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,
   if( !( ws->v = zVecAlloc( dim ) ) ||
       !( ws->a = zVecCloneArray( a[step-1], step ) ) ||
       !zVecRingAlloc( &ws->hist, dim, step ) ||
-      !zNLECreate( &ws->nle, dim, dim, 0, _zODE_Gear_Func, NULL ) ){
+      !zNLECreate( &ws->nle, dim, dim, _zODE_Gear_Func, NULL ) ){
     ZALLOCERROR();
     return NULL;
   }

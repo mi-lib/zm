@@ -237,30 +237,30 @@ int main(int argc, char *argv[])
 
   var = zVecAlloc( DIM );
   /*
-  zOptDMCreate( &opt, DIM, SCALE, eval, grad, hess );
-  zOptDMCreate( &opt, DIM, SCALE, eval, NULL, NULL );
+  zOptDMCreate( &opt, DIM, eval, grad, hess );
+  zOptDMCreate( &opt, DIM, eval, NULL, NULL );
   */
-  zOptDMCreate( &opt, DIM, SCALE, eval, grad, NULL );
+  zOptDMCreate( &opt, DIM, eval, grad, NULL );
 
-  zOptDMAssignSD( &opt, NULL );
-  test( &opt, var, "SD (plain)" );
-  zOptDMAssignLM( &opt, NULL );
-  test( &opt, var, "LM (plain)" );
-  zOptDMAssignLM( &opt, "MT" );
+  zOptDMAssignSD( &opt, "fixed", SCALE );
+  test( &opt, var, "SD (fixed)" );
+  zOptDMAssignLM( &opt, "fixed", SCALE );
+  test( &opt, var, "LM (fixed)" );
+  zOptDMAssignLM( &opt, "MT", SCALE );
   test( &opt, var, "LM (MT)" );
-  zOptDMAssignLM( &opt, "DS" );
+  zOptDMAssignLM( &opt, "DS", SCALE );
   test( &opt, var, "LM (DS)" );
-  zOptDMAssignVM( &opt, NULL, NULL );
-  test( &opt, var, "VM (plain:BFGS)" );
-  zOptDMAssignVM( &opt, NULL, "DFP" );
-  test( &opt, var, "VM (plain:DFP)" );
-  zOptDMAssignVM( &opt, "MT", NULL );
+  zOptDMAssignVM( &opt, "fixed", NULL, SCALE );
+  test( &opt, var, "VM (fixed:BFGS)" );
+  zOptDMAssignVM( &opt, "fixed", "DFP", SCALE );
+  test( &opt, var, "VM (fixed:DFP)" );
+  zOptDMAssignVM( &opt, "MT", NULL, SCALE );
   test( &opt, var, "VM (MT:BFGS)" );
-  zOptDMAssignVM( &opt, "MT", "DFP" );
+  zOptDMAssignVM( &opt, "MT", "DFP", SCALE );
   test( &opt, var, "VM (MT:DFP)" );
-  zOptDMAssignVM( &opt, "DS", "DFP" );
+  zOptDMAssignVM( &opt, "DS", "DFP", SCALE );
   test( &opt, var, "VM (DS:DFP)" );
-  zOptDMAssignCG( &opt );
+  zOptDMAssignCG( &opt, NULL, SCALE );
   test( &opt, var, "CG" );
 
   zOptDMDestroy( &opt );

@@ -57,7 +57,7 @@ __BEGIN_DECLS
  * \sa
  * zNLEAssign
  */
-__ZM_EXPORT zNLE *zNLECreate(zNLE *nle, int nv, int ne, double scale, zVec (*f)(const zVec,zVec,void*), zMat (*jac)(const zVec,zMat,void*));
+__ZM_EXPORT zNLE *zNLECreate(zNLE *nle, int nv, int ne, zVec (*f)(const zVec,zVec,void*), zMat (*jac)(const zVec,zMat,void*));
 
 /*! \brief destroy a simultaneous nonlinear equation solver.
  *
@@ -79,10 +79,10 @@ __ZM_EXPORT void zNLEDestroy(zNLE *nle);
  *  'NR' for Newton-Raphson's method, and
  *  'Broyden' for Broyden's method.
  */
-__ZM_EXPORT zNLE *zNLEAssignSD(zNLE *nle, const char *stepmethod);
-__ZM_EXPORT zNLE *zNLEAssignLM(zNLE *nle, const char *stepmethod);
-__ZM_EXPORT zNLE *zNLEAssignVM(zNLE *nle, const char *stepmethod, const char *updatemethod);
-__ZM_EXPORT zNLE *zNLEAssignCG(zNLE *nle);
+__ZM_EXPORT zNLE *zNLEAssignSD(zNLE *nle, const char *stepmethod, double scale);
+__ZM_EXPORT zNLE *zNLEAssignLM(zNLE *nle, const char *stepmethod, double scale);
+__ZM_EXPORT zNLE *zNLEAssignVM(zNLE *nle, const char *stepmethod, const char *updatemethod, double scale);
+__ZM_EXPORT zNLE *zNLEAssignCG(zNLE *nle, const char *stepmethod, double scale);
 __ZM_EXPORT zNLE *zNLEAssignNR(zNLE *nle);
 __ZM_EXPORT zNLE *zNLEAssignBroyden(zNLE *nle);
 

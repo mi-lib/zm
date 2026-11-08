@@ -155,26 +155,26 @@ int main(int argc, char *argv[])
 
   if( argc > 1 && atoi(argv[1]) < 6 )
     i = atoi( argv[1] );
-  zNLECreate( &nle, DIM, DIM, 0, f[i], argc > 2 ? jac[i] : NULL );
+  zNLECreate( &nle, DIM, DIM, f[i], argc > 2 ? jac[i] : NULL );
 
   zVecSetAll( var, 1.0 );
-  zNLEAssignVM( &nle, "MT", "BFGS" );
+  zNLEAssignVM( &nle, "MT", "BFGS", 0 );
   check( "VM(MT)", &nle, i, var, r, util );
 
   zVecSetAll( var, 1.0 );
-  zNLEAssignVM( &nle, "Brent", "BFGS" );
+  zNLEAssignVM( &nle, "Brent", "BFGS", 0 );
   check( "VM(Brent)", &nle, i, var, r, util );
 
   zVecSetAll( var, 1.0 );
-  zNLEAssignLM( &nle, NULL );
+  zNLEAssignLM( &nle, NULL, 0 );
   check( "LM", &nle, i, var, r, util );
 
   zVecSetAll( var, 1.0 );
-  zNLEAssignLM( &nle, "MT" );
+  zNLEAssignLM( &nle, "MT", 0 );
   check( "LM(MT)", &nle, i, var, r, util );
 
   zVecSetAll( var, 1.0 );
-  zNLEAssignLM( &nle, "Brent" );
+  zNLEAssignLM( &nle, "Brent", 0 );
   check( "LM(Brent)", &nle, i, var, r, util );
 
   zVecSetAll( var, 1.0 );

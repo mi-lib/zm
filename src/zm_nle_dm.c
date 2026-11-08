@@ -139,7 +139,7 @@ static int _zNLESolveBroyden(zNLE *nle, zVec var, void *util, double tol, int it
 }
 
 #define ZM_NLE_WN_DEFAULT ( 1.0e-4 )
-zNLE *zNLECreate(zNLE *nle, int nv, int ne, double scale, zVec (* f)(const zVec,zVec,void*), zMat (* jac)(const zVec,zMat,void*))
+zNLE *zNLECreate(zNLE *nle, int nv, int ne, zVec (* f)(const zVec,zVec,void*), zMat (* jac)(const zVec,zMat,void*))
 {
   nle->util = NULL;
   nle->wn = zVecAlloc( nv );
@@ -150,7 +150,7 @@ zNLE *zNLECreate(zNLE *nle, int nv, int ne, double scale, zVec (* f)(const zVec,
   nle->_j = zMatAlloc( ne, nv );
   if( !nle->wn || !nle->we || !nle->_f ||
       !nle->_fw || !nle->_fp || !nle->_j ||
-      !zOptDMCreate( &nle->_opt, nv, scale, _zNLEEval, _zNLEGrad, _zNLEHess ) ){
+      !zOptDMCreate( &nle->_opt, nv, _zNLEEval, _zNLEGrad, _zNLEHess ) ){
     zNLEDestroy( nle );
     return NULL;
   }
@@ -183,26 +183,26 @@ void zNLEDestroy(zNLE *nle)
   zOptDMDestroy( &nle->_opt );
 }
 
-zNLE *zNLEAssignSD(zNLE *nle, const char *stepmethod){
-  if( !zOptDMAssignSD( &nle->_opt, stepmethod ) )
+zNLE *zNLEAssignSD(zNLE *nle, const char *stepmethod, double scale){
+  if( !zOptDMAssignSD( &nle->_opt, stepmethod, scale ) )
     return NULL;
   nle->_solve = _zNLESolveDM;
   return nle;
 }
-zNLE *zNLEAssignLM(zNLE *nle, const char *stepmethod){
-  if( !zOptDMAssignLM( &nle->_opt, stepmethod ) )
+zNLE *zNLEAssignLM(zNLE *nle, const char *stepmethod, double scale){
+  if( !zOptDMAssignLM( &nle->_opt, stepmethod, scale ) )
     return NULL;
   nle->_solve = _zNLESolveDM;
   return nle;
 }
-zNLE *zNLEAssignVM(zNLE *nle, const char *stepmethod, const char *updatemethod){
-  if( !zOptDMAssignVM( &nle->_opt, stepmethod, updatemethod ) )
+zNLE *zNLEAssignVM(zNLE *nle, const char *stepmethod, const char *updatemethod, double scale){
+  if( !zOptDMAssignVM( &nle->_opt, stepmethod, updatemethod, scale ) )
     return NULL;
   nle->_solve = _zNLESolveDM;
   return nle;
 }
-zNLE *zNLEAssignCG(zNLE *nle){
-  if( !zOptDMAssignCG( &nle->_opt ) )
+zNLE *zNLEAssignCG(zNLE *nle, const char *stepmethod, double scale){
+  if( !zOptDMAssignCG( &nle->_opt, stepmethod, scale ) )
     return NULL;
   nle->_solve = _zNLESolveDM;
   return nle;

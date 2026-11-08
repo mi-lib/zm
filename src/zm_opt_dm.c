@@ -78,10 +78,26 @@ static double _zOptDMStepEval(zOptDM *opt, const zVec var, void *util, double a)
   return opt->eval( opt->_x, util );
 }
 
-/* directly add a step vector to a variable */
-static zVec _zOptDMStepPlain(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
+/* check if a step is negligibly small in the sense of the termination condition of zOptDMSolve. */
+static bool _zOptDMStepIsNegligible(zOptDM *opt, const zVec var, double tol, double a)
 {
-  zVecRevNC( opt->_d, opt->_p ); /* descent step */
+  return a * zVecElemAbsMax( opt->_d, NULL ) <= tol * ( 1 + zVecElemAbsMax( var, NULL ) );
+}
+
+/* stay at the current variable, since no further decrease of the function is detected. */
+static zVec _zOptDMStepStay(zOptDM *opt, const zVec var, double e0, double *e1)
+{
+  zVecZero( opt->_p );
+  zVecZero( opt->_q );
+  zVecCopyNC( var, opt->_x );
+  *e1 = e0;
+  return var;
+}
+
+/* step with a fixed length without line search, where _scale is used as the step length. */
+static zVec _zOptDMStepFixed(zOptDM *opt, const zVec var, double tol, void *util, double e0, double *e1)
+{
+  zVecMulNC( opt->_d, -opt->_scale, opt->_p ); /* descent step */
   zVecAddNC( var, opt->_p, opt->_x );
   *e1 = opt->eval( opt->_x, util );
   if( zIsInf( *e1 ) || zIsNan( *e1 ) ){
@@ -183,9 +199,9 @@ static double _zOptDMStepMTTrial(double al, double fl, double gl, double au, dou
   return _zMin( zLimit( ac, at + 1.1 * ( at - al ), at + 4 * ( at - al ) ), amax );
 }
 
-static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
+static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, double tol, void *util, double e0, double *e1)
 {
-  double g0, gtest, gtol, amax, m = 0, w, w1, wn;
+  double g0, gtest, gtol, amax, m = 0, w, w1, wn, afin = HUGE_VAL;
   double al, fl, gl, au = 0, fu = 0, gu = 0, at, ft, gt = 0, ae, an;
   bool bracketed = false, stage1 = true;
   int i;
@@ -208,6 +224,7 @@ static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, void *util, double e0, do
       at = amax = al + 0.5 * ( at - al );
       continue;
     }
+    if( at < afin ) afin = at; /* the shortest step length where the function is evaluated */
     if( ft <= e0 + at*gtest && fabs( gt ) <= gtol ) goto TERMINATE; /* strong Wolfe's conditions */
     if( at == amax && ft <= e0 + at*gtest && gt < gtest ) goto TERMINATE; /* the upper bound of step length */
     if( stage1 && ft <= e0 + at*gtest && gt >= 0 ){
@@ -239,6 +256,8 @@ static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, void *util, double e0, do
   }
   /* the best step length so far is accepted if it satisfies the sufficient decrease condition. */
   if( al <= 0 || fl > e0 + al*gtest ){
+    /* no further decrease is detected even by a negligibly small step. */
+    if( _zOptDMStepIsNegligible( opt, var, tol, afin ) ) return _zOptDMStepStay( opt, var, e0, e1 );
     ZRUNERROR( ZM_ERR_OPT_CANNOTFINDSTEP );
     return NULL;
   }
@@ -266,7 +285,7 @@ static bool _zOptDMStepDSTest(double e0, double e1, double a, double df)
   return !zIsInf( e1 ) && !zIsNan( e1 ) && e0 - e1 >= a*df;
 }
 
-static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
+static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, double tol, void *util, double e0, double *e1)
 {
   double a1, a2, w1, w2, s, df, c1, c2;
 
@@ -287,7 +306,7 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, void *util, double e0, do
   w2 = w1;
   a1 = _zOptDMStepDSLimit( 0.5 * s / w1, a2 );
   /* cubic approximation test */
-  while( a1 > zTOL ){
+  while( a1 > zTOL && !_zOptDMStepIsNegligible( opt, var, tol, a1 ) ){
     if( _zOptDMStepDSTest( e0, ( *e1 = _zOptDMStepEval( opt, var, util, a1 ) ), a1, df ) ) goto TERMINATE;
     w1 = ( *e1 - e0 + s*a1 ) / ( a1*a1 );
     c1 = 3 * ( w1 - w2 ) / ( a1 - a2 );
@@ -297,6 +316,8 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, void *util, double e0, do
     /* minimizer of the cubic approximation, (-c2+sqrt(c2^2+c1 s))/c1, rationalized to be valid also for c1=0 */
     a1 = _zOptDMStepDSLimit( s / ( c2 + sqrt( c2*c2 + c1*s ) ), a2 );
   }
+  /* no further decrease is detected even by a negligibly small step. */
+  if( a1 > zTOL && !zIsInf( *e1 ) && !zIsNan( *e1 ) ) return _zOptDMStepStay( opt, var, e0, e1 );
   ZRUNERROR( ZM_ERR_OPT_CANNOTFINDSTEP );
   return NULL;
 
@@ -307,7 +328,7 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, void *util, double e0, do
   return zVecCopyNC( opt->_x, var );
 }
 
-/* line search by Brent's strict minimization (particularly for CG) */
+/* line search by Brent's strict minimization */
 typedef struct{
   zOptDM *opt;
   const zVec *var;
@@ -322,7 +343,7 @@ static double _zOptDMStepBrentEval(double x, void *util)
 }
 #undef _zm_opt_data
 
-static zVec _zOptDMStepBrent(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
+static zVec _zOptDMStepBrent(zOptDM *opt, const zVec var, double tol, void *util, double e0, double *e1)
 {
   double a;
   _zOptDMStepData opt_data;
@@ -340,7 +361,6 @@ static zVec _zOptDMStepBrent(zOptDM *opt, const zVec var, void *util, double e0,
   *e1 = opt->eval( opt->_x, util );
   opt->_grad( opt, opt->_x, opt->_r, util );
   zVecSubNC( opt->_r, opt->_g, opt->_q );
-  opt->_b = zVecSqrNorm(opt->_r) / zVecSqrNorm(opt->_g); /* Fletcher-Reeves */
   zVecCopyNC( opt->_r, opt->_g );
   return zVecCopyNC( opt->_x, var );
 }
@@ -348,8 +368,17 @@ static zVec _zOptDMStepBrent(zOptDM *opt, const zVec var, void *util, double e0,
 /* update pseudo-Hessian matix */
 
 static zMat _zOptDMUpdateNone(zOptDM *opt, int count){
-  if( ( count - 1 ) % zVecSizeNC(opt->_d) == 0 )
-    opt->_b = 0; /* for CG restart */
+  return opt->_h;
+}
+/* the coefficient of conjugate gradient method by Fletcher-Reeves' formula b = |g|^2 / |g_prev|^2,
+   where g_prev = g - q. it restarts from the steepest descent direction every dim iterations. */
+static zMat _zOptDMUpdateCG(zOptDM *opt, int count)
+{
+  double gp;
+
+  zVecSubNC( opt->_g, opt->_q, opt->_r ); /* gradient vector at the previous iteration */
+  opt->_b = ( ( count + 1 ) % zVecSizeNC(opt->_d) == 0 || ( gp = zVecSqrNorm( opt->_r ) ) == 0 ) ?
+    0 : zVecSqrNorm( opt->_g ) / gp;
   return opt->_h;
 }
 /* the inverse of the Hessian matrix H is updated by the step p and the difference of gradients q.
@@ -425,8 +454,8 @@ static zVec _zOptDMVecCG(zOptDM *opt, const zVec var, zVec d, void *util)
 
 /* constructor and destructor */
 
-#define Z_OPT_DM_SCALE ( 1.0e3 )
-zOptDM *zOptDMCreate(zOptDM *opt, int dim, double scale, double (* eval)(const zVec,void*), zVec (* grad)(const zVec,zVec,void*), zMat (* hess)(const zVec,zMat,void*))
+/* create an unconstrained nonlinear optimization solver based on descent method. */
+zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVec,void*), zVec (* grad)(const zVec,zVec,void*), zMat (* hess)(const zVec,zMat,void*))
 {
   if( !( opt->eval = eval ) ){
     ZRUNERROR( ZM_ERR_OPT_NOEVALUATOR );
@@ -434,7 +463,6 @@ zOptDM *zOptDMCreate(zOptDM *opt, int dim, double scale, double (* eval)(const z
   }
   opt->_grad = ( opt->grad = grad ) ? _zOptDMGrad : _zOptDMGradNG;
   opt->_hess = ( opt->hess = hess ) ? _zOptDMHess : _zOptDMHessNG;
-  opt->_scale = ( scale == 0 ) ? Z_OPT_DM_SCALE : scale;
   opt->_x = zVecAlloc( dim );
   opt->_d = zVecAlloc( dim );
   opt->_g = zVecAlloc( dim );
@@ -449,56 +477,64 @@ zOptDM *zOptDMCreate(zOptDM *opt, int dim, double scale, double (* eval)(const z
   }
   opt->_b = 0.0;
   opt->_df = 1.0e-4;
-  return zOptDMAssignSD( opt, NULL );
+  return zOptDMAssignSD( opt, NULL, 0 );
 }
 
-static void _zOptDMAssignStep(zOptDM *opt, const char *method)
+/* assign a step method. scale is the upper bound of components of a step for line search methods,
+   and the step length for the fixed step. the default value is used if it is zero. */
+static void _zOptDMAssignStep(zOptDM *opt, const char *method, double scale)
 {
-  if( !method )
-    opt->_step = _zOptDMStepPlain; /* line search unassigned */
-  else
-  if( strcmp( method, "DS" ) == 0 ) /* Dennis-Schnabel */
+  if( !method ) goto ZOPT_DM_ASSIGN_STEP_MT;
+  if( strcmp( method, "fixed" ) == 0 ){ /* fixed step without line search */
+    opt->_step = _zOptDMStepFixed;
+    opt->_scale = scale == 0 ? ZM_OPT_DM_DEFAULT_STEP : scale;
+    return;
+  }
+  if( strcmp( method, "DS" ) == 0 ){ /* Dennis-Schnabel' method */
     opt->_step = _zOptDMStepDS;
-  else
-  if( strcmp( method, "Brent" ) == 0 ) /* Brent */
+  } else
+  if( strcmp( method, "Brent" ) == 0 ) /* Brent's method */
     opt->_step = _zOptDMStepBrent;
-  else
-    opt->_step = _zOptDMStepMT; /* More-Thuente */
+  else{
+    ZOPT_DM_ASSIGN_STEP_MT:
+    opt->_step = _zOptDMStepMT; /* More-Thuente's method as default */
+  }
+  opt->_scale = scale == 0 ? ZM_OPT_DM_DEFAULT_SCALE : scale;
 }
 
-zOptDM *zOptDMAssignSD(zOptDM *opt, const char *stepmethod)
+zOptDM *zOptDMAssignSD(zOptDM *opt, const char *stepmethod, double scale)
 {
   opt->_vec = _zOptDMVecSD;
   opt->_update_h = _zOptDMUpdateNone;
-  _zOptDMAssignStep( opt, stepmethod );
+  _zOptDMAssignStep( opt, stepmethod, scale );
   opt->_cf = 0.9;
   return opt;
 }
 
-zOptDM *zOptDMAssignLM(zOptDM *opt, const char *stepmethod)
+zOptDM *zOptDMAssignLM(zOptDM *opt, const char *stepmethod, double scale)
 {
   opt->_vec = _zOptDMVecLM;
   opt->_update_h = _zOptDMUpdateNone;
-  _zOptDMAssignStep( opt, stepmethod );
+  _zOptDMAssignStep( opt, stepmethod, scale );
   opt->_cf = 0.9;
   return opt;
 }
 
-zOptDM *zOptDMAssignVM(zOptDM *opt, const char *stepmethod, const char *updatemethod)
+zOptDM *zOptDMAssignVM(zOptDM *opt, const char *stepmethod, const char *updatemethod, double scale)
 {
   opt->_vec = _zOptDMVecVM;
-  _zOptDMAssignStep( opt, stepmethod );
+  _zOptDMAssignStep( opt, stepmethod, scale );
   opt->_update_h = ( updatemethod && strcmp( updatemethod, "DFP" ) == 0 ) ?
     _zOptDMUpdateDFP : _zOptDMUpdateBFGS;
   opt->_cf = 0.9;
   return opt;
 }
 
-zOptDM *zOptDMAssignCG(zOptDM *opt)
+zOptDM *zOptDMAssignCG(zOptDM *opt, const char *stepmethod, double scale)
 {
   opt->_vec = _zOptDMVecCG;
-  opt->_step = _zOptDMStepBrent;
-  opt->_update_h = _zOptDMUpdateNone;
+  _zOptDMAssignStep( opt, stepmethod ? stepmethod : "Brent", scale ); /* Brent's method as default */
+  opt->_update_h = _zOptDMUpdateCG;
   opt->_cf = 0.4;
   return opt;
 }
@@ -530,6 +566,7 @@ int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, d
 
   if( !eval ) eval = &_e_dummy;
   zMatIdent( opt->_h );
+  opt->_b = 0; /* for conjugate gradient method */
   ZITERINIT( iter );
   *eval = opt->eval( var, util );
   opt->_grad( opt, var, opt->_g, util );
@@ -543,7 +580,7 @@ int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, d
       zMatIdent( opt->_h );
       zVecCopyNC( opt->_g, opt->_d );
     }
-    if( !opt->_step( opt, var, util, *eval, &e ) ) return -1; /* line search failed. */
+    if( !opt->_step( opt, var, tol, util, *eval, &e ) ) return -1; /* line search failed. */
     *eval = e;
     if( zVecElemAbsMax( opt->_g, NULL ) <= gmin ||
         zVecElemAbsMax( opt->_p, NULL ) <= tol * ( 1 + zVecElemAbsMax( var, NULL ) ) )

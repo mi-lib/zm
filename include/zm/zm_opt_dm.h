@@ -33,16 +33,18 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
   zVec (* _grad)(zOptDM*,const zVec,zVec,void*);
   zMat (* _hess)(zOptDM*,const zVec,zMat,void*);
   zVec (* _vec)(zOptDM*,const zVec,zVec,void*);
-  zVec (* _step)(zOptDM*,const zVec,void*,double,double*);
+  zVec (* _step)(zOptDM*,const zVec,double,void*,double,double*);
   zMat (* _update_h)(zOptDM*,int);
-  double _scale;
+  /*! \cond */
+  double _scale; /* scale of search range for MT and DS, and scale of stride for fixed method. */
   zVec _x, _d, _g;
   zVec _p, _q, _r;
   zMat _h;
   zIndex _idx;
-  double _b;  /* for Fletcher-Reeves */
+  double _b;  /* for Fletcher-Reeves method */
   double _df; /* decrease factor */
   double _cf; /* curvature factor */
+  /*! \endcond */
 };
 
 /*! \brief threshold of the gradient vector for convergence of descent method.
@@ -52,17 +54,58 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
  * Since a line search judges a decrease of the function value, the gradient vector can be reduced
  * only to the order of the square root of the machine epsilon relatively.
  */
-#define ZM_OPT_DM_GRAD_MIN ( 1.0e-8 )
+#define ZM_OPT_DM_GRAD_MIN  ( 1.0e-8 )
+
+/*! \brief default scale of search range for More-Thuente's method and Dennis-Schnabel's method. */
+#define ZM_OPT_DM_DEFAULT_SCALE  ( 1.0e3 )
+/*! \brief default step length of the line search with fixed step. */
+#define ZM_OPT_DM_DEFAULT_STEP     ( 1.0 )
 
 __BEGIN_DECLS
 
-__ZM_EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double scale, double (* eval)(const zVec,void*), zVec (* grad)(const zVec,zVec,void*), zMat (* hess)(const zVec,zMat,void*));
-__ZM_EXPORT zOptDM *zOptDMAssignSD(zOptDM *opt, const char *stepmethod);
-__ZM_EXPORT zOptDM *zOptDMAssignLM(zOptDM *opt, const char *stepmethod);
-__ZM_EXPORT zOptDM *zOptDMAssignVM(zOptDM *opt, const char *stepmethod, const char *updatemethod);
-__ZM_EXPORT zOptDM *zOptDMAssignCG(zOptDM *opt);
+/*! \brief create an unconstrained nonlinear optimization solver based on descent method.
+ *
+ * zOptDMCreate() creates a solver \a opt of unconstrained nonlinear optimization problems based on
+ * descent method. \a dim is the dimension of the variable vector. \a eval is the function to be
+ * minimized. \a grad and \a hess are functions to compute the gradient vector and the Hessian matrix
+ * of \a eval, respectively. If they are the null pointers, they are computed numerically.
+ * The steepest descent method with More-Thuente's line search is assigned by default.
+ * \return
+ * zOptDMCreate() returns a pointer \a opt if it succeeds. Otherwise, it returns the null pointer.
+ */
+__ZM_EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVec,void*), zVec (* grad)(const zVec,zVec,void*), zMat (* hess)(const zVec,zMat,void*));
 
+/*! \brief assign a descent method.
+ *
+ * zOptDMAssignSD(), zOptDMAssignLM(), zOptDMAssignVM() and zOptDMAssignCG() assign the steepest
+ * descent method, Levenberg-Marquardt's method, the variable metric (quasi-Newton) method and the
+ * conjugate gradient method (Fletcher-Reeves' method) to \a opt, respectively.
+ *
+ * \a stepmethod specifies the method to compute the step length as follows:
+ *  "MT" for More-Thuente's line search,
+ *  "DS" for Dennis-Schnabel's backtracking line search,
+ *  "Brent" for Brent's strict line search, and
+ *  "fixed" for the fixed step length without line search.
+ * If it is the null pointer or another string, More-Thuente's line search is assigned, except that
+ * Brent's line search is assigned for zOptDMAssignCG() if it is the null pointer.
+ *
+ * \a scale is the upper bound of the components of a step for "MT" and "DS", and the step length for
+ * "fixed". If it is zero, ZM_OPT_DM_DEFAULT_SCALE is used for "MT" and "DS", and ZM_OPT_DM_DEFAULT_STEP
+ * is used for "fixed".
+ *
+ * \a updatemethod for zOptDMAssignVM() specifies the update formula of the quasi-Hessian matrix,
+ * namely, "DFP" for Davidon-Fletcher-Powell's formula and others for Broyden-Fletcher-Goldfarb-Shanno's.
+ * \return
+ * These functions return a pointer \a opt.
+ */
+__ZM_EXPORT zOptDM *zOptDMAssignSD(zOptDM *opt, const char *stepmethod, double scale);
+__ZM_EXPORT zOptDM *zOptDMAssignLM(zOptDM *opt, const char *stepmethod, double scale);
+__ZM_EXPORT zOptDM *zOptDMAssignVM(zOptDM *opt, const char *stepmethod, const char *updatemethod, double scale);
+__ZM_EXPORT zOptDM *zOptDMAssignCG(zOptDM *opt, const char *stepmethod, double scale);
+
+/*! \brief destroy an unconstrained nonlinear optimization solver based on descent method. */
 __ZM_EXPORT void zOptDMDestroy(zOptDM *opt);
+
 /*! \brief solve an unconstrained nonlinear optimization problem by descent method.
  *
  * zOptDMSolve() minimizes the function assigned to \a opt from the initial guess \a var, and stores
