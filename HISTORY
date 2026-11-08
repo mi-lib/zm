@@ -1,3 +1,4 @@
+2026.11.08. Added a test of zNLE on problems by More, Garbow and Hillstrom and underdetermined systems for the success only with small residual, the failure for an inconsistent problem, the numerical Jacobian matrix and the returned values. [test]
 2026.11.08. Fixed _zODE_BK4_Func to compute the residual from the given argument instead of the internal workspace. [zm_ode_bk4]
 2026.11.08. Modified zNLESolve to take the threshold of the step tol_step and that of the residual tol_err separately. [zm_nle_dm, zm_ode_beuler, zm_ode_bk4, zm_ode_gear]
 2026.11.08. Modified _zNLESolveNR and _zNLESolveBroyden to fail if the step becomes smaller than tol_step relatively to the variable, and to return the number of iterations. [zm_nle_dm]
