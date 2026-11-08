@@ -35,11 +35,13 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
   zVec (* _vec)(zOptDM*,const zVec,zVec,void*);
   zVec (* _step)(zOptDM*,const zVec,double,void*,double,double*);
   zMat (* _update_h)(zOptDM*,int);
+  double (* _damp)(zOptDM*);
   /*! \cond */
   double _scale; /* scale of search range for MT and DS, and scale of stride for fixed method. */
   zVec _x, _d, _g;
   zVec _p, _q, _r;
   zMat _h;
+  zMat _hw; /* workspace for the damping coefficient of Levenberg-Marquardt's method */
   zIndex _idx;
   double _b;  /* for Fletcher-Reeves method */
   double _df; /* decrease factor */
@@ -116,14 +118,25 @@ __ZM_EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVe
  * length for "fixed". If it is zero, ZM_OPT_DM_DEFAULT_SCALE is used for "MT", "DS" and "Brent", and
  * ZM_OPT_DM_DEFAULT_STEP is used for "fixed".
  *
+ * \a dampmethod for zOptDMAssignLM() specifies the damping coefficient mu added to the diagonal
+ * components of the Hessian matrix H, namely,
+ *  "grad" for mu = |g|, where g is the gradient vector, and
+ *  "dec" for mu = min{ |g|, g^T H^-1 g }, where g^T H^-1 g is the Newton decrement that estimates
+ *  twice the deviation of the function from the minimum. It coincides with |F|^2 for the least
+ *  square problem of F(x)=0 with the Gauss-Newton approximation of the Hessian matrix if the
+ *  Jacobian matrix of F is regular. It requires to solve an additional linear equation at every
+ *  iteration, and a workspace is allocated internally when it is assigned at the first time.
+ * "grad" is assigned if it is the null pointer or another string.
+ *
  * \a updatemethod for zOptDMAssignVM() specifies the update formula of the quasi-Hessian matrix,
  * namely, "DFP" for Davidon-Fletcher-Powell's formula and others for Broyden-Fletcher-Goldfarb-Shanno's.
  * \return
- * These functions return a pointer \a opt.
+ * These functions return a pointer \a opt. zOptDMAssignLM() returns the null pointer if it fails
+ * to allocate the workspace.
  */
 __ZM_EXPORT zOptDM *zOptDMAssignSD(zOptDM *opt, const char *stepmethod, double scale);
-__ZM_EXPORT zOptDM *zOptDMAssignLM(zOptDM *opt, const char *stepmethod, double scale);
-__ZM_EXPORT zOptDM *zOptDMAssignVM(zOptDM *opt, const char *stepmethod, const char *updatemethod, double scale);
+__ZM_EXPORT zOptDM *zOptDMAssignLM(zOptDM *opt, const char *dampmethod, const char *stepmethod, double scale);
+__ZM_EXPORT zOptDM *zOptDMAssignVM(zOptDM *opt, const char *updatemethod, const char *stepmethod, double scale);
 __ZM_EXPORT zOptDM *zOptDMAssignCG(zOptDM *opt, const char *stepmethod, double scale);
 
 /*! \brief destroy an unconstrained nonlinear optimization solver based on descent method. */

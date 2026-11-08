@@ -471,6 +471,26 @@ static zVec _zOptDMVecSD(zOptDM *opt, const zVec var, zVec d, void *util)
   return zVecCopyNC( opt->_g, d );
 }
 
+/* damping coefficient of Levenberg-Marquardt method: the norm of the gradient vector */
+static double _zOptDMDampGrad(zOptDM *opt)
+{
+  return zVecNorm( opt->_g );
+}
+
+/* damping coefficient of Levenberg-Marquardt method: the smaller of the norm of the gradient vector
+   and the Newton decrement g^T H^-1 g, where _x and _p are used as workspaces. */
+static double _zOptDMDampDec(zOptDM *opt)
+{
+  double mg, md;
+
+  mg = zVecNorm( opt->_g );
+  zMatCopyNC( opt->_h, opt->_hw );
+  zVecCopyNC( opt->_g, opt->_x );
+  if( !zLESolveGaussDST( opt->_hw, opt->_x, opt->_p, opt->_idx, opt->_r ) ) return mg;
+  md = zVecInnerProdNC( opt->_g, opt->_p );
+  return md > 0 && md < mg ? md : mg;
+}
+
 /* Levenberg-Marquardt method */
 static zVec _zOptDMVecLM(zOptDM *opt, const zVec var, zVec d, void *util)
 {
@@ -478,7 +498,7 @@ static zVec _zOptDMVecLM(zOptDM *opt, const zVec var, zVec d, void *util)
   double m;
 
   opt->_hess( opt, var, opt->_h, util );
-  m = zVecSqrNorm( opt->_g );
+  m = opt->_damp( opt );
   for( i=0; i<zVecSizeNC(opt->_g); i++ )
     zMatElemNC(opt->_h,i,i) += m;
   /* the right-hand-side vector is copied to _q since zLESolveGaussDST destroys it. */
@@ -510,6 +530,8 @@ zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVec,void*), zV
   }
   opt->_grad = ( opt->grad = grad ) ? _zOptDMGrad : _zOptDMGradNG;
   opt->_hess = ( opt->hess = hess ) ? _zOptDMHess : _zOptDMHessNG;
+  opt->_damp = _zOptDMDampGrad;
+  opt->_hw = NULL;
   opt->_x = zVecAlloc( dim );
   opt->_d = zVecAlloc( dim );
   opt->_g = zVecAlloc( dim );
@@ -558,8 +580,16 @@ zOptDM *zOptDMAssignSD(zOptDM *opt, const char *stepmethod, double scale)
   return opt;
 }
 
-zOptDM *zOptDMAssignLM(zOptDM *opt, const char *stepmethod, double scale)
+zOptDM *zOptDMAssignLM(zOptDM *opt, const char *dampmethod, const char *stepmethod, double scale)
 {
+  if( dampmethod && strcmp( dampmethod, "dec" ) == 0 ){ /* Newton decrement */
+    if( !opt->_hw && !( opt->_hw = zMatAllocSqr( zVecSizeNC(opt->_g) ) ) ){
+      ZALLOCERROR();
+      return NULL;
+    }
+    opt->_damp = _zOptDMDampDec;
+  } else
+    opt->_damp = _zOptDMDampGrad; /* norm of the gradient vector as default */
   opt->_vec = _zOptDMVecLM;
   opt->_update_h = _zOptDMUpdateNone;
   _zOptDMAssignStep( opt, stepmethod, scale );
@@ -567,7 +597,7 @@ zOptDM *zOptDMAssignLM(zOptDM *opt, const char *stepmethod, double scale)
   return opt;
 }
 
-zOptDM *zOptDMAssignVM(zOptDM *opt, const char *stepmethod, const char *updatemethod, double scale)
+zOptDM *zOptDMAssignVM(zOptDM *opt, const char *updatemethod, const char *stepmethod, double scale)
 {
   opt->_vec = _zOptDMVecVM;
   _zOptDMAssignStep( opt, stepmethod, scale );
@@ -590,6 +620,7 @@ void zOptDMDestroy(zOptDM *opt)
 {
   zVecFreeAtOnce( 6, opt->_x, opt->_d, opt->_g, opt->_p, opt->_q, opt->_r );
   zMatFree( opt->_h );
+  zMatFree( opt->_hw );
   zIndexFree( opt->_idx );
   opt->eval = NULL;
   opt->grad = NULL;
@@ -599,6 +630,7 @@ void zOptDMDestroy(zOptDM *opt)
   opt->_vec = NULL;
   opt->_step = NULL;
   opt->_update_h = NULL;
+  opt->_damp = NULL;
 }
 
 /* the iteration terminates if

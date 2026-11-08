@@ -59,8 +59,8 @@ typedef struct{
 } method_t;
 
 zOptDM *assign_sd(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignSD( opt, stepmethod, 0 ); }
-zOptDM *assign_lm(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignLM( opt, stepmethod, 0 ); }
-zOptDM *assign_vm(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignVM( opt, stepmethod, updatemethod, 0 ); }
+zOptDM *assign_lm(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignLM( opt, NULL, stepmethod, 0 ); }
+zOptDM *assign_vm(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignVM( opt, updatemethod, stepmethod, 0 ); }
 zOptDM *assign_cg(zOptDM *opt, const char *stepmethod, const char *updatemethod){ return zOptDMAssignCG( opt, stepmethod, 0 ); }
 
 method_t method[] = {
@@ -125,7 +125,7 @@ void assert_opt_dm_ds(void)
       if( i == 0 )
         zOptDMAssignSD( &opt, "DS", 0 );
       else
-        zOptDMAssignVM( &opt, "DS", "BFGS", 0 );
+        zOptDMAssignVM( &opt, "BFGS", "DS", 0 );
       zVecSetAll( var, 1.0 );
       if( zOptDMSolve( &opt, var, kp, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
         eprintf( "%s (DS), k=%g: |x-x*| = %g\n", i == 0 ? "SD" : "VM", *kp, zVecDist( var, ans ) );
@@ -137,7 +137,7 @@ void assert_opt_dm_ds(void)
   /* Rosenbrock function, where the original implementation fell into an infinite loop */
   zVecSetAll( ans, 1.0 );
   zOptDMCreate( &opt, DIM, rosenbrock_eval, rosenbrock_grad, NULL );
-  zOptDMAssignVM( &opt, "DS", "BFGS", 0 );
+  zOptDMAssignVM( &opt, "BFGS", "DS", 0 );
   zVecSetAll( var, -1.2 );
   if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
     eprintf( "VM (DS), Rosenbrock: |x-x*| = %g\n", zVecDist( var, ans ) );
@@ -170,7 +170,7 @@ void assert_opt_dm_update(void)
   }
   qq = zVecSqrNorm( opt._q );
   /* DFP: H = I + p p^T / p^T q - q q^T / q^T q */
-  zOptDMAssignVM( &opt, NULL, "DFP", 0 );
+  zOptDMAssignVM( &opt, "DFP", NULL, 0 );
   zMatIdent( opt._h );
   opt._update_h( &opt, 0 );
   for( i=0; i<DIM; i++ )
@@ -181,7 +181,7 @@ void assert_opt_dm_update(void)
     result1 = false;
   }
   /* BFGS: H = I + ( ( 1 + q^T q / p^T q ) p p^T - p q^T - q p^T ) / p^T q */
-  zOptDMAssignVM( &opt, NULL, "BFGS", 0 );
+  zOptDMAssignVM( &opt, "BFGS", NULL, 0 );
   zMatIdent( opt._h );
   opt._update_h( &opt, 0 );
   for( i=0; i<DIM; i++ )
@@ -199,7 +199,7 @@ void assert_opt_dm_update(void)
     eprintf( "BFGS update not skipped for p^T q < 0\n" );
     result3 = false;
   }
-  zOptDMAssignVM( &opt, NULL, "DFP", 0 );
+  zOptDMAssignVM( &opt, "DFP", NULL, 0 );
   opt._update_h( &opt, 0 );
   if( !zMatEqual( opt._h, hp, 0 ) ){
     eprintf( "DFP update not skipped for p^T q < 0\n" );
@@ -267,7 +267,7 @@ void assert_opt_dm_descent(void)
   var = zVecAlloc( DIM );
   zOptDMCreate( &opt, DIM, saddle_eval, saddle_grad, saddle_hess );
   for( sp=stepmethod; *sp; sp++ ){
-    zOptDMAssignLM( &opt, *sp, 0 );
+    zOptDMAssignLM( &opt, NULL, *sp, 0 );
     zVecSetElemList( var, 0.001, 0.1, 0.001, -0.1 );
     if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || !zEqual( saddle_eval( var, NULL ), -0.5, tol ) ){
       eprintf( "LM (%s), saddle: f = %g (to be -0.5)\n", *sp, saddle_eval( var, NULL ) );
@@ -338,9 +338,9 @@ void assert_opt_dm_mt(void)
       if( i == 0 )
         zOptDMAssignSD( &opt, "MT", 0 );
       else if( i == 1 )
-        zOptDMAssignLM( &opt, "MT", 0 );
+        zOptDMAssignLM( &opt, NULL, "MT", 0 );
       else
-        zOptDMAssignVM( &opt, "MT", "BFGS", 0 );
+        zOptDMAssignVM( &opt, "BFGS", "MT", 0 );
       zVecSetAll( var, 1.0 );
       if( zOptDMSolve( &opt, var, kp, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
         eprintf( "%s (MT), k=%g: |x-x*| = %g\n", i == 0 ? "SD" : i == 1 ? "LM" : "VM", *kp, zVecDist( var, ans ) );
@@ -354,9 +354,9 @@ void assert_opt_dm_mt(void)
   zOptDMCreate( &opt, DIM, rosenbrock_eval, rosenbrock_grad, NULL );
   for( i=0; i<2; i++ ){
     if( i == 0 )
-      zOptDMAssignLM( &opt, "MT", 0 );
+      zOptDMAssignLM( &opt, NULL, "MT", 0 );
     else
-      zOptDMAssignVM( &opt, "MT", "BFGS", 0 );
+      zOptDMAssignVM( &opt, "BFGS", "MT", 0 );
     zVecSetAll( var, -1.2 );
     if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
       eprintf( "%s (MT), Rosenbrock: |x-x*| = %g\n", i == 0 ? "LM" : "VM", zVecDist( var, ans ) );
@@ -417,9 +417,9 @@ void assert_opt_dm_fixed(void)
       zOptDMAssignSD( &opt, "fixed", 0 );
       k = 0.25;
     } else if( i == 1 )
-      zOptDMAssignLM( &opt, "fixed", 0 );
+      zOptDMAssignLM( &opt, NULL, "fixed", 0 );
     else
-      zOptDMAssignVM( &opt, "fixed", i == 2 ? "BFGS" : "DFP", 0 );
+      zOptDMAssignVM( &opt, i == 2 ? "BFGS" : "DFP", "fixed", 0 );
     zVecSetAll( var, 1.0 );
     if( zOptDMSolve( &opt, var, &k, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
       eprintf( "%s (fixed): |x-x*| = %g\n", i == 0 ? "SD" : i == 1 ? "LM" : i == 2 ? "VM (BFGS)" : "VM (DFP)", zVecDist( var, ans ) );
@@ -488,9 +488,9 @@ void assert_opt_dm_termination(void)
     if( i == 0 )
       zOptDMAssignSD( &opt, "MT", 0 );
     else if( i == 1 )
-      zOptDMAssignLM( &opt, "MT", 0 );
+      zOptDMAssignLM( &opt, NULL, "MT", 0 );
     else
-      zOptDMAssignVM( &opt, "MT", "BFGS", 0 );
+      zOptDMAssignVM( &opt, "BFGS", "MT", 0 );
     zVecSetAll( var, ks[1] );
     if( zOptDMSolve( &opt, var, ks, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol * ks[1] ){
       eprintf( "%s (MT), small and flat function: |x-x*|/s = %g\n", i == 0 ? "SD" : i == 1 ? "LM" : "VM", zVecDist( var, ans ) / ks[1] );
@@ -527,7 +527,7 @@ void assert_opt_dm_return(void)
 
   var = zVecAlloc( DIM );
   zOptDMCreate( &opt, DIM, quad_eval, quad_grad, NULL );
-  zOptDMAssignVM( &opt, "MT", "BFGS", 0 );
+  zOptDMAssignVM( &opt, "BFGS", "MT", 0 );
   /* no iteration at the minimum */
   for( i=0; i<DIM; i++ ) zVecSetElemNC( var, i, i );
   if( zOptDMSolve( &opt, var, &k, zTOL, 0, NULL ) != 0 ){
@@ -648,7 +648,7 @@ void assert_opt_dm_stay(void)
   g = zVecAlloc( DIM );
   zOptDMCreate( &opt, DIM, mma_eval, mma_grad, NULL );
   /* the original implementation of Dennis-Schnabel's method failed after reaching the minimum. */
-  zOptDMAssignLM( &opt, "DS", 0 );
+  zOptDMAssignLM( &opt, NULL, "DS", 0 );
   zVecSetAll( var, 1.0 );
   if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || zVecElemAbsMax( mma_grad( var, g, NULL ), NULL ) > tol ){
     eprintf( "LM (DS): |g| = %g\n", zVecElemAbsMax( mma_grad( var, g, NULL ), NULL ) );
@@ -749,6 +749,51 @@ void assert_opt_dm_brent(void)
   zAssert( zOptDMSolve (Brent), result );
 }
 
+/* Levenberg-Marquardt's method has to converge regardless of the scale of the function with both damping coefficients, even with the fixed step. */
+void assert_opt_dm_lm(void)
+{
+  zOptDM opt;
+  zVec var, ans;
+  double k[] = { 1.0e-3, 1.0, 1.0e3, 0 }, *kp;
+  const char *dampmethod[] = { "grad", "dec" };
+  const char *stepmethod[] = { "fixed", "DS", "MT" };
+  int i, j;
+  bool result = true;
+  const double tol = 1.0e-6;
+
+  var = zVecAlloc( DIM );
+  ans = zVecAlloc( DIM );
+  /* scaled quadratic functions, for which the original damping coefficient |g|^2 stagnated */
+  for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i );
+  zOptDMCreate( &opt, DIM, quad_eval, quad_grad, NULL );
+  for( kp=k; *kp>0; kp++ )
+    for( i=0; i<2; i++ )
+      for( j=0; j<3; j++ ){
+        zOptDMAssignLM( &opt, dampmethod[i], stepmethod[j], 0 );
+        zVecSetAll( var, 1.0 );
+        if( zOptDMSolve( &opt, var, kp, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
+          eprintf( "LM (%s, %s), k=%g: |x-x*| = %g\n", dampmethod[i], stepmethod[j], *kp, zVecDist( var, ans ) );
+          result = false;
+        }
+      }
+  zOptDMDestroy( &opt );
+  /* Rosenbrock function */
+  zVecSetAll( ans, 1.0 );
+  zOptDMCreate( &opt, DIM, rosenbrock_eval, rosenbrock_grad, NULL );
+  for( i=0; i<2; i++ )
+    for( j=1; j<3; j++ ){
+      zOptDMAssignLM( &opt, dampmethod[i], stepmethod[j], 0 );
+      zVecSetElemList( var, -1.2, 1.0, -1.2, 1.0 );
+      if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
+        eprintf( "LM (%s, %s), Rosenbrock: |x-x*| = %g\n", dampmethod[i], stepmethod[j], zVecDist( var, ans ) );
+        result = false;
+      }
+    }
+  zOptDMDestroy( &opt );
+  zVecFreeAtOnce( 2, var, ans );
+  zAssert( zOptDMSolve (Levenberg-Marquardt), result );
+}
+
 int main(void)
 {
   zRandInit();
@@ -765,5 +810,6 @@ int main(void)
   assert_opt_dm_stay();
   assert_opt_dm_cg();
   assert_opt_dm_brent();
+  assert_opt_dm_lm();
   return 0;
 }

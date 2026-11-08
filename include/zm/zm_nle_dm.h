@@ -80,8 +80,8 @@ __ZM_EXPORT void zNLEDestroy(zNLE *nle);
  *  'Broyden' for Broyden's method.
  */
 __ZM_EXPORT zNLE *zNLEAssignSD(zNLE *nle, const char *stepmethod, double scale);
-__ZM_EXPORT zNLE *zNLEAssignLM(zNLE *nle, const char *stepmethod, double scale);
-__ZM_EXPORT zNLE *zNLEAssignVM(zNLE *nle, const char *stepmethod, const char *updatemethod, double scale);
+__ZM_EXPORT zNLE *zNLEAssignLM(zNLE *nle, const char *dampmethod, const char *stepmethod, double scale);
+__ZM_EXPORT zNLE *zNLEAssignVM(zNLE *nle, const char *updatemethod, const char *stepmethod, double scale);
 __ZM_EXPORT zNLE *zNLEAssignCG(zNLE *nle, const char *stepmethod, double scale);
 __ZM_EXPORT zNLE *zNLEAssignNR(zNLE *nle);
 __ZM_EXPORT zNLE *zNLEAssignBroyden(zNLE *nle);

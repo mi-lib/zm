@@ -189,14 +189,14 @@ zNLE *zNLEAssignSD(zNLE *nle, const char *stepmethod, double scale){
   nle->_solve = _zNLESolveDM;
   return nle;
 }
-zNLE *zNLEAssignLM(zNLE *nle, const char *stepmethod, double scale){
-  if( !zOptDMAssignLM( &nle->_opt, stepmethod, scale ) )
+zNLE *zNLEAssignLM(zNLE *nle, const char *dampmethod, const char *stepmethod, double scale){
+  if( !zOptDMAssignLM( &nle->_opt, dampmethod, stepmethod, scale ) )
     return NULL;
   nle->_solve = _zNLESolveDM;
   return nle;
 }
-zNLE *zNLEAssignVM(zNLE *nle, const char *stepmethod, const char *updatemethod, double scale){
-  if( !zOptDMAssignVM( &nle->_opt, stepmethod, updatemethod, scale ) )
+zNLE *zNLEAssignVM(zNLE *nle, const char *updatemethod, const char *stepmethod, double scale){
+  if( !zOptDMAssignVM( &nle->_opt, updatemethod, stepmethod, scale ) )
     return NULL;
   nle->_solve = _zNLESolveDM;
   return nle;

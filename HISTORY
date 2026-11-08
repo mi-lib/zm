@@ -1,3 +1,6 @@
+2026.11.08. Modified zOptDMAssignVM and zNLEAssignVM to take the update method before the step method. [zm_opt_dm, zm_nle_dm, test, example]
+2026.11.08. Added a test of zOptDM on Levenberg-Marquardt's method. [test]
+2026.11.08. Modified zOptDMAssignLM and zNLEAssignLM to take the damping method. [zm_opt_dm, zm_nle_dm, example]
 2026.11.08. Added a test of zOptDM on Brent's line search. [test]
 2026.11.08. Modified Brent's line search in zOptDM to bracket a minimum within the range of the scale, to normalize the step length by the bracketing interval, and to keep the best step length while bracketing. [zm_opt_dm]
 2026.11.08. Removed the lower limit zTOL of the step length in Dennis-Schnabel's line search in zOptDM. [zm_opt_dm]

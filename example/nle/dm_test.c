@@ -158,23 +158,23 @@ int main(int argc, char *argv[])
   zNLECreate( &nle, DIM, DIM, f[i], argc > 2 ? jac[i] : NULL );
 
   zVecSetAll( var, 1.0 );
-  zNLEAssignVM( &nle, "MT", "BFGS", 0 );
+  zNLEAssignVM( &nle, "BFGS", "MT", 0 );
   check( "VM(MT)", &nle, i, var, r, util );
 
   zVecSetAll( var, 1.0 );
-  zNLEAssignVM( &nle, "Brent", "BFGS", 0 );
+  zNLEAssignVM( &nle, "BFGS", "Brent", 0 );
   check( "VM(Brent)", &nle, i, var, r, util );
 
   zVecSetAll( var, 1.0 );
-  zNLEAssignLM( &nle, NULL, 0 );
+  zNLEAssignLM( &nle, NULL, NULL, 0 );
   check( "LM", &nle, i, var, r, util );
 
   zVecSetAll( var, 1.0 );
-  zNLEAssignLM( &nle, "MT", 0 );
+  zNLEAssignLM( &nle, NULL, "MT", 0 );
   check( "LM(MT)", &nle, i, var, r, util );
 
   zVecSetAll( var, 1.0 );
-  zNLEAssignLM( &nle, "Brent", 0 );
+  zNLEAssignLM( &nle, NULL, "Brent", 0 );
   check( "LM(Brent)", &nle, i, var, r, util );
 
   zVecSetAll( var, 1.0 );
