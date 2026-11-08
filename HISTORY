@@ -1,3 +1,6 @@
+2026.11.08. Added a test of zOptDM on the evaluation of the function within the range limited by the scale. [test]
+2026.11.08. Replaced _zOptDMStepTest by _zOptDMStepMax and _zOptDMStepEval in zOptDM. [zm_opt_dm]
+2026.11.08. Abolished the line search by Nocedal's method from zOptDM. [zm_opt_dm, test, example]
 2026.11.07. Added tests of zOptDMSolve on the termination conditions and the returned number of iterations. [test]
 2026.11.07. Modified zOptDMSolve to return the number of iterations correctly. [zm_opt_dm]
 2026.11.07. Modified zOptDMSolve to return without warning the excess of iterations if the line search fails, and the line search by Nocedal's method to report the failure as an error of step computation. [zm_opt_dm]

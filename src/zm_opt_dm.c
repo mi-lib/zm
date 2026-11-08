@@ -64,23 +64,18 @@ static zMat _zOptDMHessNG(zOptDM *opt, const zVec var, zMat h, void *util)
 
 /* line search */
 
-static bool _zOptDMStepTest(zOptDM *opt, const zVec var, void *util, double *a, double e0, double df, double *e)
+/* the upper bound of step length, where every component of a step is limited by _scale. */
+static double _zOptDMStepMax(zOptDM *opt)
 {
-  double max;
+  return opt->_scale / zVecElemAbsMax( opt->_d, NULL );
+}
 
-  while( *a > zTOL ){
-    zVecMulNC( opt->_d, -*a, opt->_p );
-    zVecAddNC( var, opt->_p, opt->_x );
-    *e = opt->eval( opt->_x, util );
-    if( zIsInf(*e) || zIsNan(*e) )
-      *a *= 0.1;
-    else
-    if( ( max = zVecElemAbsMax( opt->_p, NULL ) ) > opt->_scale )
-      *a *= opt->_scale / max;
-    else
-      break;
-  }
-  return ( e0 - *e >= *a*df ) ? true : false;
+/* evaluate the function at a trial step length. */
+static double _zOptDMStepEval(zOptDM *opt, const zVec var, void *util, double a)
+{
+  zVecMulNC( opt->_d, -a, opt->_p );
+  zVecAddNC( var, opt->_p, opt->_x );
+  return opt->eval( opt->_x, util );
 }
 
 /* directly add a step vector to a variable */
@@ -116,9 +111,7 @@ static double _zOptDMStepMTEval(zOptDM *opt, const zVec var, void *util, double 
 {
   double f;
 
-  zVecMulNC( opt->_d, -a, opt->_p );
-  zVecAddNC( var, opt->_p, opt->_x );
-  f = opt->eval( opt->_x, util );
+  f = _zOptDMStepEval( opt, var, util, a );
   if( zIsInf( f ) || zIsNan( f ) ) return f;
   opt->_grad( opt, opt->_x, opt->_r, util );
   *g = -zVecInnerProdNC( opt->_r, opt->_d );
@@ -204,7 +197,7 @@ static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, void *util, double e0, do
   g0 = -zVecInnerProdNC( opt->_g, opt->_d ); /* phi'(0) < 0 */
   gtest = opt->_df * g0;
   gtol = -opt->_cf * g0;
-  amax = opt->_scale / zVecElemAbsMax( opt->_d, NULL ); /* every component of a step is limited by _scale */
+  amax = _zOptDMStepMax( opt );
   al = 0; fl = e0; gl = g0;
   at = _zMin( 1.0, amax );
   w = w1 = HUGE_VAL;
@@ -259,7 +252,6 @@ static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, void *util, double e0, do
 }
 
 /* line search by Dennis-Schnabel's backtracking */
-#define ZM_OPT_DM_STEP_MIN 0.001
 
 /* limit a trial step length of Dennis-Schnabel's backtracking within [0.1a,0.5a] for the previous one a. */
 static double _zOptDMStepDSLimit(double at, double a)
@@ -268,9 +260,15 @@ static double _zOptDMStepDSLimit(double at, double a)
   return at < 0.1*a ? 0.1*a : at;
 }
 
+/* test the sufficient decrease condition. a trial step length where the function is not evaluated is rejected. */
+static bool _zOptDMStepDSTest(double e0, double e1, double a, double df)
+{
+  return !zIsInf( e1 ) && !zIsNan( e1 ) && e0 - e1 >= a*df;
+}
+
 static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
 {
-  double a1 = 1.0, a2, w1, w2, s, df, c1, c2;
+  double a1, a2, w1, w2, s, df, c1, c2;
 
   if( zIsNan( e0 ) ){
     ZRUNWARN( ZM_WARN_OPT_BADINI );
@@ -279,7 +277,8 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, void *util, double e0, do
   s = zVecInnerProdNC( opt->_g, opt->_d ); /* ascendant direction */
   df = opt->_df * s;
   /* initial test from full-length step */
-  if( _zOptDMStepTest( opt, var, util, &a1, e0, df, e1 ) ) goto TERMINATE;
+  a1 = _zMin( 1.0, _zOptDMStepMax( opt ) );
+  if( _zOptDMStepDSTest( e0, ( *e1 = _zOptDMStepEval( opt, var, util, a1 ) ), a1, df ) ) goto TERMINATE;
   /* w = ( f(a) - f(0) - a f'(0) ) / a^2, where f'(0) = -s.
      the cubic approximation f(a) = f(0) - s a + c2 a^2 + c1/3 a^3 satisfies w = c2 + c1/3 a. */
   w1 = ( *e1 - e0 + s*a1 ) / ( a1*a1 );
@@ -289,7 +288,7 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, void *util, double e0, do
   a1 = _zOptDMStepDSLimit( 0.5 * s / w1, a2 );
   /* cubic approximation test */
   while( a1 > zTOL ){
-    if( _zOptDMStepTest( opt, var, util, &a1, e0, df, e1 ) ) goto TERMINATE;
+    if( _zOptDMStepDSTest( e0, ( *e1 = _zOptDMStepEval( opt, var, util, a1 ) ), a1, df ) ) goto TERMINATE;
     w1 = ( *e1 - e0 + s*a1 ) / ( a1*a1 );
     c1 = 3 * ( w1 - w2 ) / ( a1 - a2 );
     c2 = ( w2*a1 - w1*a2 ) / ( a1 - a2 );
@@ -306,36 +305,6 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, void *util, double e0, do
   zVecSubNC( opt->_r, opt->_g, opt->_q );
   zVecCopyNC( opt->_r, opt->_g );
   return zVecCopyNC( opt->_x, var );
-}
-
-/* line search by Nocedal's backtracking based on Wolfe's condition */
-static zVec _zOptDMStepNoc(zOptDM *opt, const zVec var, void *util, double e0, double *e1)
-{
-  double a, s, df, cf;
-
-  if( zIsNan( e0 ) ){
-    ZRUNWARN( ZM_WARN_OPT_BADINI );
-    return NULL;
-  }
-  s = zVecInnerProdNC( opt->_g, opt->_d );
-  df = opt->_df * s;
-  cf = opt->_cf * s;
-  for( a=1.0; a>=ZM_OPT_DM_STEP_MIN; ){
-    if( !_zOptDMStepTest( opt, var, util, &a, e0, df, e1 ) ){
-      a *= 0.5;
-      continue;
-    }
-    opt->_grad( opt, opt->_x, opt->_r, util );
-    if( a > ZM_OPT_DM_STEP_MIN && zVecInnerProdNC( opt->_r, opt->_d ) > cf ){
-      a *= 2.1;
-      continue;
-    }
-    zVecSubNC( opt->_r, opt->_g, opt->_q );
-    zVecCopyNC( opt->_r, opt->_g );
-    return zVecCopyNC( opt->_x, var );
-  }
-  ZRUNERROR( ZM_ERR_OPT_CANNOTFINDSTEP );
-  return NULL;
 }
 
 /* line search by Brent's strict minimization (particularly for CG) */
@@ -490,9 +459,6 @@ static void _zOptDMAssignStep(zOptDM *opt, const char *method)
   else
   if( strcmp( method, "DS" ) == 0 ) /* Dennis-Schnabel */
     opt->_step = _zOptDMStepDS;
-  else
-  if( strcmp( method, "Noc" ) == 0 ) /* Nocedal */
-    opt->_step = _zOptDMStepNoc;
   else
   if( strcmp( method, "Brent" ) == 0 ) /* Brent */
     opt->_step = _zOptDMStepBrent;

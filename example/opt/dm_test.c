@@ -250,8 +250,6 @@ int main(int argc, char *argv[])
   test( &opt, var, "LM (MT)" );
   zOptDMAssignLM( &opt, "DS" );
   test( &opt, var, "LM (DS)" );
-  zOptDMAssignLM( &opt, "Noc" );
-  test( &opt, var, "LM (Noc)" );
   zOptDMAssignVM( &opt, NULL, NULL );
   test( &opt, var, "VM (plain:BFGS)" );
   zOptDMAssignVM( &opt, NULL, "DFP" );
@@ -262,8 +260,6 @@ int main(int argc, char *argv[])
   test( &opt, var, "VM (MT:DFP)" );
   zOptDMAssignVM( &opt, "DS", "DFP" );
   test( &opt, var, "VM (DS:DFP)" );
-  zOptDMAssignVM( &opt, "Noc", "DFP" );
-  test( &opt, var, "VM (Noc:DFP)" );
   zOptDMAssignCG( &opt );
   test( &opt, var, "CG" );
 

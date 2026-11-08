@@ -174,11 +174,7 @@ int main(int argc, char *argv[])
   check( "LM(MT)", &nle, i, var, r, util );
 
   zVecSetAll( var, 1.0 );
-  zNLEAssignLM( &nle, "Noc" );
-  check( "LM(Noc)", &nle, i, var, r, util );
-
-  zVecSetAll( var, 1.0 );
-  zNLEAssignLM( &nle, "Noc" );
+  zNLEAssignLM( &nle, "Brent" );
   check( "LM(Brent)", &nle, i, var, r, util );
 
   zVecSetAll( var, 1.0 );

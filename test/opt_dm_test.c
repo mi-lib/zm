@@ -66,14 +66,11 @@ zOptDM *assign_cg(zOptDM *opt, const char *stepmethod, const char *updatemethod)
 method_t method[] = {
   { "SD (MT)",         assign_sd, "MT",    NULL },
   { "SD (DS)",         assign_sd, "DS",    NULL },
-  { "SD (Noc)",        assign_sd, "Noc",   NULL },
   { "SD (Brent)",      assign_sd, "Brent", NULL },
   { "LM (MT)",         assign_lm, "MT",    NULL },
   { "LM (DS)",         assign_lm, "DS",    NULL },
-  { "LM (Noc)",        assign_lm, "Noc",   NULL },
   { "VM (MT, BFGS)",   assign_vm, "MT",    "BFGS" },
   { "VM (DS, BFGS)",   assign_vm, "DS",    "BFGS" },
-  { "VM (Noc, BFGS)",  assign_vm, "Noc",   "BFGS" },
   { "VM (Brent, BFGS)",assign_vm, "Brent", "BFGS" },
   { "CG",              assign_cg, NULL,    NULL },
   { NULL, NULL, NULL, NULL },
@@ -262,7 +259,7 @@ void assert_opt_dm_descent(void)
 {
   zOptDM opt;
   zVec var;
-  const char *stepmethod[] = { "MT", "DS", "Noc", "Brent", NULL }, **sp;
+  const char *stepmethod[] = { "MT", "DS", "Brent", NULL }, **sp;
   bool result = true;
   const double tol = 1.0e-6;
 
@@ -460,7 +457,7 @@ void assert_opt_dm_termination(void)
   zOptDM opt;
   zVec var, ans;
   double ks[] = { 1.0e-6, 1.0e3 }; /* a small and flat function, which the original absolute criterion misjudged as converged */
-  const char *stepmethod[] = { NULL, "MT", "DS", "Noc" };
+  const char *stepmethod[] = { NULL, "MT", "DS" };
   int i;
   bool result1 = true, result2 = true;
   const double tol = 1.0e-6;
@@ -486,7 +483,7 @@ void assert_opt_dm_termination(void)
   /* failure of line search */
   zOptDMCreate( &opt, DIM, 0, nan_eval, nan_grad, NULL );
   zEchoOff(); /* to suppress error messages of line search */
-  for( i=0; i<4; i++ ){
+  for( i=0; i<3; i++ ){
     zOptDMAssignSD( &opt, stepmethod[i] );
     zVecZero( var );
     if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) != -1 ){
@@ -539,6 +536,60 @@ void assert_opt_dm_return(void)
   zAssert( zOptDMSolve (returned number of iterations), result );
 }
 
+/* quadratic function that records whether it is evaluated outside the range limited by the scale from x0 */
+typedef struct{
+  zVec x0;
+  double scale;
+  bool outside;
+} scale_check_t;
+
+double quad_scale_check_eval(const zVec var, void *util)
+{
+  scale_check_t *sc = util;
+  int i;
+
+  for( i=0; i<zVecSizeNC(var); i++ )
+    if( fabs( zVecElemNC(var,i) - zVecElemNC(sc->x0,i) ) > sc->scale * ( 1 + zTOL ) ) sc->outside = true;
+  return quad_eval( var, NULL );
+}
+
+zVec quad_scale_check_grad(const zVec var, zVec g, void *util)
+{
+  return quad_grad( var, g, NULL );
+}
+
+/* the line search must not evaluate the function outside the range limited by the scale. */
+void assert_opt_dm_scale(void)
+{
+  zOptDM opt;
+  zVec var;
+  scale_check_t sc;
+  const char *stepmethod[] = { "MT", "DS" };
+  int i;
+  bool result = true;
+
+  var = zVecAlloc( DIM );
+  sc.x0 = zVecAlloc( DIM );
+  sc.scale = 0.1; /* smaller than the steepest descent step */
+  zOptDMCreate( &opt, DIM, sc.scale, quad_scale_check_eval, quad_scale_check_grad, NULL );
+  zEchoOff(); /* to suppress a warning of unconverged iteration */
+  for( i=0; i<2; i++ ){
+    zOptDMAssignSD( &opt, stepmethod[i] );
+    zVecSetAll( sc.x0, 1.0 );
+    zVecCopy( sc.x0, var );
+    sc.outside = false;
+    zOptDMSolve( &opt, var, &sc, zTOL, 1, NULL ); /* one step */
+    if( sc.outside ){
+      eprintf( "SD (%s): evaluated outside the range of the scale\n", stepmethod[i] );
+      result = false;
+    }
+  }
+  zEchoOn();
+  zOptDMDestroy( &opt );
+  zVecFreeAtOnce( 2, var, sc.x0 );
+  zAssert( zOptDM (evaluation within the range of the scale), result );
+}
+
 int main(void)
 {
   zRandInit();
@@ -551,5 +602,6 @@ int main(void)
   assert_opt_dm_plain();
   assert_opt_dm_termination();
   assert_opt_dm_return();
+  assert_opt_dm_scale();
   return 0;
 }
