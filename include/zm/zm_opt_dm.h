@@ -110,6 +110,19 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
 
 __BEGIN_DECLS
 
+/*! \brief step of numerical differentiation.
+ *
+ * zOptDMDiffStep() computes the step of numerical differentiation for the \a i th component x_i of
+ * the variable \a var, which is \a eps s_i for s_i = max{ |x_i|, \a ratio |x|inf } (s_i = 1 if
+ * x = 0). \a xmax is |x|inf, namely, the maximum absolute value of the components of \a var.
+ * See ZM_OPT_DM_EPS and ZM_OPT_DM_DIFF_SCALE_RATIO for the choice of \a eps and \a ratio.
+ * \return
+ * zOptDMDiffStep() returns ( x_i + \a eps s_i ) - x_i, which is the actual step represented in the
+ * floating-point arithmetic. A difference quotient should be computed with it in order to cancel the
+ * round-off error in representing the perturbed variable.
+ */
+__ZM_EXPORT double zOptDMDiffStep(const zVec var, int i, double xmax, double eps, double ratio);
+
 /*! \brief create an unconstrained nonlinear optimization solver based on descent method.
  *
  * zOptDMCreate() creates a solver \a opt of unconstrained nonlinear optimization problems based on

@@ -547,6 +547,74 @@ void assert_nle_jacobian(void)
   zAssert( zNLE (numerical Jacobian), result );
 }
 
+/* discrete boundary value function of the scaled variable y = s x, where s is given via util */
+#define DBV_DIM 10
+zVec discrete_boundary_value_scaled_f(const zVec var, zVec f, void *util)
+{
+  double s = *(double *)util;
+  double buf[DBV_DIM];
+  zVecStruct x;
+
+  zVecAssignArray( &x, DBV_DIM, buf );
+  zVecMul( var, 1/s, &x );
+  return discrete_boundary_value_f( &x, f, NULL );
+}
+
+zMat discrete_boundary_value_scaled_jac(const zVec var, zMat jac, void *util)
+{
+  double s = *(double *)util;
+  double buf[DBV_DIM];
+  zVecStruct x;
+
+  zVecAssignArray( &x, DBV_DIM, buf );
+  zVecMul( var, 1/s, &x );
+  discrete_boundary_value_jac( &x, jac, NULL );
+  return zMatDivDRC( jac, s );
+}
+
+/* the numerical Jacobian matrix has to be accurate relatively for variables of various scales, and the
+ * ratio of the step has to be set by zNLESetEPSMin. */
+void assert_nle_jacobian_scale(void)
+{
+  zNLE nle;
+  zVec var;
+  zMat jn, ja;
+  double s, e1, e2;
+  bool result1 = true, result2;
+  const double tol = 1.0e-6;
+
+  var = zVecAlloc( DBV_DIM );
+  jn = zMatAlloc( DBV_DIM, DBV_DIM );
+  ja = zMatAlloc( DBV_DIM, DBV_DIM );
+  zNLECreate( &nle, DBV_DIM, DBV_DIM, discrete_boundary_value_scaled_f, NULL );
+  for( s=1.0e-6; s<=1.0e8; s*=100 ){
+    discrete_boundary_value_init( var );
+    zVecMulDRC( var, s );
+    nle._jac( &nle, var, jn, &s );
+    discrete_boundary_value_scaled_jac( var, ja, &s );
+    if( !zMatIsTol( zMatSubDRC( jn, ja ), tol * zMatElemAbsMax( ja, NULL, NULL ) ) ){
+      eprintf( "scale = %g: |Jn-Ja|/|Ja| = %g\n", s, zMatElemAbsMax( jn, NULL, NULL ) / zMatElemAbsMax( ja, NULL, NULL ) );
+      result1 = false;
+    }
+  }
+  /* a larger ratio of the step causes a larger truncation error */
+  s = 1.0;
+  discrete_boundary_value_init( var );
+  discrete_boundary_value_scaled_jac( var, ja, &s );
+  nle._jac( &nle, var, jn, &s );
+  e1 = zMatElemAbsMax( zMatSubDRC( jn, ja ), NULL, NULL );
+  zNLESetEPSMin( &nle, 1.0e-2 );
+  nle._jac( &nle, var, jn, &s );
+  e2 = zMatElemAbsMax( zMatSubDRC( jn, ja ), NULL, NULL );
+  if( !( result2 = e2 > 100 * e1 ) )
+    eprintf( "error of numerical Jacobian: %g (default), %g (ratio = 1.0e-2)\n", e1, e2 );
+  zNLEDestroy( &nle );
+  zMatFreeAtOnce( 2, jn, ja );
+  zVecFree( var );
+  zAssert( zNLE (numerical Jacobian for variables of various scales), result1 );
+  zAssert( zNLESetEPSMin, result2 );
+}
+
 /* the returned value has to be 0 if the initial guess is the solution, and -1 if the number of iterations exceeds the limit. */
 void assert_nle_return(void)
 {
@@ -585,6 +653,7 @@ void assert_nle_return(void)
 int main(void)
 {
   assert_nle_jacobian();
+  assert_nle_jacobian_scale();
   assert_nle_solve( false );
   assert_nle_solve( true );
   assert_nle_underdetermined();

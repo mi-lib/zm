@@ -9,7 +9,7 @@
 /* step of numerical differentiation for the i-th component of the variable var, which is eps s_i for
    s_i = max{ |x_i|, ratio |x|inf } (s_i = 1 if x = 0), where xmax is |x|inf.
    the actual step is returned to cancel the round-off error in representing the variable. */
-static double _zOptDMDiffStep(const zVec var, int i, double xmax, double eps, double ratio)
+double zOptDMDiffStep(const zVec var, int i, double xmax, double eps, double ratio)
 {
   double x, xh;
 
@@ -31,7 +31,7 @@ static zVec _zOptDMGradNG(zOptDM *opt, const zVec var, zVec g, void *util)
 
   xmax = zVecElemAbsMax( var, NULL );
   for( i=0; i<zVecSizeNC(var); i++ ){
-    h = _zOptDMDiffStep( var, i, xmax, opt->eps_min, ZM_OPT_DM_DIFF_SCALE_RATIO );
+    h = zOptDMDiffStep( var, i, xmax, opt->eps_min, ZM_OPT_DM_DIFF_SCALE_RATIO );
     org = zVecElemNC(var,i);
     zVecSetElemNC( var, i, org + h );
     adv = opt->eval( var, util );
@@ -57,7 +57,7 @@ static zMat _zOptDMHessNG(zOptDM *opt, const zVec var, zMat h, void *util)
 
   xmax = zVecElemAbsMax( var, NULL );
   for( i=0; i<zVecSizeNC(var); i++ ){
-    d = _zOptDMDiffStep( var, i, xmax, opt->eps_min, ZM_OPT_DM_DIFF_SCALE_RATIO );
+    d = zOptDMDiffStep( var, i, xmax, opt->eps_min, ZM_OPT_DM_DIFF_SCALE_RATIO );
     org = zVecElemNC(var,i);
     zVecSetElemNC( var, i, org + d );
     opt->grad( var, opt->_p, util );
@@ -83,7 +83,7 @@ static zMat _zOptDMHessNG2(zOptDM *opt, const zVec var, zMat h, void *util)
   ratio = sqrt( ZM_OPT_DM_DIFF_SCALE_RATIO ); /* see the comment of ZM_OPT_DM_DIFF_SCALE_RATIO */
   f0 = opt->eval( var, util );
   for( i=0; i<zVecSizeNC(var); i++ ){
-    di = _zOptDMDiffStep( var, i, xmax, eps, ratio );
+    di = zOptDMDiffStep( var, i, xmax, eps, ratio );
     orgi = zVecElemNC(var,i);
     zVecSetElemNC( var, i, orgi + di );
     fpp = opt->eval( var, util );
@@ -91,7 +91,7 @@ static zMat _zOptDMHessNG2(zOptDM *opt, const zVec var, zMat h, void *util)
     fmm = opt->eval( var, util );
     zMatSetElemNC( h, i, i, ( fpp - 2*f0 + fmm ) / ( di*di ) );
     for( j=i+1; j<zVecSizeNC(var); j++ ){
-      dj = _zOptDMDiffStep( var, j, xmax, eps, ratio );
+      dj = zOptDMDiffStep( var, j, xmax, eps, ratio );
       orgj = zVecElemNC(var,j);
       zVecSetElemNC( var, i, orgi + di ); zVecSetElemNC( var, j, orgj + dj ); fpp = opt->eval( var, util );
       zVecSetElemNC( var, j, orgj - dj ); fpm = opt->eval( var, util );

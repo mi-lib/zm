@@ -67,6 +67,14 @@ __ZM_EXPORT zNLE *zNLECreate(zNLE *nle, int nv, int ne, zVec (*f)(const zVec,zVe
  */
 __ZM_EXPORT void zNLEDestroy(zNLE *nle);
 
+/*! \brief set the ratio of the step of numerical differentiation.
+ *
+ * zNLESetEPSMin() sets the ratio of the step of numerical differentiation to the magnitude of the
+ * variable to compute the Jacobian matrix, if it is not given to zNLECreate().
+ * It is initialized by ZM_OPT_DM_EPS. See ZM_OPT_DM_EPS for the detail.
+ */
+#define zNLESetEPSMin(nle,e) zOptDMSetEPSMin( &(nle)->_opt, e )
+
 /*! \brief assign simultaneous nonlinear equation solver.
  *
  * zNLEAssign() assignes a numerical method to solve
