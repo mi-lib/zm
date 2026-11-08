@@ -89,9 +89,32 @@ __ZM_EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVe
  * If it is the null pointer or another string, More-Thuente's line search is assigned, except that
  * Brent's line search is assigned for zOptDMAssignCG() if it is the null pointer.
  *
- * \a scale is the upper bound of the components of a step for "MT" and "DS", and the step length for
- * "fixed". If it is zero, ZM_OPT_DM_DEFAULT_SCALE is used for "MT" and "DS", and ZM_OPT_DM_DEFAULT_STEP
- * is used for "fixed".
+ * The step methods are suitable for the following cases:
+ *  - "MT" requires the function value and the gradient vector at every trial step.
+ *    It is the most robust. Use it if unsure. It guarantees the strong Wolfe's conditions, which keep
+ *    the quasi-Hessian matrix of the variable metric method positive definite and the direction of the
+ *    conjugate gradient method descent. It can also extrapolate the step length.
+ *    It is not suitable if the gradient vector is expensive to compute, e.g., computed numerically.
+ *  - "DS" requires only the function value at every trial step.
+ *    It is suitable for Newton-like directions, e.g., the variable metric method, for which the unit
+ *    step length is natural, when the gradient vector is expensive. It is the cheapest as long as the
+ *    full step is accepted.
+ *    It is not suitable for the steepest descent method or the conjugate gradient method, for which
+ *    the step length depends on the magnitude of the direction vector, since it cannot extrapolate.
+ *  - "Brent" requires only the function value at every trial step, but many trials.
+ *    It is suitable if each iteration is expensive, e.g., Levenberg-Marquardt's method that computes
+ *    the Hessian matrix, since it minimizes the number of iterations. It is also suitable for the
+ *    conjugate gradient method on nearly quadratic functions, which converges within the dimension
+ *    with the strict line search.
+ *    It is not suitable if the function is expensive to evaluate.
+ *  - "fixed" requires the function value and the gradient vector once for each iteration.
+ *    It is suitable for real-time applications with a known proper step length, where the computation
+ *    time for each iteration should be constant.
+ *    It is not suitable in general, since the iteration may diverge.
+ *
+ * \a scale is the upper bound of the components of a step for "MT", "DS" and "Brent", and the step
+ * length for "fixed". If it is zero, ZM_OPT_DM_DEFAULT_SCALE is used for "MT", "DS" and "Brent", and
+ * ZM_OPT_DM_DEFAULT_STEP is used for "fixed".
  *
  * \a updatemethod for zOptDMAssignVM() specifies the update formula of the quasi-Hessian matrix,
  * namely, "DFP" for Davidon-Fletcher-Powell's formula and others for Broyden-Fletcher-Goldfarb-Shanno's.

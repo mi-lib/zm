@@ -582,7 +582,7 @@ void assert_opt_dm_scale(void)
   zOptDM opt;
   zVec var;
   scale_check_t sc;
-  const char *stepmethod[] = { "MT", "DS" };
+  const char *stepmethod[] = { "MT", "DS", "Brent" };
   int i;
   bool result = true;
 
@@ -591,7 +591,7 @@ void assert_opt_dm_scale(void)
   sc.scale = 0.1; /* smaller than the steepest descent step */
   zOptDMCreate( &opt, DIM, quad_scale_check_eval, quad_scale_check_grad, NULL );
   zEchoOff(); /* to suppress a warning of unconverged iteration */
-  for( i=0; i<2; i++ ){
+  for( i=0; i<3; i++ ){
     zOptDMAssignSD( &opt, stepmethod[i], sc.scale );
     zVecSetAll( sc.x0, 1.0 );
     zVecCopy( sc.x0, var );
@@ -711,6 +711,44 @@ void assert_opt_dm_cg(void)
   zAssert( zOptDMSolve (conjugate gradient method), result2 );
 }
 
+/* Brent's line search has to bracket a minimum regardless of the scale of the function, and must not increase the function. */
+void assert_opt_dm_brent(void)
+{
+  zOptDM opt;
+  zVec var, ans;
+  double k[] = { 1.0e-3, 1.0, 1.0e3, 0 }, *kp;
+  int i, n;
+  bool result = true;
+  const double tol = 1.0e-6;
+
+  var = zVecAlloc( DIM );
+  ans = zVecAlloc( DIM );
+  /* scaled quadratic functions, for which the original search within [0,1] did not reach the minimizer */
+  for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i );
+  zOptDMCreate( &opt, DIM, quad_eval, quad_grad, NULL );
+  zOptDMAssignCG( &opt, "Brent", 0 );
+  for( kp=k; *kp>0; kp++ ){
+    zVecSetAll( var, 1.0 );
+    if( ( n = zOptDMSolve( &opt, var, kp, zTOL, 0, NULL ) ) < 0 || n > DIM || zVecDist( var, ans ) > tol ){
+      eprintf( "CG (Brent), k=%g: %d iterations, |x-x*| = %g\n", *kp, n, zVecDist( var, ans ) );
+      result = false;
+    }
+  }
+  zOptDMDestroy( &opt );
+  /* Rosenbrock function, where the original search converged to a local minimum along the line higher than the initial point */
+  zVecSetAll( ans, 1.0 );
+  zOptDMCreate( &opt, DIM, rosenbrock_eval, rosenbrock_grad, NULL );
+  zOptDMAssignCG( &opt, "Brent", 0 );
+  zVecSetElemList( var, -1.2, 1.0, -1.2, 1.0 );
+  if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
+    eprintf( "CG (Brent), Rosenbrock: |x-x*| = %g\n", zVecDist( var, ans ) );
+    result = false;
+  }
+  zOptDMDestroy( &opt );
+  zVecFreeAtOnce( 2, var, ans );
+  zAssert( zOptDMSolve (Brent), result );
+}
+
 int main(void)
 {
   zRandInit();
@@ -726,5 +764,6 @@ int main(void)
   assert_opt_dm_scale();
   assert_opt_dm_stay();
   assert_opt_dm_cg();
+  assert_opt_dm_brent();
   return 0;
 }

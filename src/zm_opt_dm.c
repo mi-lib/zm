@@ -306,7 +306,7 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, double tol, void *util, d
   w2 = w1;
   a1 = _zOptDMStepDSLimit( 0.5 * s / w1, a2 );
   /* cubic approximation test */
-  while( a1 > zTOL && !_zOptDMStepIsNegligible( opt, var, tol, a1 ) ){
+  while( !_zOptDMStepIsNegligible( opt, var, tol, a1 ) ){
     if( _zOptDMStepDSTest( e0, ( *e1 = _zOptDMStepEval( opt, var, util, a1 ) ), a1, df ) ) goto TERMINATE;
     w1 = ( *e1 - e0 + s*a1 ) / ( a1*a1 );
     c1 = 3 * ( w1 - w2 ) / ( a1 - a2 );
@@ -317,7 +317,7 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, double tol, void *util, d
     a1 = _zOptDMStepDSLimit( s / ( c2 + sqrt( c2*c2 + c1*s ) ), a2 );
   }
   /* no further decrease is detected even by a negligibly small step. */
-  if( a1 > zTOL && !zIsInf( *e1 ) && !zIsNan( *e1 ) ) return _zOptDMStepStay( opt, var, e0, e1 );
+  if( !zIsInf( *e1 ) && !zIsNan( *e1 ) ) return _zOptDMStepStay( opt, var, e0, e1 );
   ZRUNERROR( ZM_ERR_OPT_CANNOTFINDSTEP );
   return NULL;
 
@@ -328,37 +328,84 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, double tol, void *util, d
   return zVecCopyNC( opt->_x, var );
 }
 
-/* line search by Brent's strict minimization */
+/* line search by Brent's strict minimization within an interval bracketing a minimum.
+ * a minimum is bracketed by expanding or shrinking the step length by the golden ratio from
+ * the initial trial step length, and then is searched by Brent's method within the interval.
+ */
 typedef struct{
   zOptDM *opt;
   const zVec *var;
   void *util;
+  double scale; /* the step length is normalized by this value in Brent's method */
 } _zOptDMStepData;
 
-#define _zm_opt_data(u) ( (_zOptDMStepData *)u )
-static double _zOptDMStepBrentEval(double x, void *util)
+/* the function value at a step length, where a non-evaluable value is replaced by the infinity. */
+static double _zOptDMStepBrentVal(zOptDM *opt, const zVec var, void *util, double a)
 {
-  zVecCatNC( *_zm_opt_data(util)->var, -x, _zm_opt_data(util)->opt->_d, _zm_opt_data(util)->opt->_x );
-  return _zm_opt_data(util)->opt->eval( _zm_opt_data(util)->opt->_x, _zm_opt_data(util)->util );
+  double f;
+
+  f = _zOptDMStepEval( opt, var, util, a );
+  return zIsInf( f ) || zIsNan( f ) ? HUGE_VAL : f;
 }
-#undef _zm_opt_data
+
+static double _zOptDMStepBrentEval(double u, void *util)
+{
+  _zOptDMStepData *dat;
+  dat = util;
+  return _zOptDMStepBrentVal( dat->opt, *dat->var, dat->util, u * dat->scale );
+}
 
 static zVec _zOptDMStepBrent(zOptDM *opt, const zVec var, double tol, void *util, double e0, double *e1)
 {
-  double a;
+  double amax, a0, a1, a2, f0, f1, f2, a, fa;
   _zOptDMStepData opt_data;
 
   if( zIsNan( e0 ) ){
     ZRUNWARN( ZM_WARN_OPT_BADINI );
     return NULL;
   }
+  amax = _zOptDMStepMax( opt );
+  a0 = 0; f0 = e0;
+  f1 = _zOptDMStepBrentVal( opt, var, util, ( a1 = _zMin( 1.0, amax ) ) );
+  if( f1 >= f0 ){
+    /* shrink the step length until the function decreases */
+    do{
+      a2 = a1; f2 = f1;
+      if( _zOptDMStepIsNegligible( opt, var, tol, ( a1 /= ZM_GOLDENRATIO ) ) ){
+        /* no further decrease is detected even by a negligibly small step. */
+        if( f2 < HUGE_VAL ) return _zOptDMStepStay( opt, var, e0, e1 );
+        ZRUNERROR( ZM_ERR_OPT_CANNOTFINDSTEP );
+        return NULL;
+      }
+      f1 = _zOptDMStepBrentVal( opt, var, util, a1 );
+    } while( f1 >= f0 );
+  } else{
+    /* expand the step length until the function increases */
+    for( ; ; a0 = a1, f0 = f1, a1 = a2, f1 = f2 ){
+      if( a1 >= amax ){ /* the step length is not expanded beyond the upper bound */
+        a2 = a1; f2 = f1;
+        f1 = _zOptDMStepBrentVal( opt, var, util, ( a1 = a0 + ( a2 - a0 ) / ZM_GOLDENRATIO ) );
+        if( f1 < f2 ) break;
+        fa = _zOptDMStepEval( opt, var, util, a2 ); /* the function decreases up to the upper bound */
+        goto TERMINATE;
+      }
+      f2 = _zOptDMStepBrentVal( opt, var, util, ( a2 = _zMin( a1 + ZM_GOLDENRATIO * ( a1 - a0 ), amax ) ) );
+      if( f2 >= f1 ) break;
+    }
+  }
+  /* a minimum is bracketed in [a0,a2], where f(a1) < f(a0) and f(a1) <= f(a2) */
   opt_data.opt = opt;
   opt_data.var = &var;
   opt_data.util = util;
-  a = zOptLineBrent( _zOptDMStepBrentEval, 0, 1, &opt_data, 100 );
-  zVecMulNC( opt->_d, -a, opt->_p );
-  zVecAddNC( var, opt->_p, opt->_x );
-  *e1 = opt->eval( opt->_x, util );
+  /* the step length is normalized by the upper end of the interval, since the tolerance of
+     zOptLineBrent includes an absolute value. */
+  opt_data.scale = a2;
+  a = zOptLineBrent( _zOptDMStepBrentEval, a0 / a2, 1.0, &opt_data, 100 ) * a2;
+  if( !( ( fa = _zOptDMStepBrentVal( opt, var, util, a ) ) <= f1 ) )
+    fa = _zOptDMStepEval( opt, var, util, a1 ); /* the best step length while bracketing */
+
+ TERMINATE:
+  *e1 = fa;
   opt->_grad( opt, opt->_x, opt->_r, util );
   zVecSubNC( opt->_r, opt->_g, opt->_q );
   zVecCopyNC( opt->_r, opt->_g );
@@ -490,7 +537,7 @@ static void _zOptDMAssignStep(zOptDM *opt, const char *method, double scale)
     opt->_scale = scale == 0 ? ZM_OPT_DM_DEFAULT_STEP : scale;
     return;
   }
-  if( strcmp( method, "DS" ) == 0 ){ /* Dennis-Schnabel' method */
+  if( strcmp( method, "DS" ) == 0 ){ /* Dennis-Schnabel's method */
     opt->_step = _zOptDMStepDS;
   } else
   if( strcmp( method, "Brent" ) == 0 ) /* Brent's method */
