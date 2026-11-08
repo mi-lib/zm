@@ -615,6 +615,122 @@ void assert_nle_jacobian_scale(void)
   zAssert( zNLESetEPSMin, result2 );
 }
 
+/* a problem of the scaled variable y = s x */
+typedef struct{
+  problem_t *prob;
+  double s;
+} scaled_problem_t;
+
+zVec scaled_f(const zVec var, zVec f, void *util)
+{
+  scaled_problem_t *sp = util;
+  double buf[DBV_DIM*2];
+  zVecStruct x;
+
+  zVecAssignArray( &x, zVecSizeNC(var), buf );
+  zVecMul( var, 1/sp->s, &x );
+  return sp->prob->f( &x, f, NULL );
+}
+
+/* Newton-Raphson's method has to solve consistent problems for variables of various scales, including
+ * the problem with a singular Jacobian matrix at the solution. */
+void assert_nle_nr_scale(void)
+{
+  scaled_problem_t sp;
+  zNLE nle;
+  zVec var, res;
+  int ret;
+  bool result = true;
+
+  for( sp.prob=problem; sp.prob->name; sp.prob++ ){
+    if( !sp.prob->consistent ) continue;
+    var = zVecAlloc( sp.prob->nv );
+    res = zVecAlloc( sp.prob->ne );
+    zNLECreate( &nle, sp.prob->nv, sp.prob->ne, scaled_f, NULL );
+    zNLEAssignNR( &nle );
+    for( sp.s=1.0e-4; sp.s<=1.0e4; sp.s*=100 ){
+      sp.prob->init( var );
+      zVecMulDRC( var, sp.s );
+      zEchoOff();
+      ret = zNLESolve( &nle, var, &sp, TOL_STEP, TOL_ERR, ITER, NULL );
+      zEchoOn();
+      scaled_f( var, res, &sp );
+      if( ret < 0 || !zVecIsTol( res, TOL_ERR ) ){
+        eprintf( "%s, scale = %g: returned %d with |f| = %g\n", sp.prob->name, sp.s, ret, zVecElemAbsMax(res,NULL) );
+        result = false;
+      }
+    }
+    zNLEDestroy( &nle );
+    zVecFreeAtOnce( 2, var, res );
+  }
+  zAssert( zNLESolve (Newton-Raphson method for variables of various scales), result );
+}
+
+/* the weights on the components of the step of Newton-Raphson's method have to work for underdetermined systems. */
+void assert_nle_nr_weight(void)
+{
+  zNLE nle;
+  zVec var, res;
+  bool result = true;
+  const double tol = 1.0e-3;
+
+  var = zVecAlloc( 3 );
+  res = zVecAlloc( 2 );
+  /* sphere: y and z are not moved */
+  zNLECreate( &nle, 3, 1, sphere_f, NULL );
+  zNLEAssignNR( &nle );
+  zVecSetElemList( nle.wn, 1.0, 1.0e4, 1.0e4 );
+  zVecSetElemList( var, 2.0, 0.5, 0.5 );
+  if( zNLESolve( &nle, var, NULL, TOL_STEP, TOL_ERR, ITER, NULL ) < 0 ||
+      !zIsTol( zVecElemNC(var,1) - 0.5, tol ) || !zIsTol( zVecElemNC(var,2) - 0.5, tol ) ){
+    eprintf( "sphere: " ); zVecFPrint( stderr, var );
+    result = false;
+  }
+  zNLEDestroy( &nle );
+  /* two spheres: y is not moved */
+  zNLECreate( &nle, 3, 2, two_spheres_f, NULL );
+  zNLEAssignNR( &nle );
+  zVecSetElemList( nle.wn, 1.0, 1.0e4, 1.0 );
+  zVecSetElemList( var, 2.0, 0.5, 0.5 );
+  if( zNLESolve( &nle, var, NULL, TOL_STEP, TOL_ERR, ITER, NULL ) < 0 ||
+      !zIsTol( zVecElemNC(var,1) - 0.5, tol ) ){
+    eprintf( "two spheres: " ); zVecFPrint( stderr, var );
+    result = false;
+  }
+  zNLEDestroy( &nle );
+  zVecFreeAtOnce( 2, var, res );
+  zAssert( zNLESolve (weights of Newton-Raphson method for underdetermined system), result );
+}
+
+/* the coefficient of the damping of Newton-Raphson's method has to be initialized by ZM_NLE_NR_DEFAULT_DAMP_COEFF
+ * and set by zNLESetNRDampCoeff. a large coefficient slows down the convergence at a singular Jacobian matrix. */
+void assert_nle_nr_damp_coeff(void)
+{
+  problem_t *prob = &problem[1]; /* extended Powell singular function */
+  zNLE nle;
+  zVec var;
+  int ret1, ret2;
+  bool result1, result2;
+
+  var = zVecAlloc( prob->nv );
+  zNLECreate( &nle, prob->nv, prob->ne, prob->f, NULL );
+  zNLEAssignNR( &nle );
+  result1 = nle.nr_damp_coeff == ZM_NLE_NR_DEFAULT_DAMP_COEFF;
+  prob->init( var );
+  ret1 = zNLESolve( &nle, var, NULL, TOL_STEP, TOL_ERR, ITER, NULL );
+  zNLESetNRDampCoeff( &nle, 1.0e-4 );
+  prob->init( var );
+  zEchoOff();
+  ret2 = zNLESolve( &nle, var, NULL, TOL_STEP, TOL_ERR, ITER, NULL );
+  zEchoOn();
+  if( !( result2 = ret1 > 0 && ret2 == -1 ) )
+    eprintf( "returned %d (default), %d (coefficient = 1.0e-4)\n", ret1, ret2 );
+  zNLEDestroy( &nle );
+  zVecFree( var );
+  zAssert( zNLE (default coefficient of the damping of Newton-Raphson method), result1 );
+  zAssert( zNLESetNRDampCoeff, result2 );
+}
+
 /* the returned value has to be 0 if the initial guess is the solution, and -1 if the number of iterations exceeds the limit. */
 void assert_nle_return(void)
 {
@@ -658,6 +774,9 @@ int main(void)
   assert_nle_solve( true );
   assert_nle_underdetermined();
   assert_nle_broyden_nonsquare();
+  assert_nle_nr_scale();
+  assert_nle_nr_weight();
+  assert_nle_nr_damp_coeff();
   assert_nle_return();
   return 0;
 }

@@ -107,10 +107,40 @@ static int _zNLESolveDM(zNLE *nle, zVec var, void *util, double tol_step, double
 }
 
 /* Newton-Raphson's method. */
+
+#define ZM_NLE_NR_ARMIJO_COEFF    ( 1.0e-4 )
+#define ZM_NLE_NR_BACKTRACK_RATIO ( 0.5 )
+
+/* a half of the squared norm of the residual vector f weighted by we. */
+static double _zNLEResNorm(zNLE *nle, const zVec f)
+{
+  zVecAmpNC( f, nle->we, nle->_fw );
+  return 0.5 * zVecInnerProd( f, nle->_fw );
+}
+
+/* damping vector of Newton-Raphson's method, which is wn scaled by nr_damp_coeff times the maximum
+ * diagonal component of J^T diag(we) J, so that it is invariant with respect to the scales of the
+ * variable and the residual. */
+static zVec _zNLENRDamp(zNLE *nle, zVec damp)
+{
+  int i, j;
+  double d, dmax = 0;
+
+  for( j=0; j<zMatColSizeNC(nle->_j); j++ ){
+    for( d=0, i=0; i<zMatRowSizeNC(nle->_j); i++ )
+      d += zVecElemNC(nle->we,i) * zSqr( zMatElemNC(nle->_j,i,j) );
+    if( d > dmax ) dmax = d;
+  }
+  return zVecMulNC( nle->wn, nle->nr_damp_coeff * dmax, damp );
+}
+
+/* the descent direction d is computed by the SR-inverse of the Jacobian matrix J, namely,
+ * ( J^T W J + diag(damp) ) d = J^T W f, and the step -a d is chosen by the backtracking line search
+ * to satisfy Armijo's condition on the squared norm of the residual. */
 static int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol_step, double tol_err, int iter, double *err)
 {
   int i, ret = -1;
-  double a;
+  double a, e, ep, slope;
   zLEWorkspace workspace;
 
   workspace.m_regular = nle->_opt._h;
@@ -122,13 +152,28 @@ static int _zNLESolveNR(zNLE *nle, zVec var, void *util, double tol_step, double
     ret = 0;
     goto TERMINATE;
   }
+  e = _zNLEResNorm( nle, nle->_f );
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){
     nle->_jac( nle, var, nle->_j, util );
-    /* uses SR-inverse instead of MP-inverse, similar to LM method. */
-    zLESolveSRDST( nle->_j, nle->_f, nle->wn, nle->we, nle->_opt._d, &workspace );
-    if( ( a = _zNLEStep( nle, var, util ) ) == 0 ) goto TERMINATE;
+    _zNLENRDamp( nle, nle->_opt._r );
+    zVecCopyNC( nle->_f, nle->_fw ); /* since zLESolveSRDST destroys the right-hand-side vector */
+    if( !zLESolveSRDST( nle->_j, nle->_fw, nle->_opt._r, nle->we, nle->_opt._d, &workspace ) )
+      goto TERMINATE;
+    /* directional derivative of the squared norm of the residual along -d */
+    zVecAmpNC( nle->_f, nle->we, nle->_fw );
+    zMulMatTVecNC( nle->_j, nle->_fw, nle->_opt._g );
+    slope = zVecInnerProd( nle->_opt._g, nle->_opt._d );
+    for( a=1.0; ; a*=ZM_NLE_NR_BACKTRACK_RATIO ){
+      zVecCatNC( var, -a, nle->_opt._d, nle->_opt._x );
+      nle->f( nle->_opt._x, nle->_fp, util );
+      if( !zVecIsNan( nle->_fp ) &&
+          ( ep = _zNLEResNorm( nle, nle->_fp ) ) <= e - ZM_NLE_NR_ARMIJO_COEFF * a * slope ) break;
+      if( _zNLEStepIsSmall( nle, var, a, tol_step ) ) goto TERMINATE; /* line search fails */
+    }
+    zVecCopyNC( nle->_opt._x, var );
     zVecCopyNC( nle->_fp, nle->_f );
+    e = ep;
     if( zVecIsTol( nle->_f, tol_err ) ){
       ret = i + 1; /* succeed */
       goto TERMINATE;
@@ -178,7 +223,7 @@ static int _zNLESolveBroyden(zNLE *nle, zVec var, void *util, double tol_step, d
   return ret;
 }
 
-#define ZM_NLE_WN_DEFAULT ( 1.0e-4 )
+/* create a simultaneous nonlinear equations solver. */
 zNLE *zNLECreate(zNLE *nle, int nv, int ne, zVec (* f)(const zVec,zVec,void*), zMat (* jac)(const zVec,zMat,void*))
 {
   nle->util = NULL;
@@ -210,11 +255,13 @@ zNLE *zNLECreate(zNLE *nle, int nv, int ne, zVec (* f)(const zVec,zVec,void*), z
       return NULL;
     }
   }
-  zVecSetAll( nle->wn, ZM_NLE_WN_DEFAULT );
+  zVecSetAll( nle->wn, 1.0 );
   zVecSetAll( nle->we, 1.0 );
+  zNLESetNRDampCoeff( nle, ZM_NLE_NR_DEFAULT_DAMP_COEFF );
   return zNLEAssignNR( nle );
 }
 
+/* destroy a simultaneous nonlinear equations solver. */
 void zNLEDestroy(zNLE *nle)
 {
   nle->f = NULL;
