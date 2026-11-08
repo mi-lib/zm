@@ -7,7 +7,7 @@
 #include <zm/zm_sf.h>
 #include <zm/zm_complex.h>
 
-#define Z_FRESNEL_FP_MIN ( 1.0e-30 )
+#define ZM_FRESNEL_FP_MIN ( 1.0e-30 )
 
 /* Fresnel integral by Gilbert formula */
 static bool _zFresnelIntgGilbert(double x, double *s, double *c)
@@ -48,7 +48,7 @@ static bool _zFresnelIntgLentz(double x, double *s, double *c)
   pix2 = zPI_2 * x * x;
   _zComplexCreate( &z1, 1.0, 0.0 );
   _zComplexCreate( &b, 1.0, -pix2*2 );
-  _zComplexCreate( &cc, 1.0/Z_FRESNEL_FP_MIN, 0.0 );
+  _zComplexCreate( &cc, 1.0/ZM_FRESNEL_FP_MIN, 0.0 );
   zComplexCDiv( &z1, &b, &d );
   _zComplexCopy( &d, &h );
   for( n=1, i=2; i<=Z_MAX_ITER_NUM; i++, n+=2 ){
@@ -85,7 +85,7 @@ bool zFresnelIntgPI_2(double x, double *s, double *c)
   const double xth = 1.5; /* a heuristic threshould */
   bool ret = true;
 
-  if( ( ax = fabs( x ) ) < sqrt( Z_FRESNEL_FP_MIN ) ){ /* avoid failure of convergence */
+  if( ( ax = fabs( x ) ) < sqrt( ZM_FRESNEL_FP_MIN ) ){ /* avoid failure of convergence */
     *s = 0;
     *c = ax;
   } else if( ax <= xth ){ /* Gilbert formula for a small argument */

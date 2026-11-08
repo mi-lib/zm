@@ -322,7 +322,7 @@ static bool _zMatEigVecComplex(const zMat m, zComplex *eigval, zCVec eigvec1, zC
 }
 
 /* compute sets of eigenvalues and eigenvectors of a square matrix. */
-#define Z_EIGSYS_ITER_NUM 10
+#define ZM_EIGSYS_ITER_NUM 10
 bool zMatEig(const zMat m, zCVec eigval, zCMat eigbase, int iter)
 {
   zCVec eigvec1, eigvec2;
@@ -337,12 +337,12 @@ bool zMatEig(const zMat m, zCVec eigval, zCMat eigbase, int iter)
   /* eigenvectors by inverse iteration method */
   for( i=0; i<zMatRowSizeNC(m); ){
     if( zComplexIsReal( zCVecElemNC(eigval,i), zTOL ) ){
-      if( !_zMatEigVecReal( m, zCVecElemNC(eigval,i)->re, eigvec1, Z_EIGSYS_ITER_NUM ) )
+      if( !_zMatEigVecReal( m, zCVecElemNC(eigval,i)->re, eigvec1, ZM_EIGSYS_ITER_NUM ) )
         break;
       zCMatPutColNC( eigbase, i, eigvec1 );
       i++;
     } else{
-      if( !_zMatEigVecComplex( m, zCVecElemNC(eigval,i), eigvec1, eigvec2, Z_EIGSYS_ITER_NUM ) )
+      if( !_zMatEigVecComplex( m, zCVecElemNC(eigval,i), eigvec1, eigvec2, ZM_EIGSYS_ITER_NUM ) )
         break;
       zCMatPutCol( eigbase, i,   eigvec1 );
       zCMatPutCol( eigbase, i+1, eigvec2 );
@@ -485,7 +485,7 @@ bool zMatSymEigBisec(const zMat m, zVec eigval, zMat eigbase)
   nmin = _zMatSymEigBisecSturm( eigbase, emin );
   nmax = _zMatSymEigBisecSturm( eigbase, emax );
   _zMatSymEigBisecRec( eigbase, emin, nmin, emax, nmax, zVecBuf(eigval) );
-  _zMatSymEigBisecR( m, eigval, eigbase, Z_EIGSYS_ITER_NUM );
+  _zMatSymEigBisecR( m, eigval, eigbase, ZM_EIGSYS_ITER_NUM );
   return true;
 }
 

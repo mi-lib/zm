@@ -91,15 +91,15 @@ zVec zRANSAC(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,const zVecList*,void
   return q;
 }
 
-#define Z_RANSAC_SAMPLE_MIN_RATE 5
-#define Z_RANSAC_SAMPLE_MAX_RATE 0.5
-#define Z_RANSAC_TRIAL_RATE      3
-#define Z_RANSAC_THRESHOLD_RATE  0.1
+#define ZM_RANSAC_SAMPLE_MIN_RATE 5
+#define ZM_RANSAC_SAMPLE_MAX_RATE 0.5
+#define ZM_RANSAC_TRIAL_RATE      3
+#define ZM_RANSAC_THRESHOLD_RATE  0.1
 
 /* compute selection number from the size of parameters and the number of samples. */
 static int _zRANSACAutoSelectionNumber(const zVec q, const zVecList *sample, double rate)
 {
-  return zMin( zVecSizeNC(q)*Z_RANSAC_SAMPLE_MIN_RATE, zListSize(sample)*(1-rate)*Z_RANSAC_SAMPLE_MAX_RATE );
+  return zMin( zVecSizeNC(q)*ZM_RANSAC_SAMPLE_MIN_RATE, zListSize(sample)*(1-rate)*ZM_RANSAC_SAMPLE_MAX_RATE );
 }
 
 /* RANSAC with an automatic setting of parameters */
@@ -109,7 +109,7 @@ zVec zRANSACAuto(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,const zVecList*,
 
   ns = _zRANSACAutoSelectionNumber( q, sample, rate );
   return zRANSAC( q, sample, fit_fp, error_fp, util,
-    ns, ns*Z_RANSAC_TRIAL_RATE, Z_RANSAC_THRESHOLD_RATE*nl );
+    ns, ns*ZM_RANSAC_TRIAL_RATE, ZM_RANSAC_THRESHOLD_RATE*nl );
 }
 
 /* RANSAC with an automatic setting of parameters */
@@ -119,5 +119,5 @@ zVec zRANSACSaveInlierAuto(zVec q, zVecList *sample, zVec (* fit_fp)(zVec,const 
 
   ns = _zRANSACAutoSelectionNumber( q, sample, rate );
   return zRANSACSaveInlier( q, sample, fit_fp, error_fp, util,
-    ns, ns*Z_RANSAC_TRIAL_RATE, Z_RANSAC_THRESHOLD_RATE*nl, inlier );
+    ns, ns*ZM_RANSAC_TRIAL_RATE, ZM_RANSAC_THRESHOLD_RATE*nl, inlier );
 }

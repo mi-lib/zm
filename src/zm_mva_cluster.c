@@ -735,7 +735,7 @@ bool zVecMultiClusterSilhouettePrintFile(const zVecMultiCluster *mc, const char 
 /*! \brief clustering based on X-means
  *//* ******************************************************* */
 
-#define Z_XMEANS_MINSIZE 10
+#define ZM_XMEANS_MINSIZE 10
 
 /* merge subclusters with original. */
 static void _zVecMultiClusterMerge(zVecMultiCluster *mc, zVecClusterListCell *vc, zVecMultiCluster *submc)
@@ -841,7 +841,7 @@ static int _zVecMultiClusterXMeans(zVecMultiCluster *mc, zVecClusterListCell *cc
   int iter, iter1, iter2;
 
   /* ignore a too small cluster */
-  if( zListSize(zVecClusterSampleList(&cc->data)) < Z_XMEANS_MINSIZE ) return 0;
+  if( zListSize(zVecClusterSampleList(&cc->data)) < ZM_XMEANS_MINSIZE ) return 0;
   if( !zVecMultiClusterInit( &submc, mc->method.core_size ) ||
       !zVecMultiClusterMethodCopy( mc, &submc ) ) return 0;
 

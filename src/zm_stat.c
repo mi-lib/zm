@@ -16,7 +16,7 @@ double zNormalDistrib(double x, double mu, double sigma)
 }
 
 /* normal cumulative distribution. */
-#define Z_ND_CUM_MAX 200
+#define ZM_ND_CUM_MAX 200
 double zNormalCumDistrib(double x, double mu, double sigma)
 {
   int i;
@@ -25,7 +25,7 @@ double zNormalCumDistrib(double x, double mu, double sigma)
   x -= mu;
   x2 = zSqr( x / sigma );
   t = p = pp = x * exp(-0.5*x2) / ( sqrt(zPIx2) * sigma );
-  for( i=3; i<Z_ND_CUM_MAX; pp=p, i+=2 )
+  for( i=3; i<ZM_ND_CUM_MAX; pp=p, i+=2 )
     if( ( p += ( t *= x2 / i ) ) == pp ) return 0.5 + p;
   return x > 0 ? 1.0 : 0.0;
 }

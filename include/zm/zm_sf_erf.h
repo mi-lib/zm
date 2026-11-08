@@ -28,10 +28,10 @@ __ZM_EXPORT double zErfN(double x, int n);
 /*! \brief error function.
  *
  * zErf() is Gauss's error function, which is defined by the integral of 2/sqrt(pi) exp(-t^2) about t
- * from minus infinity to \a x. It is equivalent with zErfN( x, Z_ERF_DEFAULT_ORDER ).
+ * from minus infinity to \a x. It is equivalent with zErfN( x, ZM_ERF_DEFAULT_ORDER ).
  */
-#define Z_ERF_DEFAULT_ORDER 35
-#define zErf(x) zErfN( x, Z_ERF_DEFAULT_ORDER )
+#define ZM_ERF_DEFAULT_ORDER 35
+#define zErf(x) zErfN( x, ZM_ERF_DEFAULT_ORDER )
 
 /*! \brief cumulative distribution function.
  *

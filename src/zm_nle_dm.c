@@ -138,7 +138,7 @@ static int _zNLESolveBroyden(zNLE *nle, zVec var, void *util, double tol, int it
   return -1;
 }
 
-#define Z_NLE_WN_DEFAULT ( 1.0e-4 )
+#define ZM_NLE_WN_DEFAULT ( 1.0e-4 )
 zNLE *zNLECreate(zNLE *nle, int nv, int ne, double scale, zVec (* f)(const zVec,zVec,void*), zMat (* jac)(const zVec,zMat,void*))
 {
   nle->util = NULL;
@@ -168,7 +168,7 @@ zNLE *zNLECreate(zNLE *nle, int nv, int ne, double scale, zVec (* f)(const zVec,
       return NULL;
     }
   }
-  zVecSetAll( nle->wn, Z_NLE_WN_DEFAULT );
+  zVecSetAll( nle->wn, ZM_NLE_WN_DEFAULT );
   zVecSetAll( nle->we, 1.0 );
   return zNLEAssignNR( nle );
 }
