@@ -30,14 +30,14 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
   zVec (* grad)(const zVec,zVec,void*);
   zMat (* hess)(const zVec,zMat,void*);
   double eps_min; /* ratio of the step of numerical differentiation to the magnitude of the variable */
-  /*!< cond */
+  double tol_grad; /* ratio of the gradient vector to the initial one for convergence */
+  /*! \cond */
   zVec (* _grad)(zOptDM*,const zVec,zVec,void*);
   zMat (* _hess)(zOptDM*,const zVec,zMat,void*);
   zVec (* _vec)(zOptDM*,const zVec,zVec,void*);
   zVec (* _step)(zOptDM*,const zVec,double,void*,double,double*);
+  double (* _damp)(zOptDM*,void*);
   zMat (* _update_h)(zOptDM*,int);
-  double (* _damp)(zOptDM*);
-  /*! \cond */
   double _scale; /* scale of search range for MT and DS, and scale of stride for fixed method. */
   zVec _x, _d, _g;
   zVec _p, _q, _r;
@@ -50,23 +50,33 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
   /*! \endcond */
 };
 
-/*! \brief threshold of the gradient vector for convergence of descent method.
+/*! \brief default threshold of the gradient vector for convergence of descent method.
  *
  * zOptDMSolve() regards the iteration converged if the maximum absolute component of the gradient
- * vector becomes smaller than ZM_OPT_DM_GRAD_MIN times that at the initial point.
+ * vector becomes smaller than \a tol_grad times that at the initial point.
+ * \a tol_grad of zOptDM is initialized by ZM_OPT_DM_GRAD_MIN, and is set by zOptDMSetTolGrad().
  * Since a line search judges a decrease of the function value, the gradient vector can be reduced
  * only to the order of the square root of the machine epsilon relatively.
+ * If \a tol_grad is zero, the criterion with the gradient vector is disabled except that the gradient
+ * vector exactly vanishes, and the iteration terminates only when the step becomes small or the
+ * number of iterations exceeds the upper limit. It is useful when the function is not expected to
+ * be minimized but to be zero, e.g., the squared norm of the residual of nonlinear equations, where
+ * the gradient vector can be small even far from the solution if the Jacobian matrix is nearly
+ * singular.
  */
 #define ZM_OPT_DM_GRAD_MIN  ( 1.0e-8 )
+
+/*! \brief set the threshold of the gradient vector for convergence relative to the initial one. */
+#define zOptDMSetTolGrad(opt,t) ( (opt)->tol_grad = (t) )
 
 /*! \brief default ratio of the step of numerical differentiation to the magnitude of the variable.
  *
  * If the gradient vector or the Hessian matrix is not given to zOptDMCreate(), it is computed by the
- * central difference. The step for the i-th component of the variable x is eps_min s_i for the gradient
- * vector and the Hessian matrix computed from the gradient vector, and eps_min^(3/4) s_i for the Hessian
+ * central difference. The step for the i-th component of the variable x is \a eps_min s_i for the gradient
+ * vector and the Hessian matrix computed from the gradient vector, and \a eps_min^(3/4) s_i for the Hessian
  * matrix computed from the function value, where s_i is the magnitude of x_i defined with
  * ZM_OPT_DM_DIFF_SCALE_RATIO.
- * eps_min of zOptDM is initialized by ZM_OPT_DM_EPS, which is suitable if the function is computed with
+ * \a eps_min of zOptDM is initialized by ZM_OPT_DM_EPS, which is suitable if the function is computed with
  * the accuracy of the machine epsilon. It should be larger for a function with noise, which is set by
  * zOptDMSetEPSMin().
  * Note that the numerical differentiation is not accurate if the magnitude of the variable does not
@@ -182,8 +192,8 @@ __ZM_EXPORT void zOptDMDestroy(zOptDM *opt);
  * zOptDMSolve() minimizes the function assigned to \a opt from the initial guess \a var, and stores
  * the solution into \a var. \a util is a pointer to the utility data for the function.
  * The iteration terminates if one of the following conditions holds:
- *  - the maximum absolute component of the gradient vector becomes smaller than ZM_OPT_DM_GRAD_MIN
- *    times that at the initial point,
+ *  - the maximum absolute component of the gradient vector becomes smaller than \a tol_grad of \a opt
+ *    (ZM_OPT_DM_GRAD_MIN by default) times that at the initial point,
  *  - the maximum absolute component of the step becomes smaller than \a tol ( 1 + |\a var|inf ), or
  *  - the number of iterations exceeds \a iter. If \a iter is zero, Z_MAX_ITER_NUM is used instead.
  * The value of the function at the solution is stored where \a eval points, if it is not the null

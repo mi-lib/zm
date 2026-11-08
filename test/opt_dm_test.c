@@ -469,6 +469,43 @@ zVec nan_grad(const zVec var, zVec g, void *dummy)
   return zVecSetAll( g, 1.0 );
 }
 
+/* the threshold of the gradient vector relative to the initial one has to be adjustable, and the criterion has to be disabled with zero. */
+void assert_opt_dm_tol_grad(void)
+{
+  zOptDM opt;
+  zVec var;
+  double ks[] = { 1.0, 1.0 };
+  const double tol_grad[] = { 1.0e-3, ZM_OPT_DM_GRAD_MIN, 0 };
+  double g0, g[3];
+  int i, n[3];
+  bool result1, result2 = true;
+
+  var = zVecAlloc( DIM );
+  zOptDMCreate( &opt, DIM, quad_scaled_eval, quad_scaled_grad, NULL );
+  result1 = opt.tol_grad == ZM_OPT_DM_GRAD_MIN;
+  zOptDMAssignSD( &opt, "MT", 0 ); /* linear convergence */
+  zVecSetAll( var, 1.0 );
+  g0 = zVecElemAbsMax( quad_scaled_grad( var, opt._g, ks ), NULL );
+  for( i=0; i<3; i++ ){
+    zOptDMSetTolGrad( &opt, tol_grad[i] );
+    zVecSetAll( var, 1.0 );
+    n[i] = zOptDMSolve( &opt, var, ks, zTOL, 0, NULL );
+    g[i] = zVecElemAbsMax( quad_scaled_grad( var, opt._g, ks ), NULL );
+    if( n[i] <= 0 || ( tol_grad[i] > 0 && g[i] > tol_grad[i] * g0 ) ){
+      eprintf( "tol_grad = %g: returned %d, |g|/|g0| = %g\n", tol_grad[i], n[i], g[i] / g0 );
+      result2 = false;
+    }
+  }
+  if( !( n[0] < n[1] && n[1] < n[2] && g[2] < g[1] ) ){
+    eprintf( "number of iterations: %d, %d, %d, |g|/|g0| = %g, %g, %g\n", n[0], n[1], n[2], g[0]/g0, g[1]/g0, g[2]/g0 );
+    result2 = false;
+  }
+  zOptDMDestroy( &opt );
+  zVecFree( var );
+  zAssert( zOptDM (default threshold of the gradient vector), result1 );
+  zAssert( zOptDMSolve (threshold of the gradient vector), result2 );
+}
+
 /* the iteration has to terminate with the gradient relatively small to the initial one, and has to fail if the line search fails. */
 void assert_opt_dm_termination(void)
 {
@@ -911,6 +948,7 @@ int main(void)
   assert_opt_dm_mt();
   assert_opt_dm_fixed();
   assert_opt_dm_termination();
+  assert_opt_dm_tol_grad();
   assert_opt_dm_return();
   assert_opt_dm_scale();
   assert_opt_dm_stay();

@@ -516,14 +516,14 @@ static zVec _zOptDMVecSD(zOptDM *opt, const zVec var, zVec d, void *util)
 }
 
 /* damping coefficient of Levenberg-Marquardt method: the norm of the gradient vector */
-static double _zOptDMDampGrad(zOptDM *opt)
+static double _zOptDMDampGrad(zOptDM *opt, void *dummy)
 {
   return zVecNorm( opt->_g );
 }
 
 /* damping coefficient of Levenberg-Marquardt method: the smaller of the norm of the gradient vector
    and the Newton decrement g^T H^-1 g, where _x and _p are used as workspaces. */
-static double _zOptDMDampDec(zOptDM *opt)
+static double _zOptDMDampDec(zOptDM *opt, void *dummy)
 {
   double mg, md;
 
@@ -542,7 +542,7 @@ static zVec _zOptDMVecLM(zOptDM *opt, const zVec var, zVec d, void *util)
   double m;
 
   opt->_hess( opt, var, opt->_h, util );
-  m = opt->_damp( opt );
+  m = opt->_damp( opt, util );
   for( i=0; i<zVecSizeNC(opt->_g); i++ )
     zMatElemNC(opt->_h,i,i) += m;
   /* the right-hand-side vector is copied to _q since zLESolveGaussDST destroys it. */
@@ -575,6 +575,7 @@ zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVec,void*), zV
   opt->_grad = ( opt->grad = grad ) ? _zOptDMGrad : _zOptDMGradNG;
   opt->_hess = ( opt->hess = hess ) ? _zOptDMHess : ( grad ? _zOptDMHessNG : _zOptDMHessNG2 );
   opt->eps_min = ZM_OPT_DM_EPS;
+  opt->tol_grad = ZM_OPT_DM_GRAD_MIN;
   opt->_damp = _zOptDMDampGrad;
   opt->_hw = NULL;
   opt->_x = zVecAlloc( dim );
@@ -679,7 +680,7 @@ void zOptDMDestroy(zOptDM *opt)
 }
 
 /* the iteration terminates if
- * - the gradient vector becomes small relatively to the initial one, namely, |g|inf <= ZM_OPT_DM_GRAD_MIN |g0|inf,
+ * - the gradient vector becomes small relatively to the initial one, namely, |g|inf <= tol_grad |g0|inf,
  * - the step becomes small relatively to the variable, namely, |p|inf <= tol ( 1 + |x|inf ), or
  * - the number of iterations exceeds the given upper limit iter.
  * it also fails if the line search does not find any step. */
@@ -696,7 +697,7 @@ int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, d
   opt->_grad( opt, var, opt->_g, util );
   if( ( gmin = zVecElemAbsMax( opt->_g, NULL ) ) == 0 )
     return 0; /* no need for iteration. */
-  gmin *= ZM_OPT_DM_GRAD_MIN;
+  gmin *= opt->tol_grad;
   for( i=0; i<iter; i++ ){
     opt->_vec( opt, var, opt->_d, util ); /* descent vector */
     if( zVecInnerProdNC( opt->_g, opt->_d ) <= 0 ){
