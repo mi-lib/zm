@@ -1,6 +1,6 @@
 #include <zm/zm_nle.h>
 
-double f(double x, void *priv)
+double f(double x, void *util)
 {
   /*
   return (x+3)*(x+1)*(x-1)*(x-3);
@@ -8,24 +8,21 @@ double f(double x, void *priv)
   return exp(-x)-x;
 }
 
-int main(void)
+void check(const char *label, int (* method)(double (*)(double,void*),double*,double,double,void*,double,double,int))
 {
   double x;
+  int ret;
 
-  printf( "binary section method\n" );
-  x = zNLE_Bisec( f, -10, 10, NULL, zTOL, 0 );
-  printf( "f(%f) = %g\n", x, f(x,NULL) );
+  printf( "%s\n", label );
+  ret = method( f, &x, -10, 10, NULL, zTOL, zTOL, 0 );
+  printf( " returned %d, f(%f) = %g\n", ret, x, f(x,NULL) );
+}
 
-  printf( "Secant method\n" );
-  x = zNLE_Secant( f, -10, 10, NULL, zTOL, 0 );
-  printf( "f(%f) = %g\n", x, f(x,NULL) );
-
-  printf( "Regula-Falsi method\n" );
-  x = zNLE_RF( f, -10, 10, NULL, zTOL, 0 );
-  printf( "f(%f) = %g\n", x, f(x,NULL) );
-
-  printf( "Van Wijngaarden-Dekker-Brent method\n" );
-  x = zNLE_VDB( f, -10, 10, NULL, zTOL, 0 );
-  printf( "f(%f) = %g\n", x, f(x,NULL) );
+int main(void)
+{
+  check( "bisection method", zNLE1Bisec );
+  check( "secant method", zNLE1Secant );
+  check( "Regula-Falsi method", zNLE1RegulaFalsi );
+  check( "Van Wijngaarden-Dekker-Brent method", zNLE1VDB );
   return 0;
 }
