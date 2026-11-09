@@ -11,6 +11,5 @@
 
 #include <zm/zm_nle_se.h> /* single nonlinear equation */
 #include <zm/zm_nle_dm.h> /* simultaneous nonlinear equation solver by descent method */
-#include <zm/zm_nle_ss.h> /* successive substitution method */
 
 #endif /* __ZM_NLE_H__ */

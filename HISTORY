@@ -1,3 +1,4 @@
+2026.11.10. Abolished zSSSolve. [zm_nle_ss]
 2026.11.09. Added a test for single-variable nonlinear-equation solvers. [test]
 2026.11.09. Reimplemented zNLE1VDB based on the procedure zero by Brent (1973). [zm_nle_se]
 2026.11.09. Modified zNLE1RegulaFalsi to apply the Illinois modification by Dowell and Jarratt (1971). [zm_nle_se]

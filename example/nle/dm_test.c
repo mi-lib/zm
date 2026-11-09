@@ -133,13 +133,17 @@ zMat (* jac[])(zVec,zMat,void*) = {
 
 void check(const char *label, zNLE *nle, int id, zVec var, zVec r, void *util)
 {
-  zNLESolve( nle, var, util, zTOL, zTOL, 0, NULL );
-  printf( "(%s) answer: ", label );
+  int ret;
+
+  zVecSetAll( var, 1.0 );
+  ret = zNLESolve( nle, var, util, zTOL, zTOL, 0, NULL );
+  printf( "(%s) returned %d\n", label, ret );
+  printf( "   answer: " );
   zVecTouchup( var, zTOL );
   zVecPrint( var );
   f[id]( var, r, util );
   zVecTouchup( r, zTOL );
-  printf( "   residual: " );
+  printf( " residual: " );
   zVecPrint( r );
 }
 
@@ -157,35 +161,28 @@ int main(int argc, char *argv[])
     i = atoi( argv[1] );
   zNLECreate( &nle, DIM, DIM, f[i], argc > 2 ? jac[i] : NULL );
 
-  zVecSetAll( var, 1.0 );
+  zNLEAssignSD( &nle, NULL, 0 );
+  check( "SD (MT)", &nle, i, var, r, util );
+  zNLEAssignLM( &nle, "grad", "MT", 0 );
+  check( "LM (grad, MT)", &nle, i, var, r, util );
+  zNLEAssignLM( &nle, "dec", "MT", 0 );
+  check( "LM (dec, MT)", &nle, i, var, r, util );
+  zNLEAssignLM( &nle, "grad", "DS", 0 );
+  check( "LM (grad, DS)", &nle, i, var, r, util );
   zNLEAssignVM( &nle, "BFGS", "MT", 0 );
-  check( "VM(MT)", &nle, i, var, r, util );
-
-  zVecSetAll( var, 1.0 );
+  check( "VM (BFGS, MT)", &nle, i, var, r, util );
+  zNLEAssignVM( &nle, "DFP", "MT", 0 );
+  check( "VM (DFP, MT)", &nle, i, var, r, util );
   zNLEAssignVM( &nle, "BFGS", "Brent", 0 );
-  check( "VM(Brent)", &nle, i, var, r, util );
-
-  zVecSetAll( var, 1.0 );
-  zNLEAssignLM( &nle, NULL, NULL, 0 );
-  check( "LM", &nle, i, var, r, util );
-
-  zVecSetAll( var, 1.0 );
-  zNLEAssignLM( &nle, NULL, "MT", 0 );
-  check( "LM(MT)", &nle, i, var, r, util );
-
-  zVecSetAll( var, 1.0 );
-  zNLEAssignLM( &nle, NULL, "Brent", 0 );
-  check( "LM(Brent)", &nle, i, var, r, util );
-
-  zVecSetAll( var, 1.0 );
+  check( "VM (BFGS, Brent)", &nle, i, var, r, util );
+  zNLEAssignCG( &nle, NULL, 0 );
+  check( "CG (Brent)", &nle, i, var, r, util );
   zNLEAssignNR( &nle );
   check( "NR", &nle, i, var, r, util );
-
-  zVecSetAll( var, 1.0 );
   zNLEAssignBroyden( &nle );
-  check( "BR", &nle, i, var, r, util );
+  check( "Broyden", &nle, i, var, r, util );
 
   zNLEDestroy( &nle );
-  zVecFree( var );
+  zVecFreeAtOnce( 2, var, r );
   return 0;
 }
