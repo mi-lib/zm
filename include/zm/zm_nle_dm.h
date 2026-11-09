@@ -32,9 +32,9 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNLE ){
   zVec (*f)(const zVec,zVec,void*);
   zMat (*jac)(const zVec,zMat,void*);
   void *util;
-  zVec wn; /* relative weights on the components of the step of Newton-Raphson's method */
+  zVec wn; /* relative weights on the components of the step of Newton-Raphson's method and Broyden's method */
   zVec we; /* weights on the components of the residual */
-  double nr_damp_coeff; /* coefficient of the damping of Newton-Raphson's method */
+  double nr_damp_coeff; /* coefficient of the damping of Newton-Raphson's method and Broyden's method */
   /*! \cond */
   zMat (*_jac)(zNLE*,zVec,zMat,void*);
   int ( *_solve)(zNLE*,zVec,void*,double,double,int,double*);
@@ -47,7 +47,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNLE ){
   /*! \endcond */
 };
 
-/*! \brief default coefficient of the damping of Newton-Raphson's method.
+/*! \brief default coefficient of the damping of Newton-Raphson's method and Broyden's method.
  *
  * Newton-Raphson's method of zNLE computes the step d by the SR-inverse of the Jacobian matrix J,
  * namely, ( J^T W J + c diag(wn) ) d = J^T W f, where f is the residual vector, W = diag(we), and
@@ -64,10 +64,15 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNLE ){
  * and components with large weights have to be moved.
  * nr_damp_coeff is initialized by ZM_NLE_NR_DEFAULT_DAMP_COEFF in zNLECreate(), and set by
  * zNLESetNRDampCoeff().
+ * Broyden's method of zNLE computes the step in the same way, where J is replaced by its approximation
+ * updated by Broyden's rule. The exact Jacobian matrix is computed only at the initial point and when
+ * the approximate one fails to give a step that decreases the residual or the step stagnates. Hence,
+ * it requires less evaluations of the function than Newton-Raphson's method, if the Jacobian matrix
+ * is not given and computed numerically, while the convergence is superlinear instead of quadratic.
  */
 #define ZM_NLE_NR_DEFAULT_DAMP_COEFF ( 1.0e-12 )
 
-/*! \brief set the coefficient of the damping of Newton-Raphson's method. */
+/*! \brief set the coefficient of the damping of Newton-Raphson's method and Broyden's method. */
 #define zNLESetNRDampCoeff(nle,coeff) ( (nle)->nr_damp_coeff = (coeff) )
 
 __BEGIN_DECLS
