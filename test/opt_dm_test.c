@@ -469,6 +469,44 @@ zVec nan_grad(const zVec var, zVec g, void *dummy)
   return zVecSetAll( g, 1.0 );
 }
 
+/* the step has to be judged small relatively to the scale of the initial guess even for a small variable,
+ * and the step has to be invariant with respect to the scale of the variable. */
+void assert_opt_dm_step_scale(void)
+{
+  zOptDM opt;
+  zVec var, ans;
+  double ks[] = { 1.0, 0 };
+  const char *label[] = { "SD (MT)", "LM (MT)", "VM (BFGS, MT)", "CG (MT)", "CG (Brent)" };
+  int i, k;
+  bool result = true;
+  const double tol = 1.0e-6;
+
+  var = zVecAlloc( DIM );
+  ans = zVecAlloc( DIM );
+  zOptDMCreate( &opt, DIM, quad_scaled_eval, quad_scaled_grad, NULL );
+  zOptDMSetTolGrad( &opt, 0 ); /* terminate only by the step */
+  for( ks[1]=1.0e-8; ks[1]<=1.0e8; ks[1]*=1.0e4 ){
+    for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i*ks[1] );
+    for( k=0; k<5; k++ ){
+      switch( k ){
+      case 0:  zOptDMAssignSD( &opt, "MT", 0 ); break;
+      case 1:  zOptDMAssignLM( &opt, NULL, "MT", 0 ); break;
+      case 2:  zOptDMAssignVM( &opt, "BFGS", "MT", 0 ); break;
+      case 3:  zOptDMAssignCG( &opt, "MT", 0 ); break;
+      default: zOptDMAssignCG( &opt, "Brent", 0 );
+      }
+      zVecSetAll( var, DIM*ks[1] );
+      if( zOptDMSolve( &opt, var, ks, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol * ks[1] ){
+        eprintf( "%s, scale = %g: |x-x*|/s = %g\n", label[k], ks[1], zVecDist( var, ans ) / ks[1] );
+        result = false;
+      }
+    }
+  }
+  zOptDMDestroy( &opt );
+  zVecFreeAtOnce( 2, var, ans );
+  zAssert( zOptDMSolve (termination by the step relative to the initial guess), result );
+}
+
 /* the threshold of the gradient vector relative to the initial one has to be adjustable, and the criterion has to be disabled with zero. */
 void assert_opt_dm_tol_grad(void)
 {
@@ -736,6 +774,7 @@ void assert_opt_dm_cg(void)
   /* Rosenbrock function */
   zVecSetAll( ans, 1.0 );
   zOptDMCreate( &opt, DIM, rosenbrock_eval, rosenbrock_grad, NULL );
+  zOptDMSetTolGrad( &opt, 1.0e-10 ); /* see assert_opt_dm_lm */
   zOptDMAssignCG( &opt, "MT", 0 );
   zVecSetElemList( var, -1.2, 1.0, -1.2, 1.0 ); /* the standard initial guess */
   if( zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
@@ -817,6 +856,9 @@ void assert_opt_dm_lm(void)
   /* Rosenbrock function */
   zVecSetAll( ans, 1.0 );
   zOptDMCreate( &opt, DIM, rosenbrock_eval, rosenbrock_grad, NULL );
+  /* the default threshold of the gradient vector ZM_OPT_DM_GRAD_MIN |g0| = 2.2e-6 could leave the error
+   * up to 5e-6 with the minimum eigenvalue 0.4 of the Hessian matrix at the solution. */
+  zOptDMSetTolGrad( &opt, 1.0e-10 );
   for( i=0; i<2; i++ )
     for( j=1; j<3; j++ ){
       zOptDMAssignLM( &opt, dampmethod[i], stepmethod[j], 0 );
@@ -949,6 +991,7 @@ int main(void)
   assert_opt_dm_fixed();
   assert_opt_dm_termination();
   assert_opt_dm_tol_grad();
+  assert_opt_dm_step_scale();
   assert_opt_dm_return();
   assert_opt_dm_scale();
   assert_opt_dm_stay();

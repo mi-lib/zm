@@ -53,10 +53,11 @@ static zMat _zNLEHess(const zVec var, zMat h, void *util)
 
 #undef _zm_nle
 
-/* check if the step a d is small relatively to the variable. */
+/* check if the step a d is small relatively to the variable, namely, |a d|inf <= tol_step ( |x|inf + s0 ),
+ * where s0 is the scale of the initial guess stored in nle->_opt._xscale. */
 static bool _zNLEStepIsSmall(zNLE *nle, const zVec var, double a, double tol_step)
 {
-  return a * zVecElemAbsMax( nle->_opt._d, NULL ) <= tol_step * ( 1 + zVecElemAbsMax( var, NULL ) );
+  return a * zVecElemAbsMax( nle->_opt._d, NULL ) <= tol_step * ( zVecElemAbsMax( var, NULL ) + nle->_opt._xscale );
 }
 
 static void _zNLEEvalRes(zNLE *nle, const zVec var, void *util, double *err)
@@ -67,7 +68,8 @@ static void _zNLEEvalRes(zNLE *nle, const zVec var, void *util, double *err)
 }
 
 /* the iteration succeeds if the residual becomes small, namely, |f|inf <= tol_err, and fails if
- * - the step becomes small relatively to the variable, namely, |p|inf <= tol_step ( 1 + |x|inf ),
+ * - the step becomes small relatively to the variable, namely, |p|inf <= tol_step ( |x|inf + s0 ), where
+ *   s0 is |x0|inf for the initial guess x0, or 1 if x0 = 0,
  * - the number of iterations exceeds the given upper limit iter, or
  * - the function cannot be evaluated along the step.
  */
@@ -90,7 +92,6 @@ static int _zNLESolveDM(zNLE *nle, zVec var, void *util, double tol_step, double
 
 /* Newton-Raphson's method. */
 
-#define ZM_NLE_NR_ARMIJO_COEFF    ( 1.0e-4 )
 #define ZM_NLE_NR_BACKTRACK_RATIO ( 0.5 )
 
 /* a half of the squared norm of the residual vector f weighted by we. */
@@ -154,6 +155,7 @@ static int _zNLESolveNewton(zNLE *nle, zVec var, void *util, double tol_step, do
   workspace.v_ispace = nle->_opt._p;
   workspace.index_le = nle->_opt._idx;
   workspace.v_scale = nle->_opt._q;
+  if( ( nle->_opt._xscale = zVecElemAbsMax( var, NULL ) ) == 0 ) nle->_opt._xscale = 1.0; /* see _zNLEStepIsSmall */
   nle->f( var, nle->_f, util );
   if( zVecIsTol( nle->_f, tol_err ) ){
     ret = 0;
@@ -177,7 +179,7 @@ static int _zNLESolveNewton(zNLE *nle, zVec var, void *util, double tol_step, do
       zVecCatNC( var, -a, nle->_opt._d, nle->_opt._x );
       nle->f( nle->_opt._x, nle->_fp, util );
       if( !zVecIsNan( nle->_fp ) &&
-          ( ep = _zNLEResNorm( nle, nle->_fp ) ) <= e - ZM_NLE_NR_ARMIJO_COEFF * a * slope ) break;
+          ( ep = _zNLEResNorm( nle, nle->_fp ) ) <= e - ZM_OPT_DM_ARMIJO_COEFF * a * slope ) break;
       if( _zNLEStepIsSmall( nle, var, a, tol_step ) ) goto RESTART; /* line search fails */
     }
     /* the Jacobian matrix is updated before var and f are updated, but not if the iteration terminates */
@@ -273,26 +275,8 @@ void zNLEDestroy(zNLE *nle)
   zOptDMDestroy( &nle->_opt );
 }
 
-zNLE *zNLEAssignSD(zNLE *nle, const char *stepmethod, double scale){
-  if( !zOptDMAssignSD( &nle->_opt, stepmethod, scale ) )
-    return NULL;
-  nle->_solve = _zNLESolveDM;
-  return nle;
-}
 zNLE *zNLEAssignLM(zNLE *nle, const char *dampmethod, const char *stepmethod, double scale){
   if( !zOptDMAssignLM( &nle->_opt, dampmethod, stepmethod, scale ) )
-    return NULL;
-  nle->_solve = _zNLESolveDM;
-  return nle;
-}
-zNLE *zNLEAssignVM(zNLE *nle, const char *updatemethod, const char *stepmethod, double scale){
-  if( !zOptDMAssignVM( &nle->_opt, updatemethod, stepmethod, scale ) )
-    return NULL;
-  nle->_solve = _zNLESolveDM;
-  return nle;
-}
-zNLE *zNLEAssignCG(zNLE *nle, const char *stepmethod, double scale){
-  if( !zOptDMAssignCG( &nle->_opt, stepmethod, scale ) )
     return NULL;
   nle->_solve = _zNLESolveDM;
   return nle;

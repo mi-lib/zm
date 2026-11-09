@@ -32,7 +32,8 @@ __BEGIN_DECLS
  * is guaranteed to converge with at most about the square of the number of evaluations required by
  * the bisection method. It is based on the procedure zero in the following book:
  *  R. P. Brent, Algorithms for Minimization without Derivatives, Chapter 4, Prentice-Hall, 1973.
- * The tolerance of Brent's procedure is replaced by a half of \a tol_step ( 1 + |x| ).
+ * The tolerance of Brent's procedure is replaced by a half of \a tol_step ( |x| + s0 ), where s0 is
+ * defined below.
  *
  * zNLE1Secant() is the secant method, which starts from two initial guesses \a x1 and \a x2. It does not
  * require them to bracket a root, and can find a root outside of them or a root where the function does
@@ -44,14 +45,14 @@ __BEGIN_DECLS
  * If \a f(\a x1) and \a f(\a x2) have the same sign, zNLE1Bisec(), zNLE1RegulaFalsi(), and zNLE1VDB()
  * (and zNLE1Secant() if \a f(\a x1) = \a f(\a x2)) search a bracketing range in [ \a x1, \a x2 ]
  * by dividing it into 2^k equal subranges for k=1, 2, ... until the subranges become smaller than
- * \a tol_step ( 1 + max{|\a x1|,|\a x2|} ). Which root is found depends on the procedure, if the range
+ * \a tol_step ( 2 s0 ), where s0 = max{|\a x1|,|\a x2|} (1 if both are zero). Which root is found depends on the procedure, if the range
  * contains more than one root. Note that a root where the function does not change its sign, e.g., a
  * double root, cannot be found by the search.
  *
  * If the function is not a number or infinity at a trial point, the step to the point is shortened by
  * halving it until the function is evaluated validly. The function has to be valid at \a x1 and \a x2.
  * The iteration succeeds if |\a f(x)| becomes smaller than \a tol_err. It fails if the step becomes
- * smaller than \a tol_step ( 1 + |x| ), or the number of iterations exceeds \a iter. If \a iter is
+ * smaller than \a tol_step ( |x| + s0 ), or the number of iterations exceeds \a iter. If \a iter is
  * zero, Z_MAX_ITER_NUM is used instead.
  * \return
  * These functions return the number of iterations, i.e., the number of evaluations of \a f except

@@ -21,12 +21,9 @@
  *
  * zNLE is simultaneous nonlinear equation solver class based on descent method.
  * Available methods include
- * 1. steepest descent method,
- * 2. Levenberg-Marquardt's method,
- * 3. variable metric method (quasi Newton's method, secant method),
- * 4. conjugate gradient method (Fletcher-Reeves' method).
- * 5. Newton-Raphson's method, and
- * 6. Broyden's method.
+ * 1. Levenberg-Marquardt's method,
+ * 2. Newton-Raphson's method, and
+ * 3. Broyden's method.
  */
 ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNLE ){
   zVec (*f)(const zVec,zVec,void*);
@@ -110,17 +107,15 @@ __ZM_EXPORT void zNLEDestroy(zNLE *nle);
  * zNLEAssign() assignes a numerical method to solve
  * simultaneous nonlinear equations to \a nle.
  * Currently, the following methods are available.
- *  "SD" for steepest descent method,
  *  "LM" for Levenberg-Marquardt's method,
- *  "VM" for variable metric method,
- *  "CG" for conjugate gradient metric method,
  *  "NR" for Newton-Raphson's method, and
  *  "Broyden" for Broyden's method.
+ * The steepest descent method, the variable metric method and the conjugate gradient method are
+ * not available, since they
+ * need the Jacobian matrix to compute the gradient vector of the squared norm of the residual at
+ * every evaluation, while they do not utilize it to approximate the Hessian matrix.
  */
-__ZM_EXPORT zNLE *zNLEAssignSD(zNLE *nle, const char *stepmethod, double scale);
 __ZM_EXPORT zNLE *zNLEAssignLM(zNLE *nle, const char *dampmethod, const char *stepmethod, double scale);
-__ZM_EXPORT zNLE *zNLEAssignVM(zNLE *nle, const char *updatemethod, const char *stepmethod, double scale);
-__ZM_EXPORT zNLE *zNLEAssignCG(zNLE *nle, const char *stepmethod, double scale);
 __ZM_EXPORT zNLE *zNLEAssignNR(zNLE *nle);
 __ZM_EXPORT zNLE *zNLEAssignBroyden(zNLE *nle);
 
@@ -134,7 +129,9 @@ __ZM_EXPORT zNLE *zNLEAssignBroyden(zNLE *nle);
  * The iteration succeeds if the maximum absolute component
  * of the residual vector becomes smaller than \a tol_err.
  * It fails if the maximum absolute component of the step
- * becomes smaller than \a tol_step ( 1 + |\a var|inf ),
+ * becomes smaller than \a tol_step ( |\a var|inf + s0 ),
+ * where s0 is the maximum absolute component of the initial
+ * guess (1 if it is zero),
  * namely, the iteration stagnates at a point where the
  * residual is not small enough, e.g., a local minimum of
  * the norm of the residual.

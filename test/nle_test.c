@@ -367,26 +367,19 @@ problem_t problem[] = {
 typedef struct{
   const char *label;
   zNLE *(* assign)(zNLE*);
-  bool robust; /* true if the method is expected to solve all consistent problems */
 } method_t;
 
 zNLE *assign_nr(zNLE *nle){ return zNLEAssignNR( nle ); }
 zNLE *assign_broyden(zNLE *nle){ return zNLEAssignBroyden( nle ); }
 zNLE *assign_lm_grad(zNLE *nle){ return zNLEAssignLM( nle, "grad", NULL, 0 ); }
 zNLE *assign_lm_dec(zNLE *nle){ return zNLEAssignLM( nle, "dec", NULL, 0 ); }
-zNLE *assign_vm(zNLE *nle){ return zNLEAssignVM( nle, NULL, NULL, 0 ); }
-zNLE *assign_sd(zNLE *nle){ return zNLEAssignSD( nle, NULL, 0 ); }
-zNLE *assign_cg(zNLE *nle){ return zNLEAssignCG( nle, NULL, 0 ); }
 
 method_t method[] = {
-  { "NR",       assign_nr,      true },
-  { "Broyden",  assign_broyden, true },
-  { "LM (grad)",assign_lm_grad, true },
-  { "LM (dec)", assign_lm_dec,  true },
-  { "VM",       assign_vm,      false },
-  { "SD",       assign_sd,      false },
-  { "CG",       assign_cg,      false },
-  { NULL, NULL, false },
+  { "NR",       assign_nr },
+  { "Broyden",  assign_broyden },
+  { "LM (grad)",assign_lm_grad },
+  { "LM (dec)", assign_lm_dec },
+  { NULL, NULL },
 };
 
 #define TOL_STEP zTOL
@@ -425,8 +418,8 @@ bool check_result(problem_t *prob, method_t *meth, const char *jaclabel, int ret
   return result;
 }
 
-/* every method has to succeed only if the residual becomes small, robust methods have to solve all consistent
- * problems, and every method has to fail for an inconsistent problem. */
+/* every method has to succeed only if the residual becomes small, to solve all consistent problems,
+ * and to fail for an inconsistent problem. */
 void assert_nle_solve(bool use_jac)
 {
   problem_t *prob;
@@ -444,7 +437,7 @@ void assert_nle_solve(bool use_jac)
       prob->init( var );
       ret = solve( prob, meth, use_jac, var, res, ITER, &err );
       if( !check_result( prob, meth, jaclabel, ret, res, err ) ) result1 = false;
-      if( prob->consistent && meth->robust && ret < 0 ){
+      if( prob->consistent && ret < 0 ){
         eprintf( "%s, %s (%s): failed with |f| = %g\n", prob->name, meth->label, jaclabel, zVecElemAbsMax(res,NULL) );
         result2 = false;
       }
@@ -457,16 +450,16 @@ void assert_nle_solve(bool use_jac)
   }
   if( use_jac ){
     zAssert( zNLESolve (success only with small residual, analytic Jacobian), result1 );
-    zAssert( zNLESolve (robust methods for consistent problems, analytic Jacobian), result2 );
+    zAssert( zNLESolve (solution of consistent problems, analytic Jacobian), result2 );
     zAssert( zNLESolve (failure for inconsistent problem, analytic Jacobian), result3 );
   } else{
     zAssert( zNLESolve (success only with small residual, numerical Jacobian), result1 );
-    zAssert( zNLESolve (robust methods for consistent problems, numerical Jacobian), result2 );
+    zAssert( zNLESolve (solution of consistent problems, numerical Jacobian), result2 );
     zAssert( zNLESolve (failure for inconsistent problem, numerical Jacobian), result3 );
   }
 }
 
-/* underdetermined systems have to be solved by robust methods. */
+/* underdetermined systems have to be solved by every method. */
 void assert_nle_underdetermined(void)
 {
   problem_t *prob;
@@ -481,7 +474,6 @@ void assert_nle_underdetermined(void)
     var = zVecAlloc( prob->nv );
     res = zVecAlloc( prob->ne );
     for( meth=method; meth->label; meth++ ){
-      if( !meth->robust ) continue;
       prob->init( var );
       ret = solve( prob, meth, false, var, res, ITER, &err );
       if( ret < 0 || !zVecIsTol( res, TOL_ERR ) ){
@@ -610,50 +602,54 @@ zVec scaled_f(const zVec var, zVec f, void *util)
   return sp->prob->f( &x, f, NULL );
 }
 
-/* Newton-Raphson's method and Broyden's method have to solve consistent problems for variables of various
- * scales, including the problem with a singular Jacobian matrix at the solution. Broyden's method has to
- * evaluate the function less than Newton-Raphson's method with the numerical Jacobian matrix. */
-void assert_nle_newton_scale(void)
+/* Newton-Raphson's method, Broyden's method and Levenberg-Marquardt's method have to solve consistent problems
+ * for variables of various scales, including the problem with a singular Jacobian matrix at the solution.
+ * Broyden's method has to evaluate the function less than Newton-Raphson's method with the numerical
+ * Jacobian matrix. */
+void assert_nle_scale(void)
 {
   scaled_problem_t sp;
   zNLE nle;
   zVec var, res;
   int i, ret, count[2] = { 0, 0 };
-  bool result1 = true, result2;
-  const char *label[] = { "NR", "Broyden" };
+  bool result1 = true, result2 = true, result3;
+  const char *label[] = { "NR", "Broyden", "LM (grad)", "LM (dec)" };
 
   for( sp.prob=problem; sp.prob->name; sp.prob++ ){
     if( !sp.prob->consistent ) continue;
     var = zVecAlloc( sp.prob->nv );
     res = zVecAlloc( sp.prob->ne );
     zNLECreate( &nle, sp.prob->nv, sp.prob->ne, scaled_f, NULL );
-    for( i=0; i<2; i++ ){
-      if( i == 0 )
-        zNLEAssignNR( &nle );
-      else
-        zNLEAssignBroyden( &nle );
-      for( sp.s=1.0e-4; sp.s<=1.0e4; sp.s*=100 ){
+    for( i=0; i<4; i++ ){
+      switch( i ){
+      case 0:  zNLEAssignNR( &nle ); break;
+      case 1:  zNLEAssignBroyden( &nle ); break;
+      case 2:  zNLEAssignLM( &nle, "grad", NULL, 0 ); break;
+      default: zNLEAssignLM( &nle, "dec", NULL, 0 );
+      }
+      for( sp.s=1.0e-8; sp.s<=1.0e8; sp.s*=1.0e4 ){
         sp.prob->init( var );
         zVecMulDRC( var, sp.s );
         sp.count = 0;
         zEchoOff();
         ret = zNLESolve( &nle, var, &sp, TOL_STEP, TOL_ERR, ITER, NULL );
         zEchoOn();
-        count[i] += sp.count;
+        if( i < 2 ) count[i] += sp.count;
         scaled_f( var, res, &sp );
         if( ret < 0 || !zVecIsTol( res, TOL_ERR ) ){
           eprintf( "%s, %s, scale = %g: returned %d with |f| = %g\n", label[i], sp.prob->name, sp.s, ret, zVecElemAbsMax(res,NULL) );
-          result1 = false;
+          if( i < 2 ) result1 = false; else result2 = false;
         }
       }
     }
     zNLEDestroy( &nle );
     zVecFreeAtOnce( 2, var, res );
   }
-  if( !( result2 = count[1] < count[0] ) )
+  if( !( result3 = count[1] < count[0] ) )
     eprintf( "number of evaluations: %d (NR), %d (Broyden)\n", count[0], count[1] );
   zAssert( zNLESolve (Newton-Raphson and Broyden methods for variables of various scales), result1 );
-  zAssert( zNLESolve (less evaluations by Broyden method), result2 );
+  zAssert( zNLESolve (Levenberg-Marquardt method for variables of various scales), result2 );
+  zAssert( zNLESolve (less evaluations by Broyden method), result3 );
 }
 
 /* the weights on the components of the step of Newton-Raphson's method have to work for underdetermined systems. */
@@ -763,7 +759,7 @@ int main(void)
   assert_nle_solve( false );
   assert_nle_solve( true );
   assert_nle_underdetermined();
-  assert_nle_newton_scale();
+  assert_nle_scale();
   assert_nle_nr_weight();
   assert_nle_nr_damp_coeff();
   assert_nle_return();

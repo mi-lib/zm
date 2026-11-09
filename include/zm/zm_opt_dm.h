@@ -31,6 +31,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
   zMat (* hess)(const zVec,zMat,void*);
   double eps_min; /* ratio of the step of numerical differentiation to the magnitude of the variable */
   double tol_grad; /* ratio of the gradient vector to the initial one for convergence */
+  double lm_damp_coeff; /* coefficient of the damping of Levenberg-Marquardt's method */
   /*! \cond */
   zVec (* _grad)(zOptDM*,const zVec,zVec,void*);
   zMat (* _hess)(zOptDM*,const zVec,zMat,void*);
@@ -38,7 +39,11 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
   zVec (* _step)(zOptDM*,const zVec,double,void*,double,double*);
   double (* _damp)(zOptDM*,void*);
   zMat (* _update_h)(zOptDM*,int);
-  double _scale; /* scale of search range for MT and DS, and scale of stride for fixed method. */
+  double _scale; /* scale of search range relative to _xscale for MT, DS and Brent, and step length for fixed method. */
+  double _xscale; /* scale of the variable for the judgement of the step, namely, |x0|inf (1 if x0 = 0) */
+  double _g0;   /* norm of the initial gradient vector for Levenberg-Marquardt's method */
+  double _dec0; /* initial Newton decrement for Levenberg-Marquardt's method */
+  bool _to_start; /* true at the initial point or at a restart, where the information of the previous step is not available */
   zVec _x, _d, _g;
   zVec _p, _q, _r;
   zMat _h;
@@ -103,7 +108,31 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
 /*! \brief set the ratio of the step of numerical differentiation. */
 #define zOptDMSetEPSMin(opt,e) ( (opt)->eps_min = (e) )
 
-/*! \brief default scale of search range for More-Thuente's method and Dennis-Schnabel's method. */
+/*! \brief coefficient of Armijo's condition (sufficient decrease) for line searches.
+ *
+ * A step length a along a descent direction is accepted if phi(a) <= phi(0) + c a phi'(0), where phi
+ * is the function along the direction and c is ZM_OPT_DM_ARMIJO_COEFF.
+ */
+#define ZM_OPT_DM_ARMIJO_COEFF ( 1.0e-4 )
+
+/*! \brief default coefficient of the damping of Levenberg-Marquardt's method.
+ *
+ * Levenberg-Marquardt's method of zOptDM adds the damping coefficient mu to the diagonal components of
+ * the Hessian matrix H, where mu = c lambda max_i |H_ii|. c is lm_damp_coeff of zOptDM, and lambda is a
+ * dimensionless value that decreases as the iteration converges, which is specified by the damping
+ * method (see zOptDMAssignLM()). Since mu is proportional to the magnitude of H, the step is invariant
+ * with respect to the scales of the variable and the function. If c is too large, the iteration behaves
+ * like the steepest descent method at the beginning, and might go to another local minimum.
+ * lm_damp_coeff is initialized by ZM_OPT_DM_LM_DEFAULT_DAMP_COEFF in zOptDMCreate(), and set by
+ * zOptDMSetLMDampCoeff().
+ */
+#define ZM_OPT_DM_LM_DEFAULT_DAMP_COEFF ( 1.0e-2 )
+
+/*! \brief set the coefficient of the damping of Levenberg-Marquardt's method. */
+#define zOptDMSetLMDampCoeff(opt,c) ( (opt)->lm_damp_coeff = (c) )
+
+/*! \brief default scale of search range for More-Thuente's method, Dennis-Schnabel's method and Brent's
+ * method relative to the magnitude of the initial guess. */
 #define ZM_OPT_DM_DEFAULT_SCALE  ( 1.0e3 )
 /*! \brief default step length of the line search with fixed step. */
 #define ZM_OPT_DM_DEFAULT_STEP     ( 1.0 )
@@ -172,22 +201,31 @@ __ZM_EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVe
  *    time for each iteration should be constant.
  *    It is not suitable in general, since the iteration may diverge.
  *
- * \a scale is the upper bound of the components of a step for "MT", "DS" and "Brent", and the step
- * length for "fixed". If it is zero, ZM_OPT_DM_DEFAULT_SCALE is used for "MT", "DS" and "Brent", and
+ * \a scale is the upper bound of the components of a step relative to the maximum absolute component
+ * of the initial guess (1 if it is zero) for "MT", "DS" and "Brent", and the step length for "fixed". If it is zero, ZM_OPT_DM_DEFAULT_SCALE is used for "MT", "DS" and "Brent", and
  * ZM_OPT_DM_DEFAULT_STEP is used for "fixed".
  *
- * \a dampmethod for zOptDMAssignLM() specifies the damping coefficient mu added to the diagonal
- * components of the Hessian matrix H, namely,
- *  "grad" for mu = |g|, where g is the gradient vector, and
- *  "dec" for mu = min{ |g|, g^T H^-1 g }, where g^T H^-1 g is the Newton decrement that estimates
- *  twice the deviation of the function from the minimum. It coincides with |F|^2 for the least
- *  square problem of F(x)=0 with the Gauss-Newton approximation of the Hessian matrix if the
- *  Jacobian matrix of F is regular. It requires to solve an additional linear equation at every
- *  iteration, and a workspace is allocated internally when it is assigned at the first time.
+ * \a dampmethod for zOptDMAssignLM() specifies the damping coefficient mu = c lambda max_i |H_ii| added
+ * to the diagonal components of the Hessian matrix H (see ZM_OPT_DM_LM_DEFAULT_DAMP_COEFF), namely,
+ *  "grad" for lambda = |g| / |g0|, where g is the gradient vector and g0 is that at the initial
+ *  point, and
+ *  "dec" for lambda = min{ |g| / |g0|, d / d0 }, where d = g^T H^-1 g is the Newton decrement that
+ *  estimates twice the deviation of the function from the minimum, and d0 is that at the initial
+ *  point. d coincides with |F|^2 for the least square problem of F(x)=0 with the Gauss-Newton
+ *  approximation of the Hessian matrix if the Jacobian matrix of F is regular. It requires to solve
+ *  an additional linear equation at every iteration, and a workspace is allocated internally when it
+ *  is assigned at the first time.
+ * If H vanishes, mu = |g| is used instead.
  * "grad" is assigned if it is the null pointer or another string.
  *
  * \a updatemethod for zOptDMAssignVM() specifies the update formula of the quasi-Hessian matrix,
  * namely, "DFP" for Davidon-Fletcher-Powell's formula and others for Broyden-Fletcher-Goldfarb-Shanno's.
+ * For the latter, the initial identity matrix is scaled by p^T q / q^T q with the first step p and the
+ * change of the gradient vector q before the first update, so that the step is invariant with respect
+ * to the scales of the variable and the function. It is based on the following paper:
+ *  D. F. Shanno and K. H. Phua, Matrix Conditioning and Nonlinear Optimization, Mathematical
+ *  Programming, 14(1), pp. 149--160, 1978.
+ * See also Eq.(6.20) of J. Nocedal and S. J. Wright, Numerical Optimization, 2nd ed., Springer, 2006.
  * \return
  * These functions return a pointer \a opt. zOptDMAssignLM() returns the null pointer if it fails
  * to allocate the workspace.
@@ -207,7 +245,8 @@ __ZM_EXPORT void zOptDMDestroy(zOptDM *opt);
  * The iteration terminates if one of the following conditions holds:
  *  - the maximum absolute component of the gradient vector becomes smaller than \a tol_grad of \a opt
  *    (ZM_OPT_DM_GRAD_MIN by default) times that at the initial point,
- *  - the maximum absolute component of the step becomes smaller than \a tol ( 1 + |\a var|inf ), or
+ *  - the maximum absolute component of the step becomes smaller than \a tol ( |\a var|inf + s0 ), where
+ *    s0 is the maximum absolute component of the initial guess (1 if it is zero), or
  *  - the number of iterations exceeds \a iter. If \a iter is zero, Z_MAX_ITER_NUM is used instead.
  * The value of the function at the solution is stored where \a eval points, if it is not the null
  * pointer.

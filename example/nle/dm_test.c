@@ -161,22 +161,12 @@ int main(int argc, char *argv[])
     i = atoi( argv[1] );
   zNLECreate( &nle, DIM, DIM, f[i], argc > 2 ? jac[i] : NULL );
 
-  zNLEAssignSD( &nle, NULL, 0 );
-  check( "SD (MT)", &nle, i, var, r, util );
   zNLEAssignLM( &nle, "grad", "MT", 0 );
   check( "LM (grad, MT)", &nle, i, var, r, util );
   zNLEAssignLM( &nle, "dec", "MT", 0 );
   check( "LM (dec, MT)", &nle, i, var, r, util );
   zNLEAssignLM( &nle, "grad", "DS", 0 );
   check( "LM (grad, DS)", &nle, i, var, r, util );
-  zNLEAssignVM( &nle, "BFGS", "MT", 0 );
-  check( "VM (BFGS, MT)", &nle, i, var, r, util );
-  zNLEAssignVM( &nle, "DFP", "MT", 0 );
-  check( "VM (DFP, MT)", &nle, i, var, r, util );
-  zNLEAssignVM( &nle, "BFGS", "Brent", 0 );
-  check( "VM (BFGS, Brent)", &nle, i, var, r, util );
-  zNLEAssignCG( &nle, NULL, 0 );
-  check( "CG (Brent)", &nle, i, var, r, util );
   zNLEAssignNR( &nle );
   check( "NR", &nle, i, var, r, util );
   zNLEAssignBroyden( &nle );

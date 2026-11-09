@@ -108,10 +108,34 @@ static zMat _zOptDMHessNG2(zOptDM *opt, const zVec var, zMat h, void *util)
 
 /* line search */
 
-/* the upper bound of step length, where every component of a step is limited by _scale. */
+/* the upper bound of step length, where every component of a step is limited by _scale times the scale
+   of the initial guess _xscale. */
 static double _zOptDMStepMax(zOptDM *opt)
 {
-  return opt->_scale / zVecElemAbsMax( opt->_d, NULL );
+  return opt->_scale * opt->_xscale / zVecElemAbsMax( opt->_d, NULL );
+}
+
+static zVec _zOptDMVecSD(zOptDM *opt, const zVec var, zVec d, void *util);
+static zVec _zOptDMVecCG(zOptDM *opt, const zVec var, zVec d, void *util);
+
+/* the initial trial step length of line searches.
+   for the steepest descent method and the conjugate gradient method, whose direction does not have the
+   scale of the step, it is estimated so that the first-order change of the function is the same as that
+   at the previous step (Eq.(3.60) of J. Nocedal and S. J. Wright, Numerical Optimization, 2nd ed.,
+   Springer, 2006), namely, a = a_{k-1} g_{k-1}^T d_{k-1} / g_k^T d_k, where a_{k-1} g_{k-1}^T d_{k-1} =
+   -g_{k-1}^T p_{k-1} with the previous step p_{k-1} and g_{k-1} = g_k - q_k. otherwise, it is 1.
+   it is used only for line searches that can expand the step length, namely, More-Thuente's method and
+   Brent's method. _r is used as a workspace. */
+static double _zOptDMStepInit(zOptDM *opt)
+{
+  double a = 1.0, gd;
+
+  if( !opt->_to_start && ( opt->_vec == _zOptDMVecSD || opt->_vec == _zOptDMVecCG ) &&
+      ( gd = zVecInnerProdNC( opt->_g, opt->_d ) ) > 0 ){
+    zVecSubNC( opt->_g, opt->_q, opt->_r );
+    if( !( ( a = -zVecInnerProdNC( opt->_r, opt->_p ) / gd ) > 0 ) ) a = 1.0;
+  }
+  return _zMin( a, _zOptDMStepMax( opt ) );
 }
 
 /* evaluate the function at a trial step length. */
@@ -125,7 +149,7 @@ static double _zOptDMStepEval(zOptDM *opt, const zVec var, void *util, double a)
 /* check if a step is negligibly small in the sense of the termination condition of zOptDMSolve. */
 static bool _zOptDMStepIsNegligible(zOptDM *opt, const zVec var, double tol, double a)
 {
-  return a * zVecElemAbsMax( opt->_d, NULL ) <= tol * ( 1 + zVecElemAbsMax( var, NULL ) );
+  return a * zVecElemAbsMax( opt->_d, NULL ) <= tol * ( zVecElemAbsMax( var, NULL ) + opt->_xscale );
 }
 
 /* stay at the current variable, since no further decrease of the function is detected. */
@@ -259,7 +283,7 @@ static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, double tol, void *util, d
   gtol = -opt->_cf * g0;
   amax = _zOptDMStepMax( opt );
   al = 0; fl = e0; gl = g0;
-  at = _zMin( 1.0, amax );
+  at = _zOptDMStepInit( opt );
   w = w1 = HUGE_VAL;
   for( i=0; i<ZM_OPT_DM_MT_EVAL_MAX; i++ ){
     ft = _zOptDMStepMTEval( opt, var, util, ( ae = at ), &gt );
@@ -340,7 +364,7 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, double tol, void *util, d
   s = zVecInnerProdNC( opt->_g, opt->_d ); /* ascendant direction */
   df = opt->_df * s;
   /* initial test from full-length step */
-  a1 = _zMin( 1.0, _zOptDMStepMax( opt ) );
+  a1 = _zMin( 1.0, _zOptDMStepMax( opt ) ); /* the backtracking cannot expand the step length */
   if( _zOptDMStepDSTest( e0, ( *e1 = _zOptDMStepEval( opt, var, util, a1 ) ), a1, df ) ) goto TERMINATE;
   /* w = ( f(a) - f(0) - a f'(0) ) / a^2, where f'(0) = -s.
      the cubic approximation f(a) = f(0) - s a + c2 a^2 + c1/3 a^3 satisfies w = c2 + c1/3 a. */
@@ -410,7 +434,7 @@ static zVec _zOptDMStepBrent(zOptDM *opt, const zVec var, double tol, void *util
   }
   amax = _zOptDMStepMax( opt );
   a0 = 0; f0 = e0;
-  f1 = _zOptDMStepBrentVal( opt, var, util, ( a1 = _zMin( 1.0, amax ) ) );
+  f1 = _zOptDMStepBrentVal( opt, var, util, ( a1 = _zOptDMStepInit( opt ) ) );
   if( f1 >= f0 ){
     /* shrink the step length until the function decreases */
     do{
@@ -485,13 +509,18 @@ static zMat _zOptDMUpdateDFP(zOptDM *opt, int count) /* Davidon-Fletcher-Powell 
   zMatCatDyadNC( opt->_h, 1.0/k, opt->_p, opt->_p );
   return zMatCatDyadNC( opt->_h,-1.0/l, opt->_r, opt->_r );
 }
-static zMat _zOptDMUpdateBFGS(zOptDM *opt, int count) /* Broyden-Fletcher-Goldfalb-Shanno */
+static zMat _zOptDMUpdateBFGS(zOptDM *opt, int count) /* Broyden-Fletcher-Goldfarb-Shanno */
 {
   int i, j;
   double k, l, pi, pj, ri, rj;
 
   /* H += ( ( 1 + q^T H q / p^T q ) p p^T - p q^T H - H q p^T ) / p^T q */
   if( ( k = zVecInnerProdNC( opt->_p, opt->_q ) ) <= 0 ) return opt->_h;
+  if( opt->_to_start ){
+    /* scale the initial identity matrix by p^T q / q^T q before the first update
+       (D. F. Shanno and K. H. Phua, 1978) */
+    zMatMulDRC( opt->_h, k / zVecSqrNorm( opt->_q ) );
+  }
   k = 1.0 / k;
   zMulMatVecNC( opt->_h, opt->_q, opt->_r );
   l = zVecInnerProdNC( opt->_q, opt->_r )*k + 1.0;
@@ -515,24 +544,45 @@ static zVec _zOptDMVecSD(zOptDM *opt, const zVec var, zVec d, void *util)
   return zVecCopyNC( opt->_g, d );
 }
 
-/* damping coefficient of Levenberg-Marquardt method: the norm of the gradient vector */
-static double _zOptDMDampGrad(zOptDM *opt, void *dummy)
+/* damping coefficient of Levenberg-Marquardt method, which is c lambda max_i |H_ii|, where c is
+   lm_damp_coeff. if H vanishes, |g| is used instead. */
+static double _zOptDMDamp(zOptDM *opt, double lambda)
 {
-  return zVecNorm( opt->_g );
+  int i;
+  double hmax = 0;
+
+  for( i=0; i<zMatRowSizeNC(opt->_h); i++ )
+    if( fabs( zMatElemNC(opt->_h,i,i) ) > hmax ) hmax = fabs( zMatElemNC(opt->_h,i,i) );
+  return hmax > 0 ? opt->lm_damp_coeff * lambda * hmax : zVecNorm( opt->_g );
 }
 
-/* damping coefficient of Levenberg-Marquardt method: the smaller of the norm of the gradient vector
-   and the Newton decrement g^T H^-1 g, where _x and _p are used as workspaces. */
+/* the norm of the gradient vector relative to the initial one. */
+static double _zOptDMDampGradRatio(zOptDM *opt)
+{
+  return opt->_g0 > 0 ? zVecNorm( opt->_g ) / opt->_g0 : 1.0;
+}
+
+/* damping coefficient of Levenberg-Marquardt method: lambda = |g| / |g0| */
+static double _zOptDMDampGrad(zOptDM *opt, void *dummy)
+{
+  return _zOptDMDamp( opt, _zOptDMDampGradRatio( opt ) );
+}
+
+/* damping coefficient of Levenberg-Marquardt method: lambda is the smaller of |g| / |g0| and the
+   Newton decrement d = g^T H^-1 g relative to the initial one d0, where _x and _p are used as
+   workspaces. */
 static double _zOptDMDampDec(zOptDM *opt, void *dummy)
 {
-  double mg, md;
+  double lg, d;
 
-  mg = zVecNorm( opt->_g );
+  lg = _zOptDMDampGradRatio( opt );
   zMatCopyNC( opt->_h, opt->_hw );
   zVecCopyNC( opt->_g, opt->_x );
-  if( !zLESolveGaussDST( opt->_hw, opt->_x, opt->_p, opt->_idx, opt->_r ) ) return mg;
-  md = zVecInnerProdNC( opt->_g, opt->_p );
-  return md > 0 && md < mg ? md : mg;
+  if( !zLESolveGaussDST( opt->_hw, opt->_x, opt->_p, opt->_idx, opt->_r ) ||
+      ( d = zVecInnerProdNC( opt->_g, opt->_p ) ) <= 0 )
+    return _zOptDMDamp( opt, lg );
+  if( opt->_dec0 < 0 ) opt->_dec0 = d; /* the initial Newton decrement */
+  return _zOptDMDamp( opt, _zMin( lg, d / opt->_dec0 ) );
 }
 
 /* Levenberg-Marquardt method */
@@ -576,6 +626,7 @@ zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVec,void*), zV
   opt->_hess = ( opt->hess = hess ) ? _zOptDMHess : ( grad ? _zOptDMHessNG : _zOptDMHessNG2 );
   opt->eps_min = ZM_OPT_DM_EPS;
   opt->tol_grad = ZM_OPT_DM_GRAD_MIN;
+  opt->lm_damp_coeff = ZM_OPT_DM_LM_DEFAULT_DAMP_COEFF;
   opt->_damp = _zOptDMDampGrad;
   opt->_hw = NULL;
   opt->_x = zVecAlloc( dim );
@@ -591,7 +642,7 @@ zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVec,void*), zV
     return NULL;
   }
   opt->_b = 0.0;
-  opt->_df = 1.0e-4;
+  opt->_df = ZM_OPT_DM_ARMIJO_COEFF;
   return zOptDMAssignSD( opt, NULL, 0 );
 }
 
@@ -681,7 +732,8 @@ void zOptDMDestroy(zOptDM *opt)
 
 /* the iteration terminates if
  * - the gradient vector becomes small relatively to the initial one, namely, |g|inf <= tol_grad |g0|inf,
- * - the step becomes small relatively to the variable, namely, |p|inf <= tol ( 1 + |x|inf ), or
+ * - the step becomes small relatively to the variable, namely, |p|inf <= tol ( |x|inf + s0 ), where s0
+ *   is |x0|inf for the initial guess x0, or 1 if x0 = 0, or
  * - the number of iterations exceeds the given upper limit iter.
  * it also fails if the line search does not find any step. */
 int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, double *eval)
@@ -691,26 +743,32 @@ int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, d
 
   if( !eval ) eval = &_e_dummy;
   zMatIdent( opt->_h );
+  opt->_to_start = true;
   opt->_b = 0; /* for conjugate gradient method */
   ZITERINIT( iter );
+  if( ( opt->_xscale = zVecElemAbsMax( var, NULL ) ) == 0 ) opt->_xscale = 1.0;
   *eval = opt->eval( var, util );
   opt->_grad( opt, var, opt->_g, util );
   if( ( gmin = zVecElemAbsMax( opt->_g, NULL ) ) == 0 )
     return 0; /* no need for iteration. */
+  opt->_g0 = zVecNorm( opt->_g ); /* for Levenberg-Marquardt method */
+  opt->_dec0 = -1;
   gmin *= opt->tol_grad;
   for( i=0; i<iter; i++ ){
     opt->_vec( opt, var, opt->_d, util ); /* descent vector */
     if( zVecInnerProdNC( opt->_g, opt->_d ) <= 0 ){
       /* restart from the steepest descent direction if not descent. */
       zMatIdent( opt->_h );
+      opt->_to_start = true;
       zVecCopyNC( opt->_g, opt->_d );
     }
     if( !opt->_step( opt, var, tol, util, *eval, &e ) ) return -1; /* line search failed. */
     *eval = e;
     if( zVecElemAbsMax( opt->_g, NULL ) <= gmin ||
-        zVecElemAbsMax( opt->_p, NULL ) <= tol * ( 1 + zVecElemAbsMax( var, NULL ) ) )
+        zVecElemAbsMax( opt->_p, NULL ) <= tol * ( zVecElemAbsMax( var, NULL ) + opt->_xscale ) )
       return i + 1; /* succeed. */
     opt->_update_h( opt, i ); /* update quasi-hessian matrix */
+    opt->_to_start = false;
   }
   ZITERWARN( iter );
   return -1;
