@@ -1,5 +1,6 @@
 2026.11.09. Abolished _zNLEStep. [zm_nle_dm]
-2026.11.09. Added _zNLESolveNewton to commonize Newton-Raphson's method and Broyden's method for simultaneous non-linear equation solverse, and reimplemented _zNLEUpdateJacobiNR and _zNLEUpdateJacobiBroyden by using it. [zm_nle_dm]
+2026.11.09. Added _zNLESolveNewton to commonize Newton-Raphson's method and Broyden's method for simultaneous non-linear equation solvers, and reimplemented _zNLESolveNR and _zNLESolveBroyden by using it. [zm_nle_dm]
+2026.11.09. Added _zNLEUpdateJacobiNR and _zNLEUpdateJacobiBroyden. [zm_nle_dm]
 2026.11.09. Modified _zNLESolveBroyden to update the approximate Jacobian matrix with the actual step and the actual change of the residual. [zm_nle_dm]
 2026.11.09. Modified _zNLESolveBroyden to recompute the Jacobian matrix if the approximate one fails to give a step that decreases the residual or the step stagnates. [zm_nle_dm]
 2026.11.09. Modified the test of zNLE to check that Broyden method solves non-regular equations and problems for variables of various scales with less evaluations of the function than Newton-Raphson method. [test]
