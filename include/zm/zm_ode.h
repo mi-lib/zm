@@ -129,12 +129,19 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
  * enough in the sense of ZM_ODE_TOL, which is used to decide if a time step is divided.
  * _zODEStepIsTol() is the same with zODEStepIsTol() except that the difference between \a x1 and \a x2 is
  * multiplied by \a r.
+ *
+ * zODEStepErr() returns the ratio of the estimated error r |x1 - x2| to the tolerance, namely,
+ *  max_i r |x1_i - x2_i| / ( ZM_ODE_TOL ( 1 + max{ |x0_i|, |x2_i| } ) ),
+ * which is not greater than one if \a x1 and \a x2 are close enough.
  * \return
  * zODEStepIsTol() and _zODEStepIsTol() return the true value if \a x1 and \a x2 are close enough, or the
  * false value otherwise.
+ *
+ * zODEStepErr() returns the ratio of the estimated error to the tolerance.
  */
-__ZM_EXPORT bool _zODEStepIsTol(const zVec x0, const zVec x1, const zVec x2, double r);
-#define zODEStepIsTol(x0,x1,x2) _zODEStepIsTol( x0, x1, x2, 1.0 )
+__ZM_EXPORT double zODEStepErr(const zVec x0, const zVec x1, const zVec x2, double r);
+#define _zODEStepIsTol(x0,x1,x2,r) ( zODEStepErr( x0, x1, x2, r ) <= 1 )
+#define zODEStepIsTol(x0,x1,x2)    _zODEStepIsTol( x0, x1, x2, 1.0 )
 
 /*! \brief minimum time step for adaptive step size control of ODE quadratures.
  *
@@ -142,6 +149,19 @@ __ZM_EXPORT bool _zODEStepIsTol(const zVec x0, const zVec x1, const zVec x2, dou
  * methods), a time step is not divided any more if it is not greater than this value.
  */
 #define ZM_ODE_DT_TOL ( 1.0e-8 )
+
+/*! \brief parameters to predict the next time step for adaptive step size control of ODE quadratures.
+ *
+ * In ODE quadratures with an adaptive step size control by embedded Runge-Kutta methods, the next time
+ * step is predicted from the current time step h and the ratio err of the estimated error to the tolerance
+ * (see zODEStepErr()) as
+ *  h min{ ZM_ODE_STEP_RATIO_MAX, max{ ZM_ODE_STEP_RATIO_MIN, ZM_ODE_STEP_SAFETY err^(-1/(q+1)) } },
+ * where q is the order of accuracy of the error estimation. ZM_ODE_STEP_RATIO_MAX is replaced by one just
+ * after a trial step is rejected.
+ */
+#define ZM_ODE_STEP_SAFETY    ( 0.9 )
+#define ZM_ODE_STEP_RATIO_MIN ( 0.2 )
+#define ZM_ODE_STEP_RATIO_MAX ( 5.0 )
 
 __END_DECLS
 

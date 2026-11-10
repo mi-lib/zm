@@ -9,12 +9,14 @@
 
 typedef struct{
   int stepsize;
+  int order; /* order of accuracy of the error estimation */
+  double _h; /* magnitude of the time step predicted from the last step, or zero before the first step */
   zVec _xc, _xf; /* course and fine estimations */
   zVec *k;
 } _zODE_ERK;
 
 /* create an ODE solver based on embedded Runge-Kutta method. */
-static zODE* _zODECreateERK(zODE *ode, int dim, int stepsize, zVec (* f)(double,zVec,void*,zVec))
+static zODE* _zODECreateERK(zODE *ode, int dim, int stepsize, int order, zVec (* f)(double,zVec,void*,zVec))
 {
   int i;
   _zODE_ERK *ws;
@@ -30,6 +32,8 @@ static zODE* _zODECreateERK(zODE *ode, int dim, int stepsize, zVec (* f)(double,
   for( i=0; i<stepsize; i++ )
     if( !( ws->k[i] = zVecAlloc( dim ) ) ) check = false;
   ws->stepsize = stepsize;
+  ws->order = order;
+  ws->_h = 0;
   if( !check ){
     ZALLOCERROR();
     return NULL;
@@ -54,8 +58,8 @@ static void _zODEDestroyERK(zODE *ode)
   ode->f = NULL;
 }
 
-/* directly integrate variable by ODE based on embedded Runge-Kutta method. */
-static zVec _zODEUpdateERK(zODE *ode, double t, zVec x, double dt, double a[], double bc[], double bf[], double c[], void *util)
+/* coarse and fine estimations of the state vector after a time step by embedded Runge-Kutta method. */
+static void _zODEStepERK(zODE *ode, double t, zVec x, double dt, double a[], double bc[], double bf[], double c[], void *util)
 {
   int i, j, l;
   _zODE_ERK *ws;
@@ -74,12 +78,57 @@ static zVec _zODEUpdateERK(zODE *ode, double t, zVec x, double dt, double a[], d
     ode->cat( ws->_xc, bc[i]*dt, ws->k[i], ws->_xc, util );
     ode->cat( ws->_xf, bf[i]*dt, ws->k[i], ws->_xf, util );
   }
-  if( fabs( dt ) > ZM_ODE_DT_TOL && !zODEStepIsTol( x, ws->_xc, ws->_xf ) ){
-    dt *= 0.5;
-    _zODEUpdateERK( ode, t, x, dt, a, bc, bf, c, util );
-    _zODEUpdateERK( ode, t+dt, x, dt, a, bc, bf, c, util );
-  } else
-    zVecCopyNC( ws->_xf, x );
+}
+
+/* ratio of the next time step to the current one predicted from the ratio of the estimated error to the
+ * tolerance err. */
+static double _zODEStepRatioERK(_zODE_ERK *ws, double err, double ratio_max)
+{
+  double ratio;
+
+  if( err == 0 ) return ratio_max;
+  if( zIsNan( err ) || zIsInf( err ) ) return ZM_ODE_STEP_RATIO_MIN;
+  ratio = ZM_ODE_STEP_SAFETY * pow( err, -1.0/(ws->order+1) );
+  return zLimit( ratio, ZM_ODE_STEP_RATIO_MIN, ratio_max );
+}
+
+/* directly integrate variable by ODE based on embedded Runge-Kutta method.
+ * the time interval dt is divided into time steps, each of which is predicted from the last step. */
+static zVec _zODEUpdateERK(zODE *ode, double t, zVec x, double dt, double a[], double bc[], double bf[], double c[], void *util)
+{
+  _zODE_ERK *ws;
+  double rest, h, hs, sgn, err;
+  bool is_last, is_rejected = false;
+
+  ws = (_zODE_ERK *)ode->_ws;
+  sgn = dt > 0 ? 1 : -1;
+  h = ws->_h > 0 ? ws->_h : fabs( dt );
+  for( rest=fabs(dt); rest>0; ){
+    /* the last step is shortened to reach the end of the interval exactly */
+    hs = ( is_last = ( h >= rest * ( 1 - zTOL ) ) ) ? rest : h;
+    _zODEStepERK( ode, t, x, sgn*hs, a, bc, bf, c, util );
+    err = zODEStepErr( x, ws->_xc, ws->_xf, 1.0 );
+    if( err <= 1 || hs <= ZM_ODE_DT_TOL ){ /* accept (the step is not shortened any more if it is small enough) */
+      zVecCopyNC( ws->_xf, x );
+      t += sgn*hs;
+      rest = is_last ? 0 : rest - hs;
+      if( zIsNan( err ) || zIsInf( err ) ){
+        /* the state is not a number any more, so that the rest of the interval is abandoned, and the
+         * step is predicted from scratch in the next update. */
+        ws->_h = 0;
+        break;
+      }
+      hs *= _zODEStepRatioERK( ws, err, is_rejected ? 1 : ZM_ODE_STEP_RATIO_MAX );
+      /* the shortened last step does not shorten the prediction */
+      h = is_last ? zMax( h, hs ) : hs;
+      is_rejected = false;
+    } else{ /* reject */
+      h = hs * _zODEStepRatioERK( ws, err, 1 );
+      is_rejected = true;
+    }
+    /* the step is not shorter than ZM_ODE_DT_TOL, so that the interval is completed in finite steps. */
+    ws->_h = h = zMax( h, ZM_ODE_DT_TOL );
+  }
   return x;
 }
 
@@ -87,7 +136,7 @@ static zVec _zODEUpdateERK(zODE *ode, double t, zVec x, double dt, double a[], d
 
 zODE* zODECreateRKF45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
-  return _zODECreateERK( ode, dim, 6, f );
+  return _zODECreateERK( ode, dim, 6, 4, f );
 }
 
 void zODEDestroyRKF45(zODE *ode)
@@ -115,7 +164,7 @@ zVec zODEUpdateRKF45(zODE *ode, double t, zVec x, double dt, void *util)
 
 zODE* zODECreateCK45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
-  return _zODECreateERK( ode, dim, 6, f );
+  return _zODECreateERK( ode, dim, 6, 4, f );
 }
 
 void zODEDestroyCK45(zODE *ode)
@@ -143,7 +192,7 @@ zVec zODEUpdateCK45(zODE *ode, double t, zVec x, double dt, void *util)
 
 zODE* zODECreateDP45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
-  return _zODECreateERK( ode, dim, 7, f );
+  return _zODECreateERK( ode, dim, 7, 4, f );
 }
 
 void zODEDestroyDP45(zODE *ode)

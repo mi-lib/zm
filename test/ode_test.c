@@ -479,7 +479,7 @@ void assert_ode_dc_accuracy(void)
   zVec x;
   int i, k, n;
   double err, err_plain, tol;
-  bool result = true;
+  bool is_adaptive, result = true;
 
   n = (int)( T / dt + 0.5 );
   /* the error in each time step is controlled to be in the order of ZM_ODE_TOL. */
@@ -488,12 +488,17 @@ void assert_ode_dc_accuracy(void)
    * disturbed by trial updates. */
   for( k=0; k<METHOD_ONESTEP_NUM; k++ ){
     err_plain = circle_integrate( &method_onestep[k], dt, T );
+    /* embedded Runge-Kutta methods control the step size by themselves, so that the deferred correction
+     * does not necessarily reduce the error. */
+    is_adaptive = method_onestep[k].create == zODECreateRKF45 ||
+                  method_onestep[k].create == zODECreateCK45 ||
+                  method_onestep[k].create == zODECreateDP45;
     method_assign( &ode, &method_onestep[k] );
     zODECreateDC( &ode, 2, 0, circle );
     x = zVecCreateList( 2, 1.0, 0.0 );
     for( i=0; i<n; i++ )
       zODEUpdateDC( &ode, i*dt, x, dt, NULL );
-    if( ( err = circle_error( x, n*dt, 1.0 ) ) > tol || err > err_plain ){
+    if( ( err = circle_error( x, n*dt, 1.0 ) ) > tol || ( !is_adaptive && err > err_plain ) ){
       eprintf( "%s: error = %g with deferred correction (tolerance %g, error without it %g)\n", method_onestep[k].name, err, tol, err_plain );
       result = false;
     }
@@ -658,6 +663,64 @@ void assert_ode_adaptive_backward(void)
   zAssert( zODEUpdate (adaptive step size control for backward integration), result );
 }
 
+/* 13. prediction of the time step of embedded Runge-Kutta methods */
+void assert_ode_erk_step_prediction(void)
+{
+  const method_t erk[] = { METHOD( RKF45, 0, 5 ), METHOD( CK45, 0, 5 ), METHOD( DP45, 0, 5 ) };
+  const double T = 20.0, tol = 1.0e-4;
+  int k, count_s, count_l;
+  double err_s, err_l;
+  bool result = true;
+
+  /* since the time step is predicted from the last step, it does not depend on the interval of updates,
+   * so that a long interval does not cost more evaluations than a short interval does. */
+  for( k=0; k<sizeof(erk)/sizeof(method_t); k++ ){
+    err_s = circle_integrate_adaptive( &erk[k], false, 1.0, (int)T, &count_s );
+    err_l = circle_integrate_adaptive( &erk[k], false, 10.0, (int)T/10, &count_l );
+    if( count_l > count_s || err_s > tol || err_l > tol ){
+      eprintf( "%s: interval 10: error = %g, %d calls, interval 1: error = %g, %d calls\n", erk[k].name, err_l, count_l, err_s, count_s );
+      result = false;
+    }
+  }
+  zAssert( zODEUpdate (prediction of the time step of embedded Runge-Kutta methods), result );
+}
+
+/* x' = 1 for t<=0.5, and not a number for t>0.5 */
+zVec nan_after_half(double t, zVec x, void *count, zVec dx)
+{
+  (*(int *)count)++;
+  zVecSetElemNC( dx, 0, t > 0.5 ? NAN : 1.0 );
+  return dx;
+}
+
+/* 14. termination of embedded Runge-Kutta methods for a differential function which is not a number */
+void assert_ode_erk_nan(void)
+{
+  const method_t erk[] = { METHOD( RKF45, 0, 5 ), METHOD( CK45, 0, 5 ), METHOD( DP45, 0, 5 ) };
+  const int count_max = 10000;
+  zODE ode;
+  zVec x;
+  int k, count;
+  bool result = true;
+
+  /* the time step is shortened down to ZM_ODE_DT_TOL around t=0.5, and the rest of the interval is
+   * abandoned after the state becomes not a number. */
+  for( k=0; k<sizeof(erk)/sizeof(method_t); k++ ){
+    method_assign( &ode, &erk[k] );
+    zODECreate( &ode, 1, 0, nan_after_half );
+    x = zVecCreateList( 1, 0.0 );
+    count = 0;
+    zODEUpdate( &ode, 0, x, 1.0, &count );
+    if( count > count_max || !zIsNan( zVecElemNC(x,0) ) ){
+      eprintf( "%s: x = %g, %d calls\n", erk[k].name, zVecElemNC(x,0), count );
+      result = false;
+    }
+    zVecFree( x );
+    zODEDestroy( &ode );
+  }
+  zAssert( zODEUpdate (termination for a differential function which is not a number), result );
+}
+
 int main(void)
 {
   assert_ode_order_onestep();
@@ -672,5 +735,7 @@ int main(void)
   assert_ode_dc_order();
   assert_ode_adaptive_scale();
   assert_ode_adaptive_backward();
+  assert_ode_erk_step_prediction();
+  assert_ode_erk_nan();
   return EXIT_SUCCESS;
 }

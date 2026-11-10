@@ -1,3 +1,7 @@
+2026.11.10. Modified the embedded Runge-Kutta methods to predict the time step from the last step by the ratio of the estimated error to the tolerance. [zm_ode_erk]
+2026.11.10. Added zODEStepErr to compute the ratio of the estimated error between two estimations of the state vector to the tolerance, and redefined _zODEStepIsTol as a macro using it. [zm_ode]
+2026.11.10. Added ZM_ODE_STEP_SAFETY, ZM_ODE_STEP_RATIO_MIN and ZM_ODE_STEP_RATIO_MAX for the prediction of the time step. [zm_ode]
+2026.11.10. Modified the test of the accuracy of the deferred correction not to compare the errors with and without it for the embedded Runge-Kutta methods. Added tests of the prediction of the time step of the embedded Runge-Kutta methods and the termination for a differential function which is not a number. [test]
 2026.11.10. Replaced checks of NaN and infinity with zIsFinite. [zm_opt_dm, zm_nle_se]
 2026.11.10. Modified the line searches to regard an infinite value at the initial guess as an inadequate initial guess as well as NaN. [zm_opt_dm]
 2026.11.10. Added a test of the failure for a non-finite value at the initial guess. [test]

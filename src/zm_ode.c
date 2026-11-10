@@ -25,13 +25,15 @@ void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,void*), zVec 
   ode->sub = subf ? subf : _zODESubDefault;
 }
 
-/* check if two estimations of the state vector are close enough. */
-bool _zODEStepIsTol(const zVec x0, const zVec x1, const zVec x2, double r)
+/* ratio of the estimated error between two estimations of the state vector to the tolerance. */
+double zODEStepErr(const zVec x0, const zVec x1, const zVec x2, double r)
 {
   int i;
+  double e, err = 0;
 
-  for( i=0; i<zVecSizeNC(x0); i++ )
-    if( r * fabs( zVecElemNC(x1,i) - zVecElemNC(x2,i) ) > ZM_ODE_TOL * ( 1 + zMax( fabs( zVecElemNC(x0,i) ), fabs( zVecElemNC(x2,i) ) ) ) )
-      return false;
-  return true;
+  for( i=0; i<zVecSizeNC(x0); i++ ){
+    e = r * fabs( zVecElemNC(x1,i) - zVecElemNC(x2,i) ) / ( ZM_ODE_TOL * ( 1 + zMax( fabs( zVecElemNC(x0,i) ), fabs( zVecElemNC(x2,i) ) ) ) );
+    if( !( e <= err ) ) err = e; /* NaN is propagated */
+  }
+  return err;
 }
