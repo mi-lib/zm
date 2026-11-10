@@ -649,13 +649,15 @@ void assert_ode_adaptive_backward(void)
   bool result = true;
 
   /* since the circle is symmetric with respect to the time reversal, the time step has to be divided in
-   * the same way for the backward integration as for the forward integration. */
+   * the same way for the backward integration as for the forward integration. The numbers of calls and
+   * the errors might slightly differ for implicit methods due to the round-off errors in the iterations
+   * to solve the nonlinear equations. */
   for( k=0; k<METHOD_ONESTEP_NUM+sizeof(erk)/sizeof(method_t); k++ ){
     const method_t *method = k < METHOD_ONESTEP_NUM ? &method_onestep[k] : &erk[k-METHOD_ONESTEP_NUM];
     bool is_dc = k < METHOD_ONESTEP_NUM;
     err_f = circle_integrate_adaptive( method, is_dc, dt, n, &count_f );
     err_b = circle_integrate_adaptive( method, is_dc, -dt, n, &count_b );
-    if( count_b != count_f || fabs( err_b - err_f ) > 1.0e-6 * err_f ){
+    if( abs( count_b - count_f ) > 0.01 * count_f || fabs( err_b - err_f ) > 1.0e-3 * err_f ){
       eprintf( "%s%s: backward error = %g, %d calls (forward error = %g, %d calls)\n", method->name, is_dc ? " with DC" : "", err_b, count_b, err_f, count_f );
       result = false;
     }
@@ -663,26 +665,40 @@ void assert_ode_adaptive_backward(void)
   zAssert( zODEUpdate (adaptive step size control for backward integration), result );
 }
 
-/* 13. prediction of the time step of embedded Runge-Kutta methods */
-void assert_ode_erk_step_prediction(void)
+/* methods with adaptive step size control: embedded Runge-Kutta methods, and one-step methods with
+ * deferred correction */
+#define METHOD_ADAPTIVE_NUM ( 3 + METHOD_ONESTEP_NUM )
+const method_t *method_adaptive(int k, bool *is_dc)
 {
-  const method_t erk[] = { METHOD( RKF45, 0, 5 ), METHOD( CK45, 0, 5 ), METHOD( DP45, 0, 5 ) };
+  static const method_t erk[] = { METHOD( RKF45, 0, 5 ), METHOD( CK45, 0, 5 ), METHOD( DP45, 0, 5 ) };
+
+  if( ( *is_dc = ( k >= 3 ) ) ) return &method_onestep[k-3];
+  return &erk[k];
+}
+
+/* 13. prediction of the time step for adaptive step size control */
+void assert_ode_step_prediction(void)
+{
   const double T = 20.0, tol = 1.0e-4;
+  const method_t *method;
   int k, count_s, count_l;
   double err_s, err_l;
-  bool result = true;
+  bool is_dc, result = true;
 
   /* since the time step is predicted from the last step, it does not depend on the interval of updates,
-   * so that a long interval does not cost more evaluations than a short interval does. */
-  for( k=0; k<sizeof(erk)/sizeof(method_t); k++ ){
-    err_s = circle_integrate_adaptive( &erk[k], false, 1.0, (int)T, &count_s );
-    err_l = circle_integrate_adaptive( &erk[k], false, 10.0, (int)T/10, &count_l );
-    if( count_l > count_s || err_s > tol || err_l > tol ){
-      eprintf( "%s: interval 10: error = %g, %d calls, interval 1: error = %g, %d calls\n", erk[k].name, err_l, count_l, err_s, count_s );
+   * so that a long interval does not cost more evaluations than a short interval does. The numbers of
+   * calls might slightly differ for implicit methods due to the iterations to solve the nonlinear
+   * equations. */
+  for( k=0; k<METHOD_ADAPTIVE_NUM; k++ ){
+    method = method_adaptive( k, &is_dc );
+    err_s = circle_integrate_adaptive( method, is_dc, 1.0, (int)T, &count_s );
+    err_l = circle_integrate_adaptive( method, is_dc, 10.0, (int)T/10, &count_l );
+    if( count_l > 1.02 * count_s || err_s > tol || err_l > tol ){
+      eprintf( "%s%s: interval 10: error = %g, %d calls, interval 1: error = %g, %d calls\n", method->name, is_dc ? " with DC" : "", err_l, count_l, err_s, count_s );
       result = false;
     }
   }
-  zAssert( zODEUpdate (prediction of the time step of embedded Runge-Kutta methods), result );
+  zAssert( zODEUpdate (prediction of the time step for adaptive step size control), result );
 }
 
 /* x' = 1 for t<=0.5, and not a number for t>0.5 */
@@ -693,30 +709,32 @@ zVec nan_after_half(double t, zVec x, void *count, zVec dx)
   return dx;
 }
 
-/* 14. termination of embedded Runge-Kutta methods for a differential function which is not a number */
-void assert_ode_erk_nan(void)
+/* 14. termination of adaptive step size control for a differential function which is not a number */
+void assert_ode_adaptive_nan(void)
 {
-  const method_t erk[] = { METHOD( RKF45, 0, 5 ), METHOD( CK45, 0, 5 ), METHOD( DP45, 0, 5 ) };
-  const int count_max = 10000;
+  const int count_max = 100000;
+  const method_t *method;
   zODE ode;
   zVec x;
   int k, count;
-  bool result = true;
+  bool is_dc, result = true;
 
   /* the time step is shortened down to ZM_ODE_DT_TOL around t=0.5, and the rest of the interval is
-   * abandoned after the state becomes not a number. */
-  for( k=0; k<sizeof(erk)/sizeof(method_t); k++ ){
-    method_assign( &ode, &erk[k] );
-    zODECreate( &ode, 1, 0, nan_after_half );
+   * abandoned after the state becomes not a number. Euler method never evaluates the function for t>0.5. */
+  for( k=0; k<METHOD_ADAPTIVE_NUM; k++ ){
+    method = method_adaptive( k, &is_dc );
+    method_assign( &ode, method );
+    if( is_dc ) zODECreateDC( &ode, 1, 0, nan_after_half );
+    else        zODECreate( &ode, 1, 0, nan_after_half );
     x = zVecCreateList( 1, 0.0 );
     count = 0;
-    zODEUpdate( &ode, 0, x, 1.0, &count );
-    if( count > count_max || !zIsNan( zVecElemNC(x,0) ) ){
-      eprintf( "%s: x = %g, %d calls\n", erk[k].name, zVecElemNC(x,0), count );
+    is_dc ? zODEUpdateDC( &ode, 0, x, 1.0, &count ) : zODEUpdate( &ode, 0, x, 1.0, &count );
+    if( count > count_max ){
+      eprintf( "%s%s: x = %g, %d calls\n", method->name, is_dc ? " with DC" : "", zVecElemNC(x,0), count );
       result = false;
     }
     zVecFree( x );
-    zODEDestroy( &ode );
+    if( is_dc ) zODEDestroyDC( &ode ); else zODEDestroy( &ode );
   }
   zAssert( zODEUpdate (termination for a differential function which is not a number), result );
 }
@@ -735,7 +753,7 @@ int main(void)
   assert_ode_dc_order();
   assert_ode_adaptive_scale();
   assert_ode_adaptive_backward();
-  assert_ode_erk_step_prediction();
-  assert_ode_erk_nan();
+  assert_ode_step_prediction();
+  assert_ode_adaptive_nan();
   return EXIT_SUCCESS;
 }

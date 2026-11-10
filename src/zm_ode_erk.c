@@ -9,14 +9,20 @@
 
 typedef struct{
   int stepsize;
-  int order; /* order of accuracy of the error estimation */
-  double _h; /* magnitude of the time step predicted from the last step, or zero before the first step */
   zVec _xc, _xf; /* course and fine estimations */
   zVec *k;
 } _zODE_ERK;
 
+/* Butcher's tableau of embedded Runge-Kutta method */
+typedef struct{
+  double *a, *bc, *bf, *c;
+} _zODE_ERKTableau;
+
+/* order of accuracy of the error estimation of the embedded Runge-Kutta methods (4:4-5) */
+#define ZM_ODE_ERK_ERR_ORDER 4
+
 /* create an ODE solver based on embedded Runge-Kutta method. */
-static zODE* _zODECreateERK(zODE *ode, int dim, int stepsize, int order, zVec (* f)(double,zVec,void*,zVec))
+static zODE* _zODECreateERK(zODE *ode, int dim, int stepsize, zVec (* f)(double,zVec,void*,zVec))
 {
   int i;
   _zODE_ERK *ws;
@@ -32,14 +38,13 @@ static zODE* _zODECreateERK(zODE *ode, int dim, int stepsize, int order, zVec (*
   for( i=0; i<stepsize; i++ )
     if( !( ws->k[i] = zVecAlloc( dim ) ) ) check = false;
   ws->stepsize = stepsize;
-  ws->order = order;
-  ws->_h = 0;
   if( !check ){
     ZALLOCERROR();
     return NULL;
   }
   ode->f = f;
   ode->_ws = ws;
+  ode->_h = 0;
   return ode;
 }
 
@@ -58,85 +63,51 @@ static void _zODEDestroyERK(zODE *ode)
   ode->f = NULL;
 }
 
-/* coarse and fine estimations of the state vector after a time step by embedded Runge-Kutta method. */
-static void _zODEStepERK(zODE *ode, double t, zVec x, double dt, double a[], double bc[], double bf[], double c[], void *util)
+/* try a time step of embedded Runge-Kutta method, namely, compute the coarse and fine estimations of the
+ * state vector, and return the ratio of the estimated error to the tolerance. */
+static double _zODETrialERK(zODE *ode, double t, zVec x, double dt, void *util, void *tableau)
 {
   int i, j, l;
   _zODE_ERK *ws;
+  _zODE_ERKTableau *tb;
 
   ws = (_zODE_ERK *)ode->_ws;
+  tb = (_zODE_ERKTableau *)tableau;
   ode->f( t, x, util, ws->k[0] );
   for( l=0, i=1; i<ws->stepsize; i++ ){
     zVecCopyNC( x, ws->_xc );
     for( j=0; j<i; j++ )
-      ode->cat( ws->_xc, a[l++]*dt, ws->k[j], ws->_xc, util );
-    ode->f( t+c[i-1]*dt, ws->_xc, util, ws->k[i] );
+      ode->cat( ws->_xc, tb->a[l++]*dt, ws->k[j], ws->_xc, util );
+    ode->f( t+tb->c[i-1]*dt, ws->_xc, util, ws->k[i] );
   }
   zVecCopyNC( x, ws->_xc );
   zVecCopyNC( x, ws->_xf );
   for( i=0; i<ws->stepsize; i++ ){
-    ode->cat( ws->_xc, bc[i]*dt, ws->k[i], ws->_xc, util );
-    ode->cat( ws->_xf, bf[i]*dt, ws->k[i], ws->_xf, util );
+    ode->cat( ws->_xc, tb->bc[i]*dt, ws->k[i], ws->_xc, util );
+    ode->cat( ws->_xf, tb->bf[i]*dt, ws->k[i], ws->_xf, util );
   }
+  return zODEStepErr( x, ws->_xc, ws->_xf, 1.0 );
 }
 
-/* ratio of the next time step to the current one predicted from the ratio of the estimated error to the
- * tolerance err. */
-static double _zODEStepRatioERK(_zODE_ERK *ws, double err, double ratio_max)
+/* accept the fine estimation of the last trial. */
+static void _zODEAcceptERK(zODE *ode, zVec x, void *util, void *tableau)
 {
-  double ratio;
-
-  if( err == 0 ) return ratio_max;
-  if( zIsNan( err ) || zIsInf( err ) ) return ZM_ODE_STEP_RATIO_MIN;
-  ratio = ZM_ODE_STEP_SAFETY * pow( err, -1.0/(ws->order+1) );
-  return zLimit( ratio, ZM_ODE_STEP_RATIO_MIN, ratio_max );
+  zVecCopyNC( ((_zODE_ERK *)ode->_ws)->_xf, x );
 }
 
-/* directly integrate variable by ODE based on embedded Runge-Kutta method.
- * the time interval dt is divided into time steps, each of which is predicted from the last step. */
+/* directly integrate variable by ODE based on embedded Runge-Kutta method. */
 static zVec _zODEUpdateERK(zODE *ode, double t, zVec x, double dt, double a[], double bc[], double bf[], double c[], void *util)
 {
-  _zODE_ERK *ws;
-  double rest, h, hs, sgn, err;
-  bool is_last, is_rejected = false;
+  _zODE_ERKTableau tableau = { a, bc, bf, c };
 
-  ws = (_zODE_ERK *)ode->_ws;
-  sgn = dt > 0 ? 1 : -1;
-  h = ws->_h > 0 ? ws->_h : fabs( dt );
-  for( rest=fabs(dt); rest>0; ){
-    /* the last step is shortened to reach the end of the interval exactly */
-    hs = ( is_last = ( h >= rest * ( 1 - zTOL ) ) ) ? rest : h;
-    _zODEStepERK( ode, t, x, sgn*hs, a, bc, bf, c, util );
-    err = zODEStepErr( x, ws->_xc, ws->_xf, 1.0 );
-    if( err <= 1 || hs <= ZM_ODE_DT_TOL ){ /* accept (the step is not shortened any more if it is small enough) */
-      zVecCopyNC( ws->_xf, x );
-      t += sgn*hs;
-      rest = is_last ? 0 : rest - hs;
-      if( zIsNan( err ) || zIsInf( err ) ){
-        /* the state is not a number any more, so that the rest of the interval is abandoned, and the
-         * step is predicted from scratch in the next update. */
-        ws->_h = 0;
-        break;
-      }
-      hs *= _zODEStepRatioERK( ws, err, is_rejected ? 1 : ZM_ODE_STEP_RATIO_MAX );
-      /* the shortened last step does not shorten the prediction */
-      h = is_last ? zMax( h, hs ) : hs;
-      is_rejected = false;
-    } else{ /* reject */
-      h = hs * _zODEStepRatioERK( ws, err, 1 );
-      is_rejected = true;
-    }
-    /* the step is not shorter than ZM_ODE_DT_TOL, so that the interval is completed in finite steps. */
-    ws->_h = h = zMax( h, ZM_ODE_DT_TOL );
-  }
-  return x;
+  return zODEUpdateAdaptive( ode, t, x, dt, ZM_ODE_ERK_ERR_ORDER, _zODETrialERK, _zODEAcceptERK, util, &tableau );
 }
 
 /* Runge-Kutta-Fehlberg method */
 
 zODE* zODECreateRKF45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
-  return _zODECreateERK( ode, dim, 6, 4, f );
+  return _zODECreateERK( ode, dim, 6, f );
 }
 
 void zODEDestroyRKF45(zODE *ode)
@@ -164,7 +135,7 @@ zVec zODEUpdateRKF45(zODE *ode, double t, zVec x, double dt, void *util)
 
 zODE* zODECreateCK45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
-  return _zODECreateERK( ode, dim, 6, 4, f );
+  return _zODECreateERK( ode, dim, 6, f );
 }
 
 void zODEDestroyCK45(zODE *ode)
@@ -192,7 +163,7 @@ zVec zODEUpdateCK45(zODE *ode, double t, zVec x, double dt, void *util)
 
 zODE* zODECreateDP45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec))
 {
-  return _zODECreateERK( ode, dim, 7, 4, f );
+  return _zODECreateERK( ode, dim, 7, f );
 }
 
 void zODEDestroyDP45(zODE *ode)

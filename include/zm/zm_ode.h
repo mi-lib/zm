@@ -22,6 +22,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zODE ){
   int order; /* order of accuracy */
   void *_ws; /* workspace for utility */
   zVec _x1, _x2; /* workspace for deferred correction */
+  double _h; /* magnitude of the time step predicted for adaptive step size control, or zero if not yet */
 };
 
 __BEGIN_DECLS
@@ -37,6 +38,7 @@ __BEGIN_DECLS
   (ode)->order = 0; \
   (ode)->_ws = NULL; \
   (ode)->_x1 = (ode)->_x2 = NULL; \
+  (ode)->_h = 0; \
 } while(0)
 
 /*! \brief concatenate deviation in finite time step to the current variable vector.
@@ -114,8 +116,8 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
 /*! \brief tolerance for adaptive step size control of ODE quadratures.
  *
  * In ODE quadratures with an adaptive step size control (deferred correction and embedded Runge-Kutta
- * methods), a time step is divided into two halves unless every component of two estimations x1 and x2
- * of the state vector, which start from x0, satisfies
+ * methods), a trial time step is rejected unless every component of two estimations x1 and x2 of the
+ * state vector, which start from x0, satisfies
  *  r |x1_i - x2_i| <= ZM_ODE_TOL ( 1 + max{ |x0_i|, |x2_i| } ),
  * namely, the tolerance is absolute for small components and relative for large components.
  * r |x1 - x2| is the estimated error of x2, where r = 1 for the embedded Runge-Kutta methods, and
@@ -126,7 +128,7 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
 /*! \brief check if two estimations of the state vector are close enough.
  *
  * zODEStepIsTol() checks if two estimations \a x1 and \a x2 of the state vector starting from \a x0 are close
- * enough in the sense of ZM_ODE_TOL, which is used to decide if a time step is divided.
+ * enough in the sense of ZM_ODE_TOL, which is used to decide if a trial time step is accepted.
  * _zODEStepIsTol() is the same with zODEStepIsTol() except that the difference between \a x1 and \a x2 is
  * multiplied by \a r.
  *
@@ -146,14 +148,15 @@ __ZM_EXPORT double zODEStepErr(const zVec x0, const zVec x1, const zVec x2, doub
 /*! \brief minimum time step for adaptive step size control of ODE quadratures.
  *
  * In ODE quadratures with an adaptive step size control (deferred correction and embedded Runge-Kutta
- * methods), a time step is not divided any more if it is not greater than this value.
+ * methods), a trial time step is accepted if it is not greater than this value, and the predicted time
+ * step is not smaller than this value.
  */
 #define ZM_ODE_DT_TOL ( 1.0e-8 )
 
 /*! \brief parameters to predict the next time step for adaptive step size control of ODE quadratures.
  *
- * In ODE quadratures with an adaptive step size control by embedded Runge-Kutta methods, the next time
- * step is predicted from the current time step h and the ratio err of the estimated error to the tolerance
+ * In ODE quadratures with an adaptive step size control (deferred correction and embedded Runge-Kutta
+ * methods), the next time step is predicted from the current time step h and the ratio err of the estimated error to the tolerance
  * (see zODEStepErr()) as
  *  h min{ ZM_ODE_STEP_RATIO_MAX, max{ ZM_ODE_STEP_RATIO_MIN, ZM_ODE_STEP_SAFETY err^(-1/(q+1)) } },
  * where q is the order of accuracy of the error estimation. ZM_ODE_STEP_RATIO_MAX is replaced by one just
@@ -162,6 +165,25 @@ __ZM_EXPORT double zODEStepErr(const zVec x0, const zVec x1, const zVec x2, doub
 #define ZM_ODE_STEP_SAFETY    ( 0.9 )
 #define ZM_ODE_STEP_RATIO_MIN ( 0.2 )
 #define ZM_ODE_STEP_RATIO_MAX ( 5.0 )
+
+/*! \brief update the state vector with an adaptive step size control.
+ *
+ * zODEUpdateAdaptive() updates a given vector \a x destructively from the time \a t to \a t + \a dt, where
+ * the interval \a dt is divided into time steps, each of which is predicted from the last step and stored
+ * in \a ode for the next update.
+ * \a trial is a function to try a time step h from the time t and the state x, which returns the ratio of
+ * the estimated error to the tolerance (see zODEStepErr()) by calling \a trial(\a ode, t, x, h, \a util,
+ * \a data). It must not modify x.
+ * \a accept is a function to put the result of the last trial into x by calling \a accept(\a ode, x,
+ * \a util, \a data).
+ * \a order is the order of accuracy of the error estimation.
+ * \a util is for programmer s utility, and \a data is for the method.
+ * no need to call this function in user's codes.
+ * \return
+ * zODEUpdateAdaptive() returns a pointer \a x. If \a x becomes not a number, the rest of the interval is
+ * abandoned.
+ */
+__ZM_EXPORT zVec zODEUpdateAdaptive(zODE *ode, double t, zVec x, double dt, int order, double (* trial)(zODE*,double,zVec,double,void*,void*), void (* accept)(zODE*,zVec,void*,void*), void *util, void *data);
 
 __END_DECLS
 

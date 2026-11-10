@@ -1,3 +1,8 @@
+2026.11.10. Modified the tests of the prediction of the time step and the termination for a differential function which is not a number to cover the deferred correction. Modified the test of the adaptive step size control for backward integration to allow slight differences for implicit methods. [test]
+2026.11.10. Modified the deferred correction to predict the time step from the last step by zODEUpdateAdaptive, instead of dividing the time step into halves recursively. [zm_ode_dc]
+2026.11.10. Modified the embedded Runge-Kutta methods to use zODEUpdateAdaptive, and abolished the members _h and order of their workspace. [zm_ode_erk]
+2026.11.10. Added zODEUpdateAdaptive to update the state vector with the adaptive step size control, which is commonly used by the deferred correction and the embedded Runge-Kutta methods. [zm_ode]
+2026.11.10. Added a private member _h to zODE for the time step predicted for the adaptive step size control. [zm_ode]
 2026.11.10. Modified the embedded Runge-Kutta methods to predict the time step from the last step by the ratio of the estimated error to the tolerance. [zm_ode_erk]
 2026.11.10. Added zODEStepErr to compute the ratio of the estimated error between two estimations of the state vector to the tolerance, and redefined _zODEStepIsTol as a macro using it. [zm_ode]
 2026.11.10. Added ZM_ODE_STEP_SAFETY, ZM_ODE_STEP_RATIO_MIN and ZM_ODE_STEP_RATIO_MAX for the prediction of the time step. [zm_ode]
