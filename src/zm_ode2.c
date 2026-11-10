@@ -92,15 +92,43 @@ zVec _zODE2Sub(zVec y1, zVec y2, zVec dy, void *ode)
   return dy;
 }
 
-/* update state destructively. */
-zVec zODE2UpdateRegular(zODE2 *ode, double t, zVec x, zVec v, double dt, void *util)
+/* pack displacement and velocity into the state variable vector of the first-order ODE. */
+static void _zODE2RegularPack(zODE2 *ode, zVec x, zVec v, void *util)
 {
   zRawVecCopy( zVecBufNC(x), zVecBufNC(ode->_x), zVecSizeNC(x) );
   zRawVecCopy( zVecBufNC(v), zVecBufNC(ode->_x)+zVecSizeNC(v), zVecSizeNC(v) );
   ode->util = util;
-  zODEUpdate( &ode->_ode, t, ode->_x, dt, ode );
+}
+
+/* unpack displacement and velocity from the state variable vector of the first-order ODE. */
+static void _zODE2RegularUnpack(zODE2 *ode, zVec x, zVec v)
+{
   zRawVecCopy( zVecBufNC(ode->_x), zVecBufNC(x), zVecSizeNC(x) );
   zRawVecCopy( zVecBufNC(ode->_x)+zVecSizeNC(v), zVecBufNC(v), zVecSizeNC(v) );
+}
+
+/* update state destructively. */
+zVec zODE2UpdateRegular(zODE2 *ode, double t, zVec x, zVec v, double dt, void *util)
+{
+  _zODE2RegularPack( ode, x, v, util );
+  zODEUpdate( &ode->_ode, t, ode->_x, dt, ode );
+  _zODE2RegularUnpack( ode, x, v );
+  return x;
+}
+
+/* initialize the history of a multistep method. */
+void zODE2InitHistoryRegular(zODE2 *ode, double t, zVec x, zVec v, void *util)
+{
+  _zODE2RegularPack( ode, x, v, util );
+  zODEInitHistory( &ode->_ode, t, ode->_x, ode );
+}
+
+/* create the history of a multistep method. */
+zVec zODE2CreateHistoryRegular(zODE2 *ode, double *t, zVec x, zVec v, double dt, void *util)
+{
+  _zODE2RegularPack( ode, x, v, util );
+  if( !zODECreateHistory( &ode->_ode, t, ode->_x, dt, ode ) ) return NULL;
+  _zODE2RegularUnpack( ode, x, v );
   return x;
 }
 
@@ -150,12 +178,6 @@ zODE2 *zODE2CreateLeapfrog(zODE2 *ode, int dim, int num, zVec (* f)(double,zVec,
   return ode;
 }
 
-/* initialize startup history */
-void zODE2InitHistoryLeapfrog(zODE2 *ode, zVec x, zVec v, double dt)
-{
-  zVecCopy( v, ode->_v ); /* v_-0.5 = v_0 */
-}
-
 /* destroy */
 void zODE2DestroyLeapfrog(zODE2 *ode)
 {
@@ -171,8 +193,23 @@ zVec zODE2UpdateLeapfrog(zODE2 *ode, double t, zVec x, zVec v, double dt, void *
   ode->cat_vel( ode->_v, dt, ode->_a, ode->_v, util );
   /* x_(i+1) = x_(i) + dt * v_(i+1/2) */
   ode->cat_dis( x, dt, ode->_v, x, util );
-  /* v_(i+1) = v_(i) + 0.5dt * a_(i+1/2) */
-  ode->f( t, x, ode->_v, util, ode->_a );
+  /* v_(i+1) = v_(i+1/2) + 0.5dt * a_(i+1) */
+  ode->f( t+dt, x, ode->_v, util, ode->_a );
   ode->cat_vel( ode->_v, 0.5*dt, ode->_a, v, util );
+  return x;
+}
+
+/* initialize the velocity at a half step before. */
+void zODE2InitHistoryLeapfrog(zODE2 *ode, double t, zVec x, zVec v, void *util)
+{
+  zVecCopy( v, ode->_v ); /* v_(-1/2) = v_(0) */
+}
+
+/* create the velocity at a half step before. */
+zVec zODE2CreateHistoryLeapfrog(zODE2 *ode, double *t, zVec x, zVec v, double dt, void *util)
+{
+  ode->f( *t, x, v, util, ode->_a );
+  /* v_(-1/2) = v_(0) - 0.5dt * a_(0) */
+  ode->cat_vel( v, -0.5*dt, ode->_a, ode->_v, util );
   return x;
 }

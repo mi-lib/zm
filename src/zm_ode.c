@@ -87,16 +87,29 @@ zVec _zODEUpdateAdaptive(zODE *ode, double t, zVec x, double dt, int order, doub
 }
 
 /* create the history of a multistep method by a starter one-step method. */
-zVec _zODECreateHistory(zODE *ode, zODE *starter, bool is_dc, void (* push)(zODE*,double,zVec,void*), double *t, zVec x, double dt, void *util)
+zVec _zODECreateHistory(zODE *ode, zODE *starter, void (* push)(zODE*,double,zVec,void*), double *t, zVec x, double dt, void *util)
 {
   int i;
 
-  if( !( is_dc ? zODECreateDC( starter, zVecSizeNC(x), 0, ode->f ) : zODECreate( starter, zVecSizeNC(x), 0, ode->f ) ) )
-    return NULL;
+  if( !zODECreate( starter, zVecSizeNC(x), 0, ode->f ) ) return NULL;
   for( i=1; i<ode->order; i++, *t+=dt ){
     push( ode, *t, x, util );
-    if( is_dc ) zODEUpdateDC( starter, *t, x, dt, util ); else zODEUpdate( starter, *t, x, dt, util );
+    zODEUpdate( starter, *t, x, dt, util );
   }
-  if( is_dc ) zODEDestroyDC( starter ); else zODEDestroy( starter );
+  zODEDestroy( starter );
+  return x;
+}
+
+/* create the history of a multistep method by a starter one-step method with deferred correction. */
+zVec _zODECreateHistoryDC(zODE *ode, zODE *starter, void (* push)(zODE*,double,zVec,void*), double *t, zVec x, double dt, void *util)
+{
+  int i;
+
+  if( !zODECreateDC( starter, zVecSizeNC(x), 0, ode->f ) ) return NULL;
+  for( i=1; i<ode->order; i++, *t+=dt ){
+    push( ode, *t, x, util );
+    zODEUpdateDC( starter, *t, x, dt, util );
+  }
+  zODEDestroyDC( starter );
   return x;
 }

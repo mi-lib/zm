@@ -144,10 +144,14 @@ zVec zODECreateHistoryGear(zODE *ode, double *t, zVec x, double dt, void *util)
   zODE starter;
 
   zODEInit( &starter );
-  if( ode->order <= 4 ) zODEAssign( &starter, Radau, ode->cat, ode->sub ); else
-                        zODEAssign( &starter, Gauss, ode->cat, ode->sub );
+  if( ode->order <= 4 )
+    zODEAssign( &starter, Radau, ode->cat, ode->sub );
+  else
+    zODEAssign( &starter, Gauss, ode->cat, ode->sub );
   /* the deferred correction raises the order of accuracy of Gauss method to five for six steps */
-  return _zODECreateHistory( ode, &starter, ode->order >= 6, _zODEPushHistoryGear, t, x, dt, util );
+  return ode->order >= 6 ?
+    _zODECreateHistoryDC( ode, &starter, _zODEPushHistoryGear, t, x, dt, util ) :
+    _zODECreateHistory( ode, &starter, _zODEPushHistoryGear, t, x, dt, util );
 }
 
 /* directly integrate variable by ODE based on Gear method. */

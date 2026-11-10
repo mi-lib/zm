@@ -375,7 +375,7 @@ double oscillator_energy_error(zVec x, zVec dx)
 /* integrate a harmonic oscillation for a long period, and return the maximum absolute energy errors in
  * the first and the second halves of the period. If drift is not null, it is set for true if the energy
  * monotonically decreases. */
-void oscillator_integrate(zODE2 *ode, bool is_leapfrog, double *err1, double *err2, bool *drift)
+void oscillator_integrate(zODE2 *ode, double *err1, double *err2, bool *drift)
 {
   const double dt = 0.1;
   const int n = 10000;
@@ -386,7 +386,7 @@ void oscillator_integrate(zODE2 *ode, bool is_leapfrog, double *err1, double *er
   zODE2Create( ode, 1, 0, oscillator );
   x = zVecCreateList( 1, 1.0 );
   dx = zVecCreateList( 1, 0.0 );
-  if( is_leapfrog ) zODE2InitHistoryLeapfrog( ode, x, dx, dt );
+  zODE2InitHistory( ode, 0, x, dx, NULL );
   *err1 = *err2 = 0;
   if( drift ) *drift = true;
   for( i=0; i<n; i++ ){
@@ -414,13 +414,13 @@ void assert_ode2_symplectic(void)
 
   /* symplectic methods: the energy error is bounded. */
   zODE2Assign( &ode, Leapfrog, NULL, NULL, NULL, NULL );
-  oscillator_integrate( &ode, true, &err1, &err2, NULL );
+  oscillator_integrate( &ode, &err1, &err2, NULL );
   if( err2 > 1.1 * err1 ){
     eprintf( "Leapfrog: energy error %g in the first half, %g in the second half\n", err1, err2 );
     result = false;
   }
   zODE2Assign( &ode, Symplectic, NULL, NULL, NULL, NULL );
-  oscillator_integrate( &ode, false, &err1, &err2, NULL );
+  oscillator_integrate( &ode, &err1, &err2, NULL );
   if( err2 > 1.1 * err1 ){
     eprintf( "Symplectic: energy error %g in the first half, %g in the second half\n", err1, err2 );
     result = false;
@@ -428,7 +428,7 @@ void assert_ode2_symplectic(void)
   /* a non-symplectic method: the energy monotonically drifts. */
   zODE2Assign( &ode, Regular, NULL, NULL, NULL, NULL );
   zODE2AssignRegular( &ode, RK4 );
-  oscillator_integrate( &ode, false, &err1, &err2, &drift );
+  oscillator_integrate( &ode, &err1, &err2, &drift );
   if( !drift || err2 < 1.5 * err1 ){
     eprintf( "RK4: energy error %g in the first half, %g in the second half (%s)\n", err1, err2, drift ? "monotonic" : "not monotonic" );
     result = false;
@@ -929,6 +929,124 @@ void assert_ode2_gear(void)
   zAssert( zODE2Update (regular update with Gear method), result );
 }
 
+/* error of a harmonic oscillation x'' = -x with x(0) = 1 and x'(0) = 0 at the time 1, integrated with
+ * the history initialized (is_create = false) or created (is_create = true). t0 is set for the time
+ * after the history is created. */
+double ode2_history_error(zODE2 *ode, int num, bool is_create, double dt, double *t0)
+{
+  zVec x, v;
+  double t = 0, result;
+
+  zODE2Create( ode, 1, num, oscillator );
+  x = zVecCreateList( 1, 1.0 );
+  v = zVecCreateList( 1, 0.0 );
+  if( is_create )
+    zODE2CreateHistory( ode, &t, x, v, dt, NULL );
+  else
+    zODE2InitHistory( ode, t, x, v, NULL );
+  *t0 = t;
+  for( ; t<1-0.5*dt; t+=dt )
+    zODE2Update( ode, t, x, v, dt, NULL );
+  result = sqrt( zSqr( zVecElemNC(x,0) - cos(t) ) + zSqr( zVecElemNC(v,0) + sin(t) ) );
+  zVecFreeAtOnce( 2, x, v );
+  zODE2Destroy( ode );
+  return result;
+}
+
+/* observed order of accuracy of a second-order ODE solver assigned in advance with the history
+ * initialized or created. */
+double ode2_history_order(zODE2 *ode, int num, bool is_create, double *t0)
+{
+  double e1, e2;
+
+  e1 = ode2_history_error( ode, num, is_create, 0.025, t0 );
+  e2 = ode2_history_error( ode, num, is_create, 0.0125, t0 );
+  return log2( e1 / e2 );
+}
+
+/* 19. order of accuracy of second-order ODE solvers with the history created */
+void assert_ode2_history(void)
+{
+  zODE2 ode;
+  double p, t0;
+  int k;
+  bool result = true;
+
+  for( k=2; k<=4; k++ ){
+    zODE2Assign( &ode, Regular, NULL, NULL, NULL, NULL );
+    zODE2AssignRegular( &ode, Adams );
+    p = ode2_history_order( &ode, k, true, &t0 );
+    if( p < k - 0.2 || !zIsTiny( t0 - (k-1)*0.0125 ) ){
+      eprintf( "Regular Adams (%d steps): order %g, t = %g after the history is created\n", k, p, t0 );
+      result = false;
+    }
+    zODE2AssignRegular( &ode, Gear );
+    p = ode2_history_order( &ode, k, true, &t0 );
+    if( p < k - 0.2 || !zIsTiny( t0 - (k-1)*0.0125 ) ){
+      eprintf( "Regular Gear (%d steps): order %g, t = %g after the history is created\n", k, p, t0 );
+      result = false;
+    }
+  }
+  /* the velocity at a half step before has to be created with the second-order accuracy. */
+  zODE2Assign( &ode, Leapfrog, NULL, NULL, NULL, NULL );
+  p = ode2_history_order( &ode, 0, false, &t0 );
+  if( p > 1.2 ){
+    eprintf( "Leapfrog: order %g with the history initialized\n", p );
+    result = false;
+  }
+  p = ode2_history_order( &ode, 0, true, &t0 );
+  if( p < 1.8 || t0 != 0 ){
+    eprintf( "Leapfrog: order %g, t = %g with the history created\n", p, t0 );
+    result = false;
+  }
+  /* no history */
+  zODE2Assign( &ode, Symplectic, NULL, NULL, NULL, NULL );
+  ode2_history_order( &ode, 0, true, &t0 );
+  if( t0 != 0 ){
+    eprintf( "Symplectic: t = %g with the history created\n", t0 );
+    result = false;
+  }
+  zAssert( zODE2CreateHistory (order of accuracy of second-order ODE solvers), result );
+}
+
+/* acceleration linear in time */
+zVec linear_acceleration(double t, zVec x, zVec dx, void *dummy, zVec ddx)
+{
+  zVecSetElemNC( ddx, 0, t );
+  return ddx;
+}
+
+/* 20. velocity of leapfrog method at a full step for an acceleration varying in time. since the velocity
+ * is the trapezoidal integration of the acceleration, it is exact for an acceleration linear in time,
+ * if the acceleration at the end of the step is evaluated at the correct time. */
+void assert_ode2_leapfrog_time(void)
+{
+  const double dt = 0.01;
+  const int n = 100;
+  zODE2 ode;
+  zVec x, v;
+  double t = 0;
+  int i;
+  bool result = true;
+
+  zODE2Assign( &ode, Leapfrog, NULL, NULL, NULL, NULL );
+  zODE2Create( &ode, 1, 0, linear_acceleration );
+  x = zVecCreateList( 1, 0.0 );
+  v = zVecCreateList( 1, 0.0 );
+  zODE2CreateHistory( &ode, &t, x, v, dt, NULL );
+  for( i=0; i<n; i++, t+=dt ){
+    zODE2Update( &ode, t, x, v, dt, NULL );
+    if( !zIsTol( zVecElemNC(v,0) - 0.5*zSqr(t+dt), 1.0e-12 ) ){
+      eprintf( "Leapfrog: v = %.17g at t = %g (exact: %.17g)\n", zVecElemNC(v,0), t+dt, 0.5*zSqr(t+dt) );
+      result = false;
+      break;
+    }
+  }
+  zVecFreeAtOnce( 2, x, v );
+  zODE2Destroy( &ode );
+  zAssert( zODE2Update (time of the acceleration at the end of a step of leapfrog method), result );
+}
+
 int main(void)
 {
   assert_ode_order_onestep();
@@ -949,5 +1067,7 @@ int main(void)
   assert_ode_history_misc();
   assert_ode_gear_small_state();
   assert_ode2_gear();
+  assert_ode2_history();
+  assert_ode2_leapfrog_time();
   return EXIT_SUCCESS;
 }

@@ -155,7 +155,9 @@ zVec zODECreateHistoryAdams(zODE *ode, double *t, zVec x, double dt, void *util)
   zODE starter;
 
   zODEInit( &starter );
-  if( ode->order <= 5 ) zODEAssign( &starter, RK4,  ode->cat, ode->sub ); else
-                        zODEAssign( &starter, DP45, ode->cat, ode->sub );
-  return _zODECreateHistory( ode, &starter, false, _zODEPushHistoryAdams, t, x, dt, util );
+  if( ode->order <= 5 )
+    zODEAssign( &starter, RK4,  ode->cat, ode->sub );
+  else
+    zODEAssign( &starter, DP45, ode->cat, ode->sub );
+  return _zODECreateHistory( ode, &starter, _zODEPushHistoryAdams, t, x, dt, util );
 }

@@ -37,7 +37,7 @@ int main(void)
     x[i] = zVecCreateList( 1, 1.0 );
     dx[i] = zVecCreateList( 1, 0.0 );
   }
-  zODE2InitHistoryLeapfrog( &ode[1], x[1], dx[1], DT );
+  zODE2InitHistory( &ode[1], 0, x[1], dx[1], NULL );
 
   fp = fopen( "result.dat", "w" );
   output( fp, x, dx );

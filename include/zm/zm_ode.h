@@ -155,16 +155,24 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
 
 /*! \brief create the history of a multistep method by a starter.
  *
- * _zODECreateHistory() integrates \a x from the time *\a t by k-1 time steps \a dt with \a starter,
- * where k is the order of accuracy of \a ode, and puts each state before the time step into the history
- * of \a ode by calling \a push(\a ode, t, x, \a util). \a starter has to be assigned in advance, and
- * is created with the deferred correction if \a is_dc is the true value. It is destroyed at the end.
+ * _zODECreateHistory() creates the history of k-1 variables internally stored in an ordinary differential
+ * equation solver \a ode, where k is the order of accuracy of \a ode, and puts each state before the time
+ * step into the history of \a ode by calling \a push(\a ode, t, x, \a util).
+ * \a dt is the time step. \a x is the initial variable for the starter to be integrated by another ordinary
+ * differential equation solver \a starter, which has to be assigned in advance.
+ *
+ * _zODECreateHistoryDC() creates the history of k-1 variables based on the deferred correction.
+ *
+ * \a starter is destroyed in the end of these functions.
  * \notes
- * This is for internal implementations of the library. No need to call this function in user's codes.
+ * _zODECreateHistory() and _zODECreateHistoryDC() are only for internal implementations of the library.
+ * No need to call these functions in user's codes.
  * \return
- * _zODECreateHistory() returns a pointer \a x, or the null pointer if it fails to create \a starter.
+ * _zODECreateHistory() and _zODECreateHistoryDC() return a pointer \a x, or the null pointer if they fail
+ * to create \a starter.
  */
-__ZM_EXPORT zVec _zODECreateHistory(zODE *ode, zODE *starter, bool is_dc, void (* push)(zODE*,double,zVec,void*), double *t, zVec x, double dt, void *util);
+__ZM_EXPORT zVec _zODECreateHistory(zODE *ode, zODE *starter, void (* push)(zODE*,double,zVec,void*), double *t, zVec x, double dt, void *util);
+__ZM_EXPORT zVec _zODECreateHistoryDC(zODE *ode, zODE *starter, void (* push)(zODE*,double,zVec,void*), double *t, zVec x, double dt, void *util);
 
 /*! \brief tolerance for adaptive step size control of ODE quadratures.
  *
