@@ -23,11 +23,13 @@ __ZM_EXPORT void zODEDestroyBK4(zODE *ode);
  * As body implementations of solvers, 'Gauss' and 'Radau' are prepared. */
 
 /* Gauss method */
+#define zODEOrderGauss 4
 #define zODECreateGauss  zODECreateBK4
 #define zODEDestroyGauss zODEDestroyBK4
 __ZM_EXPORT zVec zODEUpdateGauss(zODE *ode, double t, zVec x, double dt, void *util);
 
 /* Radau method */
+#define zODEOrderRadau 3
 #define zODECreateRadau  zODECreateBK4
 #define zODEDestroyRadau zODEDestroyBK4
 __ZM_EXPORT zVec zODEUpdateRadau(zODE *ode, double t, zVec x, double dt, void *util);

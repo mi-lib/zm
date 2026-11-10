@@ -93,7 +93,7 @@ zVec _zODE2Sub(zVec y1, zVec y2, zVec dy, void *ode)
 }
 
 /* update state destructively. */
-void zODE2UpdateRegular(zODE2 *ode, double t, zVec x, zVec v, double dt, void *util)
+zVec zODE2UpdateRegular(zODE2 *ode, double t, zVec x, zVec v, double dt, void *util)
 {
   zRawVecCopy( zVecBufNC(x), zVecBufNC(ode->_x), zVecSizeNC(x) );
   zRawVecCopy( zVecBufNC(v), zVecBufNC(ode->_x)+zVecSizeNC(v), zVecSizeNC(v) );
@@ -101,6 +101,7 @@ void zODE2UpdateRegular(zODE2 *ode, double t, zVec x, zVec v, double dt, void *u
   zODEUpdate( &ode->_ode, t, ode->_x, dt, ode );
   zRawVecCopy( zVecBufNC(ode->_x), zVecBufNC(x), zVecSizeNC(x) );
   zRawVecCopy( zVecBufNC(ode->_x)+zVecSizeNC(v), zVecBufNC(v), zVecSizeNC(v) );
+  return x;
 }
 
 /* *** simplest symplectic method *** */
@@ -124,11 +125,12 @@ void zODE2DestroySymplectic(zODE2 *ode)
 }
 
 /* update state destructively. */
-void zODE2UpdateSymplectic(zODE2 *ode, double t, zVec x, zVec v, double dt, void *util)
+zVec zODE2UpdateSymplectic(zODE2 *ode, double t, zVec x, zVec v, double dt, void *util)
 {
   ode->f( t, x, v, util, ode->_a );
   ode->cat_vel( v, dt, ode->_a, v, util );
   ode->cat_dis( x, dt, v, x, util );
+  return x;
 }
 
 /* *** leapfrog method *** */
@@ -162,7 +164,7 @@ void zODE2DestroyLeapfrog(zODE2 *ode)
 }
 
 /* update state destructively */
-void zODE2UpdateLeapfrog(zODE2 *ode, double t, zVec x, zVec v, double dt, void *util)
+zVec zODE2UpdateLeapfrog(zODE2 *ode, double t, zVec x, zVec v, double dt, void *util)
 {
   ode->f( t, x, v, util, ode->_a );
   /* v_(i+1/2) = v_(i-1/2) + dt * a_(i) */
@@ -172,4 +174,5 @@ void zODE2UpdateLeapfrog(zODE2 *ode, double t, zVec x, zVec v, double dt, void *
   /* v_(i+1) = v_(i) + 0.5dt * a_(i+1/2) */
   ode->f( t, x, ode->_v, util, ode->_a );
   ode->cat_vel( ode->_v, 0.5*dt, ode->_a, v, util );
+  return x;
 }

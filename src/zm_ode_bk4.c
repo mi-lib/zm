@@ -93,12 +93,13 @@ zVec zODEUpdateGauss(zODE *ode, double t, zVec x, double dt, void *util)
   ws->a11 = ws->a22 = 0.25 *dt;
   ws->a12 = (0.25+bk4_c)*dt;
   ws->a21 = (0.25-bk4_c)*dt;
-  dt *= 0.5;
 
   ws->util = util;
   zVecCopyNC( x, ws->x );
   zVecZero( ws->k );
-  zNLESolve( &ws->nle, ws->k, ode, zTOL, zTOL, ws->iter, NULL );
+  /* the error of the state is dt times that of k, which is to be relatively small to the state. */
+  zNLESolve( &ws->nle, ws->k, ode, zTOL, zTOL*zVecElemAbsMax(x,NULL)/fabs(dt), ws->iter, NULL );
+  dt *= 0.5;
   ode->cat( x, dt, &ws->k1, x, util );
   ode->cat( x, dt, &ws->k2, x, util );
   return x;
@@ -119,7 +120,8 @@ zVec zODEUpdateRadau(zODE *ode, double t, zVec x, double dt, void *util)
   ws->util = util;
   zVecCopyNC( x, ws->x );
   zVecZero( ws->k );
-  zNLESolve( &ws->nle, ws->k, ode, zTOL, zTOL, ws->iter, NULL );
+  /* the error of the state is dt times that of k, which is to be relatively small to the state. */
+  zNLESolve( &ws->nle, ws->k, ode, zTOL, zTOL*zVecElemAbsMax(x,NULL)/fabs(dt), ws->iter, NULL );
   ode->cat( x, ws->a21, &ws->k1, x, util );
   ode->cat( x, ws->a22, &ws->k2, x, util );
   return x;

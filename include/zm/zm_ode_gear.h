@@ -18,6 +18,7 @@ __BEGIN_DECLS
  * Note that the initial series of variables should be set properly. They are set for zeros in default,
  * which might cause stable but largely different numerical behaviors.
  */
+#define zODEOrderGear 0 /* set by zODECreate() as the step number */
 __ZM_EXPORT zODE *zODECreateGear(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyGear(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateGear(zODE *ode, double t, zVec x, double dt, void *util);

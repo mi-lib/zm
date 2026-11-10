@@ -17,7 +17,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zODE2 ){
   zVec (* f)(double,zVec,zVec,void*,zVec); /* differential function */
   zODE2 *(* create)(zODE2*,int,int,zVec (*)(double,zVec,zVec,void*,zVec));
   void (* destroy)(zODE2*);
-  void (* update)(zODE2*,double,zVec,zVec,double,void*);
+  zVec (* update)(zODE2*,double,zVec,zVec,double,void*);
   zVec (* cat_dis)(zVec,double,zVec,zVec,void*);
   zVec (* cat_vel)(zVec,double,zVec,zVec,void*);
   zVec (* sub_dis)(zVec,zVec,zVec,void*);
@@ -30,7 +30,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zODE2 ){
 __BEGIN_DECLS
 
 /*! \brief initialize a second-order ODE solver. */
-#define zOD2EInit(ode) do{ \
+#define zODE2Init(ode) do{ \
   (ode)->f = NULL; \
   (ode)->create = NULL; \
   (ode)->destroy = NULL; \
@@ -78,17 +78,20 @@ __ZM_EXPORT void zODE2AssignFunc(zODE2 *ode, zVec (* catf1)(zVec,double,zVec,zVe
  *
  * zODE2Update() updates a given vector \a x and \a dx destructively
  * by \a ode. \a t is the time and \a dt is the quantized integration
- * time step.
+ * time step, which has to be nonzero.
  * \return
  * zODE2Create() returns a pointer \a ode if it it succeeds, or the null pointer otherwise.
  *
- * zODE2Destroy() and zODE2Update() return no value.
+ * zODE2Destroy() returns no value.
+ *
+ * zODE2Update() returns a pointer \a x, or the null pointer without updating \a x and \a dx if \a dt is
+ * zero.
  * \sa
  * zODE2Assign, zODECreate, zODEDestroy, zODEUpdate
  */
 #define zODE2Create(ode,dim,step,f)    (ode)->create( ode, dim, step, f )
 #define zODE2Destroy(ode)              (ode)->destroy( ode )
-#define zODE2Update(ode,t,x,v,dt,util) (ode)->update( ode, t, x, v, dt, util )
+#define zODE2Update(ode,t,x,v,dt,util) ( (dt) == 0 ? NULL : (ode)->update( ode, t, x, v, dt, util ) )
 
 /* regular update */
 __ZM_EXPORT zVec _zODE2Cat(zVec y, double dt, zVec dy, zVec yn, void *ode);
@@ -96,19 +99,19 @@ __ZM_EXPORT zVec _zODE2Sub(zVec y1, zVec y2, zVec dy, void *ode);
 
 __ZM_EXPORT zODE2 *zODE2CreateRegular(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec));
 __ZM_EXPORT void zODE2DestroyRegular(zODE2 *ode);
-__ZM_EXPORT void zODE2UpdateRegular(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
+__ZM_EXPORT zVec zODE2UpdateRegular(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
 #define zODE2AssignRegular( d, type ) zODEAssign( &(d)->_ode, type, _zODE2Cat, _zODE2Sub )
 
 /* simplest symplectic update */
 __ZM_EXPORT zODE2 *zODE2CreateSymplectic(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec));
 __ZM_EXPORT void zODE2DestroySymplectic(zODE2 *ode);
-__ZM_EXPORT void zODE2UpdateSymplectic(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
+__ZM_EXPORT zVec zODE2UpdateSymplectic(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
 
 /* leapfrog update */
 __ZM_EXPORT zODE2 *zODE2CreateLeapfrog(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec));
 __ZM_EXPORT void zODE2InitHistoryLeapfrog(zODE2 *ode, zVec x, zVec v, double dt);
 __ZM_EXPORT void zODE2DestroyLeapfrog(zODE2 *ode);
-__ZM_EXPORT void zODE2UpdateLeapfrog(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
+__ZM_EXPORT zVec zODE2UpdateLeapfrog(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
 
 __END_DECLS
 

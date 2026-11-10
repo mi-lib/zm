@@ -80,6 +80,7 @@ zODE *zODECreateAdams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*
   ws = (_zODE_Adams *)ode->_ws;
   _zODESetWeightAdams( ws->wb, ws->step, 1 );   /* AB formula */
   _zODESetWeightAdams( ws->wm, ws->step, 0 ); /* AM formula */
+  ode->order = ws->step;
   return ode;
 }
 

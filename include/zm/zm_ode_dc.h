@@ -10,7 +10,8 @@
 
 __BEGIN_DECLS
 
-/* Deferred correction with Rechardson's extrapolation */
+/* Deferred correction with Rechardson's extrapolation.
+ * zODEUpdateDC() returns the null pointer without updating x if dt is zero, as zODEUpdate(). */
 __ZM_EXPORT zODE *zODECreateDC(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyDC(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateDC(zODE *ode, double t, zVec x, double dt, void *util);

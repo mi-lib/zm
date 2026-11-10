@@ -13,6 +13,7 @@
 __BEGIN_DECLS
 
 /* Predictor-Corrector method with a combination of Adams=Bashforth / Adams=Moulton formulae. */
+#define zODEOrderAdams 0 /* set by zODECreate() as the step number */
 __ZM_EXPORT zODE *zODECreateAdams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyAdams(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateAdams(zODE *ode, double t, zVec x, double dt, void *util);

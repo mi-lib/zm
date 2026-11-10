@@ -13,6 +13,7 @@
 __BEGIN_DECLS
 
 /* Euler method is too known to describe:-) */
+#define zODEOrderEuler 1
 __ZM_EXPORT zODE *zODECreateEuler(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyEuler(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateEuler(zODE *ode, double t, zVec x, double dt, void *util);

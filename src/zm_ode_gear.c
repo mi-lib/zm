@@ -69,6 +69,7 @@ zODE* zODECreateGear(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,
     return NULL;
   }
   ws->b = b[step-1];
+  ode->order = step;
   ode->f = f;
   ode->_ws = ws;
   zNLEAssignNR( &ws->nle );
@@ -104,7 +105,8 @@ zVec zODEUpdateGear(zODE *ode, double t, zVec x, double dt, void *util)
   ws->dt = dt;
   ws->util = util;
   zVecCopyNC( x, *zRingHead(&ws->hist) );
-  zNLESolve( &ws->nle, x, ode, zTOL, zTOL, 0, NULL ); /* use default maximum iteration number */
+  /* the residual is to be relatively small to the state. the default maximum iteration number is used. */
+  zNLESolve( &ws->nle, x, ode, zTOL, zTOL*zVecElemAbsMax(x,NULL), 0, NULL );
   zRingDecHead( &ws->hist );
   return x;
 }

@@ -32,6 +32,7 @@ static void method_assign(zODE *ode, const method_t *method)
   ode->create = method->create;
   ode->destroy = method->destroy;
   ode->update = method->update;
+  ode->order = method->order;
   zODEAssignFunc( ode, NULL, NULL );
 }
 
@@ -210,6 +211,12 @@ zVec stiff(double t, zVec x, void *dummy, zVec dx)
   return dx;
 }
 
+/* stability functions R(z) of A-stable one-step methods, with which x <- R(z) x for x' = -A x and z = -A dt */
+double stiff_r_beuler(double z){ return 1 / ( 1 - z ); }
+double stiff_r_tr(double z){ return ( 1 + z/2 ) / ( 1 - z/2 ); }
+double stiff_r_gauss(double z){ return ( 1 + z/2 + z*z/12 ) / ( 1 - z/2 + z*z/12 ); }
+double stiff_r_radau(double z){ return ( 1 + z/3 ) / ( 1 - 2*z/3 + z*z/6 ); }
+
 /* 4. stability for a stiff equation */
 void assert_ode_stiff(void)
 {
@@ -219,24 +226,27 @@ void assert_ode_stiff(void)
     METHOD( Gauss,  0, 4 ),
     METHOD( Radau,  0, 3 ),
   };
+  double (* r[])(double) = { stiff_r_beuler, stiff_r_tr, stiff_r_gauss, stiff_r_radau };
   const method_t gear = METHOD( Gear, 3, 3 );
   const double dt = 0.1; /* A dt = 10, for which explicit methods diverge */
-  const double xmin = 1.0e-10; /* below which the tolerance zTOL of the nonlinear equation solver dominates */
+  const double tol = 1.0e-8;
   const int n = 20;
   zODE ode;
   zVec x;
   int i, k;
-  double xabs, xabs_prev;
+  double xabs, xabs_prev, x_exact;
   bool result = true;
 
-  /* one-step methods: |x| monotonically decreases. */
+  /* one-step methods: |x| monotonically decreases, and x coincides with R(z)^i, even after it becomes
+   * much smaller than zTOL, since the nonlinear equation is solved with a tolerance relative to x. */
   for( k=0; k<sizeof(method)/sizeof(method_t); k++ ){
     method_create( &ode, &method[k], 1, method[k].step, stiff );
     x = zVecCreateList( 1, 1.0 );
-    for( xabs_prev=1.0, i=0; i<n && xabs_prev>xmin; i++ ){
+    for( x_exact=xabs_prev=1.0, i=0; i<5*n; i++ ){
       zODEUpdate( &ode, i*dt, x, dt, NULL );
-      if( ( xabs = fabs( zVecElemNC(x,0) ) ) >= xabs_prev ){
-        eprintf( "%s: |x| = %g -> %g at step %d\n", method[k].name, xabs_prev, xabs, i );
+      x_exact *= r[k]( -STIFF_A * dt );
+      if( ( xabs = fabs( zVecElemNC(x,0) ) ) >= xabs_prev || fabs( zVecElemNC(x,0) - x_exact ) > tol * fabs( x_exact ) ){
+        eprintf( "%s: |x| = %g -> %g at step %d (exact: %g)\n", method[k].name, xabs_prev, xabs, i, fabs( x_exact ) );
         result = false;
         break;
       }
@@ -264,6 +274,85 @@ void assert_ode_stiff(void)
   zVecFree( x );
   zODEDestroy( &ode );
   zAssert( zODEUpdate (stability for a stiff equation), result );
+}
+
+#define FORCED_C 1.0e-13
+
+/* x' = c - x */
+zVec forced(double t, zVec x, void *c, zVec dx)
+{
+  zVecSetElemNC( dx, 0, *(double *)c - zVecElemNC(x,0) );
+  return dx;
+}
+
+/* 5. implicit methods starting from the zero state */
+void assert_ode_implicit_zero(void)
+{
+  const method_t method[] = {
+    METHOD( BEuler, 0, 1 ),
+    METHOD( TR,     0, 2 ),
+    METHOD( Gauss,  0, 4 ),
+    METHOD( Radau,  0, 3 ),
+    METHOD( Gear,   1, 1 ), /* Gear's method with one step is identical with backward Euler method */
+  };
+  double (* r[])(double) = { stiff_r_beuler, stiff_r_tr, stiff_r_gauss, stiff_r_radau, stiff_r_beuler };
+  const double cs[] = { 0, 1.0, FORCED_C }, dt = 0.1, tol = 1.0e-8;
+  const int n = 10;
+  zODE ode;
+  zVec x;
+  int i, j, k;
+  double c, x_exact;
+  bool result = true;
+
+  /* since y = x - c satisfies y' = -y, the solution is x = c ( 1 - R(-dt)^i ). The tolerance of the residual
+   * of the nonlinear equation is zero at the zero state, which has to be updated properly even if c dt is
+   * much smaller than zTOL, and has to remain zero if c = 0. */
+  for( j=0; j<sizeof(cs)/sizeof(double); j++ ){
+    c = cs[j];
+    for( k=0; k<sizeof(method)/sizeof(method_t); k++ ){
+      method_create( &ode, &method[k], 1, method[k].step, forced );
+      x = zVecCreateList( 1, 0.0 );
+      if( method[k].create == zODECreateGear ) zODEInitHistoryGear( &ode, x );
+      for( x_exact=1, i=0; i<n; i++ ){
+        zODEUpdate( &ode, i*dt, x, dt, &c );
+        x_exact *= r[k]( -dt );
+        if( fabs( zVecElemNC(x,0) - c * ( 1 - x_exact ) ) > tol * fabs( c * ( 1 - x_exact ) ) ){
+          eprintf( "%s: x = %.17g at step %d (exact: %.17g)\n", method[k].name, zVecElemNC(x,0), i, c * ( 1 - x_exact ) );
+          result = false;
+          break;
+        }
+      }
+      zVecFree( x );
+      zODEDestroy( &ode );
+    }
+  }
+  zAssert( zODEUpdate (implicit methods from the zero state), result );
+}
+
+/* 6. rejection of the zero time step */
+void assert_ode_zero_dt(void)
+{
+  zODE ode;
+  zVec x;
+  int k;
+  bool result = true;
+
+  for( k=0; k<METHOD_ONESTEP_NUM; k++ ){
+    x = zVecCreateList( 2, 1.0, 0.0 );
+    method_create( &ode, &method_onestep[k], 2, 0, circle );
+    if( zODEUpdate( &ode, 0, x, 0, NULL ) ) result = false;
+    zODEDestroy( &ode );
+    method_assign( &ode, &method_onestep[k] );
+    zODECreateDC( &ode, 2, 0, circle );
+    if( zODEUpdateDC( &ode, 0, x, 0, NULL ) ) result = false;
+    zODEDestroyDC( &ode );
+    if( zVecElemNC(x,0) != 1.0 || zVecElemNC(x,1) != 0.0 ){
+      eprintf( "%s: x = (%g, %g) after a zero time step\n", method_onestep[k].name, zVecElemNC(x,0), zVecElemNC(x,1) );
+      result = false;
+    }
+    zVecFree( x );
+  }
+  zAssert( zODEUpdate (rejection of the zero time step), result );
 }
 
 /* x'' = -x */
@@ -312,7 +401,7 @@ void oscillator_integrate(zODE2 *ode, bool is_leapfrog, double *err1, double *er
   zODE2Destroy( ode );
 }
 
-/* 5. symplecticity of second-order ODE solvers */
+/* 7. symplecticity of second-order ODE solvers */
 void assert_ode2_symplectic(void)
 {
   zODE2 ode;
@@ -343,7 +432,46 @@ void assert_ode2_symplectic(void)
   zAssert( zODE2Update (symplecticity), result );
 }
 
-/* 6. accuracy of deferred correction */
+/* rejection of the zero time step by a second-order ODE solver */
+bool ode2_zero_dt_check(zODE2 *ode, const char *name)
+{
+  zVec x, v;
+  bool result = true;
+
+  zODE2Create( ode, 1, 0, oscillator );
+  x = zVecCreateList( 1, 1.0 );
+  v = zVecCreateList( 1, 0.0 );
+  if( zODE2Update( ode, 0, x, v, 0, NULL ) || zVecElemNC(x,0) != 1.0 || zVecElemNC(v,0) != 0.0 ){
+    eprintf( "%s: x = %g, v = %g after a zero time step\n", name, zVecElemNC(x,0), zVecElemNC(v,0) );
+    result = false;
+  }
+  if( zODE2Update( ode, 0, x, v, 0.1, NULL ) != x ){
+    eprintf( "%s: zODE2Update does not return x\n", name );
+    result = false;
+  }
+  zVecFree( x );
+  zVecFree( v );
+  zODE2Destroy( ode );
+  return result;
+}
+
+/* 8. rejection of the zero time step by second-order ODE solvers */
+void assert_ode2_zero_dt(void)
+{
+  zODE2 ode;
+  bool result = true;
+
+  zODE2Assign( &ode, Regular, NULL, NULL, NULL, NULL );
+  zODE2AssignRegular( &ode, RK4 );
+  if( !ode2_zero_dt_check( &ode, "Regular" ) ) result = false;
+  zODE2Assign( &ode, Symplectic, NULL, NULL, NULL, NULL );
+  if( !ode2_zero_dt_check( &ode, "Symplectic" ) ) result = false;
+  zODE2Assign( &ode, Leapfrog, NULL, NULL, NULL, NULL );
+  if( !ode2_zero_dt_check( &ode, "Leapfrog" ) ) result = false;
+  zAssert( zODE2Update (rejection of the zero time step), result );
+}
+
+/* 9. accuracy of deferred correction */
 void assert_ode_dc_accuracy(void)
 {
   const double dt = 0.5, T = 10.0;
@@ -375,26 +503,113 @@ void assert_ode_dc_accuracy(void)
   zAssert( zODEUpdateDC (accuracy), result );
 }
 
-/* 7. termination of deferred correction for a large state */
-void assert_ode_dc_large_state(void)
+/* integrate the unit circle from t=0 to t=T with deferred correction, and return the error at T. */
+double circle_integrate_dc(const method_t *method, double dt, double T)
 {
-  const double r = 1.0e10, dt = 0.1;
-  const method_t rk4 = METHOD( RK4, 0, 4 );
   zODE ode;
   zVec x;
+  int i, n;
   double err;
 
-  /* the distance between the full-step and half-step-twice estimations never becomes smaller than
-   * ZM_ODE_TOL due to the round-off error, so that the time step has to stop being divided at
-   * ZM_ODE_DT_TOL. */
-  method_assign( &ode, &rk4 );
+  n = (int)( T / dt + 0.5 );
+  method_assign( &ode, method );
   zODECreateDC( &ode, 2, 0, circle );
-  x = zVecCreateList( 2, r, 0.0 );
-  zODEUpdateDC( &ode, 0, x, dt, NULL );
-  err = circle_error( x, dt, r ) / r;
+  x = zVecCreateList( 2, 1.0, 0.0 );
+  for( i=0; i<n; i++ )
+    zODEUpdateDC( &ode, i*dt, x, dt, NULL );
+  err = circle_error( x, n*dt, 1.0 );
   zVecFree( x );
   zODEDestroyDC( &ode );
-  zAssert( zODEUpdateDC (termination for a large state), err < ZM_ODE_TOL );
+  return err;
+}
+
+/* 10. order of accuracy of deferred correction */
+void assert_ode_dc_order(void)
+{
+  /* Richardson's extrapolation raises the order of accuracy p by one, or by two for symmetric methods
+   * (trapezoidal method). The time steps are chosen so that they are not divided by the step size control
+   * and the errors are not dominated by the round-off error or the tolerance of the nonlinear equation
+   * solver. */
+  const struct{
+    method_t method;
+    double dt;
+    int order;
+  } test[] = {
+    { METHOD( Euler,  0, 1 ), 0.001, 2 },
+    { METHOD( BEuler, 0, 1 ), 0.001, 2 },
+    { METHOD( Heun,   0, 3 ), 0.04,  4 },
+    { METHOD( RK4,    0, 4 ), 0.04,  5 },
+    { METHOD( RKG,    0, 4 ), 0.04,  5 },
+    { METHOD( TR,     0, 2 ), 0.02,  4 },
+    { METHOD( Radau,  0, 3 ), 0.04,  4 },
+  };
+  const double T = 2.0;
+  int k;
+  double order;
+  bool result = true;
+
+  for( k=0; k<sizeof(test)/sizeof(test[0]); k++ ){
+    order = observed_order( circle_integrate_dc( &test[k].method, test[k].dt, T ), circle_integrate_dc( &test[k].method, 0.5*test[k].dt, T ) );
+    if( fabs( order - test[k].order ) > ORDER_TOL ){
+      eprintf( "%s: observed order = %g with deferred correction (expected %d)\n", test[k].method.name, order, test[k].order );
+      result = false;
+    }
+  }
+  zAssert( zODEUpdateDC (order of accuracy), result );
+}
+
+/* x' = -y, y' = x (circle) with counting the number of calls */
+zVec circle_count(double t, zVec x, void *count, zVec dx)
+{
+  (*(int *)count)++;
+  return circle( t, x, NULL, dx );
+}
+
+/* integrate a circle with the radius r from t=0 to t=1 with an adaptive step size control, and return the
+ * relative error at t=1. The number of calls of the differential function is stored where count points. */
+double circle_count_integrate(zODE *ode, bool is_dc, double r, int *count)
+{
+  const double dt = 0.1;
+  const int n = 10;
+  zVec x;
+  int i;
+  double err;
+
+  if( is_dc ) zODECreateDC( ode, 2, 0, circle_count );
+  else        zODECreate( ode, 2, 0, circle_count );
+  x = zVecCreateList( 2, r, 0.0 );
+  for( *count=0, i=0; i<n; i++ )
+    is_dc ? zODEUpdateDC( ode, i*dt, x, dt, count ) : zODEUpdate( ode, i*dt, x, dt, count );
+  err = circle_error( x, n*dt, r ) / r;
+  zVecFree( x );
+  if( is_dc ) zODEDestroyDC( ode ); else zODEDestroy( ode );
+  return err;
+}
+
+/* 11. scale invariance of adaptive step size control */
+void assert_ode_adaptive_scale(void)
+{
+  const double r[] = { 1.0e6, 1.0e12 };
+  zODE ode;
+  int i, count1, count;
+  double err1, err;
+  bool is_dc, result = true;
+
+  /* the tolerance is relative for large states, so that the time step is divided in the same way as
+   * for the unit circle. */
+  for( is_dc=false; ; is_dc=true ){
+    if( is_dc ) zODEAssign( &ode, RK4, NULL, NULL ); else zODEAssign( &ode, DP45, NULL, NULL );
+    err1 = circle_count_integrate( &ode, is_dc, 1.0, &count1 );
+    for( i=0; i<sizeof(r)/sizeof(double); i++ ){
+      err = circle_count_integrate( &ode, is_dc, r[i], &count );
+      if( count > count1 || err > 10 * err1 ){
+        eprintf( "%s: radius %g, relative error = %g, %d calls (radius 1: %g, %d calls)\n", is_dc ? "RK4 with DC" : "DP45", r[i], err, count, err1, count1 );
+        result = false;
+      }
+    }
+    if( is_dc ) break;
+  }
+  zAssert( zODEUpdate (scale invariance of adaptive step size control), result );
 }
 
 int main(void)
@@ -403,8 +618,12 @@ int main(void)
   assert_ode_order_multistep();
   assert_ode_circle_norm();
   assert_ode_stiff();
+  assert_ode_implicit_zero();
+  assert_ode_zero_dt();
   assert_ode2_symplectic();
+  assert_ode2_zero_dt();
   assert_ode_dc_accuracy();
-  assert_ode_dc_large_state();
+  assert_ode_dc_order();
+  assert_ode_adaptive_scale();
   return EXIT_SUCCESS;
 }

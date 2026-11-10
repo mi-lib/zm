@@ -19,6 +19,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zODE ){
   zVec (* update)(zODE*,double,zVec,double,void*);
   zVec (* cat)(zVec,double,zVec,zVec,void*);
   zVec (* sub)(zVec,zVec,zVec,void*);
+  int order; /* order of accuracy */
   void *_ws; /* workspace for utility */
   zVec _x1, _x2; /* workspace for deferred correction */
 };
@@ -33,6 +34,7 @@ __BEGIN_DECLS
   (ode)->update = NULL; \
   (ode)->cat = NULL; \
   (ode)->sub = NULL; \
+  (ode)->order = 0; \
   (ode)->_ws = NULL; \
   (ode)->_x1 = (ode)->_x2 = NULL; \
 } while(0)
@@ -65,9 +67,14 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
  *  'Gear' for Gear's method
  * \sa
  * zODECreate, zODEDestroy, zODEUpdate
+ *
+ * zODEAssign() also sets the order of accuracy of the method for \a ode, which is used by the deferred
+ * correction (see zODEUpdateDC()). For 'Adams' and 'Gear', it is set by zODECreate() since it depends
+ * on the step number.
  */
 #define zODEAssign(ode,type,catf,subf) do{\
   (ode)->create = zODECreate##type;\
+  (ode)->order = zODEOrder##type;\
   (ode)->destroy = zODEDestroy##type;\
   (ode)->update = zODEUpdate##type;\
   zODEAssignFunc( ode, catf, subf );\
@@ -86,28 +93,39 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
  * zODEDestroy() destroys an instance of solver \a ode.
  *
  * zODEUpdate() updates a given vector \a x destructively by \a ode.
- * \a t is the time and \a dt is the quantized integration time step.
+ * \a t is the time and \a dt is the quantized integration time step, which has to be nonzero.
  * \a util is for programmer s utility.
  * \return
  * zODECreate() returns a pointer \a ode if it succeeds, or the null pointer otherwise.
  *
  * zODEDestroy() returns no value.
  *
- * zODEUpdate() returns a pointer \a x.
+ * zODEUpdate() returns a pointer \a x, or the null pointer without updating \a x if \a dt is zero.
  * \sa
  * zODEAssign
  */
 #define zODECreate(ode,dim,step,f) ( (ode)->create ? (ode)->create( ode, dim, step, f ) : NULL )
 #define zODEDestroy(ode)           do{ if( (ode)->destroy ) (ode)->destroy( ode ); } while(0)
-#define zODEUpdate(ode,t,x,dt,u)   (ode)->update( ode, t, x, dt, u )
+#define zODEUpdate(ode,t,x,dt,u)   ( (dt) == 0 ? NULL : (ode)->update( ode, t, x, dt, u ) )
 
 /*! \brief tolerance for adaptive step size control of ODE quadratures.
  *
  * In ODE quadratures with an adaptive step size control (deferred correction and embedded Runge-Kutta
- * methods), a time step is divided into two halves if the distance between two estimations of the state
- * vector is greater than this value.
+ * methods), a time step is divided into two halves unless every component of two estimations x1 and x2
+ * of the state vector, which start from x0, satisfies
+ *  |x1_i - x2_i| <= ZM_ODE_TOL ( 1 + max{ |x0_i|, |x2_i| } ),
+ * namely, the tolerance is absolute for small components and relative for large components.
  */
 #define ZM_ODE_TOL ( 1.0e-6 )
+
+/*! \brief check if two estimations of the state vector are close enough.
+ *
+ * zODEStepIsTol() checks if two estimations \a x1 and \a x2 of the state vector starting from \a x0 are close
+ * enough in the sense of ZM_ODE_TOL, which is used to decide if a time step is divided.
+ * \return
+ * zODEStepIsTol() returns the true value if \a x1 and \a x2 are close enough, or the false value otherwise.
+ */
+__ZM_EXPORT bool zODEStepIsTol(const zVec x0, const zVec x1, const zVec x2);
 
 /*! \brief minimum time step for adaptive step size control of ODE quadratures.
  *
