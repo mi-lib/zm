@@ -30,7 +30,7 @@ void zODEDestroyDC(zODE *ode)
 /* update state vector by solving ODE enabling deferred correction. */
 zVec zODEUpdateDC(zODE *ode, double t, zVec x, double dt, void *util)
 {
-  double hdt;
+  double hdt, r;
 
   if( dt == 0 ) return NULL; /* see zODEUpdate */
   /* full-step update */
@@ -41,13 +41,15 @@ zVec zODEUpdateDC(zODE *ode, double t, zVec x, double dt, void *util)
   hdt = 0.5 * dt;
   zODEUpdate( ode, t,     ode->_x2, hdt, util );
   zODEUpdate( ode, t+hdt, ode->_x2, hdt, util );
+  /* for a method of order p, the error of x2 is estimated as ( x2 - x1 ) / ( 2^p - 1 ). */
+  r = 1.0 / ( ( 1 << ( ode->order > 0 ? ode->order : 1 ) ) - 1 );
   /* evaluation (the step is not divided any more if it is already small enough) */
-  if( dt > ZM_ODE_DT_TOL && !zODEStepIsTol( x, ode->_x1, ode->_x2 ) ){
+  if( fabs( dt ) > ZM_ODE_DT_TOL && !_zODEStepIsTol( x, ode->_x1, ode->_x2, r ) ){
     zODEUpdateDC( ode, t,     x, hdt, util );
     zODEUpdateDC( ode, t+hdt, x, hdt, util );
-  } else{ /* Richardson's extrapolation x = x2 + ( x2 - x1 ) / ( 2^p - 1 ) for a method of order p */
+  } else{ /* Richardson's extrapolation x = x2 + ( x2 - x1 ) / ( 2^p - 1 ) */
     ode->sub( ode->_x2, ode->_x1, ode->_x1, util );
-    ode->cat( ode->_x2, 1.0 / ( ( 1 << ( ode->order > 0 ? ode->order : 1 ) ) - 1 ), ode->_x1, x, util );
+    ode->cat( ode->_x2, r, ode->_x1, x, util );
   }
   return x;
 }

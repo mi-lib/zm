@@ -52,24 +52,24 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
  *
  * zODEAssign() assignes a numerical solver for an ordinary differential equation to \a ode.
  * \a type is an identifier of the method. Currently, the following methods are available.
- *  'Euler' for Euler method
- *  'Heun' for Heun method
- *  'RK4' for classical Runge-Kutta (Explicit Runge-Kutta,4:4) method
- *  'RKG' for Runge-Kutta-Gill method
- *  'RKF45' for Runge-Kutta-Fehlberg (Embedded Runge-Kutta,4:4-5) method
- *  'CK45' for Cash-Karp (Embedded Runge-Kutta,4:4-5) method
- *  'DP45' for Dormand-Prince (Embedded Runge-Kutta,4:4-5) method
- *  'Adams' for predictor-corrector method with Adams=Bashforth=Moulton formulae.
- *  'BEuler' for backward Euler method
- *  'TR' for trapezoidal formula method
- *  'Gauss' for Gauss method (implicit Runge-Kutta,2:4 method)
- *  'Radau' for Radau method (implicit Runge-Kutta,2:4 method)
- *  'Gear' for Gear's method
+ *  "Euler" for Euler method
+ *  "Heun" for Heun method
+ *  "RK4" for classical Runge-Kutta (Explicit Runge-Kutta,4:4) method
+ *  "RKG" for Runge-Kutta-Gill method
+ *  "RKF45" for Runge-Kutta-Fehlberg (Embedded Runge-Kutta,4:4-5) method
+ *  "CK45" for Cash-Karp (Embedded Runge-Kutta,4:4-5) method
+ *  "DP45" for Dormand-Prince (Embedded Runge-Kutta,4:4-5) method
+ *  "Adams" for predictor-corrector method with Adams=Bashforth=Moulton formulae.
+ *  "BEuler" for backward Euler method
+ *  "TR" for trapezoidal formula method
+ *  "Gauss" for Gauss method (implicit Runge-Kutta,2:4 method)
+ *  "Radau" for Radau method (implicit Runge-Kutta,2:4 method)
+ *  "Gear" for Gear's method
  * \sa
  * zODECreate, zODEDestroy, zODEUpdate
  *
  * zODEAssign() also sets the order of accuracy of the method for \a ode, which is used by the deferred
- * correction (see zODEUpdateDC()). For 'Adams' and 'Gear', it is set by zODECreate() since it depends
+ * correction (see zODEUpdateDC()). For "Adams" and "Gear", it is set by zODECreate() since it depends
  * on the step number.
  */
 #define zODEAssign(ode,type,catf,subf) do{\
@@ -84,8 +84,11 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
  *
  * zODECreate() creates a numerical solver for an ordinary differential equation \a ode.
  * \a dim is the size of vector to be integrated.
- * \a step is a step number of differential vector history to be involved in the computation, only required
- * by 'Adams' and 'Gear'.
+ * \a num is a step number of differential vector history to be involved in the computation for "Adams"
+ * and "Gear". For implicit methods "BEuler", "TR", "Gauss" and "Radau", it is instead the maximum number
+ * of iterations to solve the nonlinear equation in each time step, where Z_MAX_ITER_NUM defined in
+ * zm_misc.h is chosen if it is zero. It is ignored by the other methods.
+ *
  * \a f is a pointer to a function which returns the differential vector at the time \a t and the state \a x
  * by calling \a f(\a t, \a x,\a util, \a dx), where \a dx is a vector to store the resultant.
  * \a util is for programmer s utility to attach any type of data chunk.
@@ -104,7 +107,7 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
  * \sa
  * zODEAssign
  */
-#define zODECreate(ode,dim,step,f) ( (ode)->create ? (ode)->create( ode, dim, step, f ) : NULL )
+#define zODECreate(ode,dim,num,f)  ( (ode)->create ? (ode)->create( ode, dim, num, f ) : NULL )
 #define zODEDestroy(ode)           do{ if( (ode)->destroy ) (ode)->destroy( ode ); } while(0)
 #define zODEUpdate(ode,t,x,dt,u)   ( (dt) == 0 ? NULL : (ode)->update( ode, t, x, dt, u ) )
 
@@ -113,8 +116,10 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
  * In ODE quadratures with an adaptive step size control (deferred correction and embedded Runge-Kutta
  * methods), a time step is divided into two halves unless every component of two estimations x1 and x2
  * of the state vector, which start from x0, satisfies
- *  |x1_i - x2_i| <= ZM_ODE_TOL ( 1 + max{ |x0_i|, |x2_i| } ),
+ *  r |x1_i - x2_i| <= ZM_ODE_TOL ( 1 + max{ |x0_i|, |x2_i| } ),
  * namely, the tolerance is absolute for small components and relative for large components.
+ * r |x1 - x2| is the estimated error of x2, where r = 1 for the embedded Runge-Kutta methods, and
+ * r = 1 / ( 2^p - 1 ) for the deferred correction with a method of order p.
  */
 #define ZM_ODE_TOL ( 1.0e-6 )
 
@@ -122,10 +127,14 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
  *
  * zODEStepIsTol() checks if two estimations \a x1 and \a x2 of the state vector starting from \a x0 are close
  * enough in the sense of ZM_ODE_TOL, which is used to decide if a time step is divided.
+ * _zODEStepIsTol() is the same with zODEStepIsTol() except that the difference between \a x1 and \a x2 is
+ * multiplied by \a r.
  * \return
- * zODEStepIsTol() returns the true value if \a x1 and \a x2 are close enough, or the false value otherwise.
+ * zODEStepIsTol() and _zODEStepIsTol() return the true value if \a x1 and \a x2 are close enough, or the
+ * false value otherwise.
  */
-__ZM_EXPORT bool zODEStepIsTol(const zVec x0, const zVec x1, const zVec x2);
+__ZM_EXPORT bool _zODEStepIsTol(const zVec x0, const zVec x1, const zVec x2, double r);
+#define zODEStepIsTol(x0,x1,x2) _zODEStepIsTol( x0, x1, x2, 1.0 )
 
 /*! \brief minimum time step for adaptive step size control of ODE quadratures.
  *
@@ -138,19 +147,19 @@ __END_DECLS
 
 #include <zm/zm_ode_dc.h>    /* deferred correction */
 
-#include <zm/zm_ode_euler.h> /* <Euler>: Euler method */
-#include <zm/zm_ode_heun.h>  /* <Heun>: Heun method */
-#include <zm/zm_ode_rk4.h>   /* <RK4>: classical Runge-Kutta method */
-#include <zm/zm_ode_rkg.h>   /* <RKG>: Runge-Kutta-Gill method */
-#include <zm/zm_ode_erk.h>   /* <RKF45>: Runge-Kutta-Fehlberg method
-                                <CK45>: Cash-Karp method
-                                <DP45>: Dormand-Prince method */
-#include <zm/zm_ode_adams.h> /* <Adams>: predictor-corrector method */
-#include <zm/zm_ode_beuler.h>/* <BEuler>: backward Euler method
-                                <TR>: trapezoidal formula method */
-#include <zm/zm_ode_bk4.h>   /* <Gauss>: Gauss method
-                                <Radau>: Radau method */
-#include <zm/zm_ode_gear.h>  /* <Gear>: Gear method */
+#include <zm/zm_ode_euler.h> /* "Euler": Euler method */
+#include <zm/zm_ode_heun.h>  /* "Heun": Heun method */
+#include <zm/zm_ode_rk4.h>   /* "RK4": classical Runge-Kutta method */
+#include <zm/zm_ode_rkg.h>   /* "RKG": Runge-Kutta-Gill method */
+#include <zm/zm_ode_erk.h>   /* "RKF45": Runge-Kutta-Fehlberg method
+                                "CK45": Cash-Karp method
+                                "DP45": Dormand-Prince method */
+#include <zm/zm_ode_adams.h> /* "Adams": predictor-corrector method */
+#include <zm/zm_ode_beuler.h>/* "BEuler": backward Euler method
+                                "TR": trapezoidal formula method */
+#include <zm/zm_ode_bk4.h>   /* "Gauss": Gauss method
+                                "Radau": Radau method */
+#include <zm/zm_ode_gear.h>  /* "Gear": Gear method */
 
 #include <zm/zm_ode2.h> /* second-order differential equation solver */
 

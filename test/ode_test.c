@@ -612,6 +612,52 @@ void assert_ode_adaptive_scale(void)
   zAssert( zODEUpdate (scale invariance of adaptive step size control), result );
 }
 
+/* integrate the unit circle from t=0 to t=n dt with an adaptive step size control, and return the error at
+ * the end. The number of calls of the differential function is stored where count points. */
+double circle_integrate_adaptive(const method_t *method, bool is_dc, double dt, int n, int *count)
+{
+  zODE ode;
+  zVec x;
+  int i;
+  double err;
+
+  method_assign( &ode, method );
+  if( is_dc ) zODECreateDC( &ode, 2, 0, circle_count );
+  else        zODECreate( &ode, 2, 0, circle_count );
+  x = zVecCreateList( 2, 1.0, 0.0 );
+  for( *count=0, i=0; i<n; i++ )
+    is_dc ? zODEUpdateDC( &ode, i*dt, x, dt, count ) : zODEUpdate( &ode, i*dt, x, dt, count );
+  err = circle_error( x, n*dt, 1.0 );
+  zVecFree( x );
+  if( is_dc ) zODEDestroyDC( &ode ); else zODEDestroy( &ode );
+  return err;
+}
+
+/* 12. adaptive step size control for backward integration */
+void assert_ode_adaptive_backward(void)
+{
+  const method_t erk[] = { METHOD( RKF45, 0, 5 ), METHOD( CK45, 0, 5 ), METHOD( DP45, 0, 5 ) };
+  const double dt = 0.5;
+  const int n = 20;
+  int k, count_f, count_b;
+  double err_f, err_b;
+  bool result = true;
+
+  /* since the circle is symmetric with respect to the time reversal, the time step has to be divided in
+   * the same way for the backward integration as for the forward integration. */
+  for( k=0; k<METHOD_ONESTEP_NUM+sizeof(erk)/sizeof(method_t); k++ ){
+    const method_t *method = k < METHOD_ONESTEP_NUM ? &method_onestep[k] : &erk[k-METHOD_ONESTEP_NUM];
+    bool is_dc = k < METHOD_ONESTEP_NUM;
+    err_f = circle_integrate_adaptive( method, is_dc, dt, n, &count_f );
+    err_b = circle_integrate_adaptive( method, is_dc, -dt, n, &count_b );
+    if( count_b != count_f || fabs( err_b - err_f ) > 1.0e-6 * err_f ){
+      eprintf( "%s%s: backward error = %g, %d calls (forward error = %g, %d calls)\n", method->name, is_dc ? " with DC" : "", err_b, count_b, err_f, count_f );
+      result = false;
+    }
+  }
+  zAssert( zODEUpdate (adaptive step size control for backward integration), result );
+}
+
 int main(void)
 {
   assert_ode_order_onestep();
@@ -625,5 +671,6 @@ int main(void)
   assert_ode_dc_accuracy();
   assert_ode_dc_order();
   assert_ode_adaptive_scale();
+  assert_ode_adaptive_backward();
   return EXIT_SUCCESS;
 }

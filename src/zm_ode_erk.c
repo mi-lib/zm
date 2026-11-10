@@ -74,7 +74,7 @@ static zVec _zODEUpdateERK(zODE *ode, double t, zVec x, double dt, double a[], d
     ode->cat( ws->_xc, bc[i]*dt, ws->k[i], ws->_xc, util );
     ode->cat( ws->_xf, bf[i]*dt, ws->k[i], ws->_xf, util );
   }
-  if( dt > ZM_ODE_DT_TOL && !zODEStepIsTol( x, ws->_xc, ws->_xf ) ){
+  if( fabs( dt ) > ZM_ODE_DT_TOL && !zODEStepIsTol( x, ws->_xc, ws->_xf ) ){
     dt *= 0.5;
     _zODEUpdateERK( ode, t, x, dt, a, bc, bf, c, util );
     _zODEUpdateERK( ode, t+dt, x, dt, a, bc, bf, c, util );

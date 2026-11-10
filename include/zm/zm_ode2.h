@@ -52,7 +52,7 @@ __ZM_EXPORT void zODE2AssignFunc(zODE2 *ode, zVec (* catf1)(zVec,double,zVec,zVe
  * zODE2Assign() assigns a numerical solver for a second-order ordinary differential equation to \a ode.
  * \a type1 is an identifier of the method. See zODEAssign().
  * \a type2 is an identifier of the particular method for second-order differential equation, where
- *  'Regular', 'Sympl' and 'Leapfrog' are available.
+ *  "Regular", "Symplectic" and "Leapfrog" are available.
  * \sa
  * zODEAssign, zODE2Create, zODE2Destroy, zODE2Update
  */
@@ -67,8 +67,10 @@ __ZM_EXPORT void zODE2AssignFunc(zODE2 *ode, zVec (* catf1)(zVec,double,zVec,zVe
  *
  * zODE2Create() creates a numerical solver for a second-order ordinary differential equation \a ode.
  * \a dim is the size of vector to be integrated.
- * \a step is a step number of differential vector history to be involved in the computation, only required
- * by 'Adams' and 'Gear'.
+ * \a num is passed to zODECreate() for the first-order ODE solver assigned by zODE2AssignRegular() in
+ * "Regular", namely, it is a step number of differential vector history for "Adams" and "Gear", or the
+ * maximum number of iterations to solve the nonlinear equation for "BEuler", "TR", "Gauss" and "Radau".
+ * See zODECreate(). It is ignored by "Symplectic" and "Leapfrog".
  * \a f is a pointer to a function which returns the second-order differential vector at the time \a t and
  * the state \a x and \a dx by calling \a f(\a t, \a x, \a dx, \a p, \a ddx), where \a ddx is a vector to
  * store the resultant.
@@ -89,26 +91,26 @@ __ZM_EXPORT void zODE2AssignFunc(zODE2 *ode, zVec (* catf1)(zVec,double,zVec,zVe
  * \sa
  * zODE2Assign, zODECreate, zODEDestroy, zODEUpdate
  */
-#define zODE2Create(ode,dim,step,f)    (ode)->create( ode, dim, step, f )
-#define zODE2Destroy(ode)              (ode)->destroy( ode )
+#define zODE2Create(ode,dim,num,f)     ( (ode)->create ? (ode)->create( ode, dim, num, f ) : NULL )
+#define zODE2Destroy(ode)              do{ if( (ode)->destroy ) (ode)->destroy( ode ); } while(0)
 #define zODE2Update(ode,t,x,v,dt,util) ( (dt) == 0 ? NULL : (ode)->update( ode, t, x, v, dt, util ) )
 
 /* regular update */
 __ZM_EXPORT zVec _zODE2Cat(zVec y, double dt, zVec dy, zVec yn, void *ode);
 __ZM_EXPORT zVec _zODE2Sub(zVec y1, zVec y2, zVec dy, void *ode);
 
-__ZM_EXPORT zODE2 *zODE2CreateRegular(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec));
+__ZM_EXPORT zODE2 *zODE2CreateRegular(zODE2 *ode, int dim, int num, zVec (* f)(double,zVec,zVec,void*,zVec));
 __ZM_EXPORT void zODE2DestroyRegular(zODE2 *ode);
 __ZM_EXPORT zVec zODE2UpdateRegular(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
 #define zODE2AssignRegular( d, type ) zODEAssign( &(d)->_ode, type, _zODE2Cat, _zODE2Sub )
 
 /* simplest symplectic update */
-__ZM_EXPORT zODE2 *zODE2CreateSymplectic(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec));
+__ZM_EXPORT zODE2 *zODE2CreateSymplectic(zODE2 *ode, int dim, int num, zVec (* f)(double,zVec,zVec,void*,zVec));
 __ZM_EXPORT void zODE2DestroySymplectic(zODE2 *ode);
 __ZM_EXPORT zVec zODE2UpdateSymplectic(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);
 
 /* leapfrog update */
-__ZM_EXPORT zODE2 *zODE2CreateLeapfrog(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec));
+__ZM_EXPORT zODE2 *zODE2CreateLeapfrog(zODE2 *ode, int dim, int num, zVec (* f)(double,zVec,zVec,void*,zVec));
 __ZM_EXPORT void zODE2InitHistoryLeapfrog(zODE2 *ode, zVec x, zVec v, double dt);
 __ZM_EXPORT void zODE2DestroyLeapfrog(zODE2 *ode);
 __ZM_EXPORT zVec zODE2UpdateLeapfrog(zODE2* ode, double t, zVec x, zVec v, double dt, void *util);

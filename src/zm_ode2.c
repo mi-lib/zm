@@ -20,10 +20,10 @@ void zODE2AssignFunc(zODE2 *ode, zVec (* catf1)(zVec,double,zVec,zVec,void*), zV
 }
 
 /* create */
-zODE2 *zODE2CreateRegular(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec))
+zODE2 *zODE2CreateRegular(zODE2 *ode, int dim, int num, zVec (* f)(double,zVec,zVec,void*,zVec))
 {
   ode->f = f;
-  if( !zODECreate( &ode->_ode, dim*2, step, _zODE2RegularFunc ) )
+  if( !zODECreate( &ode->_ode, dim*2, num, _zODE2RegularFunc ) )
     return NULL;
   if( !( ode->_x = zVecAlloc(dim*2) ) ){
     ZALLOCERROR();
@@ -107,7 +107,7 @@ zVec zODE2UpdateRegular(zODE2 *ode, double t, zVec x, zVec v, double dt, void *u
 /* *** simplest symplectic method *** */
 
 /* create */
-zODE2 *zODE2CreateSymplectic(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec))
+zODE2 *zODE2CreateSymplectic(zODE2 *ode, int dim, int num, zVec (* f)(double,zVec,zVec,void*,zVec))
 {
   ode->f = f;
   if( !( ode->_a = zVecAlloc(dim) ) ){
@@ -136,7 +136,7 @@ zVec zODE2UpdateSymplectic(zODE2 *ode, double t, zVec x, zVec v, double dt, void
 /* *** leapfrog method *** */
 
 /* create */
-zODE2 *zODE2CreateLeapfrog(zODE2 *ode, int dim, int step, zVec (* f)(double,zVec,zVec,void*,zVec))
+zODE2 *zODE2CreateLeapfrog(zODE2 *ode, int dim, int num, zVec (* f)(double,zVec,zVec,void*,zVec))
 {
   ode->f = f;
   ode->_x = zVecAlloc(dim);

@@ -14,7 +14,7 @@ __BEGIN_DECLS
 
 /* backward Euler method - easiest way of implicit solutions. */
 #define zODEOrderBEuler 1
-__ZM_EXPORT zODE *zODECreateBEuler(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
+__ZM_EXPORT zODE *zODECreateBEuler(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyBEuler(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateBEuler(zODE *ode, double t, zVec x, double dt, void *util);
 

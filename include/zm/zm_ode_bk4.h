@@ -16,11 +16,11 @@ __BEGIN_DECLS
  * In implicit Runge-Kutta method, it is known that dimension is no more than twice steps, and thus,
  * BK4 is thought to be the most practical.
  */
-__ZM_EXPORT zODE *zODECreateBK4(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
+__ZM_EXPORT zODE *zODECreateBK4(zODE *ode, int dim, int iter, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyBK4(zODE *ode);
 
-/* 'BK4' is a dummy keyword, since Butcher-Kuntzmann method is a general framework.
- * As body implementations of solvers, 'Gauss' and 'Radau' are prepared. */
+/* "BK4" is a dummy keyword, since Butcher-Kuntzmann method is a general framework.
+ * As body implementations of solvers, "Gauss" and "Radau" are prepared. */
 
 /* Gauss method */
 #define zODEOrderGauss 4
