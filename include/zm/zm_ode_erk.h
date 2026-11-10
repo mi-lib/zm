@@ -17,18 +17,24 @@ __BEGIN_DECLS
 
 /* Runge-Kutta-Fehlberg method is forth-dimension-embedded six-step fifth-dimension Runge-Kutta method. */
 #define zODEOrderRKF45 5
+#define zODEInitHistoryRKF45   NULL /* no history */
+#define zODECreateHistoryRKF45 NULL /* no history */
 __ZM_EXPORT zODE *zODECreateRKF45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyRKF45(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateRKF45(zODE *ode, double t, zVec x, double dt, void *util);
 
 /* Cash-Karp method is forth-dimension-embedded six-step fifth-dimension Runge-Kutta method. */
 #define zODEOrderCK45 5
+#define zODEInitHistoryCK45   NULL /* no history */
+#define zODECreateHistoryCK45 NULL /* no history */
 __ZM_EXPORT zODE *zODECreateCK45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyCK45(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateCK45(zODE *ode, double t, zVec x, double dt, void *util);
 
 /* Dormand-Prince method is forth-dimension-embedded seven-step fifth-dimension Runge-Kutta method. */
 #define zODEOrderDP45 5
+#define zODEInitHistoryDP45   NULL /* no history */
+#define zODECreateHistoryDP45 NULL /* no history */
 __ZM_EXPORT zODE *zODECreateDP45(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyDP45(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateDP45(zODE *ode, double t, zVec x, double dt, void *util);

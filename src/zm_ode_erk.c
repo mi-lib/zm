@@ -100,7 +100,7 @@ static zVec _zODEUpdateERK(zODE *ode, double t, zVec x, double dt, double a[], d
 {
   _zODE_ERKTableau tableau = { a, bc, bf, c };
 
-  return zODEUpdateAdaptive( ode, t, x, dt, ZM_ODE_ERK_ERR_ORDER, _zODETrialERK, _zODEAcceptERK, util, &tableau );
+  return _zODEUpdateAdaptive( ode, t, x, dt, ZM_ODE_ERK_ERR_ORDER, _zODETrialERK, _zODEAcceptERK, util, &tableau );
 }
 
 /* Runge-Kutta-Fehlberg method */

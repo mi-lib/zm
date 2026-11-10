@@ -23,18 +23,9 @@ __ZM_EXPORT zODE *zODECreateGear(zODE *ode, int dim, int dummy, zVec (* f)(doubl
 __ZM_EXPORT void zODEDestroyGear(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateGear(zODE *ode, double t, zVec x, double dt, void *util);
 
-/*! \brief initialize history with a given vector.
- *
- * zODEInitHistoryGear() is particularly prepared for Gear method.
- * Since Gear method is affected by the choice of initial series of variable, it perhaps works better to
- * set them for the initial value than nothing.
- * This fills the initial history with \a x.
- * \return
- * zODEInitHistoryGear() returns no values.
- * \notes
- * Since it is specialized to Gear method, \a ode should be assigned for Gear and initialized in advance.
- */
-__ZM_EXPORT void zODEInitHistoryGear(zODE *ode, zVec x);
+/* see zODEInitHistory() and zODECreateHistory() */
+__ZM_EXPORT void zODEInitHistoryGear(zODE *ode, double t, zVec x, void *util);
+__ZM_EXPORT zVec zODECreateHistoryGear(zODE *ode, double *t, zVec x, double dt, void *util);
 
 __END_DECLS
 

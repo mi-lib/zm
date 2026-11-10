@@ -94,7 +94,7 @@ bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, const zVec t, const zVec 
 }
 
 /* create a polynomial function from the boundary condition and a sequence of points to fit. */
-bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, const zVec t, const zVec x)
+bool zPexIPCreateBoundaryLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, const zVec t, const zVec x)
 {
   int i, j, k, n, m;
   zMat a;

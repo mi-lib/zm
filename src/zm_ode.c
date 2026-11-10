@@ -49,7 +49,7 @@ static double _zODEStepRatio(double err, int order, double ratio_max)
 
 /* update the state vector with an adaptive step size control. the interval dt is divided into time
  * steps, each of which is predicted from the last step. */
-zVec zODEUpdateAdaptive(zODE *ode, double t, zVec x, double dt, int order, double (* trial)(zODE*,double,zVec,double,void*,void*), void (* accept)(zODE*,zVec,void*,void*), void *util, void *data)
+zVec _zODEUpdateAdaptive(zODE *ode, double t, zVec x, double dt, int order, double (* trial)(zODE*,double,zVec,double,void*,void*), void (* accept)(zODE*,zVec,void*,void*), void *util, void *data)
 {
   double rest, h, hs, sgn, err;
   bool is_last, is_rejected = false;
@@ -83,5 +83,20 @@ zVec zODEUpdateAdaptive(zODE *ode, double t, zVec x, double dt, int order, doubl
     h = zMax( h, ZM_ODE_DT_TOL );
   }
   ode->_h = h;
+  return x;
+}
+
+/* create the history of a multistep method by a starter one-step method. */
+zVec _zODECreateHistory(zODE *ode, zODE *starter, bool is_dc, void (* push)(zODE*,double,zVec,void*), double *t, zVec x, double dt, void *util)
+{
+  int i;
+
+  if( !( is_dc ? zODECreateDC( starter, zVecSizeNC(x), 0, ode->f ) : zODECreate( starter, zVecSizeNC(x), 0, ode->f ) ) )
+    return NULL;
+  for( i=1; i<ode->order; i++, *t+=dt ){
+    push( ode, *t, x, util );
+    if( is_dc ) zODEUpdateDC( starter, *t, x, dt, util ); else zODEUpdate( starter, *t, x, dt, util );
+  }
+  if( is_dc ) zODEDestroyDC( starter ); else zODEDestroy( starter );
   return x;
 }

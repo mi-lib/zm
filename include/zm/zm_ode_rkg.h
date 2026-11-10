@@ -16,6 +16,8 @@ __BEGIN_DECLS
  * It is advantageous where less workspace is required and rounding error is well absorbed.
  */
 #define zODEOrderRKG 4
+#define zODEInitHistoryRKG   NULL /* no history */
+#define zODECreateHistoryRKG NULL /* no history */
 __ZM_EXPORT zODE *zODECreateRKG(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyRKG(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateRKG(zODE *ode, double t, zVec x, double dt, void *util);

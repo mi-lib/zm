@@ -126,3 +126,36 @@ zVec zODEUpdateAdams(zODE *ode, double t, zVec x, double dt, void *util)
   zVecCopy( xnew, x );
   return x;
 }
+
+/* initialize the history of differential vectors as if the state had stayed at x. */
+void zODEInitHistoryAdams(zODE *ode, double t, zVec x, void *util)
+{
+  _zODE_Adams *ws;
+
+  ws = (_zODE_Adams *)ode->_ws;
+  ode->f( t, x, util, ws->dx );
+  zVecRingFill( &ws->hist, ws->dx );
+}
+
+/* put the differential vector at a state into the history, where zODEUpdateAdams() refers to the
+ * previous differential vectors from the head of the ring. */
+static void _zODEPushHistoryAdams(zODE *ode, double t, zVec x, void *util)
+{
+  _zODE_Adams *ws;
+
+  ws = (_zODE_Adams *)ode->_ws;
+  zRingDecHead( &ws->hist );
+  ode->f( t, x, util, *zRingHead(&ws->hist) );
+}
+
+/* create the history of differential vectors by an explicit one-step method of order not lower than k-1.
+ * a more accurate method than necessary is chosen, since the cost for k-1 steps is negligible. */
+zVec zODECreateHistoryAdams(zODE *ode, double *t, zVec x, double dt, void *util)
+{
+  zODE starter;
+
+  zODEInit( &starter );
+  if( ode->order <= 5 ) zODEAssign( &starter, RK4,  ode->cat, ode->sub ); else
+                        zODEAssign( &starter, DP45, ode->cat, ode->sub );
+  return _zODECreateHistory( ode, &starter, false, _zODEPushHistoryAdams, t, x, dt, util );
+}

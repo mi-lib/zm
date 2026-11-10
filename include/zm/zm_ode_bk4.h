@@ -24,12 +24,16 @@ __ZM_EXPORT void zODEDestroyBK4(zODE *ode);
 
 /* Gauss method */
 #define zODEOrderGauss 4
+#define zODEInitHistoryGauss   NULL /* no history */
+#define zODECreateHistoryGauss NULL /* no history */
 #define zODECreateGauss  zODECreateBK4
 #define zODEDestroyGauss zODEDestroyBK4
 __ZM_EXPORT zVec zODEUpdateGauss(zODE *ode, double t, zVec x, double dt, void *util);
 
 /* Radau method */
 #define zODEOrderRadau 3
+#define zODEInitHistoryRadau   NULL /* no history */
+#define zODECreateHistoryRadau NULL /* no history */
 #define zODECreateRadau  zODECreateBK4
 #define zODEDestroyRadau zODEDestroyBK4
 __ZM_EXPORT zVec zODEUpdateRadau(zODE *ode, double t, zVec x, double dt, void *util);

@@ -89,10 +89,35 @@ void zODEDestroyGear(zODE *ode)
   zFree( ode->_ws );
 }
 
-/* initialize history with a given vector. */
-void zODEInitHistoryGear(zODE *ode, zVec x)
+/* initialize the history of states as if the state had stayed at x. */
+void zODEInitHistoryGear(zODE *ode, double t, zVec x, void *util)
 {
   zVecRingFill( &((_zODE_Gear*)ode->_ws)->hist, x );
+}
+
+/* put a state into the history, where zODEUpdateGear() puts the current state at the head of the ring
+ * and refers to the previous states after it. */
+static void _zODEPushHistoryGear(zODE *ode, double t, zVec x, void *util)
+{
+  _zODE_Gear *ws;
+
+  ws = (_zODE_Gear *)ode->_ws;
+  zVecCopyNC( x, *zRingHead(&ws->hist) );
+  zRingDecHead( &ws->hist );
+}
+
+/* create the history of states by an implicit one-step method of order not lower than k-1, which is
+ * A-stable not to spoil the stability for stiff equations. a more accurate method than necessary is
+ * chosen, since the cost for k-1 steps is negligible. */
+zVec zODECreateHistoryGear(zODE *ode, double *t, zVec x, double dt, void *util)
+{
+  zODE starter;
+
+  zODEInit( &starter );
+  if( ode->order <= 4 ) zODEAssign( &starter, Radau, ode->cat, ode->sub ); else
+                        zODEAssign( &starter, Gauss, ode->cat, ode->sub );
+  /* the deferred correction raises the order of accuracy of Gauss method to five for six steps */
+  return _zODECreateHistory( ode, &starter, ode->order >= 6, _zODEPushHistoryGear, t, x, dt, util );
 }
 
 /* directly integrate variable by ODE based on Gear method. */

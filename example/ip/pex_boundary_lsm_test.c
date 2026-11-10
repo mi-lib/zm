@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 
   tvec = zVecCreateList( 3, 1.0, 2.0, 4.0 );
   xvec = zVecCreateList( 3, 4.0, 0.0, 2.0 );
-  zPexIPCreateBounderyLSM( &pc, 5.0, 0, 0, 0, 1, 0, 0, 8, tvec, xvec );
+  zPexIPCreateBoundaryLSM( &pc, 5.0, 0, 0, 0, 1, 0, 0, 8, tvec, xvec );
 
   for( t=0; t<=zPexIPTerm(&pc); t+=0.01 )
     printf( "%.10f %.10f\n", t, zPexIPVal( &pc, t ) );

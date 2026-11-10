@@ -17,6 +17,9 @@ __BEGIN_DECLS
 __ZM_EXPORT zODE *zODECreateAdams(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyAdams(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateAdams(zODE *ode, double t, zVec x, double dt, void *util);
+/* see zODEInitHistory() and zODECreateHistory() */
+__ZM_EXPORT void zODEInitHistoryAdams(zODE *ode, double t, zVec x, void *util);
+__ZM_EXPORT zVec zODECreateHistoryAdams(zODE *ode, double *t, zVec x, double dt, void *util);
 
 __END_DECLS
 

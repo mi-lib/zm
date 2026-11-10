@@ -16,6 +16,8 @@ __BEGIN_DECLS
  * To be strict, it is one of the modified Euler methods by Heun.
  */
 #define zODEOrderHeun 3
+#define zODEInitHistoryHeun   NULL /* no history */
+#define zODECreateHistoryHeun NULL /* no history */
 __ZM_EXPORT zODE *zODECreateHeun(zODE *ode, int dim, int dummy, zVec (* f)(double,zVec,void*,zVec));
 __ZM_EXPORT void zODEDestroyHeun(zODE *ode);
 __ZM_EXPORT zVec zODEUpdateHeun(zODE *ode, double t, zVec x, double dt, void *util);

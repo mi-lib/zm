@@ -62,5 +62,5 @@ zVec zODEUpdateDC(zODE *ode, double t, zVec x, double dt, void *util)
 {
   if( dt == 0 ) return NULL; /* see zODEUpdate */
   /* the error of x2 is in the order of dt^(p+1) */
-  return zODEUpdateAdaptive( ode, t, x, dt, _zODEOrderDC(ode), _zODETrialDC, _zODEAcceptDC, util, NULL );
+  return _zODEUpdateAdaptive( ode, t, x, dt, _zODEOrderDC(ode), _zODETrialDC, _zODEAcceptDC, util, NULL );
 }

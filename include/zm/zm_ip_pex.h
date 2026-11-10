@@ -75,19 +75,19 @@ __ZM_EXPORT void zPexIPFree(zPexIP *pc);
  * method. \a term is the total duration of the function, and \a dim is the dimension of the
  * polynomial.
  *
- * zPexIPCreateBounderyLSM() creates a polynomial function \a pc that satisfies the boundary
+ * zPexIPCreateBoundaryLSM() creates a polynomial function \a pc that satisfies the boundary
  * conditions specified by \a term, \a x1, \a v1, \a a1, \a x2, \a v2, and \a a2, and also
  * fits the sequence of points {(t_i, x_i)} specified by vectors \a t and \a x. The meanings
  * of those arguments are the same with those for zPexIPCreateBoundary() and zPexIPCreateLSM().
  * \a dim is the dimension of the polynomial.
  * \return
- * zPexIPCreateBoundary(), zPexIPCreateLSM() and zPexIPCreateBounderyLSM() return the true value
+ * zPexIPCreateBoundary(), zPexIPCreateLSM() and zPexIPCreateBoundaryLSM() return the true value
  * if they succeed to create the polynomial function, or the false value otherwise.
  */
 __ZM_EXPORT bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, const zVec v);
 __ZM_EXPORT bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, const zVec t, const zVec x);
 /*! \brief create a polynomial function from the boundary condition and a sequence of points to fit. */
-__ZM_EXPORT bool zPexIPCreateBounderyLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, const zVec t, const zVec x);
+__ZM_EXPORT bool zPexIPCreateBoundaryLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, const zVec t, const zVec x);
 
 /*! \brief value of polynomial function.
  *

@@ -19,6 +19,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zODE ){
   zVec (* update)(zODE*,double,zVec,double,void*);
   zVec (* cat)(zVec,double,zVec,zVec,void*);
   zVec (* sub)(zVec,zVec,zVec,void*);
+  void (* init_history)(zODE*,double,zVec,void*); /* only for multistep methods */
+  zVec (* create_history)(zODE*,double*,zVec,double,void*); /* only for multistep methods */
   int order; /* order of accuracy */
   void *_ws; /* workspace for utility */
   zVec _x1, _x2; /* workspace for deferred correction */
@@ -35,6 +37,8 @@ __BEGIN_DECLS
   (ode)->update = NULL; \
   (ode)->cat = NULL; \
   (ode)->sub = NULL; \
+  (ode)->init_history = NULL; \
+  (ode)->create_history = NULL; \
   (ode)->order = 0; \
   (ode)->_ws = NULL; \
   (ode)->_x1 = (ode)->_x2 = NULL; \
@@ -42,7 +46,7 @@ __BEGIN_DECLS
 } while(0)
 
 /*! \brief concatenate deviation in finite time step to the current variable vector.
- * no need to call this function in user's codes.
+ * This is for internal implementations of the library. No need to call this function in user's codes.
  */
 __ZM_EXPORT zVec _zODECatDefault(zVec x, double dt, zVec dx, zVec xn, void *util);
 __ZM_EXPORT zVec _zODESubDefault(zVec x1, zVec x2, zVec dx, void *util);
@@ -79,6 +83,8 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
   (ode)->order = zODEOrder##type;\
   (ode)->destroy = zODEDestroy##type;\
   (ode)->update = zODEUpdate##type;\
+  (ode)->init_history = zODEInitHistory##type;\
+  (ode)->create_history = zODECreateHistory##type;\
   zODEAssignFunc( ode, catf, subf );\
 } while(0)
 
@@ -112,6 +118,53 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
 #define zODECreate(ode,dim,num,f)  ( (ode)->create ? (ode)->create( ode, dim, num, f ) : NULL )
 #define zODEDestroy(ode)           do{ if( (ode)->destroy ) (ode)->destroy( ode ); } while(0)
 #define zODEUpdate(ode,t,x,dt,u)   ( (dt) == 0 ? NULL : (ode)->update( ode, t, x, dt, u ) )
+
+/*! \brief initialize and create the history of a multistep method.
+ *
+ * The multistep methods "Adams" and "Gear" refer to the history of the past states (for "Gear") or the
+ * past differential vectors (for "Adams"), which is filled with zero by zODECreate(). Unless it is
+ * initialized properly, the first time steps are not accurate.
+ *
+ * zODEInitHistory() initializes the history of \a ode as if the state had stayed at \a x before the
+ * time \a t (for "Gear"), or as if the differential vector had stayed at that at \a x and \a t (for
+ * "Adams"). It is the simplest initialization requiring little computation, while the order of accuracy
+ * degrades to one for "Gear" and two for "Adams".
+ *
+ * zODECreateHistory() creates the history of \a ode by integrating the state \a x forward from the time
+ * \a t with a one-step method (starter), where the time step \a dt is the same with that of the
+ * following updates. \a x and \a t are updated destructively to the state and the time just after the
+ * history is created, namely, they advance by k-1 time steps for a method with k steps. The starter is
+ * chosen from the method and the step number so that the order of accuracy is not lower than k-1, which
+ * does not degrade the order of accuracy of the method:
+ *  "Adams": "RK4" (k<=5) and "DP45" (k>=6),
+ *  "Gear":  "Radau" (k<=4), "Gauss" (k=5) and "Gauss" with the deferred correction (k=6),
+ * where A-stable implicit methods are chosen for "Gear" not to spoil the stability for stiff equations.
+ * Note that "DP45" for "Adams" with more than six steps is not of sufficient order.
+ *
+ * Both of them do nothing for one-step methods. \a util is for programmer s utility.
+ * \return
+ * zODEInitHistory() returns no value.
+ *
+ * zODECreateHistory() returns a pointer \a x, or the null pointer if \a dt is zero or it fails to
+ * create the starter. \a x is not updated by a one-step method.
+ */
+#define zODEInitHistory(ode,t,x,u) do{ \
+  if( (ode)->init_history ) (ode)->init_history( ode, t, x, u ); \
+} while(0)
+#define zODECreateHistory(ode,t,x,dt,u) ( (dt) == 0 ? NULL : (ode)->create_history ? (ode)->create_history( ode, t, x, dt, u ) : (x) )
+
+/*! \brief create the history of a multistep method by a starter.
+ *
+ * _zODECreateHistory() integrates \a x from the time *\a t by k-1 time steps \a dt with \a starter,
+ * where k is the order of accuracy of \a ode, and puts each state before the time step into the history
+ * of \a ode by calling \a push(\a ode, t, x, \a util). \a starter has to be assigned in advance, and
+ * is created with the deferred correction if \a is_dc is the true value. It is destroyed at the end.
+ * \notes
+ * This is for internal implementations of the library. No need to call this function in user's codes.
+ * \return
+ * _zODECreateHistory() returns a pointer \a x, or the null pointer if it fails to create \a starter.
+ */
+__ZM_EXPORT zVec _zODECreateHistory(zODE *ode, zODE *starter, bool is_dc, void (* push)(zODE*,double,zVec,void*), double *t, zVec x, double dt, void *util);
 
 /*! \brief tolerance for adaptive step size control of ODE quadratures.
  *
@@ -168,7 +221,7 @@ __ZM_EXPORT double zODEStepErr(const zVec x0, const zVec x1, const zVec x2, doub
 
 /*! \brief update the state vector with an adaptive step size control.
  *
- * zODEUpdateAdaptive() updates a given vector \a x destructively from the time \a t to \a t + \a dt, where
+ * _zODEUpdateAdaptive() updates a given vector \a x destructively from the time \a t to \a t + \a dt, where
  * the interval \a dt is divided into time steps, each of which is predicted from the last step and stored
  * in \a ode for the next update.
  * \a trial is a function to try a time step h from the time t and the state x, which returns the ratio of
@@ -178,12 +231,13 @@ __ZM_EXPORT double zODEStepErr(const zVec x0, const zVec x1, const zVec x2, doub
  * \a util, \a data).
  * \a order is the order of accuracy of the error estimation.
  * \a util is for programmer s utility, and \a data is for the method.
- * no need to call this function in user's codes.
+ * \notes
+ * This is for internal implementations of the library. No need to call this function in user's codes.
  * \return
- * zODEUpdateAdaptive() returns a pointer \a x. If \a x becomes not a number, the rest of the interval is
+ * _zODEUpdateAdaptive() returns a pointer \a x. If \a x becomes not a number, the rest of the interval is
  * abandoned.
  */
-__ZM_EXPORT zVec zODEUpdateAdaptive(zODE *ode, double t, zVec x, double dt, int order, double (* trial)(zODE*,double,zVec,double,void*,void*), void (* accept)(zODE*,zVec,void*,void*), void *util, void *data);
+__ZM_EXPORT zVec _zODEUpdateAdaptive(zODE *ode, double t, zVec x, double dt, int order, double (* trial)(zODE*,double,zVec,double,void*,void*), void (* accept)(zODE*,zVec,void*,void*), void *util, void *data);
 
 __END_DECLS
 

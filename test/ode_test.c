@@ -6,11 +6,13 @@ typedef struct{
   zODE *(* create)(zODE*,int,int,zVec (*)(double,zVec,void*,zVec));
   void (* destroy)(zODE*);
   zVec (* update)(zODE*,double,zVec,double,void*);
+  void (* init_history)(zODE*,double,zVec,void*);
+  zVec (* create_history)(zODE*,double*,zVec,double,void*);
   int step;  /* step number of history (only for multistep methods) */
   int order; /* theoretical order of accuracy */
 } method_t;
 
-#define METHOD(type,step,order) { #type, zODECreate##type, zODEDestroy##type, zODEUpdate##type, step, order }
+#define METHOD(type,step,order) { #type, zODECreate##type, zODEDestroy##type, zODEUpdate##type, zODEInitHistory##type, zODECreateHistory##type, step, order }
 
 static const method_t method_onestep[] = {
   METHOD( Euler,  0, 1 ),
@@ -32,6 +34,8 @@ static void method_assign(zODE *ode, const method_t *method)
   ode->create = method->create;
   ode->destroy = method->destroy;
   ode->update = method->update;
+  ode->init_history = method->init_history;
+  ode->create_history = method->create_history;
   ode->order = method->order;
   zODEAssignFunc( ode, NULL, NULL );
 }
@@ -120,7 +124,7 @@ double poly6_integrate(const method_t *method, int step, double dt)
   n = (int)( 1.0 / dt + 0.5 );
   method_create( &ode, method, 1, step, poly6 );
   x = zVecCreateList( 1, 0.0 );
-  if( method->create == zODECreateGear ) zODEInitHistoryGear( &ode, x );
+  zODEInitHistory( &ode, 0, x, NULL );
   for( i=0; i<n; i++ )
     zODEUpdate( &ode, i*dt, x, dt, NULL );
   err = fabs( zVecElemNC(x,0) - 1.0/7 );
@@ -258,7 +262,7 @@ void assert_ode_stiff(void)
   /* multistep method: |x| does not monotonically decrease, but is bounded and decays. */
   method_create( &ode, &gear, 1, gear.step, stiff );
   x = zVecCreateList( 1, 1.0 );
-  zODEInitHistoryGear( &ode, x );
+  zODEInitHistory( &ode, 0, x, NULL );
   for( i=0; i<n; i++ ){
     zODEUpdate( &ode, i*dt, x, dt, NULL );
     if( ( xabs = fabs( zVecElemNC(x,0) ) ) > 1.0 ){
@@ -312,7 +316,7 @@ void assert_ode_implicit_zero(void)
     for( k=0; k<sizeof(method)/sizeof(method_t); k++ ){
       method_create( &ode, &method[k], 1, method[k].step, forced );
       x = zVecCreateList( 1, 0.0 );
-      if( method[k].create == zODECreateGear ) zODEInitHistoryGear( &ode, x );
+      zODEInitHistory( &ode, 0, x, &c );
       for( x_exact=1, i=0; i<n; i++ ){
         zODEUpdate( &ode, i*dt, x, dt, &c );
         x_exact *= r[k]( -dt );
@@ -739,6 +743,103 @@ void assert_ode_adaptive_nan(void)
   zAssert( zODEUpdate (termination for a differential function which is not a number), result );
 }
 
+/* integrate the unit circle from t=0 to t=T with a multistep method whose history is created by
+ * zODECreateHistory(), and return the error at T. the inconsistent initial history filled with zero
+ * degrades the order of accuracy to zero for Gear's method and one for Adams's method. */
+double circle_integrate_history(const method_t *method, int step, double dt, double T, bool *result)
+{
+  zODE ode;
+  zVec x;
+  double t = 0, err;
+  int n;
+
+  method_create( &ode, method, 2, step, circle );
+  x = zVecCreateList( 2, 1.0, 0.0 );
+  if( zODECreateHistory( &ode, &t, x, dt, NULL ) != x || fabs( t - ( step - 1 ) * dt ) > zTOL ){
+    eprintf( "%s (%d steps): t = %g after the history is created (expected %g)\n", method->name, step, t, ( step - 1 ) * dt );
+    *result = false;
+  }
+  for( n=(int)( ( T - t ) / dt + 0.5 ); n>0; n--, t+=dt )
+    zODEUpdate( &ode, t, x, dt, NULL );
+  err = circle_error( x, t, 1.0 );
+  zVecFree( x );
+  zODEDestroy( &ode );
+  return err;
+}
+
+/* 15. order of accuracy of multistep methods with the history created by a starter */
+void assert_ode_history_order(void)
+{
+  const method_t adams = METHOD( Adams, 0, 0 ), gear = METHOD( Gear, 0, 0 );
+  const double dt = 0.025, T = 1.0;
+  int step;
+  double order;
+  bool result1 = true, result2 = true;
+
+  for( step=1; step<=6; step++ ){
+    order = observed_order( circle_integrate_history( &adams, step, dt, T, &result2 ), circle_integrate_history( &adams, step, 0.5*dt, T, &result2 ) );
+    if( fabs( order - step ) > ORDER_TOL ){
+      eprintf( "Adams (%d steps): observed order = %g (expected %d)\n", step, order, step );
+      result1 = false;
+    }
+  }
+  /* the error saturates for more steps of Gear's method (see assert_ode_order_multistep()). */
+  for( step=1; step<=4; step++ ){
+    order = observed_order( circle_integrate_history( &gear, step, dt, T, &result2 ), circle_integrate_history( &gear, step, 0.5*dt, T, &result2 ) );
+    if( fabs( order - step ) > ORDER_TOL ){
+      eprintf( "Gear (%d steps): observed order = %g (expected %d)\n", step, order, step );
+      result1 = false;
+    }
+  }
+  zAssert( zODECreateHistory (order of accuracy of multistep methods), result1 );
+  zAssert( zODECreateHistory (time after the history is created), result2 );
+}
+
+/* 16. history of one-step methods and stability of the history of Gear's method for a stiff equation */
+void assert_ode_history_misc(void)
+{
+  const method_t gear = METHOD( Gear, 0, 0 );
+  const double dt = 0.1; /* A dt = 10, with which explicit methods diverge */
+  const int n = 50;
+  zODE ode;
+  zVec x;
+  double t;
+  int i, k;
+  bool result1 = true, result2 = true;
+
+  /* nothing has to be done for one-step methods. */
+  for( k=0; k<METHOD_ONESTEP_NUM; k++ ){
+    method_create( &ode, &method_onestep[k], 2, 0, circle );
+    x = zVecCreateList( 2, 1.0, 0.0 );
+    t = 0;
+    zODEInitHistory( &ode, t, x, NULL );
+    if( zODECreateHistory( &ode, &t, x, dt, NULL ) != x || t != 0 ||
+        zVecElemNC(x,0) != 1.0 || zVecElemNC(x,1) != 0.0 ){
+      eprintf( "%s: t = %g, x = ( %g, %g ) after the history is created\n", method_onestep[k].name, t, zVecElemNC(x,0), zVecElemNC(x,1) );
+      result1 = false;
+    }
+    zVecFree( x );
+    zODEDestroy( &ode );
+  }
+  /* the history of Gear's method has to be created without spoiling the stability for a stiff equation. */
+  for( k=1; k<=6; k++ ){
+    method_create( &ode, &gear, 1, k, stiff );
+    x = zVecCreateList( 1, 1.0 );
+    t = 0;
+    zODECreateHistory( &ode, &t, x, dt, NULL );
+    for( i=0; i<n; i++, t+=dt )
+      zODEUpdate( &ode, t, x, dt, NULL );
+    if( !( fabs( zVecElemNC(x,0) ) <= 1.0e-3 ) ){
+      eprintf( "Gear (%d steps): |x| = %g after %d steps\n", k, fabs( zVecElemNC(x,0) ), n );
+      result2 = false;
+    }
+    zVecFree( x );
+    zODEDestroy( &ode );
+  }
+  zAssert( zODEInitHistory and zODECreateHistory (one-step methods), result1 );
+  zAssert( zODECreateHistory (stability of Gear method for a stiff equation), result2 );
+}
+
 int main(void)
 {
   assert_ode_order_onestep();
@@ -755,5 +856,7 @@ int main(void)
   assert_ode_adaptive_backward();
   assert_ode_step_prediction();
   assert_ode_adaptive_nan();
+  assert_ode_history_order();
+  assert_ode_history_misc();
   return EXIT_SUCCESS;
 }

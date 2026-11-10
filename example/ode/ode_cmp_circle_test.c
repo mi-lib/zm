@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
   x[0] = zVecCreateList( 2, 1.0, 0.0 );
   for( i=1; i<N_METHOD; i++ )
     x[i] = zVecClone( x[0] );
-  zODEInitHistoryGear( &ode[11], x[11] );
+  zODEInitHistory( &ode[11], 0, x[11], NULL );
 
   fp = fopen( "result.dat", "w" );
   output_all( fp, x );
