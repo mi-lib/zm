@@ -252,8 +252,9 @@ __ZM_EXPORT void zOptDMDestroy(zOptDM *opt);
  * pointer.
  * \return
  * zOptDMSolve() returns the number of iterations if the iteration converges. It returns 0 if the gradient
- * vector at the initial point is zero. Otherwise, i.e., if the number of iterations exceeds \a iter or the
- * line search fails, it returns -1.
+ * vector at the initial point is zero. Otherwise, i.e., if the number of iterations exceeds \a iter, the
+ * line search fails, the function value or the gradient vector at the initial point is not finite, or
+ * the descent direction is not finite, it returns -1.
  */
 __ZM_EXPORT int zOptDMSolve(zOptDM *opt, zVec var, void *util, double tol, int iter, double *eval);
 

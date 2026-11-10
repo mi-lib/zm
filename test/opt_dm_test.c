@@ -1019,6 +1019,103 @@ void assert_opt_dm_nonfinite_init(void)
   zAssert( zOptDMSolve (failure for a non-finite value at the initial guess), result );
 }
 
+/* a quadratic function that is infinity for x_0 > 1/2 */
+double nonfinite_edge_eval(const zVec var, void *dummy)
+{
+  return zVecElemNC(var,0) > 0.5 ? HUGE_VAL : quad_eval( var, NULL );
+}
+
+/* the quadratic function, where util is not used for the scale */
+double nonfinite_quad_eval(const zVec var, void *dummy)
+{
+  return quad_eval( var, NULL );
+}
+
+/* the gradient of the quadratic function that is infinity or NaN for x_0 < 1/2, where the value is given via util */
+zVec nonfinite_grad(const zVec var, zVec g, void *util)
+{
+  return zVecElemNC(var,0) < 0.5 ? zVecSetAll( g, *(double *)util ) : quad_grad( var, g, NULL );
+}
+
+/* a function that is not finite everywhere, where the value is given via util */
+double nonfinite_const_eval(const zVec var, void *util)
+{
+  return *(double *)util;
+}
+
+zVec nonfinite_zero_grad(const zVec var, zVec g, void *util)
+{
+  return zVecZero( g );
+}
+
+/* every method has to terminate if the gradient vector is not finite. the line searches by Dennis-Schnabel's
+   and Brent's methods have to avoid a step where the gradient vector is not finite, where the minimum
+   in the region x_0 >= 1/2 is 1/8. Levenberg-Marquardt method is excluded from it, since the numerical
+   Hessian matrix is not finite at the boundary of the region. */
+void assert_opt_dm_nonfinite_grad(void)
+{
+  zOptDM opt;
+  zVec var;
+  method_t *meth;
+  double val[] = { HUGE_VAL, -HUGE_VAL, NAN }, *v, e;
+  int ret;
+  bool result1 = true, result2 = true, result3 = true, result4 = true;
+
+  var = zVecAlloc( DIM );
+  for( meth=method; meth->label; meth++ ){
+    /* numerical gradient at the boundary of the region where the function is infinity */
+    zOptDMCreate( &opt, DIM, nonfinite_edge_eval, NULL, NULL );
+    meth->assign( &opt, meth->stepmethod, meth->updatemethod );
+    zVecSetElemList( var, 0.5, 1.0, 1.0, 1.0 );
+    zEchoOff();
+    ret = zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL );
+    zEchoOn();
+    zOptDMDestroy( &opt );
+    if( ret != -1 ){
+      eprintf( "%s: returned %d for a non-finite gradient vector at the initial guess\n", meth->label, ret );
+      result1 = false;
+    }
+    /* the gradient vector becomes non-finite during the iteration */
+    for( v=val; v<val+sizeof(val)/sizeof(double); v++ ){
+      zOptDMCreate( &opt, DIM, nonfinite_quad_eval, nonfinite_grad, NULL );
+      meth->assign( &opt, meth->stepmethod, meth->updatemethod );
+      zVecSetAll( var, 1.0 );
+      zEchoOff();
+      ret = zOptDMSolve( &opt, var, v, zTOL, 0, &e );
+      zEchoOn();
+      zOptDMDestroy( &opt );
+      if( !zVecIsFinite( var ) || !zIsFinite( e ) || ( ret >= 0 && zVecElemNC(var,0) < 0.5 ) ){
+        eprintf( "%s: returned %d with the evaluation %g for the gradient vector %g\n", meth->label, ret, e, *v );
+        result2 = false;
+      }
+      if( meth->assign != assign_lm && ( strstr( meth->label, "DS" ) || strstr( meth->label, "Brent" ) ) &&
+          ( ret < 0 || e > 0.13 ) ){
+        eprintf( "%s: returned %d with the evaluation %g for the gradient vector %g\n", meth->label, ret, e, *v );
+        result3 = false;
+      }
+    }
+  }
+  /* the gradient vector is zero, while the function is not finite */
+  for( v=val; v<val+sizeof(val)/sizeof(double); v++ ){
+    zOptDMCreate( &opt, DIM, nonfinite_const_eval, nonfinite_zero_grad, NULL );
+    zOptDMAssignSD( &opt, NULL, 0 );
+    zVecSetAll( var, 1.0 );
+    zEchoOff();
+    ret = zOptDMSolve( &opt, var, v, zTOL, 0, NULL );
+    zEchoOn();
+    zOptDMDestroy( &opt );
+    if( ret != -1 ){
+      eprintf( "returned %d for the zero gradient vector and the evaluation %g\n", ret, *v );
+      result4 = false;
+    }
+  }
+  zVecFree( var );
+  zAssert( zOptDMSolve (failure for a non-finite gradient vector at the initial guess), result1 );
+  zAssert( zOptDMSolve (termination for a non-finite gradient vector during the iteration), result2 );
+  zAssert( zOptDMSolve (avoidance of a non-finite gradient vector by line search), result3 );
+  zAssert( zOptDMSolve (failure for a non-finite value with the zero gradient vector), result4 );
+}
+
 int main(void)
 {
   zRandInit();
@@ -1040,5 +1137,6 @@ int main(void)
   assert_opt_dm_lm();
   assert_opt_dm_numdiff();
   assert_opt_dm_nonfinite_init();
+  assert_opt_dm_nonfinite_grad();
   return 0;
 }

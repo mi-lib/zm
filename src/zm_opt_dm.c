@@ -162,6 +162,13 @@ static zVec _zOptDMStepStay(zOptDM *opt, const zVec var, double e0, double *e1)
   return var;
 }
 
+/* compute the gradient vector at the trial point, and check if it is finite. */
+static bool _zOptDMStepGradIsFinite(zOptDM *opt, void *util)
+{
+  opt->_grad( opt, opt->_x, opt->_r, util );
+  return zVecIsFinite( opt->_r );
+}
+
 /* step with a fixed length without line search, where _scale is used as the step length. */
 static zVec _zOptDMStepFixed(zOptDM *opt, const zVec var, double tol, void *util, double e0, double *e1)
 {
@@ -274,10 +281,6 @@ static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, double tol, void *util, d
   bool bracketed = false, stage1 = true;
   int i;
 
-  if( !zIsFinite( e0 ) ){
-    ZRUNWARN( ZM_WARN_OPT_BADINI );
-    return NULL;
-  }
   g0 = -zVecInnerProdNC( opt->_g, opt->_d ); /* phi'(0) < 0 */
   gtest = opt->_df * g0;
   gtol = -opt->_cf * g0;
@@ -357,32 +360,32 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, double tol, void *util, d
 {
   double a1, a2, w1, w2, s, df, c1, c2;
 
-  if( !zIsFinite( e0 ) ){
-    ZRUNWARN( ZM_WARN_OPT_BADINI );
-    return NULL;
-  }
   s = zVecInnerProdNC( opt->_g, opt->_d ); /* ascendant direction */
   df = opt->_df * s;
   /* initial test from full-length step */
   a1 = _zMin( 1.0, _zOptDMStepMax( opt ) ); /* the backtracking cannot expand the step length */
-  if( _zOptDMStepDSTest( e0, ( *e1 = _zOptDMStepEval( opt, var, util, a1 ) ), a1, df ) ) goto TERMINATE;
+  if( _zOptDMStepDSTest( e0, ( *e1 = _zOptDMStepEval( opt, var, util, a1 ) ), a1, df ) &&
+      _zOptDMStepGradIsFinite( opt, util ) ) goto TERMINATE;
   /* w = ( f(a) - f(0) - a f'(0) ) / a^2, where f'(0) = -s.
      the cubic approximation f(a) = f(0) - s a + c2 a^2 + c1/3 a^3 satisfies w = c2 + c1/3 a. */
   w1 = ( *e1 - e0 + s*a1 ) / ( a1*a1 );
   /* quadratic approximation test */
   a2 = a1;
   w2 = w1;
-  a1 = _zOptDMStepDSLimit( 0.5 * s / w1, a2 );
+  /* a trial step length where the gradient vector is not finite is halved. */
+  a1 = _zOptDMStepDSTest( e0, *e1, a2, df ) ? 0.5 * a2 : _zOptDMStepDSLimit( 0.5 * s / w1, a2 );
   /* cubic approximation test */
   while( !_zOptDMStepIsNegligible( opt, var, tol, a1 ) ){
-    if( _zOptDMStepDSTest( e0, ( *e1 = _zOptDMStepEval( opt, var, util, a1 ) ), a1, df ) ) goto TERMINATE;
+    if( _zOptDMStepDSTest( e0, ( *e1 = _zOptDMStepEval( opt, var, util, a1 ) ), a1, df ) &&
+        _zOptDMStepGradIsFinite( opt, util ) ) goto TERMINATE;
     w1 = ( *e1 - e0 + s*a1 ) / ( a1*a1 );
     c1 = 3 * ( w1 - w2 ) / ( a1 - a2 );
     c2 = ( w2*a1 - w1*a2 ) / ( a1 - a2 );
     a2 = a1;
     w2 = w1;
     /* minimizer of the cubic approximation, (-c2+sqrt(c2^2+c1 s))/c1, rationalized to be valid also for c1=0 */
-    a1 = _zOptDMStepDSLimit( s / ( c2 + sqrt( c2*c2 + c1*s ) ), a2 );
+    a1 = _zOptDMStepDSTest( e0, *e1, a2, df ) ?
+      0.5 * a2 : _zOptDMStepDSLimit( s / ( c2 + sqrt( c2*c2 + c1*s ) ), a2 );
   }
   /* no further decrease is detected even by a negligibly small step. */
   if( zIsFinite( *e1 ) ) return _zOptDMStepStay( opt, var, e0, e1 );
@@ -390,7 +393,6 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, double tol, void *util, d
   return NULL;
 
  TERMINATE:
-  opt->_grad( opt, opt->_x, opt->_r, util );
   zVecSubNC( opt->_r, opt->_g, opt->_q );
   zVecCopyNC( opt->_r, opt->_g );
   return zVecCopyNC( opt->_x, var );
@@ -428,10 +430,6 @@ static zVec _zOptDMStepBrent(zOptDM *opt, const zVec var, double tol, void *util
   double amax, a0, a1, a2, f0, f1, f2, a, fa;
   _zOptDMStepData opt_data;
 
-  if( !zIsFinite( e0 ) ){
-    ZRUNWARN( ZM_WARN_OPT_BADINI );
-    return NULL;
-  }
   amax = _zOptDMStepMax( opt );
   a0 = 0; f0 = e0;
   f1 = _zOptDMStepBrentVal( opt, var, util, ( a1 = _zOptDMStepInit( opt ) ) );
@@ -454,7 +452,7 @@ static zVec _zOptDMStepBrent(zOptDM *opt, const zVec var, double tol, void *util
         a2 = a1; f2 = f1;
         f1 = _zOptDMStepBrentVal( opt, var, util, ( a1 = a0 + ( a2 - a0 ) / ZM_GOLDENRATIO ) );
         if( f1 < f2 ) break;
-        fa = _zOptDMStepEval( opt, var, util, a2 ); /* the function decreases up to the upper bound */
+        fa = _zOptDMStepEval( opt, var, util, ( a = a2 ) ); /* the function decreases up to the upper bound */
         goto TERMINATE;
       }
       f2 = _zOptDMStepBrentVal( opt, var, util, ( a2 = _zMin( a1 + ZM_GOLDENRATIO * ( a1 - a0 ), amax ) ) );
@@ -470,11 +468,20 @@ static zVec _zOptDMStepBrent(zOptDM *opt, const zVec var, double tol, void *util
   opt_data.scale = a2;
   a = zOptLineBrent( _zOptDMStepBrentEval, a0 / a2, 1.0, &opt_data, 100 ) * a2;
   if( !( ( fa = _zOptDMStepBrentVal( opt, var, util, a ) ) <= f1 ) )
-    fa = _zOptDMStepEval( opt, var, util, a1 ); /* the best step length while bracketing */
+    fa = _zOptDMStepEval( opt, var, util, ( a = a1 ) ); /* the best step length while bracketing */
 
  TERMINATE:
+  /* the step length is halved until the function decreases at a step where the gradient vector is
+     finite, since the gradient vector is not evaluated in the search. */
+  while( !_zOptDMStepGradIsFinite( opt, util ) ){
+    do{
+      /* no further decrease is detected where the gradient vector is finite. */
+      if( _zOptDMStepIsNegligible( opt, var, tol, ( a *= 0.5 ) ) )
+        return _zOptDMStepStay( opt, var, e0, e1 );
+      fa = _zOptDMStepEval( opt, var, util, a );
+    } while( !( zIsFinite( fa ) && fa < e0 ) );
+  }
   *e1 = fa;
-  opt->_grad( opt, opt->_x, opt->_r, util );
   zVecSubNC( opt->_r, opt->_g, opt->_q );
   zVecCopyNC( opt->_r, opt->_g );
   return zVecCopyNC( opt->_x, var );
@@ -735,7 +742,9 @@ void zOptDMDestroy(zOptDM *opt)
  * - the step becomes small relatively to the variable, namely, |p|inf <= tol ( |x|inf + s0 ), where s0
  *   is |x0|inf for the initial guess x0, or 1 if x0 = 0, or
  * - the number of iterations exceeds the given upper limit iter.
- * it also fails if the line search does not find any step. */
+ * it also fails if the line search does not find any step.
+ * it fails without iteration if the function value or the gradient vector at the initial guess is
+ * not finite, and fails if the descent direction is not finite. */
 int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, double *eval)
 {
   int i;
@@ -749,6 +758,10 @@ int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, d
   if( ( opt->_xscale = zVecElemAbsMax( var, NULL ) ) == 0 ) opt->_xscale = 1.0;
   *eval = opt->eval( var, util );
   opt->_grad( opt, var, opt->_g, util );
+  if( !zIsFinite( *eval ) || !zVecIsFinite( opt->_g ) ){
+    ZRUNWARN( ZM_WARN_OPT_BADINI );
+    return -1;
+  }
   if( ( gmin = zVecElemAbsMax( opt->_g, NULL ) ) == 0 )
     return 0; /* no need for iteration. */
   opt->_g0 = zVecNorm( opt->_g ); /* for Levenberg-Marquardt method */
@@ -761,6 +774,10 @@ int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, d
       zMatIdent( opt->_h );
       opt->_to_start = true;
       zVecCopyNC( opt->_g, opt->_d );
+    }
+    if( !zVecIsFinite( opt->_d ) ){ /* e.g. the gradient vector after a step is not finite. */
+      ZRUNERROR( ZM_ERR_OPT_CANNOTFINDSTEP );
+      return -1;
     }
     if( !opt->_step( opt, var, tol, util, *eval, &e ) ) return -1; /* line search failed. */
     *eval = e;

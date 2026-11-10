@@ -1,3 +1,6 @@
+2026.11.10. Modified the line searches by Dennis-Schnabel's and Brent's methods to avoid a step where the gradient vector is not finite. [zm_opt_dm]
+2026.11.10. Added a test of zOptDMSolve for a non-finite gradient vector. [test]
+2026.11.10. Fixed zOptDMSolve to fail if the function value or the gradient vector at the initial guess, or the descent direction is not finite. [zm_opt_dm]
 2026.11.10. Added a test of the time of the acceleration in leapfrog method. [test]
 2026.11.10. Fixed zODE2UpdateLeapfrog to compute the acceleration at the end of a step at the correct time. [zm_ode2]
 2026.11.10. Added a test of the order of accuracy of second-order ODE solvers with the history created. [test]
