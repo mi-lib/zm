@@ -1,3 +1,6 @@
+2026.11.10. Added tests of Gear's method for a state much smaller than the history, and the regular update of zODE2 with Gear's method. [test]
+2026.11.10. Fixed the nonlinear equation of Gear's method to pass the utility given to zODEUpdate to the concatenation function also for the history. [zm_ode_gear]
+2026.11.10. Modified Gear's method to compute the Jacobian matrix with a particular method instead of the numerical differentiation of the residual. [zm_ode_gear]
 2026.11.10. Renamed zODEUpdateAdaptive to _zODEUpdateAdaptive. [zm_ode, zm_ode_erk, zm_ode_dc]
 2026.11.10. Corrected misspelled function name to zPexIPCreateBoundaryLSM. [zm_ip_pex, example]
 2026.11.10. Added tests of the order of accuracy of multistep methods with the history created by zODECreateHistory, the history of one-step methods, and the stability of Gear's method with the created history for a stiff equation. Modified the tests to initialize the history by zODEInitHistory instead of zODEInitHistoryGear. [test]

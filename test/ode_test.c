@@ -840,6 +840,95 @@ void assert_ode_history_misc(void)
   zAssert( zODECreateHistory (stability of Gear method for a stiff equation), result2 );
 }
 
+/* 17. Gear's method for a state much smaller than the history */
+void assert_ode_gear_small_state(void)
+{
+  const method_t gear = METHOD( Gear, 0, 0 );
+  /* coefficients of Gear's method, with which x_{n+1} + sum_i a_i x_{n-i} = b dt f(x_{n+1}) */
+  const double a[][6] = {
+    { -1, 0, 0, 0, 0, 0 },
+    { -4.0/3, 1.0/3, 0, 0, 0, 0 },
+    { -18.0/11, 9.0/11, -2.0/11, 0, 0, 0 },
+    { -48.0/25, 36.0/25, -16.0/25, 3.0/25, 0, 0 },
+    { -300.0/137, 300.0/137, -200.0/137, 75.0/137, -12.0/137, 0 },
+    { -120.0/49, 150.0/49, -400.0/147, 75.0/49, -24.0/49, 10.0/147 },
+  };
+  const double b[] = { 1, 2.0/3, 6.0/11, 12.0/25, 60.0/137, 20.0/49 };
+  const double dt = 0.1, x0 = 1.0e-15, tol = 1.0e-8;
+  const int n = 10;
+  double h[16], s;
+  zODE ode;
+  zVec x;
+  int i, j, k;
+  bool result = true;
+
+  /* the history is filled with one, and the state starts from a much smaller value, as it happens to
+   * a stiff equation. since f is linear, the solution has to follow the recurrence
+   *  x_{n+1} = - sum_i a_i x_{n-i} / ( 1 + b dt A ). */
+  for( k=2; k<=6; k++ ){
+    method_create( &ode, &gear, 1, k, stiff );
+    x = zVecCreateList( 1, 1.0 );
+    zODEInitHistory( &ode, 0, x, NULL );
+    for( i=0; i<k-1; i++ ) h[i] = 1.0;
+    zVecSetElemNC( x, 0, ( h[k-1] = x0 ) );
+    for( i=k-1; i<k-1+n; i++ ){
+      for( s=0, j=0; j<k; j++ ) s += a[k-1][j] * h[i-j];
+      h[i+1] = -s / ( 1 + b[k-1] * dt * STIFF_A );
+      zODEUpdate( &ode, ( i - k + 1 ) * dt, x, dt, NULL );
+      if( fabs( zVecElemNC(x,0) - h[i+1] ) > tol * fabs( h[i+1] ) ){
+        eprintf( "Gear (%d steps): x = %g at step %d (expected %g)\n", k, zVecElemNC(x,0), i-k+2, h[i+1] );
+        result = false;
+        break;
+      }
+    }
+    zVecFree( x );
+    zODEDestroy( &ode );
+  }
+  zAssert( zODEUpdate (Gear method for a state much smaller than the history), result );
+}
+
+/* integrate the oscillator for n steps by the regular update of zODE2 assigned in advance, and return x. */
+double ode2_regular_integrate(zODE2 *ode, int num, double dt, int n)
+{
+  zVec x, v;
+  double result;
+  int i;
+
+  zODE2Create( ode, 1, num, oscillator );
+  x = zVecCreateList( 1, 1.0 );
+  v = zVecCreateList( 1, 0.0 );
+  for( i=0; i<n; i++ )
+    zODE2Update( ode, i*dt, x, v, dt, NULL );
+  result = zVecElemNC(x,0);
+  zVecFreeAtOnce( 2, x, v );
+  zODE2Destroy( ode );
+  return result;
+}
+
+/* 18. regular update of zODE2 with Gear method, which is identical with backward Euler method for one step.
+ * the concatenation of the state in the nonlinear equation of Gear method has to receive the utility
+ * given to zODE2Update(). */
+void assert_ode2_gear(void)
+{
+  const double dt = 0.01;
+  const int n = 100;
+  zODE2 ode;
+  double x_gear, x_beuler;
+  bool result = true;
+
+  zODE2Assign( &ode, Regular, NULL, NULL, NULL, NULL );
+  zODE2AssignRegular( &ode, Gear );
+  x_gear = ode2_regular_integrate( &ode, 1, dt, n );
+  zODE2Assign( &ode, Regular, NULL, NULL, NULL, NULL );
+  zODE2AssignRegular( &ode, BEuler );
+  x_beuler = ode2_regular_integrate( &ode, 0, dt, n );
+  if( !zIsTol( x_gear - x_beuler, 1.0e-8 ) ){
+    eprintf( "Gear: x = %.17g (backward Euler: %.17g)\n", x_gear, x_beuler );
+    result = false;
+  }
+  zAssert( zODE2Update (regular update with Gear method), result );
+}
+
 int main(void)
 {
   assert_ode_order_onestep();
@@ -858,5 +947,7 @@ int main(void)
   assert_ode_adaptive_nan();
   assert_ode_history_order();
   assert_ode_history_misc();
+  assert_ode_gear_small_state();
+  assert_ode2_gear();
   return EXIT_SUCCESS;
 }
