@@ -752,6 +752,75 @@ void assert_nle_return(void)
   zAssert( zNLESolve (returned number of iterations), result3 );
 }
 
+/* residual functions that cannot be evaluated somewhere, which count the number of evaluations. */
+static int nan_count;
+
+zVec nan_everywhere_f(const zVec var, zVec f, void *dummy)
+{
+  nan_count++;
+  return zVecSetAll( f, NAN );
+}
+
+zVec nan_negative_f(const zVec var, zVec f, void *dummy)
+{
+  int i;
+
+  nan_count++;
+  for( i=0; i<zVecSizeNC(var); i++ )
+    zVecSetElemNC( f, i, zVecElemNC(var,i) < 0 ? NAN : zSqr( zVecElemNC(var,i) ) - 1 );
+  return f;
+}
+
+zMat nan_jac(const zVec var, zMat jac, void *dummy)
+{
+  zRawVecSetAll( zMatBufNC(jac), zMatRowSizeNC(jac)*zMatColSizeNC(jac), NAN );
+  return jac;
+}
+
+#define NAN_DIM 2
+
+/* every method has to fail without falling into an infinite loop if the residual or the Jacobian matrix
+ * includes NaN. */
+void assert_nle_nan(void)
+{
+  struct{
+    const char *label;
+    zVec (* f)(const zVec,zVec,void*);
+    zMat (* jac)(const zVec,zMat,void*);
+  } *nc, nan_case[] = {
+    { "residual NaN everywhere (analytic Jacobian)", nan_everywhere_f, nan_jac },
+    { "residual NaN everywhere (numerical Jacobian)", nan_everywhere_f, NULL },
+    { "analytic Jacobian NaN", nan_negative_f, nan_jac },
+    { "numerical Jacobian NaN at the initial guess", nan_negative_f, NULL },
+    { NULL, NULL, NULL },
+  };
+  method_t *meth;
+  zNLE nle;
+  zVec var;
+  double err;
+  int ret;
+  bool result = true;
+
+  var = zVecAlloc( NAN_DIM );
+  for( nc=nan_case; nc->label; nc++ )
+    for( meth=method; meth->label; meth++ ){
+      zNLECreate( &nle, NAN_DIM, NAN_DIM, nc->f, nc->jac );
+      meth->assign( &nle );
+      zVecZero( var );
+      nan_count = 0;
+      zEchoOff();
+      ret = zNLESolve( &nle, var, NULL, TOL_STEP, TOL_ERR, ITER, &err );
+      zEchoOn();
+      zNLEDestroy( &nle );
+      if( ret >= 0 || nan_count > ITER * ( 2*NAN_DIM + 1 ) * 64 ){
+        eprintf( "%s, %s: returned %d after %d evaluations\n", nc->label, meth->label, ret, nan_count );
+        result = false;
+      }
+    }
+  zVecFree( var );
+  zAssert( zNLESolve (failure for residual or Jacobian matrix including NaN), result );
+}
+
 int main(void)
 {
   assert_nle_jacobian();
@@ -763,5 +832,6 @@ int main(void)
   assert_nle_nr_weight();
   assert_nle_nr_damp_coeff();
   assert_nle_return();
+  assert_nle_nan();
   return 0;
 }

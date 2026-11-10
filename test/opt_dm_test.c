@@ -979,6 +979,46 @@ void assert_opt_dm_numdiff(void)
   zAssert( zOptDM (symmetry of numerical Hessian and the ratio of the step), result4 );
 }
 
+/* a quadratic function that is infinity or NaN for x_0 > 1/2, where the value is given via util */
+double nonfinite_init_eval(const zVec var, void *util)
+{
+  return zVecElemNC(var,0) > 0.5 ? *(double *)util : quad_eval( var, NULL );
+}
+
+zVec nonfinite_init_grad(const zVec var, zVec g, void *util)
+{
+  return quad_grad( var, g, NULL );
+}
+
+/* every method with a line search has to fail if the function is not finite at the initial guess. */
+void assert_opt_dm_nonfinite_init(void)
+{
+  zOptDM opt;
+  zVec var;
+  method_t *meth;
+  double val[] = { HUGE_VAL, -HUGE_VAL, NAN }, *v;
+  int ret;
+  bool result = true;
+
+  var = zVecAlloc( DIM );
+  for( v=val; v<val+sizeof(val)/sizeof(double); v++ )
+    for( meth=method; meth->label; meth++ ){
+      zOptDMCreate( &opt, DIM, nonfinite_init_eval, nonfinite_init_grad, NULL );
+      meth->assign( &opt, meth->stepmethod, meth->updatemethod );
+      zVecSetAll( var, 1.0 );
+      zEchoOff();
+      ret = zOptDMSolve( &opt, var, v, zTOL, 0, NULL );
+      zEchoOn();
+      zOptDMDestroy( &opt );
+      if( ret != -1 ){
+        eprintf( "%s: returned %d for the initial value %g\n", meth->label, ret, *v );
+        result = false;
+      }
+    }
+  zVecFree( var );
+  zAssert( zOptDMSolve (failure for a non-finite value at the initial guess), result );
+}
+
 int main(void)
 {
   zRandInit();
@@ -999,5 +1039,6 @@ int main(void)
   assert_opt_dm_brent();
   assert_opt_dm_lm();
   assert_opt_dm_numdiff();
+  assert_opt_dm_nonfinite_init();
   return 0;
 }

@@ -117,13 +117,15 @@ __ZM_EXPORT bool zRawVecMatch(const double *v1, const double *v2, int size);
 __ZM_EXPORT bool zRawVecIsTol(const double *v, int size, double tol);
 #define zRawVecIsTiny(v,size)  zRawVecIsTol( v, size, zTOL )
 
-/*! \brief check if a raw vector contains NaN.
+/*! \brief check if a raw vector includes neither NaN nor infinity.
  *
+ * zRawVecIsFinite() checks if a raw vector \a v includes neither NaN nor infinity.
+ * \a size is the size of the raw vector.
  * \return
- * zRawVecIsNan() returns the true value if at least one of elements of a raw vector \a v is NAN,
- * or the false value, otherwise. \a size is the size of the raw vector.
+ * zRawVecIsFinite() returns the false value if at least one of the components of a raw vector \a v is NaN
+ * or infinity (either positive or negative). Otherwise, it returns the true value.
  */
-__ZM_EXPORT bool zRawVecIsNan(const double *v, int size);
+__ZM_EXPORT bool zRawVecIsFinite(const double *v, int size);
 
 /*! \brief basic arithmetics of raw vectors.
  *

@@ -24,7 +24,7 @@ static bool _zNLE1StepIsSmall(double dx, double x, double s0, double tol_step)
 /* check if a value of the function is valid, i.e., neither not-a-number nor infinity. */
 static bool _zNLE1IsValid(double fx)
 {
-  return !zIsNan( fx ) && fabs( fx ) < HUGE_VAL;
+  return zIsFinite( fx );
 }
 
 /* evaluate the function at x. if the value is invalid, x is moved toward xo by halving the distance

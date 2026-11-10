@@ -50,7 +50,7 @@ struct zVecStruct : public _zVecStruct {
   double elemVar();
   bool isIncluded(double val, double tol);
   bool isTol(double tol);
-  bool isNan();
+  bool isFinite();
   zVec scale(const zVec min, const zVec max);
   zVec scaleUniform(double min, double max);
   double sqrNorm();
@@ -342,7 +342,14 @@ __ZM_EXPORT bool zVecMatch(const zVec v1, const zVec v2);
 __ZM_EXPORT bool zVecIsTol(const zVec v, double tol);
 #define zVecIsTiny(v) zVecIsTol( v, zTOL )
 
-__ZM_EXPORT bool zVecIsNan(const zVec v);
+/*! \brief check if a vector includes neither NaN nor infinity.
+ *
+ * zVecIsFinite() checks if a vector \a v includes neither NaN nor infinity.
+ * \return
+ * zVecIsFinite() returns the false value if at least one of the components of a vector \a v is NaN or
+ * infinity (either positive or negative). Otherwise, it returns the true value.
+ */
+__ZM_EXPORT bool zVecIsFinite(const zVec v);
 
 /*! \brief resize a vector.
  *
@@ -649,7 +656,7 @@ inline double zVecStruct::elemMean(){ return _zVecElemMean( this ); }
 inline double zVecStruct::elemVar(){ return _zVecElemVar( this ); }
 inline bool zVecStruct::isIncluded(double val, double tol=zTOL){ return zVecValIsIncluded( this, val, tol ); }
 inline bool zVecStruct::isTol(double tol=zTOL){ return zVecIsTol( this, tol ); }
-inline bool zVecStruct::isNan(){ return zVecIsNan( this ); }
+inline bool zVecStruct::isFinite(){ return zVecIsFinite( this ); }
 inline zVec zVecStruct::scale(const zVec min, const zVec max){ return zVecScale( this, min, max, this ); }
 inline zVec zVecStruct::scaleUniform(double min, double max){ return zVecScaleUniform( this, min, max, this ); }
 inline double zVecStruct::sqrNorm(){ return zVecSqrNorm( this ); }

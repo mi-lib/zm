@@ -168,7 +168,7 @@ static zVec _zOptDMStepFixed(zOptDM *opt, const zVec var, double tol, void *util
   zVecMulNC( opt->_d, -opt->_scale, opt->_p ); /* descent step */
   zVecAddNC( var, opt->_p, opt->_x );
   *e1 = opt->eval( opt->_x, util );
-  if( zIsInf( *e1 ) || zIsNan( *e1 ) ){
+  if( !zIsFinite( *e1 ) ){
     ZRUNERROR( ZM_ERR_OPT_CANNOTFINDSTEP );
     return NULL;
   }
@@ -196,7 +196,7 @@ static double _zOptDMStepMTEval(zOptDM *opt, const zVec var, void *util, double 
   double f;
 
   f = _zOptDMStepEval( opt, var, util, a );
-  if( zIsInf( f ) || zIsNan( f ) ) return f;
+  if( !zIsFinite( f ) ) return f;
   opt->_grad( opt, opt->_x, opt->_r, util );
   *g = -zVecInnerProdNC( opt->_r, opt->_d );
   return f;
@@ -274,7 +274,7 @@ static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, double tol, void *util, d
   bool bracketed = false, stage1 = true;
   int i;
 
-  if( zIsNan( e0 ) ){
+  if( !zIsFinite( e0 ) ){
     ZRUNWARN( ZM_WARN_OPT_BADINI );
     return NULL;
   }
@@ -287,7 +287,7 @@ static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, double tol, void *util, d
   w = w1 = HUGE_VAL;
   for( i=0; i<ZM_OPT_DM_MT_EVAL_MAX; i++ ){
     ft = _zOptDMStepMTEval( opt, var, util, ( ae = at ), &gt );
-    if( zIsInf( ft ) || zIsNan( ft ) || zIsInf( gt ) || zIsNan( gt ) ){
+    if( !zIsFinite( ft ) || !zIsFinite( gt ) ){
       /* shrink the upper bound of step length if the function is not evaluated at the trial point */
       at = amax = al + 0.5 * ( at - al );
       continue;
@@ -350,14 +350,14 @@ static double _zOptDMStepDSLimit(double at, double a)
 /* test the sufficient decrease condition. a trial step length where the function is not evaluated is rejected. */
 static bool _zOptDMStepDSTest(double e0, double e1, double a, double df)
 {
-  return !zIsInf( e1 ) && !zIsNan( e1 ) && e0 - e1 >= a*df;
+  return zIsFinite( e1 ) && e0 - e1 >= a*df;
 }
 
 static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, double tol, void *util, double e0, double *e1)
 {
   double a1, a2, w1, w2, s, df, c1, c2;
 
-  if( zIsNan( e0 ) ){
+  if( !zIsFinite( e0 ) ){
     ZRUNWARN( ZM_WARN_OPT_BADINI );
     return NULL;
   }
@@ -385,7 +385,7 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, double tol, void *util, d
     a1 = _zOptDMStepDSLimit( s / ( c2 + sqrt( c2*c2 + c1*s ) ), a2 );
   }
   /* no further decrease is detected even by a negligibly small step. */
-  if( !zIsInf( *e1 ) && !zIsNan( *e1 ) ) return _zOptDMStepStay( opt, var, e0, e1 );
+  if( zIsFinite( *e1 ) ) return _zOptDMStepStay( opt, var, e0, e1 );
   ZRUNERROR( ZM_ERR_OPT_CANNOTFINDSTEP );
   return NULL;
 
@@ -413,7 +413,7 @@ static double _zOptDMStepBrentVal(zOptDM *opt, const zVec var, void *util, doubl
   double f;
 
   f = _zOptDMStepEval( opt, var, util, a );
-  return zIsInf( f ) || zIsNan( f ) ? HUGE_VAL : f;
+  return zIsFinite( f ) ? f : HUGE_VAL;
 }
 
 static double _zOptDMStepBrentEval(double u, void *util)
@@ -428,7 +428,7 @@ static zVec _zOptDMStepBrent(zOptDM *opt, const zVec var, double tol, void *util
   double amax, a0, a1, a2, f0, f1, f2, a, fa;
   _zOptDMStepData opt_data;
 
-  if( zIsNan( e0 ) ){
+  if( !zIsFinite( e0 ) ){
     ZRUNWARN( ZM_WARN_OPT_BADINI );
     return NULL;
   }

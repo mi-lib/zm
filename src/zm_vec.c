@@ -303,10 +303,10 @@ bool zVecIsTol(const zVec v, double tol)
   return zRawVecIsTol( zVecBufNC(v), zVecSizeNC(v), tol );
 }
 
-/* check if a vector includes NaN. */
-bool zVecIsNan(const zVec v)
+/* check if a vector includes neither NaN nor infinity. */
+bool zVecIsFinite(const zVec v)
 {
-  return zRawVecIsNan( zVecBufNC(v), zVecSizeNC(v) );
+  return zRawVecIsFinite( zVecBufNC(v), zVecSizeNC(v) );
 }
 
 /* resize a vector. */

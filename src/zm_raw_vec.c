@@ -80,12 +80,12 @@ bool zRawVecIsTol(const double *v, int size, double tol)
   return true;
 }
 
-/* check if a raw vector includes NaN. */
-bool zRawVecIsNan(const double *v, int size)
+/* check if a raw vector includes neither NaN nor infinity. */
+bool zRawVecIsFinite(const double *v, int size)
 {
   for( ; size-->0; v++ )
-    if( zIsNan( *v ) || zIsInf( *v ) ) return true;
-  return false;
+    if( !zIsFinite( *v ) ) return false;
+  return true;
 }
 
 /* add two raw vectors. */

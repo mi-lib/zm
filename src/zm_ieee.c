@@ -52,5 +52,5 @@ int zIsNan(double x)
 /* check if the value is a finite number. */
 int zIsFinite(double x)
 {
-  return zIsInf( x ) != 1 && zIsInf( x ) != -1 && !zIsNan( x ) ? 1 : 0;
+  return zIsInf( x ) == 0 && !zIsNan( x ) ? 1 : 0;
 }
