@@ -771,6 +771,16 @@ zVec nan_negative_f(const zVec var, zVec f, void *dummy)
   return f;
 }
 
+/* f = ( sqrt(1-|x|^2) - 1/2, x_0 - x_1 ), which is NaN for |x| > 1. at the initial guess (1,0), the residual
+   is NaN on both sides along x_1, so that the numerical Jacobian matrix cannot be computed. */
+zVec nan_sphere_f(const zVec var, zVec f, void *dummy)
+{
+  nan_count++;
+  zVecSetElemNC( f, 0, sqrt( 1 - zVecSqrNorm( var ) ) - 0.5 );
+  zVecSetElemNC( f, 1, zVecElemNC(var,0) - zVecElemNC(var,1) );
+  return f;
+}
+
 zMat nan_jac(const zVec var, zMat jac, void *dummy)
 {
   zRawVecSetAll( zMatBufNC(jac), zMatRowSizeNC(jac)*zMatColSizeNC(jac), NAN );
@@ -787,12 +797,13 @@ void assert_nle_nan(void)
     const char *label;
     zVec (* f)(const zVec,zVec,void*);
     zMat (* jac)(const zVec,zMat,void*);
+    double x0;
   } *nc, nan_case[] = {
-    { "residual NaN everywhere (analytic Jacobian)", nan_everywhere_f, nan_jac },
-    { "residual NaN everywhere (numerical Jacobian)", nan_everywhere_f, NULL },
-    { "analytic Jacobian NaN", nan_negative_f, nan_jac },
-    { "numerical Jacobian NaN at the initial guess", nan_negative_f, NULL },
-    { NULL, NULL, NULL },
+    { "residual NaN everywhere (analytic Jacobian)", nan_everywhere_f, nan_jac, 0 },
+    { "residual NaN everywhere (numerical Jacobian)", nan_everywhere_f, NULL, 0 },
+    { "analytic Jacobian NaN", nan_negative_f, nan_jac, 0 },
+    { "numerical Jacobian NaN at the initial guess", nan_sphere_f, NULL, 1 },
+    { NULL, NULL, NULL, 0 },
   };
   method_t *meth;
   zNLE nle;
@@ -807,6 +818,7 @@ void assert_nle_nan(void)
       zNLECreate( &nle, NAN_DIM, NAN_DIM, nc->f, nc->jac );
       meth->assign( &nle );
       zVecZero( var );
+      zVecSetElemNC( var, 0, nc->x0 );
       nan_count = 0;
       zEchoOff();
       ret = zNLESolve( &nle, var, NULL, TOL_STEP, TOL_ERR, ITER, &err );
@@ -821,6 +833,80 @@ void assert_nle_nan(void)
   zAssert( zNLESolve (failure for residual or Jacobian matrix including NaN), result );
 }
 
+/* a smooth residual that is not finite (the value is given via util) for x_0 > 0.3 or x_1 < 0.7 */
+#define bounded_is_out(v) ( zVecElemNC(v,0) > 0.3 || zVecElemNC(v,1) < 0.7 )
+zVec bounded_f(const zVec var, zVec f, void *util)
+{
+  double x0, x1;
+
+  if( bounded_is_out( var ) ) return zVecSetAll( f, *(double *)util );
+  x0 = zVecElemNC(var,0);
+  x1 = zVecElemNC(var,1);
+  zVecSetElemNC( f, 0, sin( x0 ) + exp( 0.3*x1 ) );
+  zVecSetElemNC( f, 1, x0*x1 + cos( x1 ) );
+  return f;
+}
+
+zMat bounded_jac(const zVec var, zMat jac, void *util)
+{
+  double x0, x1;
+
+  x0 = zVecElemNC(var,0);
+  x1 = zVecElemNC(var,1);
+  zMatSetElemNC( jac, 0, 0, cos( x0 ) );
+  zMatSetElemNC( jac, 0, 1, 0.3*exp( 0.3*x1 ) );
+  zMatSetElemNC( jac, 1, 0, x1 );
+  zMatSetElemNC( jac, 1, 1, x0 - sin( x1 ) );
+  return jac;
+}
+
+/* the numerical Jacobian matrix has to be computed by one-sided differences near the boundary of the
+ * domain of the residual, and every method has to solve equations from an initial guess on the boundary. */
+void assert_nle_jacobian_bounded(void)
+{
+  method_t *meth;
+  zNLE nle;
+  zVec var;
+  zMat jn, ja;
+  double val[] = { HUGE_VAL, -HUGE_VAL, NAN }, *v, err;
+  int ret;
+  bool result1 = true, result2 = true;
+  const double tol = 1.0e-5;
+
+  var = zVecCreateList( 2, 0.3-1.0e-9, 0.7+1.0e-9 );
+  jn = zMatAllocSqr( 2 );
+  ja = zMatAllocSqr( 2 );
+  bounded_jac( var, ja, NULL );
+  zNLECreate( &nle, 2, 2, bounded_f, NULL );
+  for( v=val; v<val+sizeof(val)/sizeof(double); v++ ){
+    nle._jac( &nle, var, jn, v );
+    zMatSubDRC( jn, ja );
+    if( !( zMatNorm( jn ) <= tol * zMatNorm( ja ) ) ){
+      eprintf( "numerical Jacobian near the boundary for %g: relative error = %g\n", *v, zMatNorm( jn ) / zMatNorm( ja ) );
+      result1 = false;
+    }
+  }
+  zNLEDestroy( &nle );
+  /* f = ( x_0^2 - 1, x_1^2 - 1 ), which is NaN for x_i < 0, from the initial guess (0,0) */
+  for( meth=method; meth->label; meth++ ){
+    zNLECreate( &nle, NAN_DIM, NAN_DIM, nan_negative_f, NULL );
+    meth->assign( &nle );
+    zVecZero( var );
+    zEchoOff();
+    ret = zNLESolve( &nle, var, NULL, TOL_STEP, TOL_ERR, ITER, &err );
+    zEchoOn();
+    zNLEDestroy( &nle );
+    if( ret < 0 || !( fabs( zVecElemNC(var,0) - 1 ) < 1.0e-6 && fabs( zVecElemNC(var,1) - 1 ) < 1.0e-6 ) ){
+      eprintf( "%s: returned %d, x = (%g, %g) from the boundary\n", meth->label, ret, zVecElemNC(var,0), zVecElemNC(var,1) );
+      result2 = false;
+    }
+  }
+  zVecFree( var );
+  zMatFreeAtOnce( 2, jn, ja );
+  zAssert( zNLE (numerical Jacobian near the boundary), result1 );
+  zAssert( zNLESolve (initial guess on the boundary), result2 );
+}
+
 int main(void)
 {
   assert_nle_jacobian();
@@ -833,5 +919,6 @@ int main(void)
   assert_nle_nr_damp_coeff();
   assert_nle_return();
   assert_nle_nan();
+  assert_nle_jacobian_bounded();
   return 0;
 }

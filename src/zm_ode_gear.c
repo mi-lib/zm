@@ -37,13 +37,14 @@ static zVec _zODE_Gear_Func(zVec x, zVec y, void *util)
 /* Jacobian matrix of the algebraic equation for Gear method, namely, I - b dt df/dx, where df/dx is
  * computed by the central difference of f. the difference of the residual itself is not used, since
  * the history in the residual can be much larger than the state, e.g., for a stiff equation, and the
- * difference of the residual is lost in the round-off error of the history. */
+ * difference of the residual is lost in the round-off error of the history.
+ * if f is not finite on one side, the one-sided difference on the other side is used instead. */
 static zMat _zODE_Gear_Jacobi(const zVec x, zMat j, void *util)
 {
   zODE *ode;
   _zODE_Gear *ws;
   int i, k;
-  double org, h, xmax;
+  double org, h, c, xmax;
 
   ode = (zODE *)util;
   ws = (_zODE_Gear *)ode->_ws;
@@ -56,8 +57,16 @@ static zMat _zODE_Gear_Jacobi(const zVec x, zMat j, void *util)
     zVecSetElemNC( x, i, org - h );
     ode->f( ws->t+ws->dt, x, ws->util, ws->vp );
     zVecSetElemNC( x, i, org );
+    c = 1;
+    if( !zVecIsFinite( ws->vp ) && zVecIsFinite( ws->v ) ) /* forward difference */
+      ode->f( ws->t+ws->dt, x, ws->util, ws->vp );
+    else
+    if( !zVecIsFinite( ws->v ) && zVecIsFinite( ws->vp ) ) /* backward difference */
+      ode->f( ws->t+ws->dt, x, ws->util, ws->v );
+    else
+      c = 0.5; /* central difference */
     for( k=0; k<zVecSizeNC(x); k++ )
-      zMatSetElemNC( j, k, i, -0.5*ws->b*ws->dt*( zVecElemNC(ws->v,k) - zVecElemNC(ws->vp,k) ) / h );
+      zMatSetElemNC( j, k, i, -c*ws->b*ws->dt*( zVecElemNC(ws->v,k) - zVecElemNC(ws->vp,k) ) / h );
     zMatElemNC(j,i,i) += 1;
   }
   return j;

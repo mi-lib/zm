@@ -1,3 +1,7 @@
+2026.11.11. Added a test of Gear method for a state close to the boundary of the domain of the differential function. [test]
+2026.11.11. Modified the Jacobian matrix of the nonlinear equation of Gear method to use one-sided differences if the differential function is not finite on one side. [zm_ode_gear]
+2026.11.11. Added tests of the numerical Jacobian matrix near the boundary of the domain of the residual, and of zNLESolve from an initial guess on the boundary. Modified the test of the failure for the numerical Jacobian matrix including NaN at the initial guess. [test]
+2026.11.11. Modified the numerical Jacobian matrix of zNLE to use one-sided differences if the residual is not finite on one side. [zm_nle_dm]
 2026.11.11. Added tests of the numerical Hessian matrix near a corner of the boundary of the domain of the function, and of the minimum on a curved boundary. [test]
 2026.11.11. Modified the numerical Hessian matrix computed from the function to use one-sided differences for the off-diagonal components if the function is not finite at a point displaced along two components. [zm_opt_dm]
 2026.11.11. Added tests of zOptDMSolve for problems with a boundary of the domain of the function, and of the numerical gradient vector near the boundary. Modified the test of the failure for a non-finite gradient vector at the initial guess. [test]

@@ -78,7 +78,10 @@ __BEGIN_DECLS
  *
  * zNLECreate() creates a simultaneous nonlinear equation solver \a nle. \a nv is the size of the
  * answer vector. \a ne is the number of equations. \a f is a pointer to the equation function to
- * be solved, '\a f(x)=0'.
+ * be solved, '\a f(x)=0'. \a jac is a pointer to the function to compute the Jacobian matrix of \a f.
+ * If it is the null pointer, the Jacobian matrix is computed by the central difference, where the
+ * one-sided difference is used instead if the residual is not finite on one side, in the same way with
+ * ZM_OPT_DM_EPS.
  * \return
  * zNLECreate() returns a pointer \a nle if it succeeds. Otherwise, it returns the null pointer.
  * \sa

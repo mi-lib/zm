@@ -1047,6 +1047,47 @@ void assert_ode2_leapfrog_time(void)
   zAssert( zODE2Update (time of the acceleration at the end of a step of leapfrog method), result );
 }
 
+/* x0' = 0 and x1' = -x1 + sqrt(1-x0^2), which is NaN for x0 > 1. */
+zVec boundary_ode(double t, zVec x, void *dummy, zVec dx)
+{
+  zVecSetElemNC( dx, 0, 0 );
+  zVecSetElemNC( dx, 1, -zVecElemNC(x,1) + sqrt( 1 - zSqr( zVecElemNC(x,0) ) ) );
+  return dx;
+}
+
+/* 21. Gear's method for a state close to the boundary of the domain of the differential function.
+ * the numerical Jacobian matrix of the nonlinear equation has to be computed by the one-sided difference,
+ * since the differential function is not finite on one side. the exact solution is x0 = const. and
+ * x1 = c + ( x1(0) - c ) exp(-t) for c = sqrt(1-x0^2). */
+void assert_ode_gear_boundary(void)
+{
+  const method_t gear = METHOD( Gear, 0, 0 );
+  const double dt = 0.01, x00 = 1 - 1.0e-9, tol = 1.0e-2;
+  const int n = 100;
+  double c, x1;
+  zODE ode;
+  zVec x;
+  int i, k;
+  bool result = true;
+
+  c = sqrt( 1 - x00*x00 );
+  x1 = c + ( 1 - c ) * exp( -n*dt );
+  for( k=1; k<=6; k++ ){
+    method_create( &ode, &gear, 2, k, boundary_ode );
+    x = zVecCreateList( 2, x00, 1.0 );
+    zODEInitHistory( &ode, 0, x, NULL );
+    for( i=0; i<n; i++ )
+      zODEUpdate( &ode, i*dt, x, dt, NULL );
+    if( !zVecIsFinite( x ) || !( fabs( zVecElemNC(x,0) - x00 ) < 1.0e-10 ) || !( fabs( zVecElemNC(x,1) - x1 ) < tol ) ){
+      eprintf( "Gear (%d steps): x = (%.17g, %g) (expected (%.17g, %g))\n", k, zVecElemNC(x,0), zVecElemNC(x,1), x00, x1 );
+      result = false;
+    }
+    zVecFree( x );
+    zODEDestroy( &ode );
+  }
+  zAssert( zODEUpdate (Gear method close to the boundary of the domain), result );
+}
+
 int main(void)
 {
   assert_ode_order_onestep();
@@ -1069,5 +1110,6 @@ int main(void)
   assert_ode2_gear();
   assert_ode2_history();
   assert_ode2_leapfrog_time();
+  assert_ode_gear_boundary();
   return EXIT_SUCCESS;
 }

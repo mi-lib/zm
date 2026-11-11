@@ -10,7 +10,8 @@
 static zMat _zNLEJacobi(zNLE *nle, const zVec var, zMat j, void *util){
   return nle->jac( var, j, util );
 }
-/* numerical Jacobian matrix by the central difference with the step relative to the magnitude of the variable. */
+/* numerical Jacobian matrix by the central difference with the step relative to the magnitude of the variable.
+   if the residual is not finite on one side, the one-sided difference on the other side is used instead. */
 static zMat _zNLEJacobiNG(zNLE *nle, const zVec var, zMat j, void *util)
 {
   int i;
@@ -25,8 +26,15 @@ static zMat _zNLEJacobiNG(zNLE *nle, const zVec var, zMat j, void *util)
     zVecSetElemNC( var, i, org - h );
     nle->f( var, nle->_prg, util );
     zVecSetElemNC( var, i, org );
+    if( !zVecIsFinite( nle->_prg ) && zVecIsFinite( nle->_adg ) ) /* forward difference */
+      nle->f( var, nle->_prg, util );
+    else
+    if( !zVecIsFinite( nle->_adg ) && zVecIsFinite( nle->_prg ) ) /* backward difference */
+      nle->f( var, nle->_adg, util );
+    else
+      h *= 2; /* central difference */
     zVecSubDRC( nle->_adg, nle->_prg );
-    zMatPutColNC( j, i, zVecMulDRC( nle->_adg, 0.5 / h ) ); /* the i-th column is the derivative with respect to the i-th variable */
+    zMatPutColNC( j, i, zVecMulDRC( nle->_adg, 1.0 / h ) ); /* the i-th column is the derivative with respect to the i-th variable */
   }
   return j;
 }
