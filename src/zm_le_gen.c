@@ -264,9 +264,14 @@ zVec zLESolveErrorMin(const zMat a, const zVec b, const zVec w, zVec ans)
  * equation solver without checking size consistency. */
 zVec zLESolveRefNormMinDST(const zMat a, const zVec b, const zVec w, const zVec ref, zVec ans, zLEWorkspace *workspace)
 {
+  bool is_scaled;
+
   w ? zMatQuadNC( a, w, workspace->m_regular ) : zMulMatMatTNC( a, a, workspace->m_regular );
   zLEResidual( a, b, ref, workspace->v_ispace );
+  /* ans is not used until the last step, and stores the scaling factors. */
+  is_scaled = _zLENormalMatScaleDST( workspace->m_regular, workspace->v_ispace, ans );
   if( !zLESolveGaussDST( workspace->m_regular, workspace->v_ispace, workspace->v_ref, workspace->index_le, workspace->v_scale ) ) return NULL;
+  if( is_scaled ) _zLENormalMatRescale( workspace->v_ref, ans );
   zMulMatTVecNC( a, workspace->v_ref, ans );
   if( w ) zVecAmpNCDRC( ans, w );
   return zVecAddNCDRC( ans, ref );

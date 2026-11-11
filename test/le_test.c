@@ -534,6 +534,68 @@ void assert_le_mpnull(void)
 
 /* special linear equation solver */
 
+/* check if the minimum-weighted-norm solution x of a x = b referring ref satisfies the optimality,
+ * namely, if w^-1 (x - ref) is in the row space of a. q is a row-orthonormal matrix which spans the
+ * row space of a, and d, p and v are workspaces. It returns the relative error of the projection. */
+double le_ref_norm_min_optimality(const zMat q, const zVec x, const zVec ref, const zVec w, zVec d, zVec p, zVec v)
+{
+  zVecSub( x, ref, d );
+  zVecDemDRC( d, w );
+  zMulMatVec( q, d, v );
+  zMulMatTVec( q, v, p );
+  zVecSubDRC( p, d );
+  return zVecInfNorm( p ) / zVecInfNorm( d );
+}
+
+void assert_le_ref_norm_min(void)
+{
+  const int rowsize = 30;
+  const int colsize = 50;
+  const int testnum = 1000;
+  const double tol_err = 1.0e-14; /* tolerance of the normwise backward error */
+  const double tol_opt = 1.0e-13; /* tolerance of the relative error of the optimality */
+  zMat a, l, q;
+  zVec b, ref, w, x, r, d, p, v;
+  double err, opt, scale;
+  int i, k;
+  bool result = true;
+
+  a = zMatAlloc( rowsize, colsize );
+  l = zMatAllocSqr( rowsize );
+  q = zMatAlloc( rowsize, colsize );
+  b = zVecAlloc( rowsize );
+  ref = zVecAlloc( colsize );
+  w = zVecAlloc( colsize );
+  x = zVecAlloc( colsize );
+  r = zVecAlloc( rowsize );
+  d = zVecAlloc( colsize );
+  p = zVecAlloc( colsize );
+  v = zVecAlloc( rowsize );
+  for( k=0; k<testnum; k++ ){
+    zMatRandUniform( a, -10, 10 );
+    zVecRandUniform( b, -10, 10 );
+    zVecRandUniform( ref, -10, 10 );
+    zVecRandUniform( w, 0.1, 10 );
+    if( k % 2 == 1 ) /* unbalanced scales of rows */
+      for( i=0; i<rowsize; i++ ){
+        scale = pow( 10, zRandF( -4, 4 ) );
+        zRawVecMulDRC( zMatRowBufNC(a,i), scale, colsize );
+        zVecElemNC(b,i) *= scale;
+      }
+    zLESolveRefNormMin( a, b, w, ref, x );
+    zMatDecompLQ( a, l, q ); /* a is row-full-rank */
+    err = le_backward_error( a, x, b, r );
+    opt = le_ref_norm_min_optimality( q, x, ref, w, d, p, v );
+    if( err > tol_err || opt > tol_opt ){
+      eprintf( "case #%d: backward error = %g, optimality error = %g\n", k, err, opt );
+      result = false;
+    }
+  }
+  zMatFreeAtOnce( 3, a, l, q );
+  zVecFreeAtOnce( 8, b, ref, w, x, r, d, p, v );
+  zAssert( zLESolveRefNormMin, result );
+}
+
 void assert_tridiagonal_equation(void)
 {
   zVec a, b, c, d, ans;
@@ -961,6 +1023,7 @@ int main(void)
   assert_le_gen_rowlong();
   assert_le_gen_aux();
   assert_le_mpnull();
+  assert_le_ref_norm_min();
   assert_tridiagonal_equation();
   assert_lyapnov_equation();
   assert_mat_inv();
