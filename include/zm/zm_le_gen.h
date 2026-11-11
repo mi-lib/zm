@@ -72,6 +72,11 @@ __ZM_EXPORT void zLEWorkspaceResizeMP(zLEWorkspace *workspace, int rank);
  * \a a must be row-full-rank as well as zLESolveNormMinDST() and zLESolveNormMin().
  * \a w is a weighting vector on the error.
  *
+ * zLESolveNormMinDST() and zLESolveErrorMinDST() solve the normal equation after scaling it
+ * symmetrically by the inverse square roots of its diagonal components, which suppresses the loss of
+ * accuracy due to unbalanced scales of rows (columns) of \a a. They destroy \a b, which is used to
+ * store the scaling factors in zLESolveErrorMinDST().
+ *
  * zLESolveNormMinDST(), zLESolveErrorMinDST(), and zLESolveRefNormMinDST() use a workspace \a workspace,
  * which should be initialized with zLEWorkspaceAlloc() beforehand and freed with zLEWorkspaceFree
  * afterward, for internal matrix-vector computations.

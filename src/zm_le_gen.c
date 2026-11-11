@@ -164,11 +164,45 @@ void zLEWorkspaceResizeMP(zLEWorkspace *workspace, int rank)
   zIndexResize( workspace->index_le, rank );
 }
 
+/* symmetric diagonal (Jacobi) scaling of a normal matrix m and a vector v, namely, m <- D m D and
+ * v <- D v, where D = diag(1/sqrt(m_ii)). The diagonal components of D are stored in d, the size of
+ * which has to be equal to or larger than that of m. If it is not, m and v are not scaled, and d is
+ * not touched. The scaling removes the loss of accuracy due to the unbalanced scales of the columns
+ * of the original coefficient matrix. */
+static bool _zLENormalMatScaleDST(zMat m, zVec v, zVec d)
+{
+  int i, j, n;
+
+  if( zVecSizeNC(d) < ( n = zMatRowSizeNC(m) ) ) return false;
+  for( i=0; i<n; i++ )
+    zVecSetElemNC( d, i, zMatElemNC(m,i,i) > 0 ? 1.0 / sqrt( zMatElemNC(m,i,i) ) : 1.0 );
+  for( i=0; i<n; i++ ){
+    for( j=0; j<n; j++ )
+      zMatElemNC(m,i,j) *= zVecElemNC(d,i) * zVecElemNC(d,j);
+    zVecElemNC(v,i) *= zVecElemNC(d,i);
+  }
+  return true;
+}
+
+/* rescale a solution of a scaled normal equation. */
+static void _zLENormalMatRescale(zVec x, const zVec d)
+{
+  int i;
+
+  for( i=0; i<zVecSizeNC(x); i++ )
+    zVecElemNC(x,i) *= zVecElemNC(d,i);
+}
+
 /* weighted-norm-minimizing redundant linear equation solver without checking size consistency. */
 zVec zLESolveNormMinDST(const zMat a, const zVec b, const zVec w, zVec ans, zLEWorkspace *workspace)
 {
+  bool is_scaled;
+
   w ? zMatQuadNC( a, w, workspace->m_regular ) : zMulMatMatTNC( a, a, workspace->m_regular );
+  /* ans is not used until the last step, and stores the scaling factors. */
+  is_scaled = _zLENormalMatScaleDST( workspace->m_regular, b, ans );
   if( !zLESolveGaussDST( workspace->m_regular, b, workspace->v_ispace, workspace->index_le, workspace->v_scale ) ) return NULL;
+  if( is_scaled ) _zLENormalMatRescale( workspace->v_ispace, ans );
   zMulMatTVecNC( a, workspace->v_ispace, ans );
   return w ? zVecAmpNCDRC( ans, w ) : ans;
 }
@@ -195,10 +229,16 @@ zVec zLESolveNormMin(const zMat a, const zVec b, const zVec w, zVec ans)
 /* error-minimizing inferior linear equation solver without checking size consistency. */
 zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLEWorkspace *workspace)
 {
+  bool is_scaled;
+
   if( w ) zVecAmpNCDRC( b, w );
   zMulMatTVecNC( a, b, workspace->v_ispace );
   zMatTQuadNC( a, w, workspace->m_regular );
-  return zLESolveGaussDST( workspace->m_regular, workspace->v_ispace, ans, workspace->index_le, workspace->v_scale );
+  /* b is not used any more, and stores the scaling factors. */
+  is_scaled = _zLENormalMatScaleDST( workspace->m_regular, workspace->v_ispace, b );
+  if( !zLESolveGaussDST( workspace->m_regular, workspace->v_ispace, ans, workspace->index_le, workspace->v_scale ) ) return NULL;
+  if( is_scaled ) _zLENormalMatRescale( ans, b );
+  return ans;
 }
 
 /* error-minimizing inferior linear equation solver. */
