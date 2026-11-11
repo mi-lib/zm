@@ -22,25 +22,46 @@ __BEGIN_DECLS
  *
  * When \a p is not the null pointer, the transformation matrix is put into \a p, namely,
  *  \a p \a h \a p^T = \a m
+ * Each Householder reflection is skipped only if the column to be reduced is exactly zero, so that
+ * the result does not depend on the scale of \a m.
  * \return
- * zMatToHessenberg() returns a pointer \a h.
+ * zMatToHessenberg() returns a pointer \a h, or \a m if \a h is the null pointer. If \a m is not
+ * a square matrix, the sizes of matrices mismatch, or it fails to allocate internal working memory,
+ * the null pointer is returned.
  */
 __ZM_EXPORT zMat zMatToHessenberg(const zMat m, zMat h, zMat p);
 
-/*! \brief eigensystem of a matrix by double QR method.
+/*! \brief eigenvalues and eigenvectors of a real square matrix.
  *
- * zMatEigDQR() computes all complex eigenvalues of a matrix \a a. The eigenvalues are put into an array
- * \a eig. \a iter is the maximum number of iteration. When zero is given for \a iter, Z_MAX_ITER_NUM is
- * adopted instead.
+ * zMatEigDQR() finds all eigenvalues and corresponding eigenvectors of a real square matrix \a m
+ * based on the implicit double-shift QR method (J. G. F. Francis, 1961).
+ * The eigenvalues are stored in a complex vector \a eigval, while the corresponding eigenvectors are
+ * put in columns of a complex matrix \a eigbase. Namely, the following equation holds:
+ *  \a m \a eigbase = \a eigbase diag{ \a eigval }
+ * If \a eigbase is the null pointer, only the eigenvalues are computed, which saves the computation
+ * of the Schur vectors.
+ * The eigenvalues are stored in the order of the diagonal blocks of the real Schur form of \a m,
+ * and a pair of complex conjugate eigenvalues are stored in adjacent components, where the one with
+ * the positive imaginary part comes first. Each eigenvector is normalized so that its norm is one
+ * and its absolutely maximum component is a positive real number.
+ * The eigenvectors are computed by back substitution on the real Schur form, so that they are not
+ * necessarily linearly independent for a defective matrix.
  *
- * This code is originated from "HANDBOOK OF NUMERICAL METHODS" (H. Togawa, 1992, ISBN 4-7819-0868-3).
+ * \a iter is the maximum number of iterations to find each eigenvalue (or each pair of complex
+ * conjugate eigenvalues). When zero is given for \a iter, Z_MAX_ITER_NUM is adopted instead.
+ *
+ * zMatEig() is defined as an alias of zMatEigDQR().
  * \return
- * zMatEigDQR() returns a boolean value. When it fails to allocate working memory, or \a a is a non-square
- * matrix, the false value is returned. Otherwise, the true value is returned.
- * \sa
- * zMatEig
+ * zMatEigDQR() and zMatEig() return the false value if
+ *  - \a m is not a square matrix.
+ *  - the size of \a eigval does not coincide with the row size of \a m.
+ *  - \a eigbase is not the null pointer and its size does not coincide with that of \a m.
+ *  - they fail to allocate internal working memory.
+ *  - the iteration does not converge within \a iter times for an eigenvalue.
+ * Otherwise, they return the true value.
  */
-__ZM_EXPORT bool zMatEigDQR(const zMat m, zCVec eigval, int iter);
+__ZM_EXPORT bool zMatEigDQR(const zMat m, zCVec eigval, zCMat eigbase, int iter);
+#define zMatEig(mat,eigval,eigbase,iter) zMatEigDQR( mat, eigval, eigbase, iter )
 
 /*! \brief the greatest and least eigenvalue of a matrix.
  *
@@ -55,26 +76,6 @@ __ZM_EXPORT bool zMatEigDQR(const zMat m, zCVec eigval, int iter);
  */
 __ZM_EXPORT double zMatEigPower(const zMat a, zVec eigvec, int iter);
 __ZM_EXPORT double zMatEigPowerInv(const zMat a, zVec eigvec, int iter);
-
-/*! \brief eigenvalues and eigenvectors of a real square matrix.
- *
- * zMatEig() finds all eigenvalues and corresponding eigenvectors of a real square matrix \a m.
- * The eigenvalues are stored in a complex vector \a eigval, while the corresponding eigenvectors are
- * put in columns of a complex matrix \a eigbase.
- * Namely, the following equation holds:
- *  \a m \a eigbase = \a eigbase diag{ \a eigval }
- * It is based on the double QR method, and available for arbitrary real square matrices.
- * \return
- * zMatEig() returns the false value if
- *  - \a m is not a square matrix.
- *  - the sizes of \a m and \a eigbase are not equal.
- *  - the size of \a eigval does not coincide with the row size of \a m.
- *  - it fails to allocate internal working memory.
- * Otherwise, it returns the true value.
- * \sa
- * zMatEigDQR
- */
-__ZM_EXPORT bool zMatEig(const zMat m, zCVec eigval, zCMat eigbase, int iter);
 
 /*! \brief diagonalize a symmetric matrix.
  *

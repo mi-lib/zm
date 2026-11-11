@@ -6,69 +6,69 @@
 
 #include <zm/zm_mat_eig.h>
 
-/* Householder transformation (destructive). */
-static void _zMatToHessenbergHouseholder(zMat m, zMat p, int from, int to, zVec u, zVec v, zVec w)
-{
-  int i, j;
-  double s, a;
+/* Householder reflection */
 
-  /* v = 2Mu, w = 2M^Tu */
-  for( i=0; i<zVecSizeNC(v); i++ ){
-    zVecSetElemNC( v, i, 0 );
-    zVecSetElemNC( w, i, 0 );
-    for( j=from; j<to; j++ ){
-      zVecElemNC(v,i) += zMatElemNC(m,i,j)*zVecElemNC(u,j);
-      zVecElemNC(w,i) += zMatElemNC(m,j,i)*zVecElemNC(u,j);
-    }
-    zVecElemNC(v,i) *= 2;
-    zVecElemNC(w,i) *= 2;
+/* unit normal vector nu of the Householder reflection I - 2 nu nu^T that maps x to s e1, where |s|=|x|.
+ * The sign of s is chosen to be opposite to that of the first component of x in order to avoid
+ * cancellation. It returns the false value if x is the zero vector, for which no reflection is needed. */
+static bool _zHouseholderVec(const double *x, int n, double *nu, double *s)
+{
+  double scale = 0, r = 0, d;
+  int i;
+
+  for( i=0; i<n; i++ )
+    if( fabs( x[i] ) > scale ) scale = fabs( x[i] );
+  if( scale == 0 ) return false;
+  for( i=0; i<n; i++ ){ /* scaled to avoid overflow and underflow */
+    nu[i] = x[i] / scale;
+    r += nu[i] * nu[i];
   }
-  /* s = v^T u */
-  a = zRawVecInnerProd( &zVecElemNC(v,from), &zVecElemNC(u,from), to-from );
-  /* v -= su, w -= su */
-  for( i=from; i<to; i++ ){
-    s = a * zVecElemNC(u,i);
-    zVecElemNC(v,i) -= s;
-    zVecElemNC(w,i) -= s;
-  }
-  /* M -= vu^T+uw^T */
-  for( i=0; i<zVecSizeNC(v); i++ )
-    for( j=from; j<to; j++ ){
-      zMatElemNC(m,i,j) -= zVecElemNC(v,i)*zVecElemNC(u,j);
-      zMatElemNC(m,j,i) -= zVecElemNC(u,j)*zVecElemNC(w,i);
-    }
-  /* transformation matrix */
-  if( !p ) return;
-  zVecZero( v );
-  for( i=0; i<zVecSizeNC(v); i++ ){
-    for( j=from; j<to; j++ )
-      zVecElemNC(v,i) += zMatElemNC(p,i,j)*zVecElemNC(u,j);
-    zVecElemNC(v,i) *= 2;
-  }
-  for( i=0; i<zVecSizeNC(v); i++ )
-    for( j=from; j<to; j++ )
-      zMatElemNC(p,i,j) -= zVecElemNC(v,i)*zVecElemNC(u,j);
+  r = sqrt( r );
+  *s = x[0] >= 0 ? -r : r;
+  nu[0] -= *s; /* |nu|^2 = 2 r ( r + |x0| ) */
+  d = sqrt( 2 * r * ( r + fabs( x[0] / scale ) ) );
+  for( i=0; i<n; i++ ) nu[i] /= d;
+  *s *= scale;
+  return true;
 }
 
-/* projection vector of Householder transformation. */
-static zVec _zMatToHessenbergHouseholderVec(const zMat m, int col, int from, int to, zVec u)
+/* apply a Householder reflection to rows from r0 to r0+n-1 of a matrix from the left side,
+ * where only columns from c0 to c1 are modified. w is a workspace with the column size of m. */
+static void _zHouseholderApplyL(zMat m, const double *nu, int n, int r0, int c0, int c1, double *w)
+{
+  int i, j;
+  double a, *row;
+
+  for( j=c0; j<=c1; j++ ) w[j] = 0;
+  for( i=0; i<n; i++ ){ /* w = nu^T m */
+    row = zMatRowBufNC( m, r0+i );
+    for( a=nu[i], j=c0; j<=c1; j++ ) w[j] += a * row[j];
+  }
+  for( i=0; i<n; i++ ){ /* m -= 2 nu w */
+    row = zMatRowBufNC( m, r0+i );
+    for( a=2*nu[i], j=c0; j<=c1; j++ ) row[j] -= a * w[j];
+  }
+}
+
+/* apply a Householder reflection to columns from c0 to c0+n-1 of a matrix from the right side,
+ * where only rows from r0 to r1 are modified. */
+static void _zHouseholderApplyR(zMat m, const double *nu, int n, int c0, int r0, int r1)
 {
   int i;
-  double s;
+  double *p;
 
-  for( s=0, i=from; i<to; i++ )
-    s += zSqr( zVecSetElemNC( u, i, zMatElemNC(m,i,col) ) );
-  if( zIsTiny( s ) ) return u;
-  zVecElemNC(u,from) -= ( s = -zSgn(zMatElemNC(m,from,col)) * sqrt(s) );
-  zRawVecDivDRC( &zVecElemNC(u,from), sqrt( 2*(s-zMatElemNC(m,from,col))*s ), to-from );
-  return u;
+  for( i=r0; i<=r1; i++ ){
+    p = &zMatElemNC(m,i,c0);
+    zRawVecCatDRC( p, -2*zRawVecInnerProd( p, nu, n ), nu, n );
+  }
 }
 
 /* Hessenberg matrix using Householder transformation. */
 zMat zMatToHessenberg(const zMat m, zMat h, zMat p)
 {
-  int n, n2, i;
-  zVec u, v, w;
+  int n, k, i, len;
+  double s;
+  zVec nu, w;
 
   if( !zMatIsSqr( m ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
@@ -88,62 +88,345 @@ zMat zMatToHessenberg(const zMat m, zMat h, zMat p)
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
-
-  u = zVecAlloc( zMatRowSizeNC(h) );
-  v = zVecAlloc( zMatRowSizeNC(h) );
-  w = zVecAlloc( zMatRowSizeNC(h) );
-  if( !u || !v || !w ) goto TERMINATE;
   if( p ) zMatIdentNC( p );
-  n2 = zMatRowSizeNC(h) - 2;
-  for( n=0; n<n2; n++ ){
- RETRY:
-    _zMatToHessenbergHouseholderVec( h, n, n+1, zVecSizeNC(u), u );
-    _zMatToHessenbergHouseholder( h, p, n+1, zVecSizeNC(u), u, v, w );
-    for( i=n+2; i<zMatRowSizeNC(h); i++ ) /* need refinement? */
-      if( !zIsTiny( zMatElemNC(h,i,n) ) ) goto RETRY;
+  n = zMatRowSizeNC(h);
+  nu = zVecAlloc( n );
+  w = zVecAlloc( n );
+  if( !nu || !w ){
+    ZALLOCERROR();
+    h = NULL;
+    goto TERMINATE;
+  }
+  for( k=0; k<n-2; k++ ){
+    len = n - k - 1;
+    for( i=0; i<len; i++ ) /* the k-th column below the subdiagonal component */
+      zVecSetElemNC( w, i, zMatElemNC(h,k+1+i,k) );
+    /* a reflection is skipped only if the column is exactly zero. */
+    if( !_zHouseholderVec( zVecBuf(w), len, zVecBuf(nu), &s ) ) continue;
+    _zHouseholderApplyL( h, zVecBuf(nu), len, k+1, k+1, n-1, zVecBuf(w) );
+    _zHouseholderApplyR( h, zVecBuf(nu), len, k+1, 0, n-1 );
+    /* the k-th column is theoretically mapped to s e1. */
+    zMatSetElemNC( h, k+1, k, s );
+    for( i=k+2; i<n; i++ ) zMatSetElemNC( h, i, k, 0 );
+    if( p ) _zHouseholderApplyR( p, zVecBuf(nu), len, k+1, 0, n-1 );
   }
  TERMINATE:
-  zVecFreeAtOnce( 3, u, v, w );
+  zVecFree( nu );
+  zVecFree( w );
   return h;
 }
 
-/* eigenvalue analysis by double QR method and inverse iteration */
+/* eigenvalue analysis by double-shift QR method (J. G. F. Francis, 1961) */
 
-/* Householder's method to transform a Hesseian matrix to a block uppertriangular matrix. */
-static void _zMatEigDQRHouseholder(zMat a, int r, int c, double g1, double g2, double g3)
+/* find the top row of the lowest unreduced block of a Hessenberg matrix that ends at the r-th row.
+ * A subdiagonal component is regarded as zero if it is negligible relative to its neighboring
+ * diagonal components, and then zero is exactly assigned to it.
+ * If the iteration stagnates, a subdiagonal component not greater than n eps times the norm of the
+ * matrix is also regarded as zero, which is a perturbation comparable to the backward error of the
+ * QR method itself. This happens for a cluster of close eigenvalues, for which the subdiagonal
+ * components stay at the level of rounding errors. */
+static int _zMatEigDQRSplit(zMat h, int r, double norm, bool stagnant)
 {
-  double s, den, alpha;
-  int i, c1, c2, n;
+  int l;
+  double s, a;
 
-  s = ( s = g1*g1 + g2*g2 + g3*g3 ) < 0 ? 0 : sqrt( s );
-  den = g1 + ( g1 > 0 ? s : -s );
-  g2 /= den;
-  g3 /= den;
-  alpha = 2.0 / ( 1.0 + g2*g2 + g3*g3 );
-
-  c1 = c + 1;
-  c2 = c + 2;
-  for( i=zMax(c-1,0); i<=r; i++ ){
-    s = ( zMatElemNC(a,c,i) + g2*zMatElemNC(a,c1,i) + g3*zMatElemNC(a,c2,i) ) * alpha;
-    zMatElemNC(a,c ,i) -= s;
-    zMatElemNC(a,c1,i) -= s * g2;
-    zMatElemNC(a,c2,i) -= s * g3;
+  for( l=r; l>0; l-- ){
+    if( ( s = fabs( zMatElemNC(h,l-1,l-1) ) + fabs( zMatElemNC(h,l,l) ) ) == 0 ) s = norm;
+    if( ( a = fabs( zMatElemNC(h,l,l-1) ) ) <= DBL_EPSILON * s || ( stagnant && a <= zMatRowSizeNC(h) * DBL_EPSILON * norm ) ){
+      zMatSetElemNC( h, l, l-1, 0 );
+      break;
+    }
   }
-  n = zLimit( c+3, r, zMatRowSizeNC(a)-1 );
-  for( i=0; i<=n; i++ ){
-    s = ( zMatElemNC(a,i,c) + g2*zMatElemNC(a,i,c1) + g3*zMatElemNC(a,i,c2) ) * alpha;
-    zMatElemNC(a,i,c ) -= s;
-    zMatElemNC(a,i,c1) -= s * g2;
-    zMatElemNC(a,i,c2) -= s * g3;
+  return l;
+}
+
+/* one step of implicit double-shift QR iteration (bulge chasing) on an unreduced block from the l-th
+ * to the r-th rows, where s and t are the sum and the product of the shifts, respectively.
+ * If z is not the null pointer, the whole Hessenberg matrix is transformed and the transformation
+ * is accumulated to z. Otherwise, only the active block is transformed. */
+static void _zMatEigDQRStep(zMat h, zMat z, int l, int r, double s, double t, double *nu, double *w)
+{
+  int n, k, nr, cmax, rmin;
+  double x[3], sv;
+
+  n = zMatRowSizeNC(h);
+  cmax = z ? n - 1 : r;
+  rmin = z ? 0 : l;
+  /* the first column of (H-mu1 I)(H-mu2 I) = H^2 - s H + t I */
+  x[0] = zMatElemNC(h,l,l) * ( zMatElemNC(h,l,l) - s ) + zMatElemNC(h,l,l+1) * zMatElemNC(h,l+1,l) + t;
+  x[1] = zMatElemNC(h,l+1,l) * ( zMatElemNC(h,l,l) + zMatElemNC(h,l+1,l+1) - s );
+  x[2] = zMatElemNC(h,l+1,l) * zMatElemNC(h,l+2,l+1);
+  for( k=l; k<r; k++ ){
+    nr = _zMin( 3, r - k + 1 );
+    if( k > l ){ /* the bulge to be chased */
+      x[0] = zMatElemNC(h,k,k-1);
+      x[1] = zMatElemNC(h,k+1,k-1);
+      x[2] = nr == 3 ? zMatElemNC(h,k+2,k-1) : 0;
+    }
+    if( !_zHouseholderVec( x, nr, nu, &sv ) ) continue;
+    _zHouseholderApplyL( h, nu, nr, k, k, cmax, w );
+    if( k > l ){
+      zMatSetElemNC( h, k, k-1, sv );
+      zMatSetElemNC( h, k+1, k-1, 0 );
+      if( nr == 3 ) zMatSetElemNC( h, k+2, k-1, 0 );
+    }
+    _zHouseholderApplyR( h, nu, nr, k, rmin, _zMin( k+3, r ) );
+    if( z ) _zHouseholderApplyR( z, nu, nr, k, 0, n-1 );
   }
 }
 
-/* double QR method. */
-bool zMatEigDQR(const zMat m, zCVec eigval, int iter)
+/* rotate the p-th and (p+1)-th rows and columns of a quasi-upper triangular matrix t by a Givens
+ * rotation G = [ c -s ; s c ] as t <- G^T t G, and accumulate it to z as z <- z G. */
+static void _zMatEigDQRRot(zMat t, zMat z, int p, double c, double s)
 {
-  int  i, j, r, r1;
-  double a0, a1, b, c;
-  zMat a;
+  int i, q = p + 1;
+  double a, b;
+
+  for( i=p; i<zMatColSizeNC(t); i++ ){
+    a = zMatElemNC(t,p,i);
+    b = zMatElemNC(t,q,i);
+    zMatSetElemNC( t, p, i, c*a + s*b );
+    zMatSetElemNC( t, q, i,-s*a + c*b );
+  }
+  for( i=0; i<=q; i++ ){
+    a = zMatElemNC(t,i,p);
+    b = zMatElemNC(t,i,q);
+    zMatSetElemNC( t, i, p, c*a + s*b );
+    zMatSetElemNC( t, i, q,-s*a + c*b );
+  }
+  for( i=0; i<zMatRowSizeNC(z); i++ ){
+    a = zMatElemNC(z,i,p);
+    b = zMatElemNC(z,i,q);
+    zMatSetElemNC( z, i, p, c*a + s*b );
+    zMatSetElemNC( z, i, q,-s*a + c*b );
+  }
+}
+
+/* eigenvalues of a deflated 2x2 block at the p-th and (p+1)-th rows.
+ * If z is not the null pointer and the eigenvalues are real, the block is triangularized by a Givens
+ * rotation, which is accumulated to z. */
+static void _zMatEigDQR2x2(zMat h, zMat z, int p, zComplex *e1, zComplex *e2)
+{
+  double a, b, c, d, hd, disc, q, x, l1, l2, v1, v2, r1, r2;
+
+  a = zMatElemNC(h,p,p);   b = zMatElemNC(h,p,p+1);
+  c = zMatElemNC(h,p+1,p); d = zMatElemNC(h,p+1,p+1);
+  if( c == 0 ){
+    _zComplexCreate( e1, a, 0 );
+    _zComplexCreate( e2, d, 0 );
+    return;
+  }
+  hd = 0.5 * ( a - d );
+  if( ( disc = hd*hd + b*c ) < 0 ){ /* a pair of complex conjugate eigenvalues */
+    _zComplexCreate( e1, d + hd, sqrt( -disc ) );
+    _zComplexCreate( e2, d + hd,-sqrt( -disc ) );
+    return;
+  }
+  /* real eigenvalues computed without cancellation */
+  q = sqrt( disc );
+  if( ( x = hd + ( hd >= 0 ? q : -q ) ) == 0 )
+    l1 = l2 = d + hd;
+  else{
+    l1 = d + x;
+    l2 = d - ( b / x ) * c;
+  }
+  if( z ){ /* triangularize the block by the eigenvector for l1 */
+    r1 = _zSqr( b ) + _zSqr( l1 - a );
+    r2 = _zSqr( l1 - d ) + _zSqr( c );
+    if( r1 >= r2 ){
+      v1 = b;      v2 = l1 - a;
+    } else{
+      v1 = l1 - d; v2 = c;
+      r1 = r2;
+    }
+    if( r1 > 0 ){
+      r1 = sqrt( r1 );
+      _zMatEigDQRRot( h, z, p, v1/r1, v2/r1 );
+      zMatSetElemNC( h, p+1, p, 0 );
+      l1 = zMatElemNC(h,p,p);
+      l2 = zMatElemNC(h,p+1,p+1);
+    }
+  }
+  _zComplexCreate( e1, l1, 0 );
+  _zComplexCreate( e2, l2, 0 );
+}
+
+/* complex arithmetics for back substitution */
+static void _zComplexCMulSub(zComplex *c, double a, const zComplex *y) /* c -= a y */
+{
+  c->re -= a * y->re;
+  c->im -= a * y->im;
+}
+
+/* complex division c = c1 / c2 by Smith's method. */
+static void _zComplexCDivSmith(const zComplex *c1, const zComplex *c2, zComplex *c)
+{
+  double r, d, re;
+
+  if( fabs( c2->re ) >= fabs( c2->im ) ){
+    r = c2->im / c2->re;
+    d = c2->re + c2->im * r;
+    re =   ( c1->re + c1->im * r ) / d;
+    c->im = ( c1->im - c1->re * r ) / d;
+  } else{
+    r = c2->re / c2->im;
+    d = c2->re * r + c2->im;
+    re =   ( c1->re * r + c1->im ) / d;
+    c->im = ( c1->im * r - c1->re ) / d;
+  }
+  c->re = re;
+}
+
+/* replace a tiny pivot with a perturbed one. */
+static void _zMatEigDQRPerturb(zComplex *c, double delta)
+{
+  if( _zComplexAbs( c ) < delta ) _zComplexCreate( c, delta, 0 );
+}
+
+/* back substitution to find an eigenvector y of a quasi-upper triangular matrix t for an eigenvalue
+ * lambda, where the components of y from the (i+1)-th to the last-th are given. */
+static void _zMatEigDQRBackSubst(zMat t, const zComplex *lambda, zComplex *y, int i, int last, double delta)
+{
+  int j, k;
+  zComplex r1, r2, a11, a12, a21, a22, m;
+  double ymax;
+
+  for( ; i>=0; i-- ){
+    if( i > 0 && zMatElemNC(t,i,i-1) != 0 ){ /* 2x2 block of complex conjugate eigenvalues */
+      _zComplexZero( &r1 );
+      _zComplexZero( &r2 );
+      for( j=i+1; j<=last; j++ ){
+        _zComplexCMulSub( &r1, zMatElemNC(t,i-1,j), &y[j] );
+        _zComplexCMulSub( &r2, zMatElemNC(t,i,j), &y[j] );
+      }
+      _zComplexCreate( &a11, zMatElemNC(t,i-1,i-1) - lambda->re, -lambda->im );
+      _zComplexCreate( &a12, zMatElemNC(t,i-1,i), 0 );
+      _zComplexCreate( &a21, zMatElemNC(t,i,i-1), 0 );
+      _zComplexCreate( &a22, zMatElemNC(t,i,i) - lambda->re, -lambda->im );
+      /* Gaussian elimination with partial pivoting */
+      if( _zComplexSqrAbs( &a11 ) < _zComplexSqrAbs( &a21 ) ){
+        zSwap( zComplex, a11, a21 );
+        zSwap( zComplex, a12, a22 );
+        zSwap( zComplex, r1, r2 );
+      }
+      _zMatEigDQRPerturb( &a11, delta );
+      _zComplexCDivSmith( &a21, &a11, &m );
+      _zComplexCMul( &m, &a12, &a21 ); /* a21 is reused as a temporary */
+      a22.re -= a21.re; a22.im -= a21.im;
+      _zComplexCMul( &m, &r1, &a21 );
+      r2.re -= a21.re; r2.im -= a21.im;
+      _zMatEigDQRPerturb( &a22, delta );
+      _zComplexCDivSmith( &r2, &a22, &y[i] );
+      _zComplexCMul( &a12, &y[i], &a21 );
+      r1.re -= a21.re; r1.im -= a21.im;
+      _zComplexCDivSmith( &r1, &a11, &y[i-1] );
+      i--;
+    } else{
+      _zComplexZero( &r1 );
+      for( j=i+1; j<=last; j++ )
+        _zComplexCMulSub( &r1, zMatElemNC(t,i,j), &y[j] );
+      _zComplexCreate( &a11, zMatElemNC(t,i,i) - lambda->re, -lambda->im );
+      _zMatEigDQRPerturb( &a11, delta );
+      _zComplexCDivSmith( &r1, &a11, &y[i] );
+    }
+    /* rescale to avoid overflow */
+    if( ( ymax = _zComplexAbs( &y[i] ) ) > 1.0e100 )
+      for( k=i; k<=last; k++ ){
+        y[k].re /= ymax;
+        y[k].im /= ymax;
+      }
+  }
+}
+
+/* transform an eigenvector y of a quasi-upper triangular matrix to that of the original matrix by z,
+ * normalize it, and put it into the col-th column of eigbase. */
+static void _zMatEigDQRPutVec(zMat z, zComplex *y, int last, zCMat eigbase, int col, bool conj)
+{
+  int i, j, imax = 0;
+  double norm = 0, amax = -1, a;
+  zComplex *x, f;
+
+  for( i=0; i<zMatRowSizeNC(z); i++ ){
+    x = zCMatElemNC(eigbase,i,col);
+    _zComplexZero( x );
+    for( j=0; j<=last; j++ ){
+      x->re += zMatElemNC(z,i,j) * y[j].re;
+      x->im += zMatElemNC(z,i,j) * y[j].im;
+    }
+    if( conj ) x->im = -x->im;
+    norm += ( a = _zComplexSqrAbs( x ) );
+    if( a > amax ){
+      amax = a;
+      imax = i;
+    }
+  }
+  /* normalize the vector so that the absolutely maximum component is real and positive. */
+  amax = sqrt( amax );
+  norm = sqrt( norm );
+  x = zCMatElemNC(eigbase,imax,col);
+  _zComplexCreate( &f, x->re / ( amax * norm ), -x->im / ( amax * norm ) );
+  for( i=0; i<zMatRowSizeNC(z); i++ ){
+    x = zCMatElemNC(eigbase,i,col);
+    a = x->re * f.re - x->im * f.im;
+    x->im = x->re * f.im + x->im * f.re;
+    x->re = a;
+  }
+  zCMatElemNC(eigbase,imax,col)->im = 0;
+}
+
+/* eigenvectors from a real Schur form t and Schur vectors z. */
+static bool _zMatEigDQRVec(zMat t, zMat z, zCVec eigval, zCMat eigbase, double norm)
+{
+  int k, j, n;
+  zComplex *y;
+  double a, b, c, d, delta;
+  zComplex *lambda;
+
+  n = zMatRowSizeNC(t);
+  if( !( y = zAlloc( zComplex, n ) ) ){
+    ZALLOCERROR();
+    return false;
+  }
+  delta = _zMax( DBL_EPSILON * norm, DBL_MIN );
+  for( k=0; k<n; ){
+    lambda = zCVecElemNC(eigval,k);
+    for( j=0; j<n; j++ ) _zComplexZero( &y[j] );
+    if( k < n-1 && zMatElemNC(t,k+1,k) != 0 ){ /* a pair of complex conjugate eigenvalues */
+      a = zMatElemNC(t,k,k);   b = zMatElemNC(t,k,k+1);
+      c = zMatElemNC(t,k+1,k); d = zMatElemNC(t,k+1,k+1);
+      /* an eigenvector of the 2x2 block, chosen from two candidates to avoid cancellation */
+      if( _zSqr(b) + _zSqr(lambda->re-a) + _zSqr(lambda->im) >= _zSqr(lambda->re-d) + _zSqr(lambda->im) + _zSqr(c) ){
+        _zComplexCreate( &y[k], b, 0 );
+        _zComplexCreate( &y[k+1], lambda->re - a, lambda->im );
+      } else{
+        _zComplexCreate( &y[k], lambda->re - d, lambda->im );
+        _zComplexCreate( &y[k+1], c, 0 );
+      }
+      _zMatEigDQRBackSubst( t, lambda, y, k-1, k+1, delta );
+      _zMatEigDQRPutVec( z, y, k+1, eigbase, k, false );
+      _zMatEigDQRPutVec( z, y, k+1, eigbase, k+1, true );
+      k += 2;
+    } else{
+      _zComplexCreate( &y[k], 1, 0 );
+      _zMatEigDQRBackSubst( t, lambda, y, k-1, k, delta );
+      _zMatEigDQRPutVec( z, y, k, eigbase, k, false );
+      k++;
+    }
+  }
+  zFree( y );
+  return true;
+}
+
+/* eigenvalues and eigenvectors by double-shift QR method. */
+#define ZM_EIGDQR_EXCEPTIONAL_SHIFT_1 10
+#define ZM_EIGDQR_EXCEPTIONAL_SHIFT_2 20
+bool zMatEigDQR(const zMat m, zCVec eigval, zCMat eigbase, int iter)
+{
+  int r, l, its;
+  double norm, s, t, w, scale;
+  zMat h, z = NULL;
+  zVec nu = NULL, ws = NULL;
+  bool ret = false;
 
   if( !zMatIsSqr( m ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
@@ -153,45 +436,72 @@ bool zMatEigDQR(const zMat m, zCVec eigval, int iter)
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_CVEC );
     return false;
   }
-  if( !( a = zMatClone( m ) ) ){
-    ZALLOCERROR();
+  if( eigbase && ( zCMatRowSizeNC(eigbase) != zMatRowSizeNC(m) || zCMatColSizeNC(eigbase) != zMatColSizeNC(m) ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return false;
   }
-
-  zMatToHessenberg( a, NULL, NULL );
-  for( r=zMatRowSizeNC(a)-1; r>=0; ){
-    if( r == 0 ){
-      zComplexCreate( zCVecElemNC(eigval,0), zMatBuf(a)[0], 0.0 );
-      break;
-    }
-    ZITERINIT( iter );
-    for( i=0; i<iter; i++ ){
-      r1 = r - 1;
-      if( zIsTiny( zMatElemNC(a,r,r1) ) ){
-        zComplexCreate( zCVecElemNC(eigval,r), zMatElemNC(a,r,r), 0.0 );
-        r = r1;
-        break;
-      }
-      b = -zMatElemNC(a,r1,r1) - zMatElemNC(a,r,r);
-      c =  zMatElemNC(a,r1,r1)*zMatElemNC(a,r,r) - zMatElemNC(a,r1,r)*zMatElemNC(a,r,r1);
-      if( r1 == 0 || zIsTiny( zMatElemNC(a,r1,r1-1) ) ){
-        zQESolve( 1.0, b, c, zCVecElemNC(eigval,r1) );
-        r -= 2;
-        break;
-      }
-      b += ( a0 = zMatBuf(a)[0] );
-      a1 = zMatElemNC(a,1,0);
-      _zMatEigDQRHouseholder( a, r, 0,
-        zMatElemNC(a,0,1)*a1+a0*b+c, (zMatElemNC(a,1,1)+b)*a1, zMatElemNC(a,2,1)*a1 );
-      for( j=1; j<=r1-1; j++ )
-        _zMatEigDQRHouseholder( a, r, j,
-          zMatElemNC(a,j,j-1), zMatElemNC(a,j+1,j-1), zMatElemNC(a,j+2,j-1) );
-      _zMatEigDQRHouseholder( a, r, j,
-        zMatElemNC(a,r1,r1-1), zMatElemNC(a,r ,r1-1), 0 );
-    }
+  h = zMatClone( m );
+  nu = zVecAlloc( 3 );
+  ws = zVecAlloc( zMatRowSizeNC(m) );
+  if( eigbase ) z = zMatAllocSqr( zMatRowSizeNC(m) );
+  if( !h || !nu || !ws || ( eigbase && !z ) ){
+    ZALLOCERROR();
+    goto TERMINATE;
   }
-  zMatFree( a );
-  return true;
+  /* scale the matrix by a power of two, which is exact, to avoid overflow and underflow */
+  for( scale=0, r=0; r<zMatRowSizeNC(h); r++ )
+    for( l=0; l<zMatColSizeNC(h); l++ )
+      if( fabs( zMatElemNC(h,r,l) ) > scale ) scale = fabs( zMatElemNC(h,r,l) );
+  if( scale > 0 ){
+    frexp( scale, &l );
+    scale = ldexp( 1.0, l );
+    for( r=0; r<zMatRowSizeNC(h); r++ )
+      for( l=0; l<zMatColSizeNC(h); l++ )
+        zMatElemNC(h,r,l) /= scale;
+  } else
+    scale = 1;
+  if( !zMatToHessenberg( h, NULL, z ) ) goto TERMINATE;
+  norm = zMatNorm( h );
+  ZITERINIT( iter );
+  for( r=zMatRowSizeNC(h)-1, its=0; r>=0; ){
+    if( ( l = _zMatEigDQRSplit( h, r, norm, its > ZM_EIGDQR_EXCEPTIONAL_SHIFT_2 ) ) == r ){ /* a real eigenvalue */
+      zComplexCreate( zCVecElemNC(eigval,r), zMatElemNC(h,r,r), 0 );
+      r--;
+      its = 0;
+      continue;
+    }
+    if( l == r - 1 ){ /* a 2x2 block */
+      _zMatEigDQR2x2( h, z, l, zCVecElemNC(eigval,l), zCVecElemNC(eigval,r) );
+      r -= 2;
+      its = 0;
+      continue;
+    }
+    if( its >= iter ){
+      ZITERWARN( iter );
+      goto TERMINATE;
+    }
+    if( ++its == ZM_EIGDQR_EXCEPTIONAL_SHIFT_1 || its == ZM_EIGDQR_EXCEPTIONAL_SHIFT_2 ){ /* exceptional shift to break a stagnation */
+      w = fabs( zMatElemNC(h,r,r-1) ) + fabs( zMatElemNC(h,r-1,r-2) );
+      s = 1.5 * w;
+      t = w * w;
+    } else{ /* eigenvalues of the trailing 2x2 block */
+      s = zMatElemNC(h,r-1,r-1) + zMatElemNC(h,r,r);
+      t = zMatElemNC(h,r-1,r-1) * zMatElemNC(h,r,r) - zMatElemNC(h,r-1,r) * zMatElemNC(h,r,r-1);
+    }
+    _zMatEigDQRStep( h, z, l, r, s, t, zVecBuf(nu), zVecBuf(ws) );
+  }
+  ret = eigbase ? _zMatEigDQRVec( h, z, eigval, eigbase, norm ) : true;
+  for( r=0; r<zCVecSizeNC(eigval); r++ ){
+    zCVecElemNC(eigval,r)->re *= scale;
+    zCVecElemNC(eigval,r)->im *= scale;
+  }
+
+ TERMINATE:
+  zMatFree( h );
+  zMatFree( z );
+  zVecFree( nu );
+  zVecFree( ws );
+  return ret;
 }
 
 /* calculate the dominant eigenvalue. */
@@ -242,120 +552,7 @@ double zMatEigPowerInv(const zMat m, zVec eigvec, int iter)
   return 1.0 / eigval;
 }
 
-/* compute an eigenvector for a real-number eigenvalue. */
-static bool _zMatEigVecReal(const zMat m, double eigval, zCVec eigvec, int iter)
-{
-  zMat ms, b;
-  zVec eigvec_real;
-  double shift = zTOL * 1.0e1;
-  bool ret = true;
-
-  ms = zMatClone( m );
-  b = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
-  eigvec_real = zVecAlloc( zCVecSizeNC(eigvec) );
-  if( !ms || !b || !eigvec_real ){
-    ZALLOCERROR();
-    ret = false;
-    goto TERMINATE;
-  }
-
-  zVecRandUniform( eigvec_real, -1, 1 );
-  zMatShift( ms, -eigval - shift );
-  while( !zMatInv( ms, b ) )
-    zMatShift( ms, -( shift*=10 ) );
-  zMatEigPower( b, eigvec_real, iter );
-  zVecToCVec( eigvec_real, eigvec );
-
- TERMINATE:
-  zMatFree( ms );
-  zMatFree( b );
-  zVecFree( eigvec_real );
-  return ret;
-}
-
-/* compute eigenvectors for complex-number eigenvalues. */
-static bool _zMatEigVecComplex(const zMat m, zComplex *eigval, zCVec eigvec1, zCVec eigvec2, int iter)
-{
-  zMat ms, b;
-  zVec eigvec;
-  double shift = zTOL * 1.0e1, s;
-  int i, n;
-  bool ret = true;
-
-  n = 2 * zMatRowSizeNC(m);
-  ms = zMatAllocSqr( n );
-  b = zMatAllocSqr( n );
-  eigvec = zVecAlloc( n );
-  if( !ms || !b || !eigvec ){
-    ret = false;
-    goto TERMINATE;
-  }
-
-  zMatPutNC( ms, 0, 0, m );
-  zMatPutNC( ms, zMatRowSizeNC(m), zMatColSizeNC(m), m );
-  s = eigval->re + shift;
-  for( i=0; i<zMatRowSizeNC(m); i++ ){
-    zMatElemNC(ms,i,i) -= s;
-    zMatSetElemNC( ms, i+zMatRowSizeNC(m), i,-eigval->im );
-    zMatSetElemNC( ms, i, i+zMatColSizeNC(m), eigval->im );
-    zMatElemNC(ms,i+zMatRowSizeNC(m),i+zMatColSizeNC(m)) -= s;
-  }
-  zVecRandUniform( eigvec, -1, 1 );
-  while( !zMatInv( ms, b ) )
-    zMatShift( ms, -( shift *= 10 ) );
-  zMatEigPower( b, eigvec, iter );
-
-  for( i=0; i<zCVecSizeNC(eigvec1); i++ ){
-    zComplexCreate( zCVecElem(eigvec1,i),
-      zVecElemNC(eigvec,i), zVecElemNC(eigvec,i+zCVecSizeNC(eigvec1)) );
-    zComplexCreate( zCVecElem(eigvec2,i),
-      zVecElemNC(eigvec,i),-zVecElemNC(eigvec,i+zCVecSizeNC(eigvec1)) );
-  }
-  zCVecNormalizeDRC( eigvec1 );
-  zCVecNormalizeDRC( eigvec2 );
-
- TERMINATE:
-  zMatFree( ms );
-  zMatFree( b );
-  zVecFree( eigvec );
-  return ret;
-}
-
-/* compute sets of eigenvalues and eigenvectors of a square matrix. */
 #define ZM_EIGSYS_ITER_NUM 10
-bool zMatEig(const zMat m, zCVec eigval, zCMat eigbase, int iter)
-{
-  zCVec eigvec1, eigvec2;
-  bool ret = false;
-  int i;
-
-  eigvec1 = zCVecAlloc( zCMatRowSizeNC(eigbase) );
-  eigvec2 = zCVecAlloc( zCMatRowSizeNC(eigbase) );
-  if( !eigvec1 || !eigvec2 ) goto TERMINATE;
-  /* eigenvalues by double QR method */
-  if( !zMatEigDQR( m, eigval, iter ) ) goto TERMINATE;
-  /* eigenvectors by inverse iteration method */
-  for( i=0; i<zMatRowSizeNC(m); ){
-    if( zComplexIsReal( zCVecElemNC(eigval,i), zTOL ) ){
-      if( !_zMatEigVecReal( m, zCVecElemNC(eigval,i)->re, eigvec1, ZM_EIGSYS_ITER_NUM ) )
-        break;
-      zCMatPutColNC( eigbase, i, eigvec1 );
-      i++;
-    } else{
-      if( !_zMatEigVecComplex( m, zCVecElemNC(eigval,i), eigvec1, eigvec2, ZM_EIGSYS_ITER_NUM ) )
-        break;
-      zCMatPutCol( eigbase, i,   eigvec1 );
-      zCMatPutCol( eigbase, i+1, eigvec2 );
-      i += 2;
-    }
-  }
-  ret = true;
-  /* return the number of eigenvalues and eigenvectors */
- TERMINATE:
-  zCVecFree( eigvec1 );
-  zCVecFree( eigvec2 );
-  return ret;
-}
 
 /* check if sizes of matrices and a vector for eigenvalues are consisten. */
 #define _zMatSymEigCheckSize(m,eigval,eigbase) do{\
@@ -381,7 +578,7 @@ static void _zMatSymEigBisecRange(const zMat m, double *emin, double *emax)
 
   *emin = *emax = 0;
   for( ml=0, i=0; i<zMatRowSizeNC(m); i++, ml=mr ){
-    mr = i < zMatRowSizeNC(m) ? fabs( zMatElemNC(m,i,i+1) ) : 0;
+    mr = i < zMatRowSizeNC(m)-1 ? fabs( zMatElemNC(m,i,i+1) ) : 0;
     if( ( e = zMatElemNC(m,i,i) + ( ml + mr ) ) > *emax ) *emax = e;
     if( ( e = zMatElemNC(m,i,i) - ( ml + mr ) ) < *emin ) *emin = e;
   }

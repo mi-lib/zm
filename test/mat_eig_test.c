@@ -1,87 +1,133 @@
 #include <zm/zm.h>
+#include <float.h>
 
 #define N 100
 
-bool check_mat_hessenberg(zMat m)
-{
-  int i, j, i1;
+/* tolerance of the normwise relative residual in the unit of n eps */
+#define TOL_EIG 10.0
 
-  for( i=2; i<zMatRowSizeNC(m); i++ ){
-    i1 = i - 1;
-    for( j=0; j<i1; j++ )
-      if( !zIsTiny( zMatElemNC(m,i,j) ) ) return false;
-  }
+bool check_mat_hessenberg(zMat h)
+{
+  int i, j;
+
+  for( i=2; i<zMatRowSizeNC(h); i++ )
+    for( j=0; j<i-1; j++ )
+      if( zMatElemNC(h,i,j) != 0 ) return false;
   return true;
+}
+
+/* check if p h p^T = m and p^T p = I with relative errors. */
+bool check_mat_hessenberg_decomp(zMat m, zMat h, zMat p)
+{
+  zMat tmp, mc;
+  int n;
+  double norm;
+  bool result = true;
+
+  n = zMatRowSizeNC(m);
+  tmp = zMatAllocSqr( n );
+  mc = zMatAllocSqr( n );
+  if( !check_mat_hessenberg( h ) ){
+    eprintf( "not a Hessenberg matrix.\n" );
+    result = false;
+  }
+  zMulMatMatT( h, p, tmp );
+  zMulMatMat( p, tmp, mc );
+  zMatSubDRC( mc, m );
+  norm = zMatNorm( m );
+  if( zMatNorm( mc ) > TOL_EIG * n * DBL_EPSILON * norm ){
+    eprintf( "relative error = %g\n", zMatNorm(mc) / norm );
+    result = false;
+  }
+  zMulMatTMat( p, p, tmp );
+  zMatSubDRC( tmp, zMatIdentNC( mc ) );
+  if( zMatNorm( tmp ) > TOL_EIG * n * DBL_EPSILON ){
+    eprintf( "orthogonality error = %g\n", zMatNorm(tmp) );
+    result = false;
+  }
+  zMatFreeAtOnce( 2, tmp, mc );
+  return result;
 }
 
 void assert_mat_hessenberg(void)
 {
-  zMat m, tm, p, tmp, mc;
+  zMat m, h, p;
   const int size = 20;
-  bool result = true;
-  int i;
+  double scale[] = { 1.0, 1.0e-10, 1.0e-13, 1.0e-100, 1.0e10, 1.0e100 };
+  bool result = true, result_scale = true;
+  int i, k;
 
   m = zMatAllocSqr( size );
-  tm = zMatAllocSqr( size );
-  p  = zMatAllocSqr( size );
-  tmp = zMatAllocSqr( size );
-  mc = zMatAllocSqr( size );
-
+  h = zMatAllocSqr( size );
+  p = zMatAllocSqr( size );
   for( i=0; i<N; i++ ){
     zMatRandUniform( m, -10, 10 );
-    zMatToHessenberg( m, tm, p );
-    if( !check_mat_hessenberg( tm ) ){
-      eprintf( "not a hessenberg matrix.\n" );
-      zMatImg( tm );
+    zMatToHessenberg( m, h, p );
+    if( !check_mat_hessenberg_decomp( m, h, p ) ) result = false;
+    for( k=0; k<sizeof(scale)/sizeof(double); k++ ){ /* scaled matrices */
+      zMatMulDRC( m, scale[k] );
+      if( !zMatToHessenberg( m, h, p ) || !check_mat_hessenberg_decomp( m, h, p ) ){
+        eprintf( "failed for a matrix scaled by %g\n", scale[k] );
+        result_scale = false;
+      }
+      zMatRandUniform( m, -10, 10 );
+    }
+  }
+  zMatFreeAtOnce( 3, m, h, p );
+  zAssert( zMatToHessenberg, result );
+  zAssert( zMatToHessenberg (scaled matrix), result_scale );
+}
+
+/* check the normwise relative residuals of eigenpairs and the normalization of eigenvectors. */
+bool check_mat_eig(zMat m, zCVec eigval, zCMat eigbase, double tol)
+{
+  int i, n;
+  zCMat cm;
+  zCVec eigvec, r;
+  zComplex z;
+  double norm;
+  bool result = true;
+
+  n = zMatRowSizeNC(m);
+  cm = zCMatAllocSqr( n );
+  eigvec = zCVecAlloc( n );
+  r = zCVecAlloc( n );
+  zMatToCMat( m, cm );
+  norm = zMatNorm( m );
+  for( i=0; i<n; i++ ){
+    zCMatGetCol( eigbase, i, eigvec );
+    if( !zIsTol( zCVecNorm(eigvec) - 1, TOL_EIG * n * DBL_EPSILON ) ){
+      eprintf( "eigenvector #%d not normalized: norm = %g\n", i, zCVecNorm(eigvec) );
       result = false;
     }
-    zMulMatMatT( tm, p, tmp );
-    zMulMatMat( p, tmp, mc );
-    zMatSubDRC( mc, m );
-    if( !zMatIsTiny( mc ) ){
-      eprintf( "error matrix norm = %g\n", zMatNorm(mc) );
+    zCMulMatVec( cm, eigvec, r );
+    zComplexRev( zCVecElemNC(eigval,i), &z );
+    zCVecCatDRC( r, &z, eigvec );
+    if( zCVecNorm( r ) > tol * n * DBL_EPSILON * norm ){
+      eprintf( "eigenpair #%d: relative residual = %g\n", i, zCVecNorm(r) / norm );
       result = false;
     }
   }
-  zMatFreeAtOnce( 5, m, tm, p, tmp, mc );
-  zAssert( zMatToHessenberg, result );
+  zCMatFree( cm );
+  zCVecFree( eigvec );
+  zCVecFree( r );
+  return result;
 }
 
 bool assert_mat_eig_one(double a[], int n)
 {
-  int i;
-  zCVec eigval, eigvec, vt;
+  zCVec eigval;
   zMat ma;
-  zCMat cma, eigbase;
-  zComplex z;
-  bool result = true;
-  const double tol = 1.0e-7;
+  zCMat eigbase;
+  bool result;
 
   ma = zMatCloneArray( a, n, n );
-  cma = zCMatAllocSqr( n );
   eigval = zCVecAlloc( n );
   eigbase = zCMatAllocSqr( n );
-  eigvec = zCVecAlloc( n );
-  vt = zCVecAlloc( n );
-  zMatEig( ma, eigval, eigbase, 0 );
-  /* confirmation */
-  zMatToCMat( ma, cma );
-  for( i=0; i<n; i++ ){
-    zCMatGetCol( eigbase, i, eigvec );
-    zCMulMatVec( cma, eigvec, vt );
-    zComplexRev( zCVecElemNC(eigval,i), &z );
-    zCVecCatDRC( vt, &z, eigvec );
-    if( !zCVecIsTol( vt, tol ) ){
-      eprintf( " error norm = %g\n", zCVecNorm(vt) );
-      result = false;
-    }
-  }
+  result = zMatEig( ma, eigval, eigbase, 0 ) && check_mat_eig( ma, eigval, eigbase, TOL_EIG );
   zMatFree( ma );
-  zCMatFree( cma );
   zCMatFree( eigbase );
   zCVecFree( eigval );
-  zCVecFree( eigvec );
-  zCVecFree( vt );
   return result;
 }
 
@@ -222,6 +268,191 @@ void assert_mat_eig(void)
   ASSERT_MAT_EIG_TESTCASE( 7 );
   ASSERT_MAT_EIG_TESTCASE( 8 );
   zAssert( zMatEig, result );
+}
+
+/* check if eigenvalues coincide with expected ones, regardless of the order. Each eigenvalue is
+ * matched with the nearest one among the expected eigenvalues that are not matched yet. */
+bool check_mat_eig_val(zCVec eigval, zCVec expected, double tol)
+{
+  int i, j, jmin, n;
+  bool *used, result = true;
+  double d, dmin;
+  zComplex diff;
+
+  n = zCVecSizeNC(eigval);
+  used = zAlloc( bool, n );
+  for( i=0; i<n; i++ ){
+    for( dmin=HUGE_VAL, jmin=-1, j=0; j<n; j++ ){
+      if( used[j] ) continue;
+      zComplexSub( zCVecElemNC(eigval,i), zCVecElemNC(expected,j), &diff );
+      if( ( d = zComplexAbs( &diff ) ) < dmin ){
+        dmin = d;
+        jmin = j;
+      }
+    }
+    used[jmin] = true;
+    if( dmin > tol ){
+      eprintf( "eigenvalue %g%+gi mismatches %g%+gi\n",
+        zCVecElemNC(eigval,i)->re, zCVecElemNC(eigval,i)->im, zCVecElemNC(expected,jmin)->re, zCVecElemNC(expected,jmin)->im );
+      result = false;
+    }
+  }
+  zFree( used );
+  return result;
+}
+
+void assert_mat_eig_scale(void)
+{
+  double a[] = {
+    1, 2, 3,
+    4, 5, 6,
+    7, 8,10,
+  };
+  const int n = 3;
+  zMat m;
+  zCVec eigval;
+  zCMat eigbase;
+  double s;
+  int i;
+  bool result = true;
+
+  m = zMatCloneArray( a, n, n );
+  eigval = zCVecAlloc( n );
+  eigbase = zCMatAllocSqr( n );
+  for( s=1.0e-300; s<1.0e300; s*=1.0e20 ){
+    zMatCopyArray( a, n, n, m );
+    zMatMulDRC( m, s );
+    if( !zMatEig( m, eigval, eigbase, 0 ) ){
+      eprintf( "failed for a matrix scaled by %g\n", s );
+      result = false;
+      continue;
+    }
+    /* eigenvectors are independent of the scale, and eigenvalues are proportional to it. */
+    zMatCopyArray( a, n, n, m );
+    for( i=0; i<n; i++ ){
+      zCVecElemNC(eigval,i)->re /= s;
+      zCVecElemNC(eigval,i)->im /= s;
+    }
+    if( !check_mat_eig( m, eigval, eigbase, TOL_EIG ) ){
+      eprintf( "inaccurate for a matrix scaled by %g\n", s );
+      result = false;
+    }
+  }
+  zMatFree( m );
+  zCVecFree( eigval );
+  zCMatFree( eigbase );
+  zAssert( zMatEig (scaled matrix), result );
+}
+
+/* matrices that are difficult for the double-shift QR method. */
+bool assert_mat_eig_special_one(zMat m, zCVec expected, double tol)
+{
+  zCVec eigval;
+  zCMat eigbase;
+  bool result;
+
+  eigval = zCVecAlloc( zMatRowSizeNC(m) );
+  eigbase = zCMatAllocSqr( zMatRowSizeNC(m) );
+  result = zMatEig( m, eigval, eigbase, 0 ) && check_mat_eig( m, eigval, eigbase, TOL_EIG );
+  if( result && expected ) result = check_mat_eig_val( eigval, expected, tol );
+  zCVecFree( eigval );
+  zCMatFree( eigbase );
+  zMatFree( m );
+  zCVecFree( expected );
+  return result;
+}
+
+void assert_mat_eig_special(void)
+{
+  zMat m;
+  zCVec expected;
+  const int n = 8;
+  double coeff[] = { 1, -21, 175, -735, 1624, -1764, 720 }; /* (x-1)(x-2)...(x-6) */
+  int i;
+  bool result_cyclic, result_companion, result_jordan, result_trivial = true;
+
+  /* cyclic permutation matrix, for which the shifts stagnate without exceptional shifts */
+  m = zMatAllocSqr( n );
+  expected = zCVecAlloc( n );
+  for( i=0; i<n; i++ ){
+    zMatSetElemNC( m, (i+1)%n, i, 1 );
+    zComplexCreatePolar( zCVecElemNC(expected,i), 1, 2*zPI*i/n );
+  }
+  result_cyclic = assert_mat_eig_special_one( m, expected, TOL_EIG * n * DBL_EPSILON );
+  /* companion matrix */
+  m = zMatAllocSqr( 6 );
+  expected = zCVecAlloc( 6 );
+  for( i=0; i<6; i++ ){
+    zMatSetElemNC( m, 0, i, -coeff[i+1] );
+    if( i > 0 ) zMatSetElemNC( m, i, i-1, 1 );
+    zComplexCreate( zCVecElemNC(expected,i), i+1, 0 );
+  }
+  result_companion = assert_mat_eig_special_one( m, expected, 1.0e-9 );
+  /* Jordan block, a defective matrix */
+  m = zMatAllocSqr( 4 );
+  for( i=0; i<4; i++ ){
+    zMatSetElemNC( m, i, i, 2 );
+    if( i > 0 ) zMatSetElemNC( m, i-1, i, 1 );
+  }
+  result_jordan = assert_mat_eig_special_one( m, NULL, 0 );
+  /* zero and identity matrices */
+  if( !assert_mat_eig_special_one( zMatAllocSqr( 5 ), NULL, 0 ) ) result_trivial = false;
+  if( !assert_mat_eig_special_one( zMatIdentNC( zMatAllocSqr( 5 ) ), NULL, 0 ) ) result_trivial = false;
+  zAssert( zMatEig (cyclic permutation matrix), result_cyclic );
+  zAssert( zMatEig (companion matrix), result_companion );
+  zAssert( zMatEig (Jordan block), result_jordan );
+  zAssert( zMatEig (zero and identity matrices), result_trivial );
+}
+
+void assert_mat_eig_random(void)
+{
+  zMat m, d, q, qinv;
+  zCVec eigval, eigval_only;
+  zCMat eigbase;
+  int i, j, n;
+  bool result = true, result_val = true, result_cluster = true;
+
+  for( i=0; i<N; i++ ){
+    n = zRandI( 1, 30 );
+    m = zMatAllocSqr( n );
+    eigval = zCVecAlloc( n );
+    eigval_only = zCVecAlloc( n );
+    eigbase = zCMatAllocSqr( n );
+    zMatRandUniform( m, -10, 10 );
+    if( !zMatEigDQR( m, eigval, eigbase, 0 ) || !check_mat_eig( m, eigval, eigbase, TOL_EIG ) )
+      result = false;
+    /* eigenvalues computed without eigenvectors */
+    if( !zMatEigDQR( m, eigval_only, NULL, 0 ) ||
+        !check_mat_eig_val( eigval_only, eigval, TOL_EIG * n * DBL_EPSILON * zMatNorm(m) ) )
+      result_val = false;
+    zMatFree( m );
+    zCVecFree( eigval );
+    zCVecFree( eigval_only );
+    zCMatFree( eigbase );
+  }
+  for( i=0; i<N; i++ ){ /* clusters of multiple eigenvalues */
+    n = zRandI( 2, 15 );
+    m = zMatAllocSqr( n );
+    d = zMatAllocSqr( n );
+    q = zMatAllocSqr( n );
+    qinv = zMatAllocSqr( n );
+    eigval = zCVecAlloc( n );
+    eigbase = zCMatAllocSqr( n );
+    for( j=0; j<n; j++ ) zMatSetElemNC( d, j, j, zRandI(-2,2) );
+    do{
+      zMatRandUniform( q, -1, 1 );
+    } while( !zMatInv( q, qinv ) );
+    zMulMatMat( q, d, m );
+    zMulMatMat( m, qinv, d );
+    if( !zMatEigDQR( d, eigval, eigbase, 0 ) || !check_mat_eig( d, eigval, eigbase, 10*TOL_EIG ) )
+      result_cluster = false;
+    zMatFreeAtOnce( 4, m, d, q, qinv );
+    zCVecFree( eigval );
+    zCMatFree( eigbase );
+  }
+  zAssert( zMatEigDQR (random), result );
+  zAssert( zMatEigDQR (eigenvalues only), result_val );
+  zAssert( zMatEigDQR (multiple eigenvalues), result_cluster );
 }
 
 void assert_mat_sym_eig_power(void)
@@ -511,6 +742,9 @@ int main(int argc, char *argv[])
   zRandInit();
   assert_mat_hessenberg();
   assert_mat_eig();
+  assert_mat_eig_scale();
+  assert_mat_eig_special();
+  assert_mat_eig_random();
   assert_mat_sym_eig_power();
   assert_mat_sym_eig();
   assert_mat_sym_eig_random();
