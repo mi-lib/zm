@@ -1,3 +1,6 @@
+2026.11.11. Added tests of zIsInf, zIsNan, zIsFinite, and their macro versions. [test]
+2026.11.11. Reimplemented zIsInf, zIsNan, and zIsFinite to internally call _zIsInf, _zIsNan, and _zIsFinite, respectively. [zm_ieee]
+2026.11.11. Added macros _zIEEEDoubleByte, _zIEEEExpIsMax, _zIEEEMantIsZero, _zIEEESignIsNeg, _zIsInf, _zIsNan, and _zIsFinite. [zm_ieee]
 2026.11.11. Added tests of zMatToHessenberg for scaled matrices, and of zMatEigDQR. [test]
 2026.11.11. Abolished zMatEig that uses the inverse iteration method, and redefined it as zMatEigDQR. [zm_mat_eig]
 2026.11.11. Modified zMatEigDQR to compute eigenvectors. [zm_mat_eig]

@@ -19,13 +19,7 @@ const __ieee_fp_t zm_huge_val = {
 /* check if the value is infinity. */
 int zIsInf(double x)
 {
-  __ieee_fp_t val;
-
-  val.d = x;
-  if( val.c[6] != 0xf0 ||
-      ( val.c[5] | val.c[4] | val.c[3] | val.c[2] | val.c[1] | val.c[0] ) != 0 )
-    return 0;
-  return val.c[7] == 0x7f ? 1 : ( val.c[7] == 0xff ? -1 : 0 );
+  return _zIsInf( x );
 }
 
 /* Not-a-number conforming to IEEE 754 floating point. */
@@ -41,16 +35,11 @@ const __ieee_fp_t zm_nan_val = {
 /* check if the value is not-a-number. */
 int zIsNan(double x)
 {
-  __ieee_fp_t val;
-
-  val.d = x;
-  return ( ( val.c[7] & 0x7f ) == 0x7f && ( val.c[6] & 0xf0 ) == 0xf0 &&
-           ( ( val.c[6] & 0xf ) | val.c[5] | val.c[4] | val.c[3] |
-             val.c[2] | val.c[1] | val.c[0] ) ) ? 1 : 0;
+  return _zIsNan( x );
 }
 
 /* check if the value is a finite number. */
 int zIsFinite(double x)
 {
-  return zIsInf( x ) == 0 && !zIsNan( x ) ? 1 : 0;
+  return _zIsFinite( x );
 }
