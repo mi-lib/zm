@@ -81,6 +81,14 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
  * vector and the Hessian matrix computed from the gradient vector, and \a eps_min^(3/4) s_i for the Hessian
  * matrix computed from the function value, where s_i is the magnitude of x_i defined with
  * ZM_OPT_DM_DIFF_SCALE_RATIO.
+ *
+ * The function (or the gradient vector for the Hessian matrix computed from it) is evaluated on both
+ * sides of the variable along each component. If both values are finite, the central difference is used.
+ * If only one of them is finite, the one-sided difference on the finite side is used instead. If neither
+ * is finite, the result is not finite, and zOptDMSolve() fails. For the Hessian matrix computed from the
+ * function value, the off-diagonal components also use the values at the points displaced along two
+ * components. If some of them are not finite, the one-sided difference on a side where they are finite
+ * is used instead.
  * \a eps_min of zOptDM is initialized by ZM_OPT_DM_EPS, which is suitable if the function is computed with
  * the accuracy of the machine epsilon. It should be larger for a function with noise, which is set by
  * zOptDMSetEPSMin().
@@ -250,6 +258,9 @@ __ZM_EXPORT void zOptDMDestroy(zOptDM *opt);
  *  - the number of iterations exceeds \a iter. If \a iter is zero, Z_MAX_ITER_NUM is used instead.
  * The value of the function at the solution is stored where \a eval points, if it is not the null
  * pointer.
+ * If the initial guess is at the boundary of the domain of the function, it might fail to compute the
+ * numerical gradient. If the minimum is at the boundary of the domain, it might be regarded as a failure
+ * even if the solution reaches it.
  * \return
  * zOptDMSolve() returns the number of iterations if the iteration converges. It returns 0 if the gradient
  * vector at the initial point is zero. Otherwise, i.e., if the number of iterations exceeds \a iter, the

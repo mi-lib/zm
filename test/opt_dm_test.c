@@ -979,6 +979,96 @@ void assert_opt_dm_numdiff(void)
   zAssert( zOptDM (symmetry of numerical Hessian and the ratio of the step), result4 );
 }
 
+/* the smooth function that is not finite (the value is given via util) beyond the boundaries
+   x_0 > 0.3 and x_2 < 0.7, where the scale of the smooth function is 1. */
+#define bounded_is_out(v) ( zVecElemNC(v,0) > 0.3 || zVecElemNC(v,2) < 0.7 )
+double bounded_eval(const zVec var, void *util)
+{
+  double s = 1.0;
+  return bounded_is_out( var ) ? *(double *)util : smooth_eval( var, &s );
+}
+
+zVec bounded_grad(const zVec var, zVec g, void *util)
+{
+  double s = 1.0;
+  return bounded_is_out( var ) ? zVecSetAll( g, *(double *)util ) : smooth_grad( var, g, &s );
+}
+
+/* the smooth function that is not finite (the value is given via util) in the quadrant x_0 > 0.3 and x_1 > 0.5,
+   where only one of the four points displaced along the two components is out of the domain near (0.3,0.5). */
+double quadrant_eval(const zVec var, void *util)
+{
+  double s = 1.0;
+  return zVecElemNC(var,0) > 0.3 && zVecElemNC(var,1) > 0.5 ? *(double *)util : smooth_eval( var, &s );
+}
+
+/* the numerical gradient vector and Hessian matrices have to be computed by one-sided differences at
+   a point close to the boundary of the region where the function or the gradient vector is not finite. */
+void assert_opt_dm_numdiff_bounded(void)
+{
+  zOptDM opt1, opt2;
+  zVec var, ga, gn;
+  zMat ha, h1, h2;
+  double val[] = { HUGE_VAL, -HUGE_VAL, NAN }, *v, s = 1.0;
+  bool result1 = true, result2 = true, result3 = true, result4 = true;
+  const double tol1 = 1.0e-5, tol2 = 1.0e-3;
+
+  var = zVecCreateList( DIM, 0.3-1.0e-9, 0.5, 0.7+1.0e-9, 0.9 );
+  ga = zVecAlloc( DIM );
+  gn = zVecAlloc( DIM );
+  smooth_grad( var, ga, &s );
+  ha = zMatAllocSqr( DIM );
+  h1 = zMatAllocSqr( DIM );
+  h2 = zMatAllocSqr( DIM );
+  smooth_hess( var, ha, &s );
+  zOptDMCreate( &opt1, DIM, bounded_eval, bounded_grad, NULL ); /* Hessian matrix from the gradient vector */
+  zOptDMCreate( &opt2, DIM, bounded_eval, NULL, NULL );         /* Hessian matrix from the function value */
+  for( v=val; v<val+sizeof(val)/sizeof(double); v++ ){
+    opt2._grad( &opt2, var, gn, v );
+    if( !( zVecDist( gn, ga ) <= tol1 * zVecNorm( ga ) ) ){
+      eprintf( "numerical gradient near the boundary for %g: relative error = %g\n", *v, zVecDist( gn, ga ) / zVecNorm( ga ) );
+      result3 = false;
+    }
+    opt1._hess( &opt1, var, h1, v );
+    opt2._hess( &opt2, var, h2, v );
+    if( !zMatIsSymmetric( h1 ) || !zMatIsSymmetric( h2 ) ){
+      eprintf( "numerical Hessian is not symmetric for %g\n", *v );
+      result1 = result2 = false;
+    }
+    zMatSubDRC( h1, ha );
+    zMatSubDRC( h2, ha );
+    if( !( zMatNorm( h1 ) <= tol1 * zMatNorm( ha ) ) ){
+      eprintf( "numerical Hessian from gradient near the boundary for %g: relative error = %g\n", *v, zMatNorm( h1 ) / zMatNorm( ha ) );
+      result1 = false;
+    }
+    if( !( zMatNorm( h2 ) <= tol2 * zMatNorm( ha ) ) ){
+      eprintf( "numerical Hessian from function near the boundary for %g: relative error = %g\n", *v, zMatNorm( h2 ) / zMatNorm( ha ) );
+      result2 = false;
+    }
+  }
+  zOptDMDestroy( &opt1 );
+  zOptDMDestroy( &opt2 );
+  /* a point near the corner of the domain, where the function is not finite only at a diagonal point */
+  zVecSetElemList( var, 0.3-1.0e-9, 0.5-1.0e-9, 0.7, 0.9 );
+  smooth_hess( var, ha, &s );
+  zOptDMCreate( &opt2, DIM, quadrant_eval, NULL, NULL );
+  for( v=val; v<val+sizeof(val)/sizeof(double); v++ ){
+    opt2._hess( &opt2, var, h2, v );
+    zMatSubDRC( h2, ha );
+    if( !( zMatNorm( h2 ) <= tol2 * zMatNorm( ha ) ) ){
+      eprintf( "numerical Hessian from function near the corner for %g: relative error = %g\n", *v, zMatNorm( h2 ) / zMatNorm( ha ) );
+      result4 = false;
+    }
+  }
+  zOptDMDestroy( &opt2 );
+  zVecFreeAtOnce( 3, var, ga, gn );
+  zMatFreeAtOnce( 3, ha, h1, h2 );
+  zAssert( zOptDM (numerical gradient near the boundary), result3 );
+  zAssert( zOptDM (numerical Hessian from gradient near the boundary), result1 );
+  zAssert( zOptDM (numerical Hessian from function near the boundary), result2 );
+  zAssert( zOptDM (numerical Hessian from function near the corner of the boundary), result4 );
+}
+
 /* a quadratic function that is infinity or NaN for x_0 > 1/2, where the value is given via util */
 double nonfinite_init_eval(const zVec var, void *util)
 {
@@ -1019,10 +1109,27 @@ void assert_opt_dm_nonfinite_init(void)
   zAssert( zOptDMSolve (failure for a non-finite value at the initial guess), result );
 }
 
-/* a quadratic function that is infinity for x_0 > 1/2 */
-double nonfinite_edge_eval(const zVec var, void *dummy)
+/* the lower hemisphere f(x) = -sqrt(1-|x|^2), which is NaN for |x| > 1 and has the minimum at x = 0,
+   and the upper hemisphere f(x) = sqrt(1-|x|^2), which has the minimum on the sphere |x| = 1.
+   their gradient vectors are infinity on the sphere. */
+double hemisphere_lower_eval(const zVec var, void *dummy)
 {
-  return zVecElemNC(var,0) > 0.5 ? HUGE_VAL : quad_eval( var, NULL );
+  return -sqrt( 1 - zVecSqrNorm( var ) );
+}
+
+zVec hemisphere_lower_grad(const zVec var, zVec g, void *dummy)
+{
+  return zVecMul( var, 1 / sqrt( 1 - zVecSqrNorm( var ) ), g );
+}
+
+double hemisphere_upper_eval(const zVec var, void *dummy)
+{
+  return sqrt( 1 - zVecSqrNorm( var ) );
+}
+
+zVec hemisphere_upper_grad(const zVec var, zVec g, void *dummy)
+{
+  return zVecMul( var, -1 / sqrt( 1 - zVecSqrNorm( var ) ), g );
 }
 
 /* the quadratic function, where util is not used for the scale */
@@ -1048,7 +1155,9 @@ zVec nonfinite_zero_grad(const zVec var, zVec g, void *util)
   return zVecZero( g );
 }
 
-/* every method has to terminate if the gradient vector is not finite. the line searches by Dennis-Schnabel's
+/* every method has to fail if the gradient vector is not finite at the initial guess, or the numerical
+   gradient vector is not computed because the function is not finite on both sides of the initial guess.
+   every method has to terminate if the gradient vector is not finite. the line searches by Dennis-Schnabel's
    and Brent's methods have to avoid a step where the gradient vector is not finite, where the minimum
    in the region x_0 >= 1/2 is 1/8. Levenberg-Marquardt method is excluded from it, since the numerical
    Hessian matrix is not finite at the boundary of the region. */
@@ -1058,22 +1167,25 @@ void assert_opt_dm_nonfinite_grad(void)
   zVec var;
   method_t *meth;
   double val[] = { HUGE_VAL, -HUGE_VAL, NAN }, *v, e;
-  int ret;
+  int i, ret;
   bool result1 = true, result2 = true, result3 = true, result4 = true;
 
   var = zVecAlloc( DIM );
   for( meth=method; meth->label; meth++ ){
-    /* numerical gradient at the boundary of the region where the function is infinity */
-    zOptDMCreate( &opt, DIM, nonfinite_edge_eval, NULL, NULL );
-    meth->assign( &opt, meth->stepmethod, meth->updatemethod );
-    zVecSetElemList( var, 0.5, 1.0, 1.0, 1.0 );
-    zEchoOff();
-    ret = zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL );
-    zEchoOn();
-    zOptDMDestroy( &opt );
-    if( ret != -1 ){
-      eprintf( "%s: returned %d for a non-finite gradient vector at the initial guess\n", meth->label, ret );
-      result1 = false;
+    /* at a point on the sphere, the gradient vector is infinity and the function is NaN on both sides
+       along the tangential directions. */
+    for( i=0; i<2; i++ ){
+      zOptDMCreate( &opt, DIM, hemisphere_lower_eval, i == 0 ? hemisphere_lower_grad : NULL, NULL );
+      meth->assign( &opt, meth->stepmethod, meth->updatemethod );
+      zVecSetElemList( var, 1.0, 0.0, 0.0, 0.0 );
+      zEchoOff();
+      ret = zOptDMSolve( &opt, var, NULL, zTOL, 0, NULL );
+      zEchoOn();
+      zOptDMDestroy( &opt );
+      if( ret != -1 ){
+        eprintf( "%s: returned %d for a non-finite %s gradient vector at the initial guess\n", meth->label, ret, i == 0 ? "analytical" : "numerical" );
+        result1 = false;
+      }
     }
     /* the gradient vector becomes non-finite during the iteration */
     for( v=val; v<val+sizeof(val)/sizeof(double); v++ ){
@@ -1116,6 +1228,135 @@ void assert_opt_dm_nonfinite_grad(void)
   zAssert( zOptDMSolve (failure for a non-finite value with the zero gradient vector), result4 );
 }
 
+/* a quadratic function that is infinity for x_0 > 1/2, which has the minimum at the interior point (0,1,2,3) */
+double boundary_edge_eval(const zVec var, void *dummy)
+{
+  return zVecElemNC(var,0) > 0.5 ? HUGE_VAL : quad_eval( var, NULL );
+}
+
+/* f(x) = x^2 for x >= 1/2, which is NaN otherwise and has the minimum on the boundary x = 1/2 */
+double boundary_wall_eval(const zVec var, void *dummy)
+{
+  return zVecElemNC(var,0) < 0.5 ? NAN : zSqr( zVecElemNC(var,0) );
+}
+
+zVec boundary_wall_grad(const zVec var, zVec g, void *dummy)
+{
+  zVecSetElemNC( g, 0, zVecElemNC(var,0) < 0.5 ? NAN : 2*zVecElemNC(var,0) );
+  return g;
+}
+
+/* f(x) = x - log x, which is not finite for x <= 0 and has the minimum at x = 1 */
+double boundary_barrier_eval(const zVec var, void *dummy)
+{
+  return zVecElemNC(var,0) - log( zVecElemNC(var,0) );
+}
+
+zVec boundary_barrier_grad(const zVec var, zVec g, void *dummy)
+{
+  zVecSetElemNC( g, 0, 1 - 1/zVecElemNC(var,0) );
+  return g;
+}
+
+/* a function that is NaN except at the initial guess (1,1), which mimics a defective function */
+double boundary_isolated_eval(const zVec var, void *dummy)
+{
+  return zVecElemNC(var,0) == 1.0 && zVecElemNC(var,1) == 1.0 ? quad_eval( var, NULL ) : NAN;
+}
+
+/* solve a problem from an initial guess, and check if the returned evaluation is the value at the solution. */
+int boundary_solve(method_t *meth, double (* eval)(const zVec,void*), zVec (* grad)(const zVec,zVec,void*), zVec var, double *e)
+{
+  zOptDM opt;
+  int ret;
+
+  zOptDMCreate( &opt, zVecSizeNC(var), eval, grad, NULL );
+  meth->assign( &opt, meth->stepmethod, meth->updatemethod );
+  zEchoOff();
+  ret = zOptDMSolve( &opt, var, NULL, zTOL, 0, e );
+  zEchoOn();
+  zOptDMDestroy( &opt );
+  if( !( *e == eval( var, NULL ) ) ){
+    eprintf( "%s: the returned evaluation %g differs from %g at the solution\n", meth->label, *e, eval( var, NULL ) );
+    return -2;
+  }
+  return ret;
+}
+
+/* problems with a boundary of the domain where the function is finite.
+   - the numerical gradient vector at an initial guess on the boundary is computed by a one-sided difference.
+   - if the minimum is on the boundary, the solution has to reach it. whether it is regarded as a success
+     depends on the termination condition, since no decrease is detected inside the domain.
+   - if the function is not finite in any neighborhood of the current point, it has to fail.
+   - the minimum near a barrier has to be found. */
+void assert_opt_dm_boundary(void)
+{
+  zVec var1, var4, ans;
+  method_t *meth;
+  double e;
+  int i, ret;
+  bool result1 = true, result2 = true, result3 = true, result4 = true;
+  const double tol = 1.0e-4;
+
+  var1 = zVecAlloc( 1 );
+  var4 = zVecAlloc( DIM );
+  ans = zVecCreateList( DIM, 0.0, 1.0, 2.0, 3.0 );
+  for( meth=method; meth->label; meth++ ){
+    /* initial guesses on the boundary */
+    zVecSetElemNC( var1, 0, 1.0 );
+    if( ( ret = boundary_solve( meth, hemisphere_lower_eval, NULL, var1, &e ) ) < 0 || !( fabs( zVecElemNC(var1,0) ) < tol ) ){
+      eprintf( "%s: returned %d, x = %g for the lower hemisphere from x = 1\n", meth->label, ret, zVecElemNC(var1,0) );
+      result1 = false;
+    }
+    zVecSetElemList( var4, 0.5, 1.0, 1.0, 1.0 );
+    if( ( ret = boundary_solve( meth, boundary_edge_eval, NULL, var4, &e ) ) < 0 || !( zVecDist( var4, ans ) < tol ) ){
+      eprintf( "%s: returned %d, |x-x*| = %g for the quadratic function from the boundary\n", meth->label, ret, zVecDist( var4, ans ) );
+      result1 = false;
+    }
+    for( i=0; i<2; i++ ){ /* analytical and numerical gradient vectors */
+      /* minimum on the boundary */
+      zVecSetElemNC( var1, 0, 0.5 );
+      if( ( ret = boundary_solve( meth, hemisphere_upper_eval, i == 0 ? hemisphere_upper_grad : NULL, var1, &e ) ) < -1 || !( e < 1.0e-3 ) ){
+        eprintf( "%s: returned %d, f = %g for the upper hemisphere\n", meth->label, ret, e );
+        result2 = false;
+      }
+      zVecFree( var4 );
+      var4 = zVecCreateList( 2, 0.5, 0.3 );
+      if( ( ret = boundary_solve( meth, hemisphere_upper_eval, i == 0 ? hemisphere_upper_grad : NULL, var4, &e ) ) < -1 || !( e < 1.0e-3 ) ){
+        eprintf( "%s: returned %d, f = %g for the two-dimensional upper hemisphere\n", meth->label, ret, e );
+        result2 = false;
+      }
+      zVecFree( var4 );
+      var4 = zVecAlloc( DIM );
+      zVecSetElemNC( var1, 0, 1.0 );
+      if( ( ret = boundary_solve( meth, boundary_wall_eval, i == 0 ? boundary_wall_grad : NULL, var1, &e ) ) < -1 || !( fabs( zVecElemNC(var1,0) - 0.5 ) < tol ) ){
+        eprintf( "%s: returned %d, x = %g for the wall\n", meth->label, ret, zVecElemNC(var1,0) );
+        result2 = false;
+      }
+      /* minimum near a barrier */
+      zVecSetElemNC( var1, 0, 1.0e-3 );
+      if( ( ret = boundary_solve( meth, boundary_barrier_eval, i == 0 ? boundary_barrier_grad : NULL, var1, &e ) ) < 0 || !( fabs( zVecElemNC(var1,0) - 1 ) < tol ) ){
+        eprintf( "%s: returned %d, x = %g for the barrier\n", meth->label, ret, zVecElemNC(var1,0) );
+        result4 = false;
+      }
+    }
+    /* a function that is not finite in any neighborhood of the initial guess */
+    zVecFree( var4 );
+    var4 = zVecCreateList( 2, 1.0, 1.0 );
+    if( ( ret = boundary_solve( meth, boundary_isolated_eval, quad_grad, var4, &e ) ) != -1 ){
+      eprintf( "%s: returned %d for a function that is NaN except at the initial guess\n", meth->label, ret );
+      result3 = false;
+    }
+    zVecFree( var4 );
+    var4 = zVecAlloc( DIM );
+  }
+  zVecFreeAtOnce( 3, var1, var4, ans );
+  zAssert( zOptDMSolve (one-sided numerical gradient at the initial guess on the boundary), result1 );
+  zAssert( zOptDMSolve (minimum on the boundary), result2 );
+  zAssert( zOptDMSolve (failure for a function not finite around the initial guess), result3 );
+  zAssert( zOptDMSolve (minimum near a barrier), result4 );
+}
+
 int main(void)
 {
   zRandInit();
@@ -1136,7 +1377,9 @@ int main(void)
   assert_opt_dm_brent();
   assert_opt_dm_lm();
   assert_opt_dm_numdiff();
+  assert_opt_dm_numdiff_bounded();
   assert_opt_dm_nonfinite_init();
   assert_opt_dm_nonfinite_grad();
+  assert_opt_dm_boundary();
   return 0;
 }

@@ -23,11 +23,13 @@ double zOptDMDiffStep(const zVec var, int i, double xmax, double eps, double rat
 static zVec _zOptDMGrad(zOptDM *opt, const zVec var, zVec g, void *util){
   return opt->grad( var, g, util );
 }
-/* numerical gradient vector by the central difference of the function. */
+/* numerical gradient vector by the central difference of the function. if the function is not
+   finite on one side, the one-sided difference on the other side is used instead. */
 static zVec _zOptDMGradNG(zOptDM *opt, const zVec var, zVec g, void *util)
 {
   int i;
-  double adv, prv, org, h, xmax;
+  double adv, prv, org, h, xmax, f0 = 0;
+  bool f0_evaluated = false;
 
   xmax = zVecElemAbsMax( var, NULL );
   for( i=0; i<zVecSizeNC(var); i++ ){
@@ -37,8 +39,16 @@ static zVec _zOptDMGradNG(zOptDM *opt, const zVec var, zVec g, void *util)
     adv = opt->eval( var, util );
     zVecSetElemNC( var, i, org - h );
     prv = opt->eval( var, util );
-    zVecSetElemNC( g, i, 0.5 * ( adv - prv ) / h );
     zVecSetElemNC( var, i, org );
+    if( zIsFinite( adv ) == zIsFinite( prv ) ){ /* central difference */
+      zVecSetElemNC( g, i, 0.5 * ( adv - prv ) / h );
+      continue;
+    }
+    if( !f0_evaluated ){
+      f0 = opt->eval( var, util );
+      f0_evaluated = true;
+    }
+    zVecSetElemNC( g, i, zIsFinite( adv ) ? ( adv - f0 ) / h : ( f0 - prv ) / h );
   }
   return g;
 }
@@ -49,11 +59,12 @@ static zMat _zOptDMHess(zOptDM *opt, const zVec var, zMat h, void *util){
   return opt->hess( var, h, util );
 }
 /* numerical Hessian matrix by the central difference of the given gradient vector,
-   where _p and _q are used as workspaces. */
+   where _p and _q are used as workspaces. if the gradient vector is not finite on one side, the
+   one-sided difference on the other side is used instead. */
 static zMat _zOptDMHessNG(zOptDM *opt, const zVec var, zMat h, void *util)
 {
   int i, j;
-  double org, d, xmax;
+  double org, d, dd, xmax;
 
   xmax = zVecElemAbsMax( var, NULL );
   for( i=0; i<zVecSizeNC(var); i++ ){
@@ -64,45 +75,109 @@ static zMat _zOptDMHessNG(zOptDM *opt, const zVec var, zMat h, void *util)
     zVecSetElemNC( var, i, org - d );
     opt->grad( var, opt->_q, util );
     zVecSetElemNC( var, i, org );
+    dd = 2 * d;
+    if( !zVecIsFinite( opt->_q ) ){ /* forward difference */
+      opt->grad( var, opt->_q, util );
+      dd = d;
+    } else
+    if( !zVecIsFinite( opt->_p ) ){ /* backward difference */
+      opt->grad( var, opt->_p, util );
+      dd = d;
+    }
     zRawVecSub( zVecBufNC(opt->_p), zVecBufNC(opt->_q), zMatRowBuf(h,i), zMatRowSizeNC(h) );
-    zRawVecDivDRC( zMatRowBuf(h,i), 2*d, zMatRowSizeNC(h) );
+    zRawVecDivDRC( zMatRowBuf(h,i), dd, zMatRowSizeNC(h) );
   }
   for( i=0; i<zMatRowSizeNC(h); i++ ) /* symmetrize */
     for( j=i+1; j<zMatColSizeNC(h); j++ )
       zMatElemNC(h,i,j) = zMatElemNC(h,j,i) = 0.5 * ( zMatElemNC(h,i,j) + zMatElemNC(h,j,i) );
   return h;
 }
-/* numerical Hessian matrix by the second-order central difference of the function. */
+/* the function value at the point displaced by hi and hj along the i-th and j-th components. */
+static double _zOptDMHessNG2Eval(zOptDM *opt, const zVec var, void *util, int i, double hi, int j, double hj)
+{
+  double orgi, orgj, f;
+
+  orgi = zVecElemNC(var,i);
+  orgj = zVecElemNC(var,j);
+  zVecSetElemNC( var, i, orgi + hi );
+  zVecSetElemNC( var, j, orgj + hj );
+  f = opt->eval( var, util );
+  zVecSetElemNC( var, i, orgi );
+  zVecSetElemNC( var, j, orgj );
+  return f;
+}
+
+/* an off-diagonal component of the numerical Hessian matrix by the second-order difference of the
+   function, where _p, _q and _x store the step, the function values at the forward and backward steps
+   along each component, respectively. the central difference is used if the function is finite at
+   all the four points displaced along the two components. otherwise, the difference on the side where
+   the function is finite at the three points displaced along either or both of the components is used. */
+static double _zOptDMHessNG2OffDiag(zOptDM *opt, const zVec var, void *util, double f0, int i, int j)
+{
+  double di, dj, fi[2], fj[2], f[2][2], s[] = { 1, -1 };
+  bool evaluated = false;
+  int ki, kj;
+
+  di = zVecElemNC(opt->_p,i); fi[0] = zVecElemNC(opt->_q,i); fi[1] = zVecElemNC(opt->_x,i);
+  dj = zVecElemNC(opt->_p,j); fj[0] = zVecElemNC(opt->_q,j); fj[1] = zVecElemNC(opt->_x,j);
+  if( zIsFinite( fi[0] ) && zIsFinite( fi[1] ) && zIsFinite( fj[0] ) && zIsFinite( fj[1] ) ){
+    for( ki=0; ki<2; ki++ )
+      for( kj=0; kj<2; kj++ )
+        f[ki][kj] = _zOptDMHessNG2Eval( opt, var, util, i, s[ki]*di, j, s[kj]*dj );
+    if( zIsFinite( f[0][0] ) && zIsFinite( f[0][1] ) && zIsFinite( f[1][0] ) && zIsFinite( f[1][1] ) )
+      return ( f[0][0] - f[0][1] - f[1][0] + f[1][1] ) / ( 4*di*dj ); /* central difference */
+    evaluated = true;
+  }
+  for( ki=0; ki<2; ki++ )
+    for( kj=0; kj<2; kj++ ){
+      if( !zIsFinite( fi[ki] ) || !zIsFinite( fj[kj] ) ) continue;
+      if( !evaluated ) f[ki][kj] = _zOptDMHessNG2Eval( opt, var, util, i, s[ki]*di, j, s[kj]*dj );
+      if( zIsFinite( f[ki][kj] ) )
+        return ( f[ki][kj] - fi[ki] - fj[kj] + f0 ) / ( s[ki]*s[kj]*di*dj ); /* one-sided difference */
+    }
+  return NAN;
+}
+
+/* numerical Hessian matrix by the second-order central difference of the function.
+   if the function is not finite on one side, the one-sided difference on the other side is used instead,
+   where _p, _q and _x are used as workspaces to store the step, the function values at the forward and
+   backward steps along each component, respectively. */
 static zMat _zOptDMHessNG2(zOptDM *opt, const zVec var, zMat h, void *util)
 {
   int i, j;
-  double orgi, orgj, di, dj, f0, fpp, fpm, fmp, fmm, xmax, eps, ratio;
+  double orgi, di, f0, fp, fm, xmax, eps, ratio;
 
   xmax = zVecElemAbsMax( var, NULL );
   eps = pow( opt->eps_min, 0.75 ); /* the optimal ratio for the second-order difference */
   ratio = sqrt( ZM_OPT_DM_DIFF_SCALE_RATIO ); /* see the comment of ZM_OPT_DM_DIFF_SCALE_RATIO */
   f0 = opt->eval( var, util );
-  for( i=0; i<zVecSizeNC(var); i++ ){
+  for( i=0; i<zVecSizeNC(var); i++ ){ /* diagonal components */
     di = zOptDMDiffStep( var, i, xmax, eps, ratio );
     orgi = zVecElemNC(var,i);
     zVecSetElemNC( var, i, orgi + di );
-    fpp = opt->eval( var, util );
+    fp = opt->eval( var, util );
     zVecSetElemNC( var, i, orgi - di );
-    fmm = opt->eval( var, util );
-    zMatSetElemNC( h, i, i, ( fpp - 2*f0 + fmm ) / ( di*di ) );
-    for( j=i+1; j<zVecSizeNC(var); j++ ){
-      dj = zOptDMDiffStep( var, j, xmax, eps, ratio );
-      orgj = zVecElemNC(var,j);
-      zVecSetElemNC( var, i, orgi + di ); zVecSetElemNC( var, j, orgj + dj ); fpp = opt->eval( var, util );
-      zVecSetElemNC( var, j, orgj - dj ); fpm = opt->eval( var, util );
-      zVecSetElemNC( var, i, orgi - di ); fmm = opt->eval( var, util );
-      zVecSetElemNC( var, j, orgj + dj ); fmp = opt->eval( var, util );
-      zVecSetElemNC( var, j, orgj );
-      zMatSetElemNC( h, i, j, ( fpp - fpm - fmp + fmm ) / ( 4*di*dj ) );
-      zMatSetElemNC( h, j, i, zMatElemNC(h,i,j) );
+    fm = opt->eval( var, util );
+    zVecSetElemNC( opt->_p, i, di );
+    zVecSetElemNC( opt->_q, i, fp );
+    zVecSetElemNC( opt->_x, i, fm );
+    if( zIsFinite( fp ) && zIsFinite( fm ) ) /* central difference */
+      zMatSetElemNC( h, i, i, ( fp - 2*f0 + fm ) / ( di*di ) );
+    else{ /* one-sided difference */
+      if( !zIsFinite( fp ) ){ /* backward difference */
+        di = -di;
+        fp = fm;
+      } /* otherwise, forward difference */
+      zVecSetElemNC( var, i, orgi + 2*di );
+      zMatSetElemNC( h, i, i, ( opt->eval( var, util ) - 2*fp + f0 ) / ( di*di ) );
     }
     zVecSetElemNC( var, i, orgi );
   }
+  for( i=0; i<zVecSizeNC(var); i++ ) /* off-diagonal components */
+    for( j=i+1; j<zVecSizeNC(var); j++ ){
+      zMatSetElemNC( h, i, j, _zOptDMHessNG2OffDiag( opt, var, util, f0, i, j ) );
+      zMatSetElemNC( h, j, i, zMatElemNC(h,i,j) );
+    }
   return h;
 }
 
@@ -195,6 +270,8 @@ static zVec _zOptDMStepFixed(zOptDM *opt, const zVec var, double tol, void *util
  * The auxiliary function psi(a) = phi(a) - phi(0) - _df a phi'(0) is used instead of phi until
  * a trial step length satisfies psi(a) <= 0 and phi'(a) >= 0.
  */
+/* the upper limit of the number of evaluations, where an evaluation at a trial step length where the
+   function or its derivative is not finite is not counted. */
 #define ZM_OPT_DM_MT_EVAL_MAX 20
 
 /* evaluate the function and its derivative along the line at a trial step length. */
@@ -288,13 +365,16 @@ static zVec _zOptDMStepMT(zOptDM *opt, const zVec var, double tol, void *util, d
   al = 0; fl = e0; gl = g0;
   at = _zOptDMStepInit( opt );
   w = w1 = HUGE_VAL;
-  for( i=0; i<ZM_OPT_DM_MT_EVAL_MAX; i++ ){
+  for( i=0; i<ZM_OPT_DM_MT_EVAL_MAX; ){
     ft = _zOptDMStepMTEval( opt, var, util, ( ae = at ), &gt );
     if( !zIsFinite( ft ) || !zIsFinite( gt ) ){
-      /* shrink the upper bound of step length if the function is not evaluated at the trial point */
+      /* shrink the upper bound of step length if the function is not evaluated at the trial point,
+         which is not counted as an evaluation until the shrinkage becomes negligible. */
+      if( _zOptDMStepIsNegligible( opt, var, tol, at - al ) ) break;
       at = amax = al + 0.5 * ( at - al );
       continue;
     }
+    i++;
     if( at < afin ) afin = at; /* the shortest step length where the function is evaluated */
     if( ft <= e0 + at*gtest && fabs( gt ) <= gtol ) goto TERMINATE; /* strong Wolfe's conditions */
     if( at == amax && ft <= e0 + at*gtest && gt < gtest ) goto TERMINATE; /* the upper bound of step length */
