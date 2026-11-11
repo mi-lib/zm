@@ -54,7 +54,7 @@
 
 /* error messages */
 
-#define ZM_ERR_ZERODIV                     "cannot devide by tiny value"
+#define ZM_ERR_ZERODIV                     "cannot devide by zero"
 #define ZM_ERR_OUTOFRANGE                  "specified index out of range"
 
 #define ZM_ERR_VEC_NULL                    "null vector assigned"

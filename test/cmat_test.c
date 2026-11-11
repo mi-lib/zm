@@ -63,10 +63,44 @@ void assert_cmul_cdiv_drc(void)
   zCMatFree( m3 );
 }
 
+/* division by a complex number with a very small or large absolute value */
+void assert_cdiv_scale(void)
+{
+  zCMat m1, m2;
+  zComplex z, r;
+  double scale[] = { 1.0e-7, 1.0e-200, 1.0e200 };
+  int i, j, k;
+  bool result = true, result_zero;
+
+  m1 = zCMatAlloc( 10, 20 );
+  m2 = zCMatAlloc( 10, 20 );
+  zCMatRandUniform( m1, -10, 10, -10, 10 );
+  for( k=0; k<sizeof(scale)/sizeof(double); k++ ){
+    zComplexCreate( &z, zRandF(-10,10)*scale[k], zRandF(-10,10)*scale[k] );
+    if( !zCMatCDiv( m1, &z, m2 ) ){
+      result = false;
+      continue;
+    }
+    for( i=0; i<zCMatRowSizeNC(m1); i++ )
+      for( j=0; j<zCMatColSizeNC(m1); j++ ){ /* m2 z = m1 */
+        zComplexCMul( zCMatElemNC(m2,i,j), &z, &r );
+        zComplexSubDRC( &r, zCMatElemNC(m1,i,j) );
+        if( zComplexAbs( &r ) > 10 * DBL_EPSILON * zComplexAbs( zCMatElemNC(m1,i,j) ) ) result = false;
+      }
+  }
+  zComplexCreate( &z, 0, 0 );
+  result_zero = zCMatCDiv( m1, &z, m2 ) == NULL;
+  zCMatFree( m1 );
+  zCMatFree( m2 );
+  zAssert( zCMatCDiv (very small or large divisor), result );
+  zAssert( zCMatCDiv (division by zero), result_zero );
+}
+
 int main(void)
 {
   zRandInit();
   assert_get_put();
   assert_cmul_cdiv_drc();
+  assert_cdiv_scale();
   return EXIT_SUCCESS;
 }

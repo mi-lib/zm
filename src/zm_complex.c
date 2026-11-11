@@ -123,21 +123,31 @@ zComplex *zComplexCMulConj(const zComplex *c1, const zComplex *c2, zComplex *c)
 /* invert a complex number. */
 zComplex *zComplexInv(const zComplex *c, zComplex *ic)
 {
-  double r2;
-  zComplex cc;
+  zComplex one;
 
-  r2 = _zComplexSqrAbs( c );
-  _zComplexConj( c, &cc );
-  return zComplexDiv( &cc, r2, ic );
+  _zComplexCreate( &one, 1, 0 );
+  return zComplexCDiv( &one, c, ic );
 }
 
-/* divide a complex number by another. */
+/* divide a complex number by another based on Smith's method, which avoids overflow and underflow
+ * of the squared absolute value of the divisor. */
 zComplex *zComplexCDiv(const zComplex *c1, const zComplex *c2, zComplex *c)
 {
-  zComplex cc;
+  double r, d;
 
-  zComplexInv( c2, &cc );
-  _zComplexCMul( c1, &cc, c );
+  if( c2->re == 0 && c2->im == 0 ){
+    ZRUNERROR( ZM_ERR_ZERODIV );
+    return NULL;
+  }
+  if( fabs( c2->re ) >= fabs( c2->im ) ){
+    r = c2->im / c2->re;
+    d = c2->re + c2->im * r;
+    _zComplexCreate( c, ( c1->re + c1->im * r ) / d, ( c1->im - c1->re * r ) / d );
+  } else{
+    r = c2->re / c2->im;
+    d = c2->re * r + c2->im;
+    _zComplexCreate( c, ( c1->re * r + c1->im ) / d, ( c1->im * r - c1->re ) / d );
+  }
   return c;
 }
 
@@ -166,7 +176,7 @@ zComplex *zComplexCDivDRC(zComplex *c1, const zComplex *c2)
 {
   zComplex tmp;
 
-  zComplexCDiv( c1, c2, &tmp );
+  if( !zComplexCDiv( c1, c2, &tmp ) ) return NULL;
   _zComplexCopy( &tmp, c1 );
   return c1;
 }

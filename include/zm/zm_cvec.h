@@ -142,6 +142,7 @@ __ZM_EXPORT zCVec zCVecConjPair(zCVec v, double tol);
  * zCVecCMulNC() and zCVecCMul() multiply \a v1 by a complex number \a z, and puts the result into \a v.
  *
  * zCVecCDivNC() and zCVecCDiv() divide \a v1 by a complex number \a z, and puts the result into \a v.
+ * Each component is divided by zComplexCDiv(). They return the null pointer if \a z is zero.
  *
  * zCVecAddNCDRC() and zCVecAddDRC() directly add \a v2 to \a v1.
  *

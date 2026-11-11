@@ -196,7 +196,10 @@ __ZM_EXPORT zComplex *zComplexConj(const zComplex *c, zComplex *cc);
  * conjugate of another \a c2. The result is put into \a c.
  *
  * zComplexCDiv() divides a complex number \a c1 by \another
- * \a c2. The result is put into \a c.
+ * \a c2. The result is put into \a c. It is based on Smith's
+ * method, which does not compute the squared absolute value of
+ * \a c2, so that it avoids overflow and underflow for a divisor
+ * with a very large or small absolute value.
  *
  * _zComplexAdd(), _zComplexSub(), _zComplexRev(), _zComplexMul(),
  * _zComplexDiv(), _zComplexCMul(), and _zComplexCMulConj() are
@@ -206,6 +209,8 @@ __ZM_EXPORT zComplex *zComplexConj(const zComplex *c, zComplex *cc);
  * These functions returns a pointer to the result.
  *
  * zComplexDiv() returns the null pointer if \a k is zero.
+ * zComplexCDiv() returns the null pointer if \a c2 is zero, namely,
+ * both the real and imaginary parts are zero.
  */
 #define _zComplexAdd(c1,c2,c)      _zComplexCreate( c, (c1)->re+(c2)->re, (c1)->im+(c2)->im )
 #define _zComplexSub(c1,c2,c)      _zComplexCreate( c, (c1)->re-(c2)->re, (c1)->im-(c2)->im )
@@ -222,7 +227,13 @@ __ZM_EXPORT zComplex *zComplexMul(const zComplex *c, double k, zComplex *ec);
 __ZM_EXPORT zComplex *zComplexDiv(const zComplex *c, double k, zComplex *rc);
 __ZM_EXPORT zComplex *zComplexCMul(const zComplex *c1, const zComplex *c2, zComplex *c);
 __ZM_EXPORT zComplex *zComplexCMulConj(const zComplex *c1, const zComplex *c2, zComplex *c);
-/*! \brief invert a complex number. */
+/*! \brief invert a complex number.
+ *
+ * zComplexInv() computes the inverse of a complex number \a c, and puts it into \a ic.
+ * It is based on zComplexCDiv().
+ * \return
+ * zComplexInv() returns a pointer \a ic, or the null pointer if \a c is zero.
+ */
 __ZM_EXPORT zComplex *zComplexInv(const zComplex *c, zComplex *ic);
 __ZM_EXPORT zComplex *zComplexCDiv(const zComplex *c1, const zComplex *c2, zComplex *c);
 
@@ -242,7 +253,11 @@ __ZM_EXPORT zComplex *zComplexCDiv(const zComplex *c1, const zComplex *c2, zComp
 __ZM_EXPORT zComplex *zComplexCMulDRC(zComplex *c1, const zComplex *c2);
 /*! \brief multiply a complex numbers by the conjugate of another complex number. */
 __ZM_EXPORT zComplex *zComplexCMulConjDRC(zComplex *c1, const zComplex *c2);
-/*! \brief divide a complex number by another. */
+/*! \brief divide a complex number by another.
+ *
+ * zComplexCDivDRC() directly divides a complex number \a c1 by another \a c2 by zComplexCDiv().
+ * It returns a pointer \a c1, or the null pointer if \a c2 is zero, in which case \a c1 is not changed.
+ */
 __ZM_EXPORT zComplex *zComplexCDivDRC(zComplex *c1, const zComplex *c2);
 
 /*! \brief power and logarithm of complex numbers.
@@ -361,7 +376,7 @@ inline zComplex &zComplex::operator-=(const zComplex &c){ _zComplexSubDRC( this,
 inline zComplex &zComplex::operator*=(double k){ _zComplexMulDRC( this, k ); return *this; }
 inline zComplex &zComplex::operator*=(const zComplex &c){ return *zComplexCMulDRC( this, &c ); }
 inline zComplex &zComplex::operator/=(double k){ zComplexDivDRC( this, k ); return *this; }
-inline zComplex &zComplex::operator/=(const zComplex &c){ return *zComplexCDivDRC( this, &c ); }
+inline zComplex &zComplex::operator/=(const zComplex &c){ zComplexCDivDRC( this, &c ); return *this; }
 inline zComplex zComplex::pow(double z){ zComplex ret; zComplexPow( this, z, &ret ); return ret; }
 inline zComplex zComplex::pow(const zComplex &z){ zComplex ret; zComplexCPow( this, &z, &ret ); return ret; }
 inline zComplex zComplex::pow(double z, const zComplex &ref){ zComplex ret; zComplexPowRef( this, z, &ref, &ret ); return ret; }

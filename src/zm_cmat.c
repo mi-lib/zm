@@ -293,15 +293,14 @@ zCMat zCMatCMulNC(const zCMat m1, const zComplex *z, zCMat m)
 zCMat zCMatCDivNC(const zCMat m1, const zComplex *z, zCMat m)
 {
   int i, n;
-  double r;
-  zComplex dz;
 
-  r = zComplexSqrAbs( z );
-  zComplexConj( z, &dz );
-  zComplexDiv( &dz, r, &dz );
+  if( z->re == 0 && z->im == 0 ){
+    ZRUNERROR( ZM_ERR_ZERODIV );
+    return NULL;
+  }
   n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
   for( i=0; i<n; i++ )
-    zComplexCMul( &zCMatBufNC(m1)[i], &dz, &zCMatBufNC(m)[i] );
+    zComplexCDiv( &zCMatBufNC(m1)[i], z, &zCMatBufNC(m)[i] );
   return m;
 }
 
@@ -374,10 +373,6 @@ zCMat zCMatCDiv(const zCMat m1, const zComplex *z, zCMat m)
 {
   if( !zCMatSizeEqual(m1,m) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
-    return NULL;
-  }
-  if( zComplexIsTiny( z ) ){
-    ZRUNERROR( ZM_ERR_ZERODIV );
     return NULL;
   }
   return zCMatCDivNC( m1, z, m );

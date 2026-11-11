@@ -96,6 +96,57 @@ bool assert_div_drc(void)
   return true;
 }
 
+/* check if q c2 = c1 with the relative residual less than 10 eps. */
+bool check_cdiv(const zComplex *c1, const zComplex *c2, const zComplex *q)
+{
+  zComplex r;
+
+  zComplexCMul( q, c2, &r );
+  zComplexSubDRC( &r, c1 );
+  return zComplexAbs( &r ) <= 10 * DBL_EPSILON * zComplexAbs( c1 );
+}
+
+/* division of complex numbers with very large or small absolute values */
+bool assert_cdiv(void)
+{
+  zComplex c1, c2, q, inv, one;
+  double scale[] = { 1, 1.0e-7, 1.0e-100, 1.0e-200, 1.0e-300, 1.0e100, 1.0e200, 1.0e300 };
+  int i, j;
+
+  zComplexCreate( &one, 1, 0 );
+  for( i=0; i<NUM; i++ )
+    for( j=0; j<sizeof(scale)/sizeof(double); j++ ){
+      zComplexCreate( &c1, zRandF(-10,10), zRandF(-10,10) );
+      zComplexCreate( &c2, zRandF(-10,10)*scale[j], zRandF(-10,10)*scale[j] );
+      if( !zComplexCDiv( &c1, &c2, &q ) || !check_cdiv( &c1, &c2, &q ) ){
+        eprintf( "(%g%+gi)/(%g%+gi) = %g%+gi\n", c1.re, c1.im, c2.re, c2.im, q.re, q.im );
+        return false;
+      }
+      if( zComplexCDivDRC( &c1, &c2 ) != &c1 || !zComplexEqual( &c1, &q, 0 ) ) return false;
+      if( fabs( c2.re ) < 1.0e-150 || fabs( c2.re ) > 1.0e150 ) continue; /* 1/c2 might overflow */
+      if( !zComplexInv( &c2, &inv ) || !check_cdiv( &one, &c2, &inv ) ) return false;
+    }
+  /* purely real and purely imaginary divisors */
+  zComplexCreate( &c1, 3, 4 );
+  zComplexCreate( &c2, 0, 2 );
+  if( !zComplexCDiv( &c1, &c2, &q ) || q.re != 2 || q.im != -1.5 ) return false;
+  zComplexCreate( &c2, 2, 0 );
+  if( !zComplexCDiv( &c1, &c2, &q ) || q.re != 1.5 || q.im != 2 ) return false;
+  return true;
+}
+
+/* division by zero */
+bool assert_cdiv_zero(void)
+{
+  zComplex c1, c2, q;
+
+  zComplexCreate( &c1, 1, 2 );
+  zComplexCreate( &c2, 0, 0 );
+  q = c1;
+  return !zComplexCDiv( &c1, &c2, &q ) && !zComplexInv( &c2, &q ) &&
+         !zComplexCDivDRC( &q, &c2 ) && zComplexEqual( &q, &c1, 0 );
+}
+
 /* multiplications where the result is put into an operand */
 bool assert_cmul_inplace(void)
 {
@@ -125,6 +176,8 @@ int main(int argc, char *argv[])
   zRandInit();
   zAssert( zComplexDivDRC + _zComplexDivDRC, assert_div_drc() );
   zAssert( zComplexCMul + zComplexCMulConj (in-place), assert_cmul_inplace() );
+  zAssert( zComplexCDiv + zComplexCDivDRC + zComplexInv, assert_cdiv() );
+  zAssert( zComplexCDiv + zComplexCDivDRC + zComplexInv (division by zero), assert_cdiv_zero() );
   zAssert( zComplexValIsIncluded, assert_isincluded() );
   zAssert( zQESolve, assert_qesolve() );
   zAssert( zCESolve, assert_cesolve() );

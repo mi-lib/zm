@@ -282,14 +282,13 @@ zCVec zCVecCMulNC(const zCVec v1, const zComplex *z, zCVec v)
 zCVec zCVecCDivNC(const zCVec v1, const zComplex *z, zCVec v)
 {
   int i;
-  double r;
-  zComplex dz;
 
-  r = zComplexSqrAbs( z );
-  zComplexConj( z, &dz );
-  zComplexDiv( &dz, r, &dz );
+  if( z->re == 0 && z->im == 0 ){
+    ZRUNERROR( ZM_ERR_ZERODIV );
+    return NULL;
+  }
   for( i=0; i<zCVecSizeNC(v); i++ )
-    zComplexCMul( zCVecElemNC(v1,i), &dz, zCVecElemNC(v,i) );
+    zComplexCDiv( zCVecElemNC(v1,i), z, zCVecElemNC(v,i) );
   return v;
 }
 
@@ -368,10 +367,6 @@ zCVec zCVecCMul(const zCVec v1, const zComplex *z, zCVec v)
 zCVec zCVecCDiv(const zCVec v1, const zComplex *z, zCVec v)
 {
   __z_cvec_size_check_2( v1, v );
-  if( zComplexIsTiny( z ) ){
-    ZRUNERROR( ZM_ERR_ZERODIV );
-    return NULL;
-  }
   return zCVecCDivNC( v1, z, v );
 }
 

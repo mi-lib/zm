@@ -258,25 +258,6 @@ static void _zComplexCMulSub(zComplex *c, double a, const zComplex *y) /* c -= a
   c->im -= a * y->im;
 }
 
-/* complex division c = c1 / c2 by Smith's method. */
-static void _zComplexCDivSmith(const zComplex *c1, const zComplex *c2, zComplex *c)
-{
-  double r, d, re;
-
-  if( fabs( c2->re ) >= fabs( c2->im ) ){
-    r = c2->im / c2->re;
-    d = c2->re + c2->im * r;
-    re =   ( c1->re + c1->im * r ) / d;
-    c->im = ( c1->im - c1->re * r ) / d;
-  } else{
-    r = c2->re / c2->im;
-    d = c2->re * r + c2->im;
-    re =   ( c1->re * r + c1->im ) / d;
-    c->im = ( c1->im * r - c1->re ) / d;
-  }
-  c->re = re;
-}
-
 /* replace a tiny pivot with a perturbed one. */
 static void _zMatEigDQRPerturb(zComplex *c, double delta)
 {
@@ -310,16 +291,16 @@ static void _zMatEigDQRBackSubst(zMat t, const zComplex *lambda, zComplex *y, in
         zSwap( zComplex, r1, r2 );
       }
       _zMatEigDQRPerturb( &a11, delta );
-      _zComplexCDivSmith( &a21, &a11, &m );
+      zComplexCDiv( &a21, &a11, &m );
       _zComplexCMul( &m, &a12, &a21 ); /* a21 is reused as a temporary */
       a22.re -= a21.re; a22.im -= a21.im;
       _zComplexCMul( &m, &r1, &a21 );
       r2.re -= a21.re; r2.im -= a21.im;
       _zMatEigDQRPerturb( &a22, delta );
-      _zComplexCDivSmith( &r2, &a22, &y[i] );
+      zComplexCDiv( &r2, &a22, &y[i] );
       _zComplexCMul( &a12, &y[i], &a21 );
       r1.re -= a21.re; r1.im -= a21.im;
-      _zComplexCDivSmith( &r1, &a11, &y[i-1] );
+      zComplexCDiv( &r1, &a11, &y[i-1] );
       i--;
     } else{
       _zComplexZero( &r1 );
@@ -327,7 +308,7 @@ static void _zMatEigDQRBackSubst(zMat t, const zComplex *lambda, zComplex *y, in
         _zComplexCMulSub( &r1, zMatElemNC(t,i,j), &y[j] );
       _zComplexCreate( &a11, zMatElemNC(t,i,i) - lambda->re, -lambda->im );
       _zMatEigDQRPerturb( &a11, delta );
-      _zComplexCDivSmith( &r1, &a11, &y[i] );
+      zComplexCDiv( &r1, &a11, &y[i] );
     }
     /* rescale to avoid overflow */
     if( ( ymax = _zComplexAbs( &y[i] ) ) > 1.0e100 )

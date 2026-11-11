@@ -189,6 +189,7 @@ __ZM_EXPORT bool zCMatIsTol(const zCMat m, double tol);
  * zCMatCMulNC() and zCMatCMul() multiply \a m1 by a complex scalar value \a z, and put the result into \a m.
  *
  * zCMatCDivNC() and zCMatCDiv() divide \a m1 by \a z, and put the result into \a m.
+ * Each component is divided by zComplexCDiv(). They return the null pointer if \a z is zero.
  *
  * zCMatAddNCDRC() and zCMatAddDRC() directly add \a m2 to \a m1.
  *
