@@ -1,3 +1,5 @@
+2026.11.11. Debugged zMatInfNorm to access rows aligned with the column capacity of a matrix. [zm_mat]
+2026.11.11. Added tests of zMatSqrNorm and zMatInfNorm, including a matrix whose column size is smaller than its capacity. [test]
 2026.11.11. Modified zLESolveNormMinDST and zLESolveErrorMinDST to scale the normal equation symmetrically by the inverse square roots of its diagonal components, so that the accuracy is not lost due to unbalanced scales of rows/columns of the coefficient matrix. [zm_le_gen]
 2026.11.11. Added a test of Gear method for a state close to the boundary of the domain of the differential function. [test]
 2026.11.11. Modified the Jacobian matrix of the nonlinear equation of Gear method to use one-sided differences if the differential function is not finite on one side. [zm_ode_gear]

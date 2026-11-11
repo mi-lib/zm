@@ -236,6 +236,32 @@ void assert_mat_elem_maxmin(void)
   zAssert( zMatElemAbsMin, retval == 1 && ir == 0 && ic == 0 );
 }
 
+void assert_mat_norm(void)
+{
+  double mat_array[] = {
+    1, -2,  3, -4,
+    9,-10, 11,-12,
+   -5,  6, -7,  8,
+  };
+  zMatStruct mat;
+  zMat m;
+  int i, j;
+
+  zMatAssignArray( &mat, 3, 4, mat_array );
+  zAssert( zMatSqrNorm, zMatSqrNorm( &mat ) == 650 );
+  zAssert( zMatInfNorm, zMatInfNorm( &mat ) == 42 );
+  /* a matrix whose column size is smaller than its capacity, where the last row has the maximum sum
+   * of absolute values so that a row misaligned with the capacity is detected. */
+  m = zMatAlloc( 3, 6 );
+  zMatSetColSize( m, 3 );
+  for( i=0; i<3; i++ )
+    for( j=0; j<3; j++ )
+      zMatSetElemNC( m, i, j, zMatElemNC(&mat,(2*i)%3,j) );
+  zAssert( zMatSqrNorm (more-capacity case), zMatSqrNorm( m ) == 426 );
+  zAssert( zMatInfNorm (more-capacity case), zMatInfNorm( m ) == 30 );
+  zMatFree( m );
+}
+
 void assert_mat_arith(void)
 {
   const int rowsize = 12;
@@ -643,6 +669,7 @@ int main(void)
   assert_mat_is_symmetric();
   assert_mat_get_put();
   assert_mat_elem_maxmin();
+  assert_mat_norm();
   assert_mat_arith();
   assert_mat_transpose();
   assert_mul_mat_vec();

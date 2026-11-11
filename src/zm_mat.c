@@ -625,10 +625,10 @@ double zMatInfNorm(const zMat m)
   double *mp, rs, rsmax = 0;
   int i, j;
 
-  mp = zMatBufNC(m);
   for( i=0; i<zMatRowSizeNC(m); i++ ){
+    mp = zMatRowBufNC(m,i); /* rows are aligned with the column capacity. */
     for( rs=0, j=0; j<zMatColSizeNC(m); j++ )
-      rs += fabs( *mp++ );
+      rs += fabs( mp[j] );
     if( rs > rsmax ) rsmax = rs;
   }
   return rsmax;
