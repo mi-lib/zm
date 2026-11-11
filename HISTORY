@@ -1,3 +1,7 @@
+2026.11.12. Added tests of zCVecCMulDRC, zCVecCDivDRC, zCMatCMulDRC, zCMatCDivDRC, zComplexDivDRC, _zComplexDivDRC, and in-place zComplexCMul and zComplexCMulConj. [test]
+2026.11.12. Debugged _zComplexCreate to evaluate both the real and imaginary parts before assigning them. [zm_complex]
+2026.11.12. Added _zComplexDiv. [zm_complex]
+2026.11.12. Debugged zCVecCMulDRC, zCVecCDivDRC, zCMatCMulDRC, and zCMatCDivDRC that called the functions for a real number instead of a complex number. [zm_cvec, zm_cmat]
 2026.11.11. Added tests of zIsInf, zIsNan, zIsFinite, and their macro versions. [test]
 2026.11.11. Reimplemented zIsInf, zIsNan, and zIsFinite to internally call _zIsInf, _zIsNan, and _zIsFinite, respectively. [zm_ieee]
 2026.11.11. Added macros _zIEEEDoubleByte, _zIEEEExpIsMax, _zIEEEMantIsZero, _zIEEESignIsNeg, _zIsInf, _zIsNan, and _zIsFinite. [zm_ieee]

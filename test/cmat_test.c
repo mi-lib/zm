@@ -39,9 +39,34 @@ void assert_get_put(void)
   zCVecFree( vec_test2 );
 }
 
+void assert_cmul_cdiv_drc(void)
+{
+  zCMat m1, m2, m3;
+  zComplex z;
+
+  m1 = zCMatAlloc( 10, 20 );
+  m2 = zCMatAlloc( 10, 20 );
+  zCMatRandUniform( m1, -10, 10, -10, 10 );
+  zComplexCreate( &z, zRandF(1,10), zRandF(-10,10) );
+  m3 = zCMatClone( m1 );
+  zCMatCMul( m1, &z, m2 );
+  zCMatCMulDRC( m3, &z );
+  zCMatSubDRC( m3, m2 );
+  zAssert( zCMatCMulDRC, zCMatIsTol( m3, zTOL ) );
+  zCMatCopy( m1, m3 );
+  zCMatCDiv( m1, &z, m2 );
+  zCMatCDivDRC( m3, &z );
+  zCMatSubDRC( m3, m2 );
+  zAssert( zCMatCDivDRC, zCMatIsTol( m3, zTOL ) );
+  zCMatFree( m1 );
+  zCMatFree( m2 );
+  zCMatFree( m3 );
+}
+
 int main(void)
 {
   zRandInit();
   assert_get_put();
+  assert_cmul_cdiv_drc();
   return EXIT_SUCCESS;
 }

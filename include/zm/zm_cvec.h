@@ -194,8 +194,8 @@ __ZM_EXPORT zCVec zCVecCat(const zCVec v1, const zComplex *z, const zCVec v2, zC
 #define zCVecRevDRC(v)         zCVecRev( v, v )
 #define zCVecMulDRC(v,z)       zCVecMul( v, z, v )
 #define zCVecDivDRC(v,z)       zCVecDiv( v, z, v )
-#define zCVecCMulDRC(v,z)      zCVecMul( v, z, v )
-#define zCVecCDivDRC(v,z)      zCVecDiv( v, z, v )
+#define zCVecCMulDRC(v,z)      zCVecCMul( v, z, v )
+#define zCVecCDivDRC(v,z)      zCVecCDiv( v, z, v )
 #define zCVecCatDRC(v1,z,v2)   zCVecCat( v1, z, v2, v1 )
 
 /*! \brief inner product of two complex vectors.

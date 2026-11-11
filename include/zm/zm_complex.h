@@ -74,10 +74,15 @@ __BEGIN_DECLS
  * zComplexCreate() creates a complex number whose real part
  * is \a r and imaginary part is \a i. The result is put
  * where \a c points.
+ *
+ * _zComplexCreate() evaluates both \a r and \a i before
+ * assigning them, so that the macros based on it work even if
+ * \a c points the same with an operand.
  */
 #define _zComplexCreate(c,r,i) do{\
-  (c)->re = (r);\
-  (c)->im = (i);\
+  double __z_complex_re = (r), __z_complex_im = (i);\
+  (c)->re = __z_complex_re;\
+  (c)->im = __z_complex_im;\
 } while(0)
 __ZM_EXPORT zComplex *zComplexCreate(zComplex *c, double r, double i);
 
@@ -192,6 +197,11 @@ __ZM_EXPORT zComplex *zComplexConj(const zComplex *c, zComplex *cc);
  *
  * zComplexCDiv() divides a complex number \a c1 by \another
  * \a c2. The result is put into \a c.
+ *
+ * _zComplexAdd(), _zComplexSub(), _zComplexRev(), _zComplexMul(),
+ * _zComplexDiv(), _zComplexCMul(), and _zComplexCMulConj() are
+ * macro versions of the above functions, which do not return
+ * values. _zComplexDiv() does not check if \a k is zero.
  * \return
  * These functions returns a pointer to the result.
  *
@@ -201,6 +211,7 @@ __ZM_EXPORT zComplex *zComplexConj(const zComplex *c, zComplex *cc);
 #define _zComplexSub(c1,c2,c)      _zComplexCreate( c, (c1)->re-(c2)->re, (c1)->im-(c2)->im )
 #define _zComplexRev(c,rc)         _zComplexCreate( rc, -(c)->re, -(c)->im )
 #define _zComplexMul(c,k,ec)       _zComplexCreate( ec, (c)->re*(k), (c)->im*(k) )
+#define _zComplexDiv(c,k,ec)       _zComplexCreate( ec, (c)->re/(k), (c)->im/(k) )
 #define _zComplexCMul(c1,c2,c)     _zComplexCreate( c, (c1)->re*(c2)->re - (c1)->im*(c2)->im, (c1)->re*(c2)->im + (c1)->im*(c2)->re )
 #define _zComplexCMulConj(c1,c2,c) _zComplexCreate( c, (c1)->re*(c2)->re + (c1)->im*(c2)->im, -(c1)->re*(c2)->im + (c1)->im*(c2)->re )
 

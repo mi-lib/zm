@@ -238,8 +238,8 @@ __ZM_EXPORT zCMat zCMatCDiv(const zCMat m1, const zComplex *z, zCMat m);
 #define zCMatRevDRC(m)       zCMatRev( (m), (m) )
 #define zCMatMulDRC(m,k)     zCMatMul( (m), (k), (m) )
 #define zCMatDivDRC(m,k)     zCMatDiv( (m), (k), (m) )
-#define zCMatCMulDRC(m,z)    zCMatMul( (m), (z), (m) )
-#define zCMatCDivDRC(m,z)    zCMatDiv( (m), (z), (m) )
+#define zCMatCMulDRC(m,z)    zCMatCMul( (m), (z), (m) )
+#define zCMatCDivDRC(m,z)    zCMatCDiv( (m), (z), (m) )
 
 /*! \brief multiply a complex matrix and a complex vector, or of two matrices.
  *

@@ -76,9 +76,55 @@ bool assert_isincluded(void)
   return true;
 }
 
+bool assert_div_drc(void)
+{
+  zComplex c1, c2, c3;
+  double k;
+  int i;
+
+  for( i=0; i<NUM; i++ ){
+    zComplexCreate( &c1, zRandF(-10,10), zRandF(-10,10) );
+    k = zRandF( 1, 10 );
+    zComplexDiv( &c1, k, &c2 );
+    c3 = c1;
+    zComplexDivDRC( &c3, k );
+    if( !zComplexEqual( &c2, &c3, zTOL ) ) return false;
+    c3 = c1;
+    _zComplexDivDRC( &c3, k );
+    if( !zComplexEqual( &c2, &c3, zTOL ) ) return false;
+  }
+  return true;
+}
+
+/* multiplications where the result is put into an operand */
+bool assert_cmul_inplace(void)
+{
+  zComplex c1, c2, c3, c4;
+  int i;
+
+  for( i=0; i<NUM; i++ ){
+    zComplexCreate( &c1, zRandF(-10,10), zRandF(-10,10) );
+    zComplexCreate( &c2, zRandF(-10,10), zRandF(-10,10) );
+    zComplexCMul( &c1, &c2, &c3 );
+    c4 = c1;
+    zComplexCMul( &c4, &c2, &c4 );
+    if( !zComplexEqual( &c3, &c4, zTOL ) ) return false;
+    c4 = c2;
+    zComplexCMul( &c1, &c4, &c4 );
+    if( !zComplexEqual( &c3, &c4, zTOL ) ) return false;
+    zComplexCMulConj( &c1, &c2, &c3 );
+    c4 = c1;
+    zComplexCMulConj( &c4, &c2, &c4 );
+    if( !zComplexEqual( &c3, &c4, zTOL ) ) return false;
+  }
+  return true;
+}
+
 int main(int argc, char *argv[])
 {
   zRandInit();
+  zAssert( zComplexDivDRC + _zComplexDivDRC, assert_div_drc() );
+  zAssert( zComplexCMul + zComplexCMulConj (in-place), assert_cmul_inplace() );
   zAssert( zComplexValIsIncluded, assert_isincluded() );
   zAssert( zQESolve, assert_qesolve() );
   zAssert( zCESolve, assert_cesolve() );
