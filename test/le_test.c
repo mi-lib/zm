@@ -260,6 +260,16 @@ void generate_equation_illposed(zMat a, zVec b, zVec w, zVec w2, zVec x, zVec _b
   zVecSetAll( w, 1.0 );
 }
 
+/* normwise backward error of an approximate solution x of a x = b in the infinity norm, namely,
+ * |a x - b| / ( |a||x| + |b| ). It does not depend on the condition number of a nor the scale of the
+ * problem, and is in the order of the machine epsilon for a backward stable solver. */
+double le_backward_error(const zMat a, const zVec x, const zVec b, zVec r)
+{
+  zMulMatVec( a, x, r );
+  zVecSubDRC( r, b );
+  return zVecInfNorm( r ) / ( zMatInfNorm( a ) * zVecInfNorm( x ) + zVecInfNorm( b ) );
+}
+
 #define NUM_METHOD 4
 
 void try_le_gen_one(zMat a, zVec b, zVec w, zVec w2, zVec x, zVec _b, double error[NUM_METHOD], long delta_clock[NUM_METHOD])
@@ -269,33 +279,29 @@ void try_le_gen_one(zMat a, zVec b, zVec w, zVec w2, zVec x, zVec _b, double err
   c1 = clock();
   zLESolveMP_LQ( a, b, w, w2, x );
   c2 = clock();
-  zMulMatVec( a, x, _b );
   delta_clock[0] = c2 - c1;
-  error[0] = zVecElemAbsMax( zVecSubDRC( _b, b ), NULL );
+  error[0] = le_backward_error( a, x, b, _b );
   eprintf( "MP(LQ):%g %ld ", error[0], delta_clock[0] );
 
   c1 = clock();
   zLESolveMP_LU( a, b, w, w2, x );
   c2 = clock();
-  zMulMatVec( a, x, _b );
   delta_clock[1] = c2 - c1;
-  error[1] = zVecElemAbsMax( zVecSubDRC( _b, b ), NULL );
+  error[1] = le_backward_error( a, x, b, _b );
   eprintf( "MP(LU):%g %ld ", error[1], delta_clock[1] );
 
   c1 = clock();
   zLESolveMP_SVD( a, b, x );
   c2 = clock();
-  zMulMatVec( a, x, _b );
   delta_clock[2] = c2 - c1;
-  error[2] = zVecElemAbsMax( zVecSubDRC( _b, b ), NULL );
+  error[2] = le_backward_error( a, x, b, _b );
   eprintf( "MP(SVD):%g %ld ", error[2], delta_clock[2] );
 
   c1 = clock();
   zLESolveSR( a, b, w, w2, x );
   c2 = clock();
-  zMulMatVec( a, x, _b );
   delta_clock[3] = c2 - c1;
-  error[3] = zVecElemAbsMax( zVecSubDRC( _b, b ), NULL );
+  error[3] = le_backward_error( a, x, b, _b );
   eprintf( "SR:%g %ld ", error[3], delta_clock[3] );
 
   eprintf( "\n" );
@@ -317,8 +323,13 @@ void eval_le_gen(const double error[NUM_TRIAL][NUM_METHOD], const double tol[NUM
 
 void assert_le_gen(void)
 {
-  const double tol_general[] = { 1.0e-10, 1.0e-9, 1.0e-11, 1.0e-3 };
-  const double tol_illcond[] = { 1.0e-10, 1.0e-9, 1.0e-2,  1.0e-2 };
+  /* tolerances of the normwise backward errors for MP(LQ), MP(LU), MP(SVD), and SR. Those for MP(SVD)
+   * in ill-conditioned cases and SR are loose, since the former is based on the eigenvalues of a^T a,
+   * and the latter does not intend to solve the equation exactly. In ill-conditioned cases, a row
+   * which is close to linearly dependent on the others within ZM_LQ_DECOMP_TOL is discarded by LQ
+   * decomposition, and MP(LU) loses accuracy in solving the normal equations of the factors. */
+  const double tol_general[] = { 1.0e-14, 1.0e-12, 1.0e-13, 1.0e-6 };
+  const double tol_illcond[] = { ZM_LQ_DECOMP_TOL, 1.0e-11, 1.0e-5, 1.0e-5 };
   const int rowsize = 150;
   const int colsize = 200;
   zMat a;
@@ -616,49 +627,61 @@ void assert_mat_inv(void)
   zAssert( zMatInv, result );
 }
 
+/* normwise backward error of an approximate solution x of m x = b in the infinity norm, where r is
+ * a workspace with the same size of b. See le_backward_error() for vectors. */
+double mat_backward_error(const zMat m, const zMat x, const zMat b, zMat r)
+{
+  zMulMatMat( m, x, r );
+  zMatSubDRC( r, b );
+  return zMatInfNorm( r ) / ( zMatInfNorm( m ) * zMatInfNorm( x ) + zMatInfNorm( b ) );
+}
+
 void assert_mat_mul_inv(void)
 {
-  zMat m1, m2, m3, m;
+  zMat m1, m2, m3, m, r;
   const int rowsize = 10;
   const int colsize = 8;
   const int testnum = 100;
   bool result = true;
   int k;
-  const double tol = 1.0e-10;
+  const double tol = 1.0e-14; /* tolerance of the normwise backward error */
+  double err;
 
   m1 = zMatAlloc( rowsize, colsize );
   m2 = zMatAlloc( rowsize, colsize );
   m3 = zMatAlloc( rowsize, colsize );
+  r = zMatAlloc( rowsize, colsize );
   m = zMatAllocSqr( rowsize );
   for( k=0; k<testnum; k++ ){
     zMatRandUniform( m, -10, 10 );
     zMatRandUniform( m1,-10, 10 );
     zMulMatMat( m, m1, m2 );
     zMulInvMatMat( m, m2, m3 );
-    zMatSub( m1, m3, m2 );
-    if( !zMatIsTol( m2, tol ) ){
-      eprintf( "case #%d: maximum error = %g\n", k, zMatElemAbsMax( m2, NULL, NULL ) );
+    if( ( err = mat_backward_error( m, m3, m2, r ) ) > tol ){
+      eprintf( "case #%d: backward error = %g\n", k, err );
       result = false;
     }
   }
-  zMatFreeAtOnce( 4, m, m1, m2, m3 );
+  zMatFreeAtOnce( 5, m, m1, m2, m3, r );
   zAssert( zMulInvMatMat, result );
 }
 
 void assert_mat_mul_inv_capacity(void)
 {
-  zMat m1, m2, m3, m;
+  zMat m1, m2, m3, m, r;
   const int colcapacity = 20;
   const int rowsize = 10;
   const int colsize = 8;
   const int testnum = 100;
   bool result = true;
   int k;
-  const double tol = 1.0e-10;
+  const double tol = 1.0e-14; /* tolerance of the normwise backward error */
+  double err;
 
   m1 = zMatAlloc( rowsize, colcapacity );
   m2 = zMatAlloc( rowsize, colsize );
   m3 = zMatAlloc( rowsize, colsize );
+  r = zMatAlloc( rowsize, colsize );
   m = zMatAlloc( rowsize, colcapacity );
   zMatSetColSize( m1, colsize );
   zMatSetColSize( m, rowsize );
@@ -667,13 +690,12 @@ void assert_mat_mul_inv_capacity(void)
     zMatRandUniform( m1,-10, 10 );
     zMulMatMat( m, m1, m2 );
     zMulInvMatMat( m, m2, m3 );
-    zMatSub( m1, m3, m2 );
-    if( !zMatIsTol( m2, tol ) ){
-      eprintf( "case #%d: maximum error = %g\n", k, zMatElemAbsMax( m2, NULL, NULL ) );
+    if( ( err = mat_backward_error( m, m3, m2, r ) ) > tol ){
+      eprintf( "case #%d: backward error = %g\n", k, err );
       result = false;
     }
   }
-  zMatFreeAtOnce( 4, m, m1, m2, m3 );
+  zMatFreeAtOnce( 5, m, m1, m2, m3, r );
   zAssert( zMulInvMatMat (more-capacity case), result );
 }
 

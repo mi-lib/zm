@@ -1,3 +1,4 @@
+2026.11.11. Modified the tests of zMulInvMatMat and the generalized linear equation solvers to evaluate the normwise backward errors instead of the absolute errors, which do not depend on the condition number of the coefficient matrix. [test]
 2026.11.11. Debugged zMatInfNorm to access rows aligned with the column capacity of a matrix. [zm_mat]
 2026.11.11. Added tests of zMatSqrNorm and zMatInfNorm, including a matrix whose column size is smaller than its capacity. [test]
 2026.11.11. Modified zLESolveNormMinDST and zLESolveErrorMinDST to scale the normal equation symmetrically by the inverse square roots of its diagonal components, so that the accuracy is not lost due to unbalanced scales of rows/columns of the coefficient matrix. [zm_le_gen]
