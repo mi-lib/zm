@@ -132,6 +132,8 @@ __ZM_EXPORT zVec zLESolveLURI(const zMat a, const zVec b, zVec ans);
  *
  * zLESolveGaussSeidel() solves linear equation \a a x = \a b based on Gauss-Seidel's method.
  * The answer (x in the equation) is put into \a ans.
+ * The iteration is regarded as converged if the maximum absolute change of the components of the
+ * answer in an iteration is not greater than zTOL times the maximum absolute component of the answer.
  * It is typically utilized for sparse equation, namely, an equation with a sparse coefficient matrix \a a.
  * \return
  * zLESolveGaussSeidel() returns a pointer \a ans if succeeds or the iteration does not converge within

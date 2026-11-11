@@ -567,6 +567,32 @@ void assert_ode_dc_order(void)
   zAssert( zODEUpdateDC (order of accuracy), result );
 }
 
+/* drivers of solvers, which are switched outside of the loops of updates */
+typedef struct{
+  const char *suffix; /* suffix to the name of a method in messages */
+  zODE *(* create)(zODE*,int,int,zVec (*)(double,zVec,void*,zVec));
+  void (* destroy)(zODE*);
+  zVec (* update)(zODE*,double,zVec,double,void*);
+} driver_t;
+
+/* function versions of zODECreate(), zODEDestroy() and zODEUpdate(), which are macros */
+static zODE *driver_create(zODE *ode, int dim, int step, zVec (* f)(double,zVec,void*,zVec))
+{
+  return zODECreate( ode, dim, step, f );
+}
+static void driver_destroy(zODE *ode)
+{
+  zODEDestroy( ode );
+}
+static zVec driver_update(zODE *ode, double t, zVec x, double dt, void *util)
+{
+  return zODEUpdate( ode, t, x, dt, util );
+}
+
+/* plain update, and update with deferred correction */
+static const driver_t driver_plain = { "", driver_create, driver_destroy, driver_update };
+static const driver_t driver_dc = { " with DC", zODECreateDC, zODEDestroyDC, zODEUpdateDC };
+
 /* x' = -y, y' = x (circle) with counting the number of calls */
 zVec circle_count(double t, zVec x, void *count, zVec dx)
 {
@@ -576,7 +602,7 @@ zVec circle_count(double t, zVec x, void *count, zVec dx)
 
 /* integrate a circle with the radius r from t=0 to t=1 with an adaptive step size control, and return the
  * relative error at t=1. The number of calls of the differential function is stored where count points. */
-double circle_count_integrate(zODE *ode, bool is_dc, double r, int *count)
+double circle_count_integrate(zODE *ode, const driver_t *driver, double r, int *count)
 {
   const double dt = 0.1;
   const int n = 10;
@@ -584,40 +610,47 @@ double circle_count_integrate(zODE *ode, bool is_dc, double r, int *count)
   int i;
   double err;
 
-  if( is_dc ) zODECreateDC( ode, 2, 0, circle_count );
-  else        zODECreate( ode, 2, 0, circle_count );
+  driver->create( ode, 2, 0, circle_count );
   x = zVecCreateList( 2, r, 0.0 );
   for( *count=0, i=0; i<n; i++ )
-    is_dc ? zODEUpdateDC( ode, i*dt, x, dt, count ) : zODEUpdate( ode, i*dt, x, dt, count );
+    driver->update( ode, i*dt, x, dt, count );
   err = circle_error( x, n*dt, r ) / r;
   zVecFree( x );
-  if( is_dc ) zODEDestroyDC( ode ); else zODEDestroy( ode );
+  driver->destroy( ode );
   return err;
+}
+
+/* check if the numbers of calls and the errors for large circles do not exceed those for the unit circle. */
+bool circle_count_scale_check(zODE *ode, const driver_t *driver, const char *name)
+{
+  const double r[] = { 1.0e6, 1.0e12 };
+  int i, count1, count;
+  double err1, err;
+  bool result = true;
+
+  err1 = circle_count_integrate( ode, driver, 1.0, &count1 );
+  for( i=0; i<sizeof(r)/sizeof(double); i++ ){
+    err = circle_count_integrate( ode, driver, r[i], &count );
+    if( count > count1 || err > 10 * err1 ){
+      eprintf( "%s%s: radius %g, relative error = %g, %d calls (radius 1: %g, %d calls)\n", name, driver->suffix, r[i], err, count, err1, count1 );
+      result = false;
+    }
+  }
+  return result;
 }
 
 /* 11. scale invariance of adaptive step size control */
 void assert_ode_adaptive_scale(void)
 {
-  const double r[] = { 1.0e6, 1.0e12 };
   zODE ode;
-  int i, count1, count;
-  double err1, err;
-  bool is_dc, result = true;
+  bool result = true;
 
   /* the tolerance is relative for large states, so that the time step is divided in the same way as
    * for the unit circle. */
-  for( is_dc=false; ; is_dc=true ){
-    if( is_dc ) zODEAssign( &ode, RK4, NULL, NULL ); else zODEAssign( &ode, DP45, NULL, NULL );
-    err1 = circle_count_integrate( &ode, is_dc, 1.0, &count1 );
-    for( i=0; i<sizeof(r)/sizeof(double); i++ ){
-      err = circle_count_integrate( &ode, is_dc, r[i], &count );
-      if( count > count1 || err > 10 * err1 ){
-        eprintf( "%s: radius %g, relative error = %g, %d calls (radius 1: %g, %d calls)\n", is_dc ? "RK4 with DC" : "DP45", r[i], err, count, err1, count1 );
-        result = false;
-      }
-    }
-    if( is_dc ) break;
-  }
+  zODEAssign( &ode, DP45, NULL, NULL );
+  if( !circle_count_scale_check( &ode, &driver_plain, "DP45" ) ) result = false;
+  zODEAssign( &ode, RK4, NULL, NULL );
+  if( !circle_count_scale_check( &ode, &driver_dc, "RK4" ) ) result = false;
   zAssert( zODEUpdate (scale invariance of adaptive step size control), result );
 }
 
@@ -642,7 +675,7 @@ static zVec update_count_wrapper(zODE *ode, double t, zVec x, double dt, void *u
  * the end. The number of calls of the differential function is stored where count points. If step_count
  * is not the null pointer for deferred correction, the number of steps of the one-step method, namely,
  * three times the number of trials of deferred correction, is stored where step_count points. */
-double circle_integrate_adaptive(const method_t *method, bool is_dc, double dt, int n, int *count, int *step_count)
+double circle_integrate_adaptive(const method_t *method, const driver_t *driver, double dt, int n, int *count, int *step_count)
 {
   zODE ode;
   zVec x;
@@ -650,20 +683,19 @@ double circle_integrate_adaptive(const method_t *method, bool is_dc, double dt, 
   double err;
 
   method_assign( &ode, method );
-  if( is_dc ) zODECreateDC( &ode, 2, 0, circle_count );
-  else        zODECreate( &ode, 2, 0, circle_count );
-  if( is_dc && step_count ){
+  driver->create( &ode, 2, 0, circle_count );
+  if( driver == &driver_dc && step_count ){
     update_org = ode.update;
     ode.update = update_count_wrapper;
     update_count = 0;
   }
   x = zVecCreateList( 2, 1.0, 0.0 );
   for( *count=0, i=0; i<n; i++ )
-    is_dc ? zODEUpdateDC( &ode, i*dt, x, dt, count ) : zODEUpdate( &ode, i*dt, x, dt, count );
-  if( is_dc && step_count ) *step_count = update_count;
+    driver->update( &ode, i*dt, x, dt, count );
+  if( driver == &driver_dc && step_count ) *step_count = update_count;
   err = circle_error( x, n*dt, 1.0 );
   zVecFree( x );
-  if( is_dc ) zODEDestroyDC( &ode ); else zODEDestroy( &ode );
+  driver->destroy( &ode );
   return err;
 }
 
@@ -683,11 +715,11 @@ void assert_ode_adaptive_backward(void)
    * to solve the nonlinear equations. */
   for( k=0; k<METHOD_ONESTEP_NUM+sizeof(erk)/sizeof(method_t); k++ ){
     const method_t *method = k < METHOD_ONESTEP_NUM ? &method_onestep[k] : &erk[k-METHOD_ONESTEP_NUM];
-    bool is_dc = k < METHOD_ONESTEP_NUM;
-    err_f = circle_integrate_adaptive( method, is_dc, dt, n, &count_f, NULL );
-    err_b = circle_integrate_adaptive( method, is_dc, -dt, n, &count_b, NULL );
+    const driver_t *driver = k < METHOD_ONESTEP_NUM ? &driver_dc : &driver_plain;
+    err_f = circle_integrate_adaptive( method, driver, dt, n, &count_f, NULL );
+    err_b = circle_integrate_adaptive( method, driver, -dt, n, &count_b, NULL );
     if( abs( count_b - count_f ) > 0.01 * count_f || fabs( err_b - err_f ) > 1.0e-3 * err_f ){
-      eprintf( "%s%s: backward error = %g, %d calls (forward error = %g, %d calls)\n", method->name, is_dc ? " with DC" : "", err_b, count_b, err_f, count_f );
+      eprintf( "%s%s: backward error = %g, %d calls (forward error = %g, %d calls)\n", method->name, driver->suffix, err_b, count_b, err_f, count_f );
       result = false;
     }
   }
@@ -697,11 +729,15 @@ void assert_ode_adaptive_backward(void)
 /* methods with adaptive step size control: embedded Runge-Kutta methods, and one-step methods with
  * deferred correction */
 #define METHOD_ADAPTIVE_NUM ( 3 + METHOD_ONESTEP_NUM )
-const method_t *method_adaptive(int k, bool *is_dc)
+const method_t *method_adaptive(int k, const driver_t **driver)
 {
   static const method_t erk[] = { METHOD( RKF45, 0, 5 ), METHOD( CK45, 0, 5 ), METHOD( DP45, 0, 5 ) };
 
-  if( ( *is_dc = ( k >= 3 ) ) ) return &method_onestep[k-3];
+  if( k >= 3 ){
+    *driver = &driver_dc;
+    return &method_onestep[k-3];
+  }
+  *driver = &driver_plain;
   return &erk[k];
 }
 
@@ -712,7 +748,8 @@ void assert_ode_step_prediction(void)
   const method_t *method;
   int k, count_s, count_l, step_s, step_l;
   double err_s, err_l;
-  bool is_dc, result = true;
+  const driver_t *driver;
+  bool result = true;
 
   /* since the time step is predicted from the last step, it does not depend on the interval of updates,
    * so that a long interval does not cost more evaluations than a short interval does. For implicit
@@ -720,15 +757,15 @@ void assert_ode_step_prediction(void)
    * of calls of the differential function, since the latter include the iterations to solve the nonlinear
    * equations, which fluctuate due to round-off errors. */
   for( k=0; k<METHOD_ADAPTIVE_NUM; k++ ){
-    method = method_adaptive( k, &is_dc );
-    err_s = circle_integrate_adaptive( method, is_dc, 1.0, (int)T, &count_s, &step_s );
-    err_l = circle_integrate_adaptive( method, is_dc, 10.0, (int)T/10, &count_l, &step_l );
-    if( !is_dc || !method_is_implicit( method ) ){ /* explicit methods */
+    method = method_adaptive( k, &driver );
+    err_s = circle_integrate_adaptive( method, driver, 1.0, (int)T, &count_s, &step_s );
+    err_l = circle_integrate_adaptive( method, driver, 10.0, (int)T/10, &count_l, &step_l );
+    if( driver != &driver_dc || !method_is_implicit( method ) ){ /* explicit methods */
       step_s = count_s;
       step_l = count_l;
     }
     if( step_l > 1.02 * step_s || err_s > tol || err_l > tol ){
-      eprintf( "%s%s: interval 10: error = %g, %d steps (%d calls), interval 1: error = %g, %d steps (%d calls)\n", method->name, is_dc ? " with DC" : "", err_l, step_l, count_l, err_s, step_s, count_s );
+      eprintf( "%s%s: interval 10: error = %g, %d steps (%d calls), interval 1: error = %g, %d steps (%d calls)\n", method->name, driver->suffix, err_l, step_l, count_l, err_s, step_s, count_s );
       result = false;
     }
   }
@@ -751,24 +788,24 @@ void assert_ode_adaptive_nan(void)
   zODE ode;
   zVec x;
   int k, count;
-  bool is_dc, result = true;
+  const driver_t *driver;
+  bool result = true;
 
   /* the time step is shortened down to ZM_ODE_DT_TOL around t=0.5, and the rest of the interval is
    * abandoned after the state becomes not a number. Euler method never evaluates the function for t>0.5. */
   for( k=0; k<METHOD_ADAPTIVE_NUM; k++ ){
-    method = method_adaptive( k, &is_dc );
+    method = method_adaptive( k, &driver );
     method_assign( &ode, method );
-    if( is_dc ) zODECreateDC( &ode, 1, 0, nan_after_half );
-    else        zODECreate( &ode, 1, 0, nan_after_half );
+    driver->create( &ode, 1, 0, nan_after_half );
     x = zVecCreateList( 1, 0.0 );
     count = 0;
-    is_dc ? zODEUpdateDC( &ode, 0, x, 1.0, &count ) : zODEUpdate( &ode, 0, x, 1.0, &count );
+    driver->update( &ode, 0, x, 1.0, &count );
     if( count > count_max ){
-      eprintf( "%s%s: x = %g, %d calls\n", method->name, is_dc ? " with DC" : "", zVecElemNC(x,0), count );
+      eprintf( "%s%s: x = %g, %d calls\n", method->name, driver->suffix, zVecElemNC(x,0), count );
       result = false;
     }
     zVecFree( x );
-    if( is_dc ) zODEDestroyDC( &ode ); else zODEDestroy( &ode );
+    driver->destroy( &ode );
   }
   zAssert( zODEUpdate (termination for a differential function which is not a number), result );
 }

@@ -290,8 +290,8 @@ zVec zLESolveLURI(const zMat a, const zVec b, zVec ans)
 /* linear equation solver: Gauss-Seidel's method. */
 zVec zLESolveGaussSeidel(const zMat a, const zVec b, zVec ans)
 {
-  int i, j, k, p, count;
-  double x;
+  int i, j, k, p;
+  double x, dx_max, x_max;
   zIndex index;
 
   if( !zMatIsSqr(a) ){
@@ -308,16 +308,18 @@ zVec zLESolveGaussSeidel(const zMat a, const zVec b, zVec ans)
     zMatPivoting( a, index, i, i );
 
   for( i=0; ; i++ ){
-    for( count=0, j=0; j<zVecSizeNC(b); j++ ){
+    for( dx_max=x_max=0, j=0; j<zVecSizeNC(b); j++ ){
       p = zIndexElemNC(index,j);
       x = zVecElemNC(b,p);
       for( k=0; k<zVecSizeNC(ans); k++ )
         if( k != j ) x -= zMatElemNC(a,p,k)*zVecElemNC(ans,k);
       x /= zMatElemNC(a,p,j);
-      if( zIsTiny( x - zVecElemNC(ans,j) ) ) count++;
+      dx_max = zMax( dx_max, fabs( x - zVecElemNC(ans,j) ) );
+      x_max = zMax( x_max, fabs( x ) );
       zVecSetElemNC( ans, j, x );
     }
-    if( count == zVecSizeNC(ans) ) break;
+    /* converged if the change is negligible relative to the solution */
+    if( dx_max <= zTOL * x_max ) break;
     if( i == Z_MAX_ITER_NUM ){
       ZITERWARN( Z_MAX_ITER_NUM );
       break;

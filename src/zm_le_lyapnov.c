@@ -9,8 +9,8 @@
 /* Lyapnov equation solver. */
 zMat zLELyapnovSolve(const zMat a, const zMat b, zMat ans)
 {
-  zVecStruct bvec, ansvec;
-  zVec s;
+  zVecStruct bvec;
+  zVec s, x;
   zMat aw, bt;
   zIndex idx;
   int n, nn, i, j, k;
@@ -29,27 +29,29 @@ zMat zLELyapnovSolve(const zMat a, const zMat b, zMat ans)
   aw = zMatAllocSqr( nn );
   idx = zIndexCreate( nn );
   s = zVecAlloc( nn );
-  if( !bt || !aw || !idx || !s ){
+  x = zVecAlloc( nn );
+  if( !bt || !aw || !idx || !s || !x ){
     ans = NULL;
     goto TERMINATE;
   }
   zMatTNC( b, bt );
-  zVecAssignArray( &bvec, nn, zMatBuf(bt) );
-  zVecAssignArray( &ansvec, nn, zMatBuf(ans) );
+  zVecAssignArray( &bvec, nn, zMatBuf(bt) ); /* bt is newly allocated, so that its rows are contiguous. */
   for( i=0; i<n; i++ )
     for( j=0; j<n; j++ )
       for( k=0; k<n; k++ ){
         zMatElemNC(aw,n*i+k,n*k+j) += zMatElemNC(a,j,i);
         zMatElemNC(aw,n*k+i,n*j+k) += zMatElemNC(a,j,i);
       }
-  if( !zLESolveGaussDST( aw, &bvec, &ansvec, idx, s ) ){
+  if( !zLESolveGaussDST( aw, &bvec, x, idx, s ) ){
     ZRUNERROR( ZM_ERR_MAT_SINGULAR );
     ans = NULL;
-  }
+  } else /* the rows of ans are aligned with its column capacity, which might be larger than n. */
+    for( i=0; i<n; i++ )
+      zRawVecCopy( zVecBufNC(x) + n*i, zMatRowBufNC(ans,i), n );
  TERMINATE:
   zMatFree( bt );
   zMatFree( aw );
   zIndexFree( idx );
-  zVecFree( s );
+  zVecFreeAtOnce( 2, s, x );
   return ans;
 }

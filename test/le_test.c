@@ -99,17 +99,19 @@ void assert_le(void)
   zMat a;
   zVec b, x, ans, r;
   zMat l, u; /* for LU decomposition */
-  zMat adj;  /* Cramel's method */
+  zMat adj, inv; /* Cramer's method */
   zIndex index;
-  const double tol = ( 1.0e-9 ); /* tolerance of the error of Cramel's method, which is not backward stable */
+  const double tol = 100; /* tolerance of the error of Cramer's method relative to kappa(a) eps |x|, since it is not backward stable */
   const double tol_be = 1.0e-14; /* tolerance of the normwise backward error */
   const int size = 10;
   const int n = 1000;
   int i;
-  int count_cramel, count_gauss, count_lu, count_ri;
+  int count_cramer, count_gauss, count_lu, count_ri;
+  double kappa;
 
   a = zMatAllocSqr( size );
   adj = zMatAllocSqr( size );
+  inv = zMatAllocSqr( size );
   l = zMatAllocSqr( size );
   u = zMatAllocSqr( size );
   b = zVecAlloc( size );
@@ -117,20 +119,23 @@ void assert_le(void)
   ans = zVecAlloc( size );
   r = zVecAlloc( size );
   index = zIndexAlloc( size );
-  if( !a || !adj || !l || !u || !b || !x || !ans || !r || !index ) goto TERMINATE;
-  count_cramel = count_gauss = count_lu = count_ri = 0;
+  if( !a || !adj || !inv || !l || !u || !b || !x || !ans || !r || !index ) goto TERMINATE;
+  count_cramer = count_gauss = count_lu = count_ri = 0;
   for( i=0; i<n; i++ ){
     /* generate a problem */
     zMatRandUniform( a, -10, 10 );
     zVecRandUniform( ans,-10, 10 );
     zMulMatVec( a, ans, b );
-    /* Cramel's method (adjoint matrix / determinant) */
+    /* Cramer's method (adjoint matrix / determinant) */
     zMatAdj( a, adj );
     zMatDivDRC( adj, zMatDet(a) );
     zMulMatVec( adj, b, x );
-    if( zVecIsTol( zVecSubDRC( x, ans ), tol*10 /* relaxed tolerance */ ) ) count_cramel++;
+    /* the forward error is evaluated relative to the condition number of a,
+       which is computed with zMatInv() tested in assert_mat_inv() beforehand. */
+    kappa = zMatInv( a, inv ) ? zMatInfNorm( a ) * zMatInfNorm( inv ) : HUGE_VAL;
+    if( zVecInfNorm( zVecSubDRC( x, ans ) ) <= tol * kappa * DBL_EPSILON * zVecInfNorm( ans ) ) count_cramer++;
     else{
-      eprintf( "error (Cramel's method) " );
+      eprintf( "error (Cramer's method) " );
       zVecFPrint( stderr, x );
     }
     /* Gauss's elimination method */
@@ -157,11 +162,11 @@ void assert_le(void)
     }
   }
  TERMINATE:
-  zMatFreeAtOnce( 4, a, l, u, adj );
+  zMatFreeAtOnce( 5, a, l, u, adj, inv );
   zVecFreeAtOnce( 4, b, x, ans, r );
   zIndexFree( index );
 
-  eprintf( "success rate (Cramel) %d/%d ", count_cramel, n ); zAssert( zMatAdj + zMatDet, count_cramel == n );
+  eprintf( "success rate (Cramer) %d/%d ", count_cramer, n ); zAssert( zMatAdj + zMatDet, count_cramer == n );
   eprintf( "success rate (Gauss)  %d/%d ", count_gauss, n );  zAssert( zLESolveGauss,     count_gauss == n );
   eprintf( "success rate (LU)     %d/%d ", count_lu, n );     zAssert( zLESolveLU,        count_lu == n );
   eprintf( "success rate (LU+RI)  %d/%d ", count_ri, n );     zAssert( zLESolveLURI,      count_ri == n );
@@ -247,6 +252,44 @@ void assert_le_gauss_seidel(void)
   zVecFreeAtOnce( 3, b, x, ans );
   eprintf( "success rate (Gauss-Seidel) %d/%d ", count_gs, n );
   zAssert( zLESolveGaussSeidel, count_gs == n );
+}
+
+void assert_le_gauss_seidel_scale(void)
+{
+  const double scale[] = { 1.0e-12, 1.0e-6, 1.0, 1.0e6, 1.0e12 };
+  const double tol = 1.0e-10; /* tolerance of the relative error */
+  const int size = 10, testnum = 100;
+  zMat a, a_org;
+  zVec b, x, ans;
+  int i, j, k;
+  double err;
+  bool result = true;
+
+  a = zMatAllocSqr( size );
+  a_org = zMatAllocSqr( size );
+  b = zVecAlloc( size );
+  x = zVecAlloc( size );
+  ans = zVecAlloc( size );
+  /* the convergence has to be judged relatively to the scale of the solution */
+  for( i=0; i<sizeof(scale)/sizeof(double); i++ )
+    for( k=0; k<testnum; k++ ){
+      zMatRandUniform( a_org, -10, 10 );
+      zMulMatTMat( a_org, a_org, a );
+      for( j=0; j<size; j++ ) zMatElemNC(a,j,j) += 200;
+      zVecRandUniform( ans, -10, 10 );
+      zVecMulDRC( ans, scale[i] );
+      zMulMatVec( a, ans, b );
+      zVecZero( x );
+      zLESolveGaussSeidel( a, b, x );
+      zVecSubDRC( x, ans );
+      if( ( err = zVecInfNorm( x ) / zVecInfNorm( ans ) ) > tol ){
+        eprintf( "scale %g, case #%d: relative error = %g\n", scale[i], k, err );
+        result = false;
+      }
+    }
+  zMatFreeAtOnce( 2, a, a_org );
+  zVecFreeAtOnce( 3, b, x, ans );
+  zAssert( zLESolveGaussSeidel (scaled solutions), result );
 }
 
 /* generalized linear equation solver (benchmarking) */
@@ -608,37 +651,65 @@ void assert_le_ref_norm_min(void)
   zAssert( zLESolveRefNormMin, result );
 }
 
+/* normwise backward error of an approximate solution x of a tridiagonal equation */
+double tridiag_backward_error(const zVec a, const zVec b, const zVec c, const zVec d, const zVec x)
+{
+  int i, n;
+  double r, s, r_max = 0, m_norm = 0;
+
+  n = zVecSizeNC(x);
+  for( i=0; i<n; i++ ){
+    r = zVecElemNC(b,i)*zVecElemNC(x,i) - zVecElemNC(d,i);
+    s = fabs( zVecElemNC(b,i) );
+    if( i > 0 ){
+      r += zVecElemNC(a,i)*zVecElemNC(x,i-1);
+      s += fabs( zVecElemNC(a,i) );
+    }
+    if( i < n-1 ){
+      r += zVecElemNC(c,i)*zVecElemNC(x,i+1);
+      s += fabs( zVecElemNC(c,i) );
+    }
+    r_max = zMax( r_max, fabs( r ) );
+    m_norm = zMax( m_norm, s );
+  }
+  return r_max / ( m_norm * zVecInfNorm( x ) + zVecInfNorm( d ) );
+}
+
 void assert_tridiagonal_equation(void)
 {
   zVec a, b, c, d, ans;
-  int i;
+  int k;
   double err;
-  const int dim = 100;
+  const int dim = 100, testnum = 1000;
   bool result = true;
-  const double tol = 1.0e-10;
+  const double tol = 1.0e-14; /* tolerance of the normwise backward error */
 
   a = zVecAlloc( dim );
   b = zVecAlloc( dim );
   c = zVecAlloc( dim );
   d = zVecAlloc( dim );
   ans = zVecAlloc( dim );
-  zVecRandUniform( a, -10, 10 );
-  zVecRandUniform( b, -10, 10 );
-  zVecRandUniform( c, -10, 10 );
-  zVecRandUniform( d, -10, 10 );
-  zLETridiagSolve( a, b, c, d, ans );
-
-  for( i=0; i<zVecSizeNC(ans); i++ ){
-    err = zVecElem(b,i)*zVecElem(ans,i);
-    if( i > 0 )
-      err += zVecElem(a,i)*zVecElem(ans,i-1);
-    if( i < zVecSizeNC(a)-1 )
-      err += zVecElem(c,i)*zVecElem(ans,i+1);
-    err -= zVecElem(d,i);
-    if( !zIsTol( err, tol ) ){
-      eprintf( "residual #%d is not tiny: %g\n", i, err );
+  /* random matrices, which are not necessarily diagonally dominant */
+  for( k=0; k<testnum; k++ ){
+    zVecRandUniform( a, -10, 10 );
+    zVecRandUniform( b, -10, 10 );
+    zVecRandUniform( c, -10, 10 );
+    zVecRandUniform( d, -10, 10 );
+    err = zLETridiagSolve( a, b, c, d, ans ) ? tridiag_backward_error( a, b, c, d, ans ) : HUGE_VAL;
+    if( err > tol ){
+      eprintf( "case #%d: backward error = %g\n", k, err );
       result = false;
     }
+  }
+  /* a matrix whose diagonal components are all zero, which requires pivoting */
+  zVecSetAll( a, 1 );
+  zVecZero( b );
+  zVecSetAll( c, 1 );
+  zVecRandUniform( d, -10, 10 );
+  err = zLETridiagSolve( a, b, c, d, ans ) ? tridiag_backward_error( a, b, c, d, ans ) : HUGE_VAL;
+  if( err > tol ){
+    eprintf( "zero diagonal: backward error = %g\n", err );
+    result = false;
   }
   zVecFreeAtOnce( 5, a, b, c, d, ans );
   zAssert( zLETridiagSolve, result );
@@ -674,6 +745,34 @@ void assert_lyapnov_equation(void)
   }
   zMatFreeAtOnce( 5, a, b, x, tmp1, tmp2 );
   zAssert( zLELyapnovSolve, result );
+}
+
+void assert_lyapnov_equation_capacity(void)
+{
+  zMat a, b, x, xc;
+  const int size = 10, testnum = 100;
+  int i, k;
+  bool result = true;
+
+  a = zMatAllocSqr( size );
+  b = zMatAllocSqr( size );
+  x = zMatAllocSqr( size );
+  xc = zMatAlloc( size, size*2 );
+  zMatSetColSize( xc, size ); /* the column capacity is larger than the column size */
+  for( k=0; k<testnum; k++ ){
+    zMatRandUniform( a, -10, 10 );
+    zMatRandUniform( b, -10, 10 );
+    zLELyapnovSolve( a, b, x );
+    zLELyapnovSolve( a, b, xc );
+    for( i=0; i<size; i++ )
+      if( memcmp( zMatRowBufNC(x,i), zMatRowBufNC(xc,i), sizeof(double)*size ) != 0 ){
+        eprintf( "case #%d: the solution differs at the %dth row\n", k, i );
+        result = false;
+        break;
+      }
+  }
+  zMatFreeAtOnce( 4, a, b, x, xc );
+  zAssert( zLELyapnovSolve (more-capacity case), result );
 }
 
 /* matrix inversion */
@@ -770,22 +869,25 @@ void assert_mat_mul_inv_capacity(void)
 
 void assert_mat_mul_inv_mat_vec(void)
 {
-  zMat m1, m2, mat_ans, mat_org;
-  zVec v, vec_ans, vec_org;
+  zMat m1, m2, mat_ans, mat_org, mat_r;
+  zVec v, vec_ans, vec_org, vec_r;
   const int size = 10;
   const int n = 100;
   int i;
-  const double tol = 1.0e-9;
+  const double tol = 1.0e-14; /* tolerance of the normwise backward error */
+  double err;
   bool result = true;
 
   m1 = zMatAllocSqr( size );
   m2 = zMatAllocSqr( size );
   mat_ans = zMatAllocSqr( size );
   mat_org = zMatAllocSqr( size );
+  mat_r = zMatAllocSqr( size );
   v = zVecAlloc( size );
   vec_ans = zVecAlloc( size );
   vec_org = zVecAlloc( size );
-  if( !m1 || !m2 || !mat_ans || !mat_org || !v || !vec_ans || !vec_org ){
+  vec_r = zVecAlloc( size );
+  if( !m1 || !m2 || !mat_ans || !mat_org || !mat_r || !v || !vec_ans || !vec_org || !vec_r ){
     ZALLOCERROR();
     goto TERMINATE;
   }
@@ -796,21 +898,19 @@ void assert_mat_mul_inv_mat_vec(void)
     zVecRandUniform( vec_org, -10, 10 );
     zMulMatVec( m1, vec_org, v );
     zMulInvMatMatAndVec( m1, m2, v, mat_ans, vec_ans );
-    if( !zVecEqual( vec_org, vec_ans, tol ) ){
-      zVecSubDRC( vec_ans, vec_org );
-      eprintf( "vectors are not equal: max error = %g\n", zVecElemAbsMax( vec_ans, NULL ) );
+    if( ( err = le_backward_error( m1, vec_ans, v, vec_r ) ) > tol ){
+      eprintf( "vector: backward error = %g\n", err );
       result = false;
     }
-    if( !zMatEqual( mat_org, mat_ans, tol ) ){
-      zMatSubDRC( mat_ans, mat_org );
-      eprintf( "matrices are not equal: max error = %g\n", zMatElemAbsMax( mat_ans, NULL, NULL ) );
+    if( ( err = mat_backward_error( m1, mat_ans, m2, mat_r ) ) > tol ){
+      eprintf( "matrix: backward error = %g\n", err );
       result = false;
     }
   }
 
  TERMINATE:
-  zMatFreeAtOnce( 4, m1, m2, mat_ans, mat_org );
-  zVecFreeAtOnce( 3, v, vec_ans, vec_org );
+  zMatFreeAtOnce( 5, m1, m2, mat_ans, mat_org, mat_r );
+  zVecFreeAtOnce( 4, v, vec_ans, vec_org, vec_r );
   zAssert( zMulInvMatMatAndVec, result );
 }
 
@@ -1069,10 +1169,14 @@ int main(void)
 {
   zRandInit();
   assert_mat_mat_sweep_out();
-  assert_mat_vec_sweep_out();
+  assert_mat_inv(); /* zMatInv() is used in assert_mat_det_adj() and assert_le() */
+  assert_mat_det_adj(); /* zMatAdj() and zMatDet() are used in assert_le() */
+  assert_mat_det_scale();
   assert_le();
+  assert_mat_vec_sweep_out(); /* zLESolveGauss() is used to make the reference */
   assert_le_mat_capacity();
   assert_le_gauss_seidel();
+  assert_le_gauss_seidel_scale();
   assert_le_gen();
   assert_le_gen_rowlong();
   assert_le_gen_aux();
@@ -1080,14 +1184,12 @@ int main(void)
   assert_le_ref_norm_min();
   assert_tridiagonal_equation();
   assert_lyapnov_equation();
-  assert_mat_inv();
+  assert_lyapnov_equation_capacity();
   assert_mat_mul_inv();
   assert_mat_mul_inv_capacity();
   assert_mat_mul_inv_mat_vec();
   assert_mat_mpinv();
   assert_mat_mpinv_rand();
   assert_mpnull();
-  assert_mat_det_adj();
-  assert_mat_det_scale();
   return EXIT_SUCCESS;
 }

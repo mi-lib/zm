@@ -26,8 +26,11 @@ __BEGIN_DECLS
  * and (d0, ..., d(n-1)), respectively. Note that the first component of \a a and the last component of
  * \a c does not have any meanings.
  * The answer will be set in \a ans.
+ * The equation is solved based on Gaussian elimination with partial pivoting, which works for matrices
+ * that are not diagonally dominant.
  *
- * zLETridiagSolveDST() destructively modifies \a a, \a b, \a c and \a d during solving the equation.
+ * zLETridiagSolveDST() destructively modifies \a a, \a b and \a d during solving the equation, while
+ * \a c is not modified.
  * \return
  * zLETridiagSolve() and zLETridiagSolveDST() return a pointer \a ans if they succeed. Otherwise, they
  * return the null pointer.
