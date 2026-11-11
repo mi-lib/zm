@@ -1,5 +1,24 @@
 #include <zm/zm.h>
 
+/* normwise backward error of an approximate solution x of a x = b in the infinity norm, namely,
+ * |a x - b| / ( |a||x| + |b| ). It does not depend on the condition number of a nor the scale of the
+ * problem, and is in the order of the machine epsilon for a backward stable solver. */
+double le_backward_error(const zMat a, const zVec x, const zVec b, zVec r)
+{
+  zMulMatVec( a, x, r );
+  zVecSubDRC( r, b );
+  return zVecInfNorm( r ) / ( zMatInfNorm( a ) * zVecInfNorm( x ) + zVecInfNorm( b ) );
+}
+
+/* normwise backward error of an approximate solution x of m x = b in the infinity norm, where r is
+ * a workspace with the same size of b. See le_backward_error() for vectors. */
+double mat_backward_error(const zMat m, const zMat x, const zMat b, zMat r)
+{
+  zMulMatMat( m, x, r );
+  zMatSubDRC( r, b );
+  return zMatInfNorm( r ) / ( zMatInfNorm( m ) * zMatInfNorm( x ) + zMatInfNorm( b ) );
+}
+
 /* linear equation solver */
 
 void assert_mat_mat_sweep_out(void)
@@ -78,11 +97,12 @@ void assert_mat_vec_sweep_out(void)
 void assert_le(void)
 {
   zMat a;
-  zVec b, x, ans;
+  zVec b, x, ans, r;
   zMat l, u; /* for LU decomposition */
   zMat adj;  /* Cramel's method */
   zIndex index;
-  const double tol = ( 1.0e-9 );
+  const double tol = ( 1.0e-9 ); /* tolerance of the error of Cramel's method, which is not backward stable */
+  const double tol_be = 1.0e-14; /* tolerance of the normwise backward error */
   const int size = 10;
   const int n = 1000;
   int i;
@@ -95,8 +115,9 @@ void assert_le(void)
   b = zVecAlloc( size );
   x = zVecAlloc( size );
   ans = zVecAlloc( size );
+  r = zVecAlloc( size );
   index = zIndexAlloc( size );
-  if( !a || !adj || !l || !u || !b || !x || !ans || !index ) goto TERMINATE;
+  if( !a || !adj || !l || !u || !b || !x || !ans || !r || !index ) goto TERMINATE;
   count_cramel = count_gauss = count_lu = count_ri = 0;
   for( i=0; i<n; i++ ){
     /* generate a problem */
@@ -114,7 +135,7 @@ void assert_le(void)
     }
     /* Gauss's elimination method */
     zLESolveGauss( a, b, x );
-    if( zVecIsTol( zVecSubDRC( x, ans ), tol ) ) count_gauss++;
+    if( le_backward_error( a, x, b, r ) <= tol_be ) count_gauss++;
     else{
       eprintf( "error (Gauss's elimination method) " );
       zVecFPrint( stderr, x );
@@ -122,14 +143,14 @@ void assert_le(void)
     /* LU decomposition method */
     zMatDecompLU( a, l, u, index );
     zLESolveLU( l, u, b, x, index );
-    if( zVecIsTol( zVecSubDRC( x, ans ), tol ) ) count_lu++;
+    if( le_backward_error( a, x, b, r ) <= tol_be ) count_lu++;
     else{
       eprintf( "error (LU decomposition method) " );
       zVecFPrint( stderr, x );
     }
     /* LU decomposition + residual iteration method */
     zLESolveLURI( a, b, x );
-    if( zVecIsTol( zVecSubDRC( x, ans ), tol ) ) count_ri++;
+    if( le_backward_error( a, x, b, r ) <= tol_be ) count_ri++;
     else{
       eprintf( "error (LU decomposition + residual iteration method) " );
       zVecFPrint( stderr, x );
@@ -137,7 +158,7 @@ void assert_le(void)
   }
  TERMINATE:
   zMatFreeAtOnce( 4, a, l, u, adj );
-  zVecFreeAtOnce( 3, b, x, ans );
+  zVecFreeAtOnce( 4, b, x, ans, r );
   zIndexFree( index );
 
   eprintf( "success rate (Cramel) %d/%d ", count_cramel, n ); zAssert( zMatAdj + zMatDet, count_cramel == n );
@@ -149,9 +170,9 @@ void assert_le(void)
 void assert_le_mat_capacity(void)
 {
   zMat a;
-  zVec b, x, ans;
+  zVec b, x, ans, r;
   zIndex index;
-  const double tol = ( 1.0e-10 );
+  const double tol = 1.0e-14; /* tolerance of the normwise backward error */
   const int rowcapacity = 15, colcapacity = 13;
   const int size = 10;
   const int n = 1000;
@@ -162,8 +183,9 @@ void assert_le_mat_capacity(void)
   b = zVecAlloc( colcapacity );
   x = zVecAlloc( rowcapacity );
   ans = zVecAlloc( size );
+  r = zVecAlloc( size );
   index = zIndexAlloc( size*2 );
-  if( !a || !b || !x || !ans || !index ) goto TERMINATE;
+  if( !a || !b || !x || !ans || !r || !index ) goto TERMINATE;
   zMatSetSize( a, size, size );
   zVecSetSize( b, size );
   zVecSetSize( x, size );
@@ -175,7 +197,7 @@ void assert_le_mat_capacity(void)
     zMulMatVec( a, ans, b );
     /* Gauss's elimination method */
     zLESolveGauss( a, b, x );
-    if( zVecIsTol( zVecSubDRC( x, ans ), tol ) ) count_gauss++;
+    if( le_backward_error( a, x, b, r ) <= tol ) count_gauss++;
     else{
       eprintf( "error (Gauss's elimination method) " );
       zVecFPrint( stderr, x );
@@ -183,7 +205,7 @@ void assert_le_mat_capacity(void)
   }
  TERMINATE:
   zMatFree( a );
-  zVecFreeAtOnce( 3, b, x, ans );
+  zVecFreeAtOnce( 4, b, x, ans, r );
   zIndexFree( index );
   zAssert( zLESolveGauss (more-capacity case), count_gauss == n );
 }
@@ -258,16 +280,6 @@ void generate_equation_illposed(zMat a, zVec b, zVec w, zVec w2, zVec x, zVec _b
     zVecElemNC(b,i  ) += e;
   }
   zVecSetAll( w, 1.0 );
-}
-
-/* normwise backward error of an approximate solution x of a x = b in the infinity norm, namely,
- * |a x - b| / ( |a||x| + |b| ). It does not depend on the condition number of a nor the scale of the
- * problem, and is in the order of the machine epsilon for a backward stable solver. */
-double le_backward_error(const zMat a, const zVec x, const zVec b, zVec r)
-{
-  zMulMatVec( a, x, r );
-  zVecSubDRC( r, b );
-  return zVecInfNorm( r ) / ( zMatInfNorm( a ) * zVecInfNorm( x ) + zVecInfNorm( b ) );
 }
 
 #define NUM_METHOD 4
@@ -636,8 +648,9 @@ void assert_lyapnov_equation(void)
 {
   zMat a, b, x, tmp1, tmp2;
   const int size = 10, testnum = 100;
-  const double tol = 1.0e-9;
+  const double tol = 1.0e-14; /* tolerance of the normwise backward error */
   int k;
+  double err;
   bool result = true;
 
   a = zMatAllocSqr( size );
@@ -653,8 +666,9 @@ void assert_lyapnov_equation(void)
     zMulMatTMat( a, x, tmp2 );
     zMatAddDRC( tmp1, tmp2 );
     zMatSubDRC( tmp1, b );
-    if( !zMatIsTol( tmp1, tol ) ){
-      eprintf( "case #%d: maximum error = %g\n", k, zMatElemAbsMax( tmp1, NULL, NULL ) );
+    /* normwise backward error of x a + a^T x = b */
+    if( ( err = zMatInfNorm( tmp1 ) / ( 2 * zMatInfNorm( a ) * zMatInfNorm( x ) + zMatInfNorm( b ) ) ) > tol ){
+      eprintf( "case #%d: backward error = %g\n", k, err );
       result = false;
     }
   }
@@ -668,9 +682,10 @@ void assert_mat_inv(void)
 {
   zMat m1, m2, m;
   const int size = 10, testnum = 100;
-  const double tol = 1.0e-10;
+  const double tol = 1.0e-14; /* tolerance of the normwise backward error */
   bool result = true;
-  int k;
+  int i, k;
+  double err;
 
   m1 = zMatAllocSqr( size );
   m2 = zMatAllocSqr( size );
@@ -679,23 +694,15 @@ void assert_mat_inv(void)
     zMatRandUniform( m1, -10, 10 );
     zMatInv( m1, m2 );
     zMulMatMat( m1, m2, m );
-    if( !zMatIsIdent( m, tol ) ){
-      zMatTouchup( m, tol );
-      zMatFPrint( stderr, m );
+    for( i=0; i<size; i++ ) zMatElemNC(m,i,i) -= 1.0;
+    /* normwise backward error of m1 m2 = I */
+    if( ( err = zMatInfNorm( m ) / ( zMatInfNorm( m1 ) * zMatInfNorm( m2 ) ) ) > tol ){
+      eprintf( "case #%d: backward error = %g\n", k, err );
       result = false;
     }
   }
   zMatFreeAtOnce( 3, m1, m2, m );
   zAssert( zMatInv, result );
-}
-
-/* normwise backward error of an approximate solution x of m x = b in the infinity norm, where r is
- * a workspace with the same size of b. See le_backward_error() for vectors. */
-double mat_backward_error(const zMat m, const zMat x, const zMat b, zMat r)
-{
-  zMulMatMat( m, x, r );
-  zMatSubDRC( r, b );
-  return zMatInfNorm( r ) / ( zMatInfNorm( m ) * zMatInfNorm( x ) + zMatInfNorm( b ) );
 }
 
 void assert_mat_mul_inv(void)
@@ -1011,6 +1018,53 @@ void assert_mat_det_adj(void)
   zAssert( zMatAdj + zMatDet (matrix), result );
 }
 
+void assert_mat_det_scale(void)
+{
+  /* powers of two, by which matrices are scaled without round-off errors */
+  const double scale[] = { 0x1p-10, 0x1p-7, 0x1p-3, 1.0, 0x1p10 };
+  const int size = 10, testnum = 100;
+  const double tol = 1.0e-12; /* tolerance of the relative error */
+  zMat m, ms;
+  double det, dets, s;
+  int i, k;
+  bool result = true;
+
+  m = zMatAllocSqr( size );
+  ms = zMatAllocSqr( size );
+  for( i=0; i<sizeof(scale)/sizeof(double); i++ ){
+    /* det( s I ) = s^n, which is not regarded as zero even if it is tiny */
+    zMatIdent( m );
+    zMatMulDRC( m, scale[i] );
+    s = pow( scale[i], size );
+    if( fabs( ( det = zMatDet( m ) ) - s ) > tol * s ){
+      eprintf( "det(%g I) = %g (expected %g)\n", scale[i], det, s );
+      result = false;
+    }
+    /* det( s a ) = s^n det( a ) */
+    for( k=0; k<testnum; k++ ){
+      zMatRandUniform( m, -10, 10 );
+      zMatMul( m, scale[i], ms );
+      det = zMatDet( m );
+      dets = zMatDet( ms );
+      if( fabs( dets - s * det ) > tol * fabs( s * det ) ){
+        eprintf( "det(%g a) = %g, %g^n det(a) = %g\n", scale[i], dets, scale[i], s * det );
+        result = false;
+      }
+    }
+  }
+  /* a singular matrix with two identical rows, whose determinant is negligible compared with the
+   * Hadamard's bound, namely, the product of the norms of the row vectors */
+  zMatRandUniform( m, -10, 10 );
+  zRawVecCopy( zMatRowBufNC(m,0), zMatRowBufNC(m,size-1), size );
+  for( s=1, i=0; i<size; i++ ) s *= zRawVecNorm( zMatRowBufNC(m,i), size );
+  if( fabs( det = zMatDet( m ) ) > tol * s ){
+    eprintf( "det of a singular matrix = %g (Hadamard's bound = %g)\n", det, s );
+    result = false;
+  }
+  zMatFreeAtOnce( 2, m, ms );
+  zAssert( zMatDet (scaled and singular matrices), result );
+}
+
 int main(void)
 {
   zRandInit();
@@ -1034,5 +1088,6 @@ int main(void)
   assert_mat_mpinv_rand();
   assert_mpnull();
   assert_mat_det_adj();
+  assert_mat_det_scale();
   return EXIT_SUCCESS;
 }

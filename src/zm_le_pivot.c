@@ -64,13 +64,12 @@ double zMatMatSweepOut(zMat m1, zMat m2, int r, int c)
   /* sweep out */
   for( i=0; i<zMatRowSizeNC(m1); i++ ){
     if( i == r ) continue;
-    if( !zIsTiny( ( ratio = zMatElemNC( m1, i, c ) ) ) ){
-      for( j=0; j<zMatColSizeNC(m1); j++ )
-        if( j != c )
-          zMatElemNC(m1,i,j) -= zMatElemNC(m1,r,j) * ratio;
-      for( j=0; j<zMatColSizeNC(m2); j++ )
-        zMatElemNC(m2,i,j) -= zMatElemNC(m2,r,j) * ratio;
-    }
+    ratio = zMatElemNC( m1, i, c );
+    for( j=0; j<zMatColSizeNC(m1); j++ )
+      if( j != c )
+        zMatElemNC(m1,i,j) -= zMatElemNC(m1,r,j) * ratio;
+    for( j=0; j<zMatColSizeNC(m2); j++ )
+      zMatElemNC(m2,i,j) -= zMatElemNC(m2,r,j) * ratio;
     zMatSetElemNC( m1, i, c, 0 );
   }
   return value;
@@ -95,12 +94,11 @@ double zMatVecSweepOut(zMat m, zVec v, int r, int c)
   /* sweep out */
   for( i=0; i<zMatRowSizeNC(m); i++ ){
     if( i == r ) continue;
-    if( !zIsTiny( ( ratio = zMatElemNC( m, i, c ) ) ) ){
-      for( j=0; j<zMatColSizeNC(m); j++ )
-        if( j != c )
-          zMatElemNC(m,i,j) -= zMatElemNC(m,r,j) * ratio;
-      zVecElemNC(v,i) -= zVecElemNC(v,r) * ratio;
-    }
+    ratio = zMatElemNC( m, i, c );
+    for( j=0; j<zMatColSizeNC(m); j++ )
+      if( j != c )
+        zMatElemNC(m,i,j) -= zMatElemNC(m,r,j) * ratio;
+    zVecElemNC(v,i) -= zVecElemNC(v,r) * ratio;
     zMatSetElemNC( m, i, c, 0 );
   }
   return value;

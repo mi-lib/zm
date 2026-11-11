@@ -19,7 +19,8 @@ double zMatDetDST(zMat m, zIndex idx)
       det = -det;
       p = zIndexElemNC( idx, i );
     }
-    if( zIsTiny( ( det *= zMatElemNC( m, p, i ) ) ) ) return 0;
+    if( zMatElemNC( m, p, i ) == 0 ) return 0; /* singular */
+    det *= zMatElemNC( m, p, i );
     for( j=i+1; j<zMatRowSizeNC(m); j++ ){
       q = zIndexElemNC( idx, j );
       for( k=i+1; k<zMatRowSizeNC(m); k++ )
@@ -119,12 +120,11 @@ static zMat _zMulInvMat(const zMat m1, const zMat m2, zMat m, zIndex idx, zVec s
       zMatElemNC(m2,p,j) *= head;
     for( j=i+1; j<n; j++ ){
       q = zIndexElemNC( idx, j );
-      if( !zIsTiny( head = zMatElemNC(m1,q,i) ) ){
-        for( k=i+1; k<n; k++ )
-          zMatElemNC(m1,q,k) -= zMatElemNC(m1,p,k) * head;
-        for( k=0; k<zMatColSizeNC(m2); k++ )
-          zMatElemNC(m2,q,k) -= zMatElemNC(m2,p,k) * head;
-      }
+      head = zMatElemNC(m1,q,i);
+      for( k=i+1; k<n; k++ )
+        zMatElemNC(m1,q,k) -= zMatElemNC(m1,p,k) * head;
+      for( k=0; k<zMatColSizeNC(m2); k++ )
+        zMatElemNC(m2,q,k) -= zMatElemNC(m2,p,k) * head;
       zMatSetElemNC( m1, q, i, 0 );
     }
   }
@@ -265,13 +265,12 @@ zMat zMulInvMatMatAndVecDST(const zMat m1, const zMat m2, const zVec v, zMat mat
     zVecElemNC(v,p) *= head;
     for( j=i+1; j<n; j++ ){
       q = zIndexElemNC( idx, j );
-      if( !zIsTiny( head = zMatElemNC(m1,q,i) ) ){
-        for( k=i+1; k<n; k++ )
-          zMatElemNC(m1,q,k) -= zMatElemNC(m1,p,k) * head;
-        for( k=0; k<zMatColSizeNC(m2); k++ )
-          zMatElemNC(m2,q,k) -= zMatElemNC(m2,p,k) * head;
-        zVecElemNC(v,q) -= zVecElemNC(v,p) * head;
-      }
+      head = zMatElemNC(m1,q,i);
+      for( k=i+1; k<n; k++ )
+        zMatElemNC(m1,q,k) -= zMatElemNC(m1,p,k) * head;
+      for( k=0; k<zMatColSizeNC(m2); k++ )
+        zMatElemNC(m2,q,k) -= zMatElemNC(m2,p,k) * head;
+      zVecElemNC(v,q) -= zVecElemNC(v,p) * head;
       zMatSetElemNC( m1, q, i, 0 );
     }
   }

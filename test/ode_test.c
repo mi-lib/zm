@@ -621,9 +621,28 @@ void assert_ode_adaptive_scale(void)
   zAssert( zODEUpdate (scale invariance of adaptive step size control), result );
 }
 
+/* check if a method is implicit, namely, if it solves nonlinear equations in each step. */
+static bool method_is_implicit(const method_t *method)
+{
+  return method->update == zODEUpdateBEuler || method->update == zODEUpdateTR ||
+         method->update == zODEUpdateGauss || method->update == zODEUpdateRadau;
+}
+
+/* a wrapper of the update function of a one-step method to count the number of steps, which does not
+ * include the iterations to solve nonlinear equations in implicit methods. */
+static zVec (* update_org)(zODE*,double,zVec,double,void*);
+static int update_count;
+static zVec update_count_wrapper(zODE *ode, double t, zVec x, double dt, void *util)
+{
+  update_count++;
+  return update_org( ode, t, x, dt, util );
+}
+
 /* integrate the unit circle from t=0 to t=n dt with an adaptive step size control, and return the error at
- * the end. The number of calls of the differential function is stored where count points. */
-double circle_integrate_adaptive(const method_t *method, bool is_dc, double dt, int n, int *count)
+ * the end. The number of calls of the differential function is stored where count points. If step_count
+ * is not the null pointer for deferred correction, the number of steps of the one-step method, namely,
+ * three times the number of trials of deferred correction, is stored where step_count points. */
+double circle_integrate_adaptive(const method_t *method, bool is_dc, double dt, int n, int *count, int *step_count)
 {
   zODE ode;
   zVec x;
@@ -633,9 +652,15 @@ double circle_integrate_adaptive(const method_t *method, bool is_dc, double dt, 
   method_assign( &ode, method );
   if( is_dc ) zODECreateDC( &ode, 2, 0, circle_count );
   else        zODECreate( &ode, 2, 0, circle_count );
+  if( is_dc && step_count ){
+    update_org = ode.update;
+    ode.update = update_count_wrapper;
+    update_count = 0;
+  }
   x = zVecCreateList( 2, 1.0, 0.0 );
   for( *count=0, i=0; i<n; i++ )
     is_dc ? zODEUpdateDC( &ode, i*dt, x, dt, count ) : zODEUpdate( &ode, i*dt, x, dt, count );
+  if( is_dc && step_count ) *step_count = update_count;
   err = circle_error( x, n*dt, 1.0 );
   zVecFree( x );
   if( is_dc ) zODEDestroyDC( &ode ); else zODEDestroy( &ode );
@@ -659,8 +684,8 @@ void assert_ode_adaptive_backward(void)
   for( k=0; k<METHOD_ONESTEP_NUM+sizeof(erk)/sizeof(method_t); k++ ){
     const method_t *method = k < METHOD_ONESTEP_NUM ? &method_onestep[k] : &erk[k-METHOD_ONESTEP_NUM];
     bool is_dc = k < METHOD_ONESTEP_NUM;
-    err_f = circle_integrate_adaptive( method, is_dc, dt, n, &count_f );
-    err_b = circle_integrate_adaptive( method, is_dc, -dt, n, &count_b );
+    err_f = circle_integrate_adaptive( method, is_dc, dt, n, &count_f, NULL );
+    err_b = circle_integrate_adaptive( method, is_dc, -dt, n, &count_b, NULL );
     if( abs( count_b - count_f ) > 0.01 * count_f || fabs( err_b - err_f ) > 1.0e-3 * err_f ){
       eprintf( "%s%s: backward error = %g, %d calls (forward error = %g, %d calls)\n", method->name, is_dc ? " with DC" : "", err_b, count_b, err_f, count_f );
       result = false;
@@ -685,20 +710,25 @@ void assert_ode_step_prediction(void)
 {
   const double T = 20.0, tol = 1.0e-4;
   const method_t *method;
-  int k, count_s, count_l;
+  int k, count_s, count_l, step_s, step_l;
   double err_s, err_l;
   bool is_dc, result = true;
 
   /* since the time step is predicted from the last step, it does not depend on the interval of updates,
-   * so that a long interval does not cost more evaluations than a short interval does. The numbers of
-   * calls might slightly differ for implicit methods due to the iterations to solve the nonlinear
-   * equations. */
+   * so that a long interval does not cost more evaluations than a short interval does. For implicit
+   * methods with deferred correction, the numbers of steps of the methods are compared instead of those
+   * of calls of the differential function, since the latter include the iterations to solve the nonlinear
+   * equations, which fluctuate due to round-off errors. */
   for( k=0; k<METHOD_ADAPTIVE_NUM; k++ ){
     method = method_adaptive( k, &is_dc );
-    err_s = circle_integrate_adaptive( method, is_dc, 1.0, (int)T, &count_s );
-    err_l = circle_integrate_adaptive( method, is_dc, 10.0, (int)T/10, &count_l );
-    if( count_l > 1.02 * count_s || err_s > tol || err_l > tol ){
-      eprintf( "%s%s: interval 10: error = %g, %d calls, interval 1: error = %g, %d calls\n", method->name, is_dc ? " with DC" : "", err_l, count_l, err_s, count_s );
+    err_s = circle_integrate_adaptive( method, is_dc, 1.0, (int)T, &count_s, &step_s );
+    err_l = circle_integrate_adaptive( method, is_dc, 10.0, (int)T/10, &count_l, &step_l );
+    if( !is_dc || !method_is_implicit( method ) ){ /* explicit methods */
+      step_s = count_s;
+      step_l = count_l;
+    }
+    if( step_l > 1.02 * step_s || err_s > tol || err_l > tol ){
+      eprintf( "%s%s: interval 10: error = %g, %d steps (%d calls), interval 1: error = %g, %d steps (%d calls)\n", method->name, is_dc ? " with DC" : "", err_l, step_l, count_l, err_s, step_s, count_s );
       result = false;
     }
   }
