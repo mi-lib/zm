@@ -659,10 +659,32 @@ void assert_mulmattmatmat(void)
   zMatFreeAtOnce( 5, a, q, m, qa, mtest );
 }
 
+/* division by a tiny but nonzero value and by zero, including a matrix with a larger column capacity */
+void assert_mat_div_tiny(void)
+{
+  zMat m1, m2;
+  int i, j;
+  bool result = true, result_zero;
+
+  m1 = zMatAlloc( 5, 7 );
+  m2 = zMatAlloc( 5, 7 );
+  zMatRandUniform( m1, -1, 1 );
+  if( !zMatDiv( m1, 1.0e-13, m2 ) ) result = false;
+  for( i=0; i<zMatRowSizeNC(m1); i++ )
+    for( j=0; j<zMatColSizeNC(m1); j++ )
+      if( fabs( zMatElemNC(m2,i,j) - zMatElemNC(m1,i,j)/1.0e-13 ) > DBL_EPSILON * fabs( zMatElemNC(m1,i,j)/1.0e-13 ) ) result = false;
+  result_zero = zMatDiv( m1, 0, m2 ) == NULL;
+  zMatFree( m1 );
+  zMatFree( m2 );
+  zAssert( zMatDiv (tiny divisor), result );
+  zAssert( zMatDiv (division by zero), result_zero );
+}
+
 int main(void)
 {
   zRandInit();
   assert_mat_clone();
+  assert_mat_div_tiny();
   assert_mat_resize();
   assert_mat_ident();
   assert_mat_diag();

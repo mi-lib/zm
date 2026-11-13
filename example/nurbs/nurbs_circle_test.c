@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   for( i=0; i<STEP; i++ ){
     zNURBSVec( &nurbs, zPIx2 * i / STEP, v );
     printf( "%g %g ", zVecElem(v,0), zVecElem(v,1) );
-    zVecNormalizeDRC( v );
+    zVecNormalizeDRC( v, 0 );
     printf( "%g %g\n", zVecElem(v,0), zVecElem(v,1) );
   }
   zVecFree( v );

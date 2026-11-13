@@ -97,12 +97,17 @@ zComplex *zComplexMul(const zComplex *c, double k, zComplex *ec)
 /* divide a complex number by a real number. */
 zComplex *zComplexDiv(const zComplex *c, double k, zComplex *rc)
 {
-  if( zIsTiny( k ) ){
+  double ki;
+
+  if( k == 0 ){
     ZRUNERROR( ZM_ERR_ZERODIV );
     return NULL;
   }
-  k = 1 / k;
-  _zComplexMul( c, k, rc );
+  ki = 1.0 / k;
+  if( _zIsNormalDouble( ki ) ) /* see zRawVecDiv() */
+    _zComplexMul( c, ki, rc );
+  else
+    _zComplexDiv( c, k, rc );
   return rc;
 }
 
@@ -258,9 +263,18 @@ zComplex *zComplexCLog(const zComplex *c, const zComplex *base, zComplex *lc)
 }
 
 /* normalization of complex number. */
-zComplex *zComplexNormalize(const zComplex *c, zComplex *nc)
+zComplex *zComplexNormalize(const zComplex *c, double tol, zComplex *nc)
 {
-  return zComplexDiv( c, _zComplexAbs( c ), nc );
+  double r;
+
+  if( tol <= 0 ) tol = zTOL;
+  /* an absolute value that is not a number is also rejected, since the comparison is false. */
+  if( !( ( r = _zComplexAbs( c ) ) > tol ) ){
+    ZRUNWARN( ZM_ERR_VEC_ZERONORM );
+    _zComplexZero( nc );
+    return NULL;
+  }
+  return zComplexDiv( c, r, nc );
 }
 
 /* I/O */

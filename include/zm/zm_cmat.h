@@ -185,6 +185,7 @@ __ZM_EXPORT bool zCMatIsTol(const zCMat m, double tol);
  * zCMatMulNC() and zCMatMul() multiply \a m1 by a real scalar value \a k, and put the result into \a m.
  *
  * zCMatDivNC() and zCMatDiv() divide \a m1 by \a k, and put the result into \a m.
+ * zCMatDiv() returns the null pointer if \a k is exactly zero.
  *
  * zCMatCMulNC() and zCMatCMul() multiply \a m1 by a complex scalar value \a z, and put the result into \a m.
  *

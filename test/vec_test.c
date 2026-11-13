@@ -223,7 +223,7 @@ void assert_vec_normalize(void)
   test_vec2 = zVecAlloc( size );
   zVecRandUniform( test_vec1, -10, 10 );
   norm = zVecNorm( test_vec1 );
-  zVecNormalize( test_vec1, test_vec2 );
+  zVecNormalize( test_vec1, 0, test_vec2 );
   zAssert( zVecNormalize, zIsTiny( zVecNorm(test_vec2) - 1 ) );
   for( result=true, i=0; i<size; i++ )
     if( !zIsTiny( zVecElemNC(test_vec1,i)/zVecElemNC(test_vec2,i) - norm ) ) result = false;
@@ -332,6 +332,32 @@ void assert_vec_nearest_neighbor(void)
   zAssert( zVecListNN + zVecTreeNN, result );
 }
 
+/* normalization of tiny vectors with tolerances and division by tiny values */
+void assert_vec_normalize_tol_div(void)
+{
+  zVec v1, v2, v3;
+  bool result_normalize, result_size, result_div, result_zero;
+
+  v1 = zVecAlloc( TEST_VEC_SIZE );
+  v2 = zVecAlloc( TEST_VEC_SIZE );
+  v3 = zVecAlloc( TEST_VEC_SIZE+1 );
+  zVecRandUniform( v1, -1, 1 );
+  zVecMulDRC( v1, 1.0e-13 / zVecNorm( v1 ) );
+  result_normalize = !zVecNormalize( v1, 0, v2 ) && zVecIsTol( v2, 0 ) &&
+    zVecNormalize( v1, 1.0e-20, v2 ) && zIsTol( zVecNorm( v2 ) - 1, 10*DBL_EPSILON );
+  zVecCopy( v1, v2 );
+  result_normalize = result_normalize && zVecNormalizeDRC( v2, 1.0e-20 ) && zIsTol( zVecNorm( v2 ) - 1, 10*DBL_EPSILON );
+  result_size = zVecNormalize( v1, 0, v3 ) == NULL;
+  /* division by a tiny but nonzero value */
+  result_div = zVecDiv( v1, 1.0e-13, v2 ) != NULL && zIsTol( zVecNorm( v2 ) - 1, 10*DBL_EPSILON );
+  result_zero = zVecDiv( v1, 0, v2 ) == NULL;
+  zVecFreeAtOnce( 3, v1, v2, v3 );
+  zAssert( zVecNormalize + zVecNormalizeDRC (tolerance), result_normalize );
+  zAssert( zVecNormalize (size mismatch), result_size );
+  zAssert( zVecDiv (tiny divisor), result_div );
+  zAssert( zVecDiv (division by zero), result_zero );
+}
+
 int main(void)
 {
   zRandInit();
@@ -342,6 +368,7 @@ int main(void)
   assert_vec_arith();
   assert_vec_scale();
   assert_vec_normalize();
+  assert_vec_normalize_tol_div();
   assert_vec_orthogonalize();
   assert_vec_edge_dist();
 

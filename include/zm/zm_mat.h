@@ -427,7 +427,8 @@ __ZM_EXPORT zMat zMatResize(zMat mat, int rowsize, int colsize);
  *
  * zMatMulNC() and zMatMul() multiply \a m1 by a scalar value \a k. The result is put into \a m.
  *
- * zMatDivNC() and zMatDiv() divide \a m1 by \a k. The result is put into \a m.
+ * zMatDivNC() and zMatDiv() divide \a m1 by \a k. The result is put into \a m. zMatDiv() returns
+ * the null pointer if \a k is exactly zero.
  *
  * zMatCatNC() and zMatCat() concatenate \a m1 by \a m2 multiplied by \a k. The result is put into \a m.
  *

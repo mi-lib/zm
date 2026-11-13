@@ -418,7 +418,7 @@ zVec zVecMul(const zVec v1, double k, zVec v)
 zVec zVecDiv(const zVec v1, double k, zVec v)
 {
   __z_vec_size_check_2( v1, v );
-  if( zIsTiny( k ) ){
+  if( k == 0 ){
     ZRUNERROR( ZM_ERR_ZERODIV );
     return NULL;
   }
@@ -567,9 +567,13 @@ double zVecInfNorm(const zVec v)
 }
 
 /* normalize a vector. */
-zVec zVecNormalize(const zVec src, zVec dest)
+zVec zVecNormalize(const zVec src, double tol, zVec dest)
 {
-  return zRawVecNormalize( zVecBufNC(src), zVecSizeNC(src), zVecBufNC(dest) ) ? dest : NULL;
+  if( !zVecSizeEqual( src, dest ) ){
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
+    return NULL;
+  }
+  return zRawVecNormalize( zVecBufNC(src), zVecSizeNC(src), tol, zVecBufNC(dest) ) ? dest : NULL;
 }
 
 /* project a vector onto another. */

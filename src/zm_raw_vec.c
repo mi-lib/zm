@@ -115,7 +115,13 @@ void zRawVecMul(const double *v1, double k, double *v, int size)
 /* divide a raw vector by a scalar value. */
 void zRawVecDiv(const double *v1, double k, double *v, int size)
 {
-  zRawVecMul( v1, 1.0/k, v, size );
+  double ki;
+
+  ki = 1.0 / k;
+  if( _zIsNormalDouble( ki ) )
+    zRawVecMul( v1, ki, v, size ); /* for faster computation */
+  else
+    while( size-- > 0 ) *v++ = *v1++ / k; /* for accurate computation */
 }
 
 /* amplify a raw vector by another. */
@@ -163,7 +169,13 @@ void zRawVecMulDRC(double *v, double k, int size)
 /* divide a raw vector directly by a scalar value. */
 void zRawVecDivDRC(double *v, double k, int size)
 {
-  zRawVecMulDRC( v, 1.0/k, size );
+  double ki;
+
+  ki = 1.0 / k;
+  if( _zIsNormalDouble( ki ) )
+    zRawVecMulDRC( v, ki, size ); /* for faster computation */
+  else
+    while( size-- > 0 ) *v++ /= k;
 }
 
 /* amplify a raw vector directly by another. */
@@ -298,16 +310,17 @@ double zRawVecWSqrNorm(const double *v, const double *w, int size)
 }
 
 /* normalize a raw vector. */
-double *zRawVecNormalize(const double *src, int size, double *dest)
+double *zRawVecNormalize(const double *src, int size, double tol, double *dest)
 {
   double l;
 
-  l = zRawVecNorm( src, size );
-  if( zIsTiny( l ) ){
-    ZRUNERROR( ZM_ERR_ZERODIV );
+  if( tol <= 0 ) tol = zTOL;
+  if( !( ( l = zRawVecNorm( src, size ) ) > tol ) ){
+    ZRUNWARN( ZM_ERR_VEC_ZERONORM );
+    zRawVecZero( dest, size );
     return NULL;
   }
-  zRawVecMul( src, 1.0/l, dest, size );
+  zRawVecDiv( src, l, dest, size );
   return dest;
 }
 

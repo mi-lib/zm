@@ -96,11 +96,35 @@ void assert_cdiv_scale(void)
   zAssert( zCMatCDiv (division by zero), result_zero );
 }
 
+/* division by a tiny real number */
+void assert_div_tiny(void)
+{
+  zCMat m1, m2;
+  int i, j;
+  bool result = true, result_zero;
+
+  m1 = zCMatAlloc( 10, 20 );
+  m2 = zCMatAlloc( 10, 20 );
+  zCMatRandUniform( m1, -1, 1, -1, 1 );
+  if( !zCMatDiv( m1, 1.0e-13, m2 ) ) result = false;
+  for( i=0; i<zCMatRowSizeNC(m1); i++ )
+    for( j=0; j<zCMatColSizeNC(m1); j++ )
+      if( fabs( zCMatElemNC(m2,i,j)->re - zCMatElemNC(m1,i,j)->re/1.0e-13 ) > DBL_EPSILON * fabs( zCMatElemNC(m1,i,j)->re/1.0e-13 ) ||
+          fabs( zCMatElemNC(m2,i,j)->im - zCMatElemNC(m1,i,j)->im/1.0e-13 ) > DBL_EPSILON * fabs( zCMatElemNC(m1,i,j)->im/1.0e-13 ) )
+        result = false;
+  result_zero = zCMatDiv( m1, 0, m2 ) == NULL;
+  zCMatFree( m1 );
+  zCMatFree( m2 );
+  zAssert( zCMatDiv (tiny divisor), result );
+  zAssert( zCMatDiv (division by zero), result_zero );
+}
+
 int main(void)
 {
   zRandInit();
   assert_get_put();
   assert_cmul_cdiv_drc();
   assert_cdiv_scale();
+  assert_div_tiny();
   return EXIT_SUCCESS;
 }

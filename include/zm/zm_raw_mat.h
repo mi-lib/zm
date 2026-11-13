@@ -173,7 +173,7 @@ __ZM_EXPORT void zRawMatTPut(double *dest, int destcolcapacity, int destrowsize,
  * zRawMatSub() subtracts \a m2 from \a m1.
  * zRawMatRev() reverses the sign of \a m1.
  * zRawMatMul() multiplies \a m1 by a scalar value \a k.
- * zRawMatDiv() divides \a m1 by \a k.
+ * zRawMatDiv() divides \a m1 by \a k in the same way with zRawVecDiv().
  * zRawMatCat() concatenates \a m1 with \a m2 multiplied by \a k.
  * For all the above functions, the result is put into \a m.
  *

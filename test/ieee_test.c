@@ -4,6 +4,7 @@
 int ref_isnan(double x){ return x != x; }
 int ref_isfinite(double x){ return !ref_isnan( x ) && x - x == 0; }
 int ref_isinf(double x){ return ref_isnan( x ) || ref_isfinite( x ) ? 0 : ( x > 0 ? 1 : -1 ); }
+int ref_isnormal(double x){ return ref_isfinite( x ) && fabs( x ) >= DBL_MIN; }
 
 /* check all the functions and the macros for a value. */
 bool check_ieee(double x)
@@ -28,6 +29,14 @@ bool check_ieee(double x)
   }
   if( _zIsNan( x ) != ref_isnan( x ) ){
     eprintf( "_zIsNan( %g ) = %d (expected %d)\n", x, _zIsNan( x ), ref_isnan( x ) );
+    result = false;
+  }
+  if( zIsNormalDouble( x ) != ref_isnormal( x ) ){
+    eprintf( "zIsNormalDouble( %g ) = %d (expected %d)\n", x, zIsNormalDouble( x ), ref_isnormal( x ) );
+    result = false;
+  }
+  if( _zIsNormalDouble( x ) != ref_isnormal( x ) ){
+    eprintf( "_zIsNormalDouble( %g ) = %d (expected %d)\n", x, _zIsNormalDouble( x ), ref_isnormal( x ) );
     result = false;
   }
   if( _zIsFinite( x ) != ref_isfinite( x ) ){
@@ -95,6 +104,18 @@ bool assert_ieee_bits(void)
       for( j=0; j<52; j++ ) set_ieee_bit( &v, j, true ); /* with all bits of the mantissa part set */
       if( !check_ieee( v.d ) ) result = false;
     }
+    for( k=52; k<63; k++ ){ /* a normal number with a single bit of the exponent part set */
+      v.d = 0;
+      set_ieee_bit( &v, 63, sign );
+      set_ieee_bit( &v, k, true );
+      if( !check_ieee( v.d ) ) result = false;
+    }
+    for( k=0; k<52; k++ ){ /* a subnormal number with a single bit of the mantissa part set */
+      v.d = 0;
+      set_ieee_bit( &v, 63, sign );
+      set_ieee_bit( &v, k, true );
+      if( !check_ieee( v.d ) ) result = false;
+    }
   }
   return result;
 }
@@ -144,9 +165,9 @@ int main(void)
                       !zIsFinite( HUGE_VAL ) &&
                       !zIsFinite(-HUGE_VAL ) &&
                       !zIsFinite( sqrt( -1 ) ) );
-  zAssert( zIsInf + zIsNan + zIsFinite (boundary values), assert_ieee_boundary() );
-  zAssert( zIsInf + zIsNan + zIsFinite (systematic bit patterns), assert_ieee_bits() );
-  zAssert( zIsInf + zIsNan + zIsFinite (random bit patterns), assert_ieee_random() );
+  zAssert( zIsInf + zIsNan + zIsFinite + zIsNormalDouble (boundary values), assert_ieee_boundary() );
+  zAssert( zIsInf + zIsNan + zIsFinite + zIsNormalDouble (systematic bit patterns), assert_ieee_bits() );
+  zAssert( zIsInf + zIsNan + zIsFinite + zIsNormalDouble (random bit patterns), assert_ieee_random() );
 #endif /* __WINDOWS__ */
   return EXIT_SUCCESS;
 }

@@ -72,11 +72,47 @@ void assert_cdiv_scale(void)
   zAssert( zCVecCDiv (division by zero), result_zero );
 }
 
+/* division by a tiny real number, and normalization with tolerances */
+void assert_div_normalize_tol(void)
+{
+  zCVec v1, v2;
+  double k[] = { 1.0e-13, 4.0e-309 };
+  int i, j;
+  bool result_div = true, result_zero, result_normalize;
+
+  v1 = zCVecAlloc( TEST_VEC_SIZE );
+  v2 = zCVecAlloc( TEST_VEC_SIZE );
+  for( j=0; j<sizeof(k)/sizeof(double); j++ ){
+    zCVecRandUniform( v1, -1, -1, 1, 1 );
+    if( k[j] < 1.0e-300 ) zCVecMulDRC( v1, 1.0e-300 ); /* avoid overflow of quotients */
+    if( !zCVecDiv( v1, k[j], v2 ) ){
+      result_div = false;
+      continue;
+    }
+    for( i=0; i<TEST_VEC_SIZE; i++ )
+      if( fabs( zCVecElemNC(v2,i)->re - zCVecElemNC(v1,i)->re/k[j] ) > DBL_EPSILON * fabs( zCVecElemNC(v1,i)->re/k[j] ) ||
+          fabs( zCVecElemNC(v2,i)->im - zCVecElemNC(v1,i)->im/k[j] ) > DBL_EPSILON * fabs( zCVecElemNC(v1,i)->im/k[j] ) )
+        result_div = false;
+  }
+  result_zero = zCVecDiv( v1, 0, v2 ) == NULL;
+  zCVecRandUniform( v1, -1, -1, 1, 1 );
+  zCVecMulDRC( v1, 1.0e-13 / zCVecNorm( v1 ) );
+  result_normalize = !zCVecNormalize( v1, 0, v2 ) && zCVecIsTol( v2, 0 ) &&
+    zCVecNormalize( v1, 1.0e-20, v2 ) && zIsTol( zCVecNorm( v2 ) - 1, 10*DBL_EPSILON ) &&
+    zCVecNormalizeDRC( v1, 1.0e-20 ) && zIsTol( zCVecNorm( v1 ) - 1, 10*DBL_EPSILON );
+  zCVecFree( v1 );
+  zCVecFree( v2 );
+  zAssert( zCVecDiv (very small divisor), result_div );
+  zAssert( zCVecDiv (division by zero), result_zero );
+  zAssert( zCVecNormalize + zCVecNormalizeDRC (tolerance), result_normalize );
+}
+
 int main(void)
 {
   zRandInit();
   assert_misc();
   assert_cmul_cdiv_drc();
   assert_cdiv_scale();
+  assert_div_normalize_tol();
   return EXIT_SUCCESS;
 }

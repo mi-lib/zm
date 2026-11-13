@@ -168,11 +168,62 @@ void assert_raw_vec_normalize(void)
 
   zRawVecRandUniform( test_vec1, TEST_VEC_SIZE, -10, 10 );
   norm = zRawVecNorm( test_vec1, TEST_VEC_SIZE );
-  zRawVecNormalize( test_vec1, TEST_VEC_SIZE, test_vec2 );
+  zRawVecNormalize( test_vec1, TEST_VEC_SIZE, 0, test_vec2 );
   zAssert( zRawVecNormalize, zIsTiny( zRawVecNorm(test_vec2,TEST_VEC_SIZE) - 1 ) );
   for( result=true, i=0; i<TEST_VEC_SIZE; i++ )
     if( !zIsTiny( test_vec1[i]/test_vec2[i] - norm ) ) result = false;
   zAssert( zRawVecNorm, result );
+}
+
+/* normalization of tiny vectors with tolerances */
+void assert_raw_vec_normalize_tol(void)
+{
+  double v1[TEST_VEC_BUFSIZ], v2[TEST_VEC_BUFSIZ];
+  int i;
+  bool result_default = true, result_tol = true, result_nan;
+
+  zRawVecRandUniform( v1, TEST_VEC_SIZE, -1, 1 );
+  zRawVecMulDRC( v1, 1.0e-13 / zRawVecNorm( v1, TEST_VEC_SIZE ), TEST_VEC_SIZE ); /* norm = 1e-13 */
+  /* rejected with the default tolerance, and the result is the zero vector */
+  zRawVecRandUniform( v2, TEST_VEC_SIZE, -1, 1 );
+  if( zRawVecNormalize( v1, TEST_VEC_SIZE, 0, v2 ) ) result_default = false;
+  for( i=0; i<TEST_VEC_SIZE; i++ )
+    if( v2[i] != 0 ) result_default = false;
+  zRawVecRandUniform( v2, TEST_VEC_SIZE, -1, 1 );
+  if( zRawVecNormalize( v1, TEST_VEC_SIZE, -1, v2 ) ) result_default = false; /* negative tolerance */
+  /* normalized with a smaller tolerance */
+  if( !zRawVecNormalize( v1, TEST_VEC_SIZE, 1.0e-20, v2 ) ||
+      !zIsTol( zRawVecNorm( v2, TEST_VEC_SIZE ) - 1, 10*DBL_EPSILON ) ) result_tol = false;
+  /* rejected with a larger tolerance */
+  if( zRawVecNormalize( v1, TEST_VEC_SIZE, 1.0e-10, v2 ) ) result_tol = false;
+  /* not-a-number */
+  v1[0] = NAN;
+  result_nan = zRawVecNormalize( v1, TEST_VEC_SIZE, 0, v2 ) == NULL;
+  zAssert( zRawVecNormalize (default tolerance), result_default );
+  zAssert( zRawVecNormalize (specified tolerance), result_tol );
+  zAssert( zRawVecNormalize (not-a-number), result_nan );
+}
+
+/* division by very small or large values */
+void assert_raw_vec_div_range(void)
+{
+  double v1[TEST_VEC_BUFSIZ], v2[TEST_VEC_BUFSIZ];
+  double k[] = { 3.0, 1.0e-13, 4.0e-309, 1.0e-320, 1.0e308, -1.0e308 }; /* including subnormal numbers */
+  int i, j;
+  bool result = true, result_drc = true;
+
+  for( j=0; j<sizeof(k)/sizeof(double); j++ ){
+    zRawVecRandUniform( v1, TEST_VEC_SIZE, -1, 1 );
+    if( k[j] < 1.0e-300 ) zRawVecMulDRC( v1, 1.0e-300, TEST_VEC_SIZE ); /* avoid overflow of quotients */
+    zRawVecDiv( v1, k[j], v2, TEST_VEC_SIZE );
+    for( i=0; i<TEST_VEC_SIZE; i++ ) /* relative error not greater than one ulp */
+      if( !zIsFinite( v2[i] ) || fabs( v2[i] - v1[i]/k[j] ) > DBL_EPSILON * fabs( v1[i]/k[j] ) ) result = false;
+    zRawVecDivDRC( v1, k[j], TEST_VEC_SIZE );
+    for( i=0; i<TEST_VEC_SIZE; i++ )
+      if( v1[i] != v2[i] ) result_drc = false;
+  }
+  zAssert( zRawVecDiv (very small or large divisor), result );
+  zAssert( zRawVecDivDRC (very small or large divisor), result_drc );
 }
 
 int main(void)
@@ -185,5 +236,7 @@ int main(void)
   assert_raw_vec_arith();
   assert_raw_vec_innerprod();
   assert_raw_vec_normalize();
+  assert_raw_vec_normalize_tol();
+  assert_raw_vec_div_range();
   return EXIT_SUCCESS;
 }

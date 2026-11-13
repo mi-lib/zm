@@ -43,3 +43,9 @@ int zIsFinite(double x)
 {
   return _zIsFinite( x );
 }
+
+/* check if the value is a normal number. */
+int zIsNormalDouble(double x)
+{
+  return _zIsNormalDouble( x );
+}

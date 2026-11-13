@@ -27,7 +27,7 @@ bool gen_vec(double (* gen_func)(double), int dim, int np, int nc, double rate_o
       r = gen_func( rmax );
       for( k=0; k<dim; k++ )
         zVecSetElem( v, k, zRandF(min-max,max-min) );
-      zVecNormalizeDRC( v );
+      zVecNormalizeDRC( v, 0 );
       zVecMulDRC( v, r );
       zVecAddDRC( v, vc );
       zVecValuePrint( v );

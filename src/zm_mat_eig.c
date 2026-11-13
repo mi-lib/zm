@@ -499,7 +499,7 @@ double zMatEigPower(const zMat m, zVec eigvec, int iter)
 
   ZITERINIT( iter );
   for( i=0; i<iter; i++ ){
-    zVecNormalize( eigvec, ev );
+    zVecNormalize( eigvec, 0, ev );
     zMulMatVecNC( m, ev, eigvec );
     eigval = zVecInnerProd( ev, eigvec );
     zVecCatNC( eigvec, -eigval, ev, err );

@@ -35,7 +35,7 @@ int main(void)
   zComplexCLog( &c2, &c1, &c3 );
   printf( "log_C1 C2 = " ); zComplexPrint( &c3 ); zEndl();
 
-  zComplexNormalize( &c, &c );
+  zComplexNormalize( &c, 0, &c );
   printf( "C/|C| = " ); zComplexPrint( &c ); zEndl();
 
   return 0;

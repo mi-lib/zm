@@ -596,7 +596,7 @@ zMat zMatDiv(const zMat m1, double k, zMat m)
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
-  if( zIsTiny( k ) ){
+  if( k == 0 ){
     ZRUNERROR( ZM_ERR_ZERODIV );
     return NULL;
   }

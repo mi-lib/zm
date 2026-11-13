@@ -222,7 +222,8 @@ void zRawMatMul(const double *m1, int colcapacity1, double k, double *m, int col
 /* divide a raw matrix by a real number. */
 void zRawMatDiv(const double *m1, int colcapacity1, double k, double *m, int colcapacity2, int rowsize, int colsize)
 {
-  zRawMatMul( m1, colcapacity1, 1.0/k, m, colcapacity2, rowsize, colsize );
+  for( ; --rowsize>=0; m1+=colcapacity1, m+=colcapacity2 )
+    zRawVecDiv( m1, k, m, colsize );
 }
 
 /* concatenate a raw matrix by another multiplied by a real number. */
@@ -263,7 +264,8 @@ void zRawMatMulDRC(double *m, int colcapacity, double k, int rowsize, int colsiz
 /* divide a raw matrix directly by a real number. */
 void zRawMatDivDRC(double *m, int colcapacity, double k, int rowsize, int colsize)
 {
-  zRawMatMulDRC( m, colcapacity, 1.0/k, rowsize, colsize );
+  for( ; --rowsize>=0; m+=colcapacity )
+    zRawVecDivDRC( m, k, colsize );
 }
 
 /* concatenate a raw matrix multiplied by a real number directly. */

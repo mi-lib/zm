@@ -270,11 +270,15 @@ zCMat zCMatMulNC(const zCMat m1, double k, zCMat m)
 zCMat zCMatDivNC(const zCMat m1, double k, zCMat m)
 {
   int i, n;
+  double ki = 1.0 / k;
 
-  k = 1 / k;
   n = zCMatRowSizeNC(m) * zCMatColSizeNC(m);
-  for( i=0; i<n; i++ )
-    zComplexMul( &zCMatBufNC(m1)[i], k, &zCMatBufNC(m)[i] );
+  if( _zIsNormalDouble( ki ) ) /* see zRawVecDiv() */
+    for( i=0; i<n; i++ )
+      _zComplexMul( &zCMatBufNC(m1)[i], ki, &zCMatBufNC(m)[i] );
+  else
+    for( i=0; i<n; i++ )
+      _zComplexDiv( &zCMatBufNC(m1)[i], k, &zCMatBufNC(m)[i] );
   return m;
 }
 
@@ -351,7 +355,7 @@ zCMat zCMatDiv(const zCMat m1, double k, zCMat m)
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
-  if( zIsTiny( k ) ){
+  if( k == 0 ){
     ZRUNERROR( ZM_ERR_ZERODIV );
     return NULL;
   }

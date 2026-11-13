@@ -261,10 +261,14 @@ zCVec zCVecMulNC(const zCVec v1, double k, zCVec v)
 zCVec zCVecDivNC(const zCVec v1, double k, zCVec v)
 {
   int i;
+  double ki = 1.0 / k;
 
-  k = 1 / k;
-  for( i=0; i<zCVecSizeNC(v); i++ )
-    zComplexMul( zCVecElemNC(v1,i), k, zCVecElemNC(v,i) );
+  if( _zIsNormalDouble( ki ) ) /* see zRawVecDiv() */
+    for( i=0; i<zCVecSizeNC(v); i++ )
+      _zComplexMul( zCVecElemNC(v1,i), ki, zCVecElemNC(v,i) );
+  else
+    for( i=0; i<zCVecSizeNC(v); i++ )
+      _zComplexDiv( zCVecElemNC(v1,i), k, zCVecElemNC(v,i) );
   return v;
 }
 
@@ -349,7 +353,7 @@ zCVec zCVecMul(const zCVec v1, double k, zCVec v)
 zCVec zCVecDiv(const zCVec v1, double k, zCVec v)
 {
   __z_cvec_size_check_2( v1, v );
-  if( zIsTiny( k ) ){
+  if( k == 0 ){
     ZRUNERROR( ZM_ERR_ZERODIV );
     return NULL;
   }
@@ -410,18 +414,22 @@ double zCVecSqrNorm(const zCVec v)
 }
 
 /* normalize a complex vector. */
-zCVec zCVecNormalize(const zCVec src, zCVec dest)
+zCVec zCVecNormalize(const zCVec src, double tol, zCVec dest)
 {
-  int i;
   double r;
 
-  if( zIsTiny( ( r = zCVecNorm( src ) ) ) ){
-    ZRUNWARN( ZM_ERR_VEC_ZERONORM );
+  if( !zCVecSizeEqual( src, dest ) ){
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
-  for( i=0; i<zCVecSizeNC(dest); i++ )
-    zComplexDiv( zCVecElemNC(src,i), r, zCVecElemNC(dest,i) );
-  return dest;
+  if( tol <= 0 ) tol = zTOL;
+  /* a norm that is not a number is also rejected, since the comparison is false. */
+  if( !( ( r = zCVecNorm( src ) ) > tol ) ){
+    ZRUNWARN( ZM_ERR_VEC_ZERONORM );
+    zCVecZero( dest );
+    return NULL;
+  }
+  return zCVecDivNC( src, r, dest );
 }
 
 /* print a complex vector to a file. */

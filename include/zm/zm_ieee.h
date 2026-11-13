@@ -48,6 +48,10 @@ typedef union{ ubyte c[8]; double d; } __ieee_fp_t;
 /*! \brief check if the sign bit of an IEEE 754 double-precision floating-point number \a x is one. */
 #define _zIEEESignIsNeg(x) ( ( _zIEEEDoubleByte(x,7) & 0x80 ) != 0 )
 
+/*! \brief check if the exponent bits of an IEEE 754 double-precision floating-point number \a x are
+ * all zero, namely, \a x is either zero or a subnormal number. */
+#define _zIEEEExpIsZero(x) ( ( _zIEEEDoubleByte(x,7) & 0x7f ) == 0 && ( _zIEEEDoubleByte(x,6) & 0xf0 ) == 0 )
+
 /*! \brief HUGE_VAL conforming to IEEE 754 floating point. */
 __ZM_EXPORT const __ieee_fp_t zm_huge_val;
 #ifndef HUGE_VAL
@@ -92,6 +96,17 @@ __ZM_EXPORT int zIsNan(double x);
  */
 #define _zIsFinite(x) ( _zIEEEExpIsMax(x) ? 0 : 1 )
 __ZM_EXPORT int zIsFinite(double x);
+
+/*! \brief check if the value is a normal number.
+ *
+ * zIsNormalDouble() checks if a value \a x is a normal number, namely, neither zero, a subnormal
+ * number, infinity, nor NaN. It is equivalent to that the absolute value of \a x is not less than
+ * DBL_MIN and not greater than DBL_MAX.
+ * \return
+ * zIsNormalDouble() and _zIsNormalDouble() return 1 if \a x is a normal number, and 0 otherwise.
+ */
+#define _zIsNormalDouble(x) ( _zIEEEExpIsMax(x) || _zIEEEExpIsZero(x) ? 0 : 1 )
+__ZM_EXPORT int zIsNormalDouble(double x);
 
 __END_DECLS
 

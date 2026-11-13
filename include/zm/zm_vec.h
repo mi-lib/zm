@@ -55,7 +55,7 @@ struct zVecStruct : public _zVecStruct {
   zVec scaleUniform(double min, double max);
   double sqrNorm();
   double norm();
-  zVec normalize();
+  zVec normalize(double tol=0);
   friend std::ostream &operator<<(std::ostream &stream, const zVec vec);
 };
 #else
@@ -371,7 +371,8 @@ __ZM_EXPORT zVec zVecResize(zVec v, int size);
  *
  * zVecMulNC() and zVecMul() multiply \a v1 by a scalar value \a k, and put the result into \a v.
  *
- * zVecDivNC() and zVecDiv() divide \a v1 by \a k, and puts the result into \a v.
+ * zVecDivNC() and zVecDiv() divide \a v1 by \a k, and puts the result into \a v. zVecDiv() returns
+ * the null pointer if \a k is exactly zero.
  *
  * zVecAmpNC() and zVecAmp() amplify each component of \a v1 by the corresponding component of
  * a vector \a amp, and puts the result into \a v.
@@ -519,6 +520,11 @@ __ZM_EXPORT double zVecInnerProd(const zVec v1, const zVec v2);
  * \a src is divided by the norm of itself. The result is
  * put into \a dest.
  * zVecNormalizeDRC() directly normalizes the vector \a v.
+ * If the norm of \a src is not greater than \a tol, they do
+ * not normalize it, regarding it as a zero vector, and set all
+ * components of \a dest for zeros. If zero or a negative value
+ * is given for \a tol, zTOL is adopted instead. See also
+ * zRawVecNormalize().
  *
  * zVecSqrDist() calculates the squared distance between
  * \a v1 and \a v2. zVecDist() calculates the distance
@@ -528,7 +534,9 @@ __ZM_EXPORT double zVecInnerProd(const zVec v1, const zVec v2);
  * return the value calculated.
  *
  * zVecNormalize() and zVecNormalizeDRC() return the
- * pointer to the result.
+ * pointer to the result, or the null pointer if the norm of
+ * the vector is not greater than the tolerance or the sizes of
+ * \a src and \a dest are different.
  */
 __ZM_EXPORT double zVecSqrNorm(const zVec v);
 #define zVecNorm(v)         sqrt( zVecSqrNorm(v) )
@@ -537,8 +545,8 @@ __ZM_EXPORT double zVecWSqrNormNC(const zVec v, const zVec w);
 __ZM_EXPORT double zVecWSqrNorm(const zVec v, const zVec w);
 #define zVecWNorm(v,w)      sqrt( zVecWSqrNorm(v,w) )
 __ZM_EXPORT double zVecInfNorm(const zVec v);
-__ZM_EXPORT zVec zVecNormalize(const zVec src, zVec dest);
-#define zVecNormalizeDRC(v) zVecNormalize(v,v)
+__ZM_EXPORT zVec zVecNormalize(const zVec src, double tol, zVec dest);
+#define zVecNormalizeDRC(v,tol) zVecNormalize(v,tol,v)
 #define zVecSqrDist(v1,v2)  zRawVecSqrDist(zVecBuf(v1),zVecBuf(v2),zVecSizeNC(v1))
 #define zVecDist(v1,v2)     sqrt( zVecSqrDist( v1, v2 ) )
 
@@ -661,7 +669,7 @@ inline zVec zVecStruct::scale(const zVec min, const zVec max){ return zVecScale(
 inline zVec zVecStruct::scaleUniform(double min, double max){ return zVecScaleUniform( this, min, max, this ); }
 inline double zVecStruct::sqrNorm(){ return zVecSqrNorm( this ); }
 inline double zVecStruct::norm(){ return zVecNorm( this ); }
-inline zVec zVecStruct::normalize(){ return zVecNormalizeDRC( this ); }
+inline zVec zVecStruct::normalize(double tol){ return zVecNormalizeDRC( this, tol ); }
 inline std::ostream &operator<<(std::ostream &stream, const zVec vec){
   stream << vec->size << " ( " << (*vec)[0];
   for(int i=1; i<vec->size; i++ ) stream << ", " << (*vec)[i];

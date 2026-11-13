@@ -52,7 +52,7 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zComplex ){
   zComplex pow(double z, const zComplex &ref);
   zComplex log(double base);
   zComplex log(const zComplex &base);
-  zComplex normalize();
+  zComplex normalize(double tol=0);
   zComplex &fromString(const char *str);
   zComplex &fromZTK(ZTK *ztk);
   friend zComplex operator+(const zComplex &c1, const zComplex &c2);
@@ -297,10 +297,15 @@ __ZM_EXPORT zComplex *zComplexCLog(const zComplex *c, const zComplex *base, zCom
  * zComplexNormalize() normalizes a complex number \a c so as
  * to magnify its absolute value to be 1.
  * The result is stored where is pointed by \a nc.
+ * If the absolute value of \a c is not greater than \a tol, it
+ * does not normalize \a c, regarding it as zero, and sets \a nc
+ * for zero. If zero or a negative value is given for \a tol,
+ * zTOL is adopted instead.
  * \retval a pointer \a nc
- * \retval the null pointer if the absolute value of \a c is 0
+ * \retval the null pointer if the absolute value of \a c is not
+ * greater than the tolerance
  */
-__ZM_EXPORT zComplex *zComplexNormalize(const zComplex *c, zComplex *nc);
+__ZM_EXPORT zComplex *zComplexNormalize(const zComplex *c, double tol, zComplex *nc);
 
 /* I/O */
 
@@ -382,7 +387,7 @@ inline zComplex zComplex::pow(const zComplex &z){ zComplex ret; zComplexCPow( th
 inline zComplex zComplex::pow(double z, const zComplex &ref){ zComplex ret; zComplexPowRef( this, z, &ref, &ret ); return ret; }
 inline zComplex zComplex::log(double base){ zComplex ret; zComplexLog( this, base, &ret ); return ret; }
 inline zComplex zComplex::log(const zComplex &base){ zComplex ret; zComplexCLog( this, &base, &ret ); return ret; }
-inline zComplex zComplex::normalize(){ zComplex ret; zComplexNormalize( this, &ret ); return ret; }
+inline zComplex zComplex::normalize(double tol){ zComplex ret; zComplexNormalize( this, tol, &ret ); return ret; }
 inline zComplex &zComplex::fromString(const char *str){ return *zComplexFromStr( this, str ); }
 inline zComplex &zComplex::fromZTK(ZTK *ztk){ return *zComplexFromZTK( this, ztk ); }
 

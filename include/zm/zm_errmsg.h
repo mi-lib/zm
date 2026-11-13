@@ -54,7 +54,7 @@
 
 /* error messages */
 
-#define ZM_ERR_ZERODIV                     "cannot devide by zero"
+#define ZM_ERR_ZERODIV                     "cannot divide by zero"
 #define ZM_ERR_OUTOFRANGE                  "specified index out of range"
 
 #define ZM_ERR_VEC_NULL                    "null vector assigned"
@@ -75,7 +75,7 @@
 #define ZM_ERR_INVALID_COL                 "invalid column specified"
 #define ZM_ERR_INVALID_INDEX               "invalid index specified"
 
-#define ZM_ERR_VEC_ZERONORM                "cannot normalize zero vector"
+#define ZM_ERR_VEC_ZERONORM                "cannot normalize a vector whose norm is zero or not greater than the tolerance"
 
 #define ZM_ERR_CVEC_CONJPAIR_UNABLE        "unable to pair co-conjugate complex numbers."
 

@@ -135,6 +135,26 @@ bool assert_cdiv(void)
   return true;
 }
 
+/* division by real numbers with very small or large absolute values, and normalization */
+bool assert_div_normalize_tol(void)
+{
+  zComplex c, q, n;
+  double k[] = { 3.0, 1.0e-13, 4.0e-309, 1.0e308 };
+  int j;
+
+  for( j=0; j<sizeof(k)/sizeof(double); j++ ){
+    zComplexCreate( &c, 1.0e-300 * zRandF(-1,1), 1.0e-300 * zRandF(-1,1) );
+    if( !zComplexDiv( &c, k[j], &q ) ) return false;
+    if( fabs( q.re - c.re/k[j] ) > DBL_EPSILON * fabs( c.re/k[j] ) ||
+        fabs( q.im - c.im/k[j] ) > DBL_EPSILON * fabs( c.im/k[j] ) ) return false;
+  }
+  if( zComplexDiv( &c, 0, &q ) ) return false;
+  zComplexCreate( &c, 3.0e-14, 4.0e-14 ); /* absolute value 5e-14 */
+  if( zComplexNormalize( &c, 0, &n ) || n.re != 0 || n.im != 0 ) return false;
+  if( !zComplexNormalize( &c, 1.0e-20, &n ) || !zIsTol( zComplexAbs( &n ) - 1, 10*DBL_EPSILON ) ) return false;
+  return true;
+}
+
 /* division by zero */
 bool assert_cdiv_zero(void)
 {
@@ -177,6 +197,7 @@ int main(int argc, char *argv[])
   zAssert( zComplexDivDRC + _zComplexDivDRC, assert_div_drc() );
   zAssert( zComplexCMul + zComplexCMulConj (in-place), assert_cmul_inplace() );
   zAssert( zComplexCDiv + zComplexCDivDRC + zComplexInv, assert_cdiv() );
+  zAssert( zComplexDiv + zComplexNormalize (tolerance), assert_div_normalize_tol() );
   zAssert( zComplexCDiv + zComplexCDivDRC + zComplexInv (division by zero), assert_cdiv_zero() );
   zAssert( zComplexValIsIncluded, assert_isincluded() );
   zAssert( zQESolve, assert_qesolve() );

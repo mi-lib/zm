@@ -138,6 +138,7 @@ __ZM_EXPORT zCVec zCVecConjPair(zCVec v, double tol);
  * zCVecMulNC() and zCVecMul() multiply \a v1 by a scalar value \a k, and puts the result into \a v.
  *
  * zCVecDivNC() and zCVecDiv() divide \a v1 by a scalar value \a k, and puts the result into \a v.
+ * zCVecDiv() returns the null pointer if \a k is exactly zero.
  *
  * zCVecCMulNC() and zCVecCMul() multiply \a v1 by a complex number \a z, and puts the result into \a v.
  *
@@ -220,15 +221,21 @@ __ZM_EXPORT zComplex *zCVecInnerProd(const zCVec v1, const zCVec v2, zComplex *z
  * and puts the result into \a dest.
  *
  * zCVecNormalizeDRC() directly normalizes a complex vector \a v.
+ *
+ * If the norm of \a src is not greater than \a tol, they do not normalize it, regarding it as a zero
+ * vector, and set all components of \a dest for zeros. If zero or a negative value is given for \a tol,
+ * zTOL is adopted instead. See also zRawVecNormalize().
  * \return
  * zCVecSqrNorm() and zCVecNorm() return the calculated value.
  *
- * zCVecNormalize() and zCVecNormalizeDRC() return a pointer to the result.
+ * zCVecNormalize() and zCVecNormalizeDRC() return a pointer to the result, or the null pointer if
+ * the norm of the vector is not greater than the tolerance or the sizes of \a src and \a dest are
+ * different.
  */
 __ZM_EXPORT double zCVecSqrNorm(const zCVec v);
 #define zCVecNorm(v)         sqrt( zCVecSqrNorm(v) )
-__ZM_EXPORT zCVec zCVecNormalize(const zCVec src, zCVec dest);
-#define zCVecNormalizeDRC(v) zCVecNormalize(v,v)
+__ZM_EXPORT zCVec zCVecNormalize(const zCVec src, double tol, zCVec dest);
+#define zCVecNormalizeDRC(v,tol) zCVecNormalize(v,tol,v)
 
 /*! \brief check if a complex number is included in a complex vector. */
 #define zCVecValIsIncluded(v,c) zComplexValIsIncluded( zCVecBufNC(v), zCVecSizeNC(v), c )

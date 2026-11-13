@@ -133,7 +133,8 @@ __ZM_EXPORT bool zRawVecIsFinite(const double *v, int size);
  * zRawVecSub() subtracts \a v2 from \a v1.
  * zRawVecRev() reverses the sign of \a v1.
  * zRawVecMul() multiplies \a v1 by a scalar value \a k.
- * zRawVecDiv() divides \a v1 by \a k.
+ * zRawVecDiv() divides \a v1 by \a k. It multiplies \a v1 by the reciprocal of \a k for speed unless the
+ * reciprocal is infinity or a subnormal number, in which case it divides each component by \a k.
  * zRawVecAmp() amplifies \a v1 by another vector \a amp. Namely, each component of \a v1 is multiplied
  * by the corresponding component of \a amp.
  * zRawVecDem() demagnifies \a v1 by another vector \a dem. Namely, each component of \a v1 is divided
@@ -232,6 +233,11 @@ __ZM_EXPORT double zRawVecInnerProd(const double *v1, const double *v2, int size
  * zRawVecNormalize() normalizes a raw vector \a src, namely, \a src is divided by the norm of itself.
  * The result is put into \a dest.
  * zRawVecNormalizeDRC() directly normalizes \a v.
+ * If the norm of \a src is not greater than \a tol, they do not normalize it, regarding it as a zero
+ * vector, and set all components of \a dest for zeros. If zero or a negative value is given for \a tol,
+ * zTOL is adopted instead. Note that a vector that is theoretically zero but remains non-zero due to
+ * rounding errors could be normalized to a meaningless direction, so that \a tol should be chosen
+ * relative to the scale of the computation that produced \a src.
  *
  * zRawVecSqrDist() returns the squared distance between \a v1 and \a v2.
  * zRawVecDist() returns the distance between \a v1 and \a v2.
@@ -240,14 +246,15 @@ __ZM_EXPORT double zRawVecInnerProd(const double *v1, const double *v2, int size
  * \return
  * zRawVecSqrNorm(), zRawVecNorm(), zRawVecSqrDist() and zRawVecDist() return the value calculated.
  *
- * zRawVecNormalize() and zRawVecNormalizeDRC() return a pointer to the result.
+ * zRawVecNormalize() and zRawVecNormalizeDRC() return a pointer to the result, or the null pointer
+ * if the norm of the vector is not greater than the tolerance.
  */
 __ZM_EXPORT double zRawVecSqrNorm(const double *v, int size);
 #define zRawVecNorm(v,size)         sqrt( zRawVecSqrNorm(v,size) )
 __ZM_EXPORT double zRawVecWSqrNorm(const double *v, const double *w, int size);
 #define zRawVecWNorm(v,w,size)      sqrt( zRawVecWSqrNorm(v,w,size) )
-__ZM_EXPORT double *zRawVecNormalize(const double *src, int size, double *dest);
-#define zRawVecNormalizeDRC(v,size) zRawVecNormalize(v,size,v)
+__ZM_EXPORT double *zRawVecNormalize(const double *src, int size, double tol, double *dest);
+#define zRawVecNormalizeDRC(v,size,tol) zRawVecNormalize(v,size,tol,v)
 __ZM_EXPORT double zRawVecSqrDist(const double *v1, const double *v2, int size);
 #define zRawVecDist(v1,v2,size)     sqrt( zRawVecSqrDist( v1, v2, size ) )
 
