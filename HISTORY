@@ -1,3 +1,5 @@
+2026.11.14. Debugged _zOptDMStepBrentEval to cast a pointer for C++. [zm_opt_dm]
+2026.11.14. Renamed zm_le_pivot, zm_le_lu, and zm_le_lq to zm_mat_pivot, zm_mat_decomp_lu, and zm_mat_decomp_lq, respectively, and added zm_mat_decomp.h, which is included by zm_le.h. [zm_mat_pivot, zm_mat_decomp, zm_mat_decomp_lu, zm_mat_decomp_lq, zm_le]
 2026.11.14. Modified zMatDecompLQ, zMatDecompLQAlloc, and zMatDecompQR to scale the matrix by a power of two to avoid overflow and underflow. [zm_le_lq]
 2026.11.14. Debugged zMatDecompLQFull, zMatDecompLQFullAlloc, and zMatDecompLQNull that returned NaN or a wrong rank for a matrix with very large or small components, and reimplemented them based on _zMatHouseholderUnitNormal, _zMatHouseholderR, and _zMatScalePow2. [zm_le_lq]
 2026.11.14. Moved the Householder reflection functions from zm_mat_eig.c to zm_le_lq.c as _zMatHouseholderUnitNormal, _zMatHouseholderL, and _zMatHouseholderR, and _zMatEigScale as _zMatScalePow2. [zm_le_lq, zm_mat_eig]

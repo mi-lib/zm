@@ -1,10 +1,10 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_le_lq - linear equation: LQ/QR decomposition.
+ * zm_mat_decomp_lq - matrix decomposition: LQ/QR decomposition.
  */
 
-#include <zm/zm_le.h>
+#include <zm/zm_mat_decomp.h>
 
 /* internal functions for Householder reflections and scaling. */
 

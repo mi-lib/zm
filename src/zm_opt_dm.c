@@ -501,7 +501,7 @@ static double _zOptDMStepBrentVal(zOptDM *opt, const zVec var, void *util, doubl
 static double _zOptDMStepBrentEval(double u, void *util)
 {
   _zOptDMStepData *dat;
-  dat = util;
+  dat = (_zOptDMStepData *)util;
   return _zOptDMStepBrentVal( dat->opt, *dat->var, dat->util, u * dat->scale );
 }
 

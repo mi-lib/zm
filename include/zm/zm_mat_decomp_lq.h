@@ -1,11 +1,11 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_le_lq - linear equation: LQ/QR decomposition.
+ * zm_mat_decomp_lq - matrix decomposition: LQ/QR decomposition.
  */
 
-#ifndef __ZM_LE_LQ_H__
-#define __ZM_LE_LQ_H__
+#ifndef __ZM_MAT_DECOMP_LQ_H__
+#define __ZM_MAT_DECOMP_LQ_H__
 
 /* NOTE: never include this header file in user programs. */
 
@@ -129,4 +129,4 @@ __ZM_EXPORT int zMatDecompQR(const zMat m, zMat q, zMat r);
 
 __END_DECLS
 
-#endif /* __ZM_LE_LQ_H__ */
+#endif /* __ZM_MAT_DECOMP_LQ_H__ */

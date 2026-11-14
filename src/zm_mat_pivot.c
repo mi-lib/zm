@@ -1,10 +1,10 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_le_pivot - linear equation: pivoting.
+ * zm_mat_pivot - matrix pivoting.
  */
 
-#include <zm/zm_le.h>
+#include <zm/zm_mat_decomp.h>
 
 /* matrix pivoting. */
 int zMatPivoting(zMat m, zIndex idx, int r, int c)

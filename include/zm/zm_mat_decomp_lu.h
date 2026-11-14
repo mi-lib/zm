@@ -1,11 +1,11 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_le_lu - linear equation: LU decomposition.
+ * zm_mat_decomp_lu - matrix decomposition: LU decomposition.
  */
 
-#ifndef __ZM_LE_LU_H__
-#define __ZM_LE_LU_H__
+#ifndef __ZM_MAT_DECOMP_LU_H__
+#define __ZM_MAT_DECOMP_LU_H__
 
 /* NOTE: never include this header file in user programs. */
 
@@ -76,4 +76,4 @@ __ZM_EXPORT int zMatDecompCholeskyAlloc(const zMat m, zMat *l, zIndex *index);
 
 __END_DECLS
 
-#endif /* __ZM_LE_LU_H__ */
+#endif /* __ZM_MAT_DECOMP_LU_H__ */

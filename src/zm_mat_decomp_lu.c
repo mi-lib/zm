@@ -1,10 +1,10 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_le_lu - linear equation: LU decomposition.
+ * zm_mat_decomp_lu - matrix decomposition: LU decomposition.
  */
 
-#include <zm/zm_le.h>
+#include <zm/zm_mat_decomp.h>
 
 /* find the pivot on the c-th column among the r-th and the following rows of m, where the i-th row
  * means the idx[i]-th row of m if idx is given, or the i-th row of m otherwise.

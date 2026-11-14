@@ -7,7 +7,7 @@
 #ifndef __ZM_LE_H__
 #define __ZM_LE_H__
 
-#include <zm/zm_mat.h>
+#include <zm/zm_mat_decomp.h>
 
 __BEGIN_DECLS
 
@@ -150,9 +150,6 @@ __ZM_EXPORT zVec zLESolveGaussSeidel(const zMat a, const zVec b, zVec ans);
 
 __END_DECLS
 
-#include <zm/zm_le_pivot.h>     /* pivoting */
-#include <zm/zm_le_lu.h>        /* LU decomposition */
-#include <zm/zm_le_lq.h>        /* LQ/QR decomposition */
 #include <zm/zm_le_mat_inv.h>   /* determinant and inverse matrix */
 #include <zm/zm_le_mat_mpinv.h> /* Moore-Penrose inverse matrix */
 #include <zm/zm_le_tridiag.h>   /* tridiagonal equation */

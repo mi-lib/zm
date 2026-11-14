@@ -1,11 +1,11 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_le_pivot - linear equation: pivoting.
+ * zm_mat_pivot - matrix pivoting.
  */
 
-#ifndef __ZM_LE_PIVOT_H__
-#define __ZM_LE_PIVOT_H__
+#ifndef __ZM_MAT_PIVOT_H__
+#define __ZM_MAT_PIVOT_H__
 
 /* NOTE: never include this header file in user programs. */
 
@@ -43,4 +43,4 @@ __ZM_EXPORT double zMatVecSweepOut(zMat m, zVec v, int r, int c);
 
 __END_DECLS
 
-#endif /* __ZM_LE_PIVOT_H__ */
+#endif /* __ZM_MAT_PIVOT_H__ */
