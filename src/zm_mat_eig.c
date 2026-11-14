@@ -6,59 +6,6 @@
 
 #include <zm/zm_mat_eig.h>
 
-/* Householder reflection */
-
-/* unit normal vector nu of the Householder reflection. */
-static bool _zHouseholderVec(const double *x, int n, double *nu, double *s)
-{
-  double scale = 0, r = 0, d, scale_tmp;
-  int i;
-
-  for( i=0; i<n; i++ )
-    if( ( scale_tmp = fabs( x[i] ) ) > scale ) scale = scale_tmp;
-  if( scale == 0 ) return false;
-  for( i=0; i<n; i++ ){ /* scaled to avoid overflow and underflow */
-    nu[i] = x[i] / scale;
-    r += nu[i] * nu[i];
-  }
-  r = sqrt( r );
-  *s = x[0] >= 0 ? -r : r;
-  nu[0] -= *s; /* |nu|^2 = 2 r ( r + |x0| ) */
-  d = sqrt( 2 * r * ( r + fabs( x[0] / scale ) ) );
-  for( i=0; i<n; i++ ) nu[i] /= d;
-  *s *= scale;
-  return true;
-}
-
-/* partially apply a Householder reflection to rows from the left side. */
-static void _zHouseholderL(zMat m, const double *nu, int n, int r0, int c0, int c1, double *w)
-{
-  int i, j;
-  double a, *row;
-
-  zRawVecZero( w + c0, c1 - c0 + 1 );
-  for( i=0; i<n; i++ ){ /* w = nu^T m */
-    row = zMatRowBufNC( m, r0+i );
-    for( a=nu[i], j=c0; j<=c1; j++ ) w[j] += a * row[j];
-  }
-  for( i=0; i<n; i++ ){ /* m -= 2 nu w */
-    row = zMatRowBufNC( m, r0+i );
-    for( a=2*nu[i], j=c0; j<=c1; j++ ) row[j] -= a * w[j];
-  }
-}
-
-/* partially apply a Householder reflection to columns from the right side. */
-static void _zHouseholderR(zMat m, const double *nu, int n, int c0, int r0, int r1)
-{
-  int i;
-  double *p;
-
-  for( i=r0; i<=r1; i++ ){
-    p = &zMatElemNC(m,i,c0);
-    zRawVecCatDRC( p, -2*zRawVecInnerProd( p, nu, n ), nu, n );
-  }
-}
-
 /* Hessenberg matrix using Householder transformation. */
 zMat zMatToHessenberg(const zMat m, zMat h, zMat p)
 {
@@ -96,13 +43,13 @@ zMat zMatToHessenberg(const zMat m, zMat h, zMat p)
     for( i=0; i<len; i++ ) /* the k-th column below the subdiagonal component */
       zVecSetElemNC( w, i, zMatElemNC(h,k+1+i,k) );
     /* a reflection is skipped only if the column is exactly zero. */
-    if( !_zHouseholderVec( zVecBuf(w), len, zVecBuf(nu), &s ) ) continue;
-    _zHouseholderL( h, zVecBuf(nu), len, k+1, k+1, n-1, zVecBuf(w) );
-    _zHouseholderR( h, zVecBuf(nu), len, k+1, 0, n-1 );
+    if( !_zMatHouseholderUnitNormal( zVecBuf(w), len, zVecBuf(nu), &s ) ) continue;
+    _zMatHouseholderL( h, zVecBuf(nu), len, k+1, k+1, n-1, zVecBuf(w) );
+    _zMatHouseholderR( h, zVecBuf(nu), len, k+1, 0, n-1 );
     /* the k-th column is theoretically mapped to s e1. */
     zMatSetElemNC( h, k+1, k, s );
     for( i=k+2; i<n; i++ ) zMatSetElemNC( h, i, k, 0 );
-    if( p ) _zHouseholderR( p, zVecBuf(nu), len, k+1, 0, n-1 );
+    if( p ) _zMatHouseholderR( p, zVecBuf(nu), len, k+1, 0, n-1 );
   }
  TERMINATE:
   zVecFree( nu );
@@ -110,7 +57,7 @@ zMat zMatToHessenberg(const zMat m, zMat h, zMat p)
   return h;
 }
 
-/* eigenvalue analysis by double-shift QR method (J. G. F. Francis, 1961) */
+/* eigenvalue analysis by double-shift QR method by J. G. F. Francis. */
 
 /* find the top row of the lowest unreduced block of a Hessenberg matrix. */
 static int _zMatEigDQRSplit(zMat h, int r, double norm, bool stagnant)
@@ -149,15 +96,15 @@ static void _zMatEigDQRStep(zMat h, zMat z, int l, int r, double s, double t, do
       x[1] = zMatElemNC(h,k+1,k-1);
       x[2] = nr == 3 ? zMatElemNC(h,k+2,k-1) : 0;
     }
-    if( !_zHouseholderVec( x, nr, nu, &sv ) ) continue;
-    _zHouseholderL( h, nu, nr, k, k, cmax, w );
+    if( !_zMatHouseholderUnitNormal( x, nr, nu, &sv ) ) continue;
+    _zMatHouseholderL( h, nu, nr, k, k, cmax, w );
     if( k > l ){
       zMatSetElemNC( h, k, k-1, sv );
       zMatSetElemNC( h, k+1, k-1, 0 );
       if( nr == 3 ) zMatSetElemNC( h, k+2, k-1, 0 );
     }
-    _zHouseholderR( h, nu, nr, k, rmin, _zMin( k+3, r ) );
-    if( z ) _zHouseholderR( z, nu, nr, k, 0, n-1 );
+    _zMatHouseholderR( h, nu, nr, k, rmin, _zMin( k+3, r ) );
+    if( z ) _zMatHouseholderR( z, nu, nr, k, 0, n-1 );
   }
 }
 
@@ -384,19 +331,6 @@ static bool _zMatEigDQRVec(zMat t, zMat z, zCVec eigval, zCMat eigbase, double n
   return true;
 }
 
-/* exactly scale a matrix by a power of two to avoid overflow and underflow in eigenvalue computation. */
-static double _zMatEigScale(zMat m)
-{
-  double scale;
-  int e;
-
-  if( ( scale = zDataAbsMax( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), NULL ) ) == 0 ) return 1;
-  frexp( scale, &e );
-  scale = ldexp( 1.0, e - 1 );
-  zMatDivDRC( m, scale );
-  return scale;
-}
-
 /* eigenvalues and eigenvectors by double-shift QR method. */
 #define ZM_EIGDQR_EXCEPTIONAL_SHIFT_1 10
 #define ZM_EIGDQR_EXCEPTIONAL_SHIFT_2 20
@@ -426,7 +360,7 @@ bool zMatEigDQR(const zMat m, zCVec eigval, zCMat eigbase, int iter)
   if( eigbase ) z = zMatAllocSqr( zMatRowSizeNC(m) );
   if( !h || !nu || !ws || ( eigbase && !z ) ) goto TERMINATE;
 
-  scale = _zMatEigScale( h );
+  scale = _zMatScalePow2( h );
   if( !zMatToHessenberg( h, NULL, z ) ) goto TERMINATE;
   norm = zMatNorm( h );
   ZITERINIT( iter );
@@ -652,6 +586,22 @@ bool zMatSymEigBisec(const zMat m, zVec eigval, zMat eigbase)
   return true;
 }
 
+/* cosine c and sine s of the rotation angle phi of Jacobi's method, which is the smaller one
+ * (|phi| <= pi/4) of the solutions of tan^2 phi + 2 theta tan phi - 1 = 0. It returns tan phi.
+ * The half-angle formulae from cos 2phi = |theta| / r and sin 2phi = 1 / r, where r = sqrt(1+theta^2),
+ * give a more orthogonal rotation than c = 1 / sqrt(1+t^2) from t = tan phi. For a large theta,
+ * theta^2 would overflow, and r is approximated by |theta|. */
+static double _zMatRotJacobiCS(double theta, double *c, double *s)
+{
+  double r;
+
+  r = fabs( theta ) < 1.0e150 ? sqrt( 1 + theta*theta ) : fabs( theta );
+  *c = sqrt( 0.5 + 0.5 * fabs( theta ) / r );
+  *s = 0.5 / ( r * *c );
+  if( theta < 0 ) *s = -*s;
+  return *s / *c;
+}
+
 /* Jacobi's rotation to eliminate the (i,j) component of a symmetric matrix with the smaller rotation
  * angle (|angle| <= pi/4), where the diagonal components are updated by Rutishauser's formula. Ref.:
  *  H. Rutishauser, The Jacobi method for real symmetric matrices, Handbook for Automatic Computation
@@ -660,17 +610,9 @@ bool zMatSymEigBisec(const zMat m, zVec eigval, zMat eigbase)
 static void _zMatSymEigJacobiRot(zMat m, zMat eigbase, int i, int j)
 {
   int k;
-  double theta, r, t, c, s, tmp1, tmp2;
+  double t, c, s, tmp1, tmp2;
 
-  theta = 0.5 * ( zMatElemNC(m,j,j) - zMatElemNC(m,i,i) ) / zMatElemNC(m,i,j);
-  /* the half-angle formulae from cos 2phi = |theta| / r and sin 2phi = 1 / r, where r = sqrt(1+theta^2),
-   * give a more orthogonal rotation than c = 1 / sqrt(1+t^2) from t = tan phi. For a large theta,
-   * theta^2 would overflow, and r is approximated by |theta|. */
-  r = fabs( theta ) < 1.0e150 ? sqrt( 1 + theta*theta ) : fabs( theta );
-  c = sqrt( 0.5 + 0.5 * fabs( theta ) / r );
-  s = 0.5 / ( r * c );
-  if( theta < 0 ) s = -s;
-  t = s / c;
+  t = _zMatRotJacobiCS( 0.5 * ( zMatElemNC(m,j,j) - zMatElemNC(m,i,i) ) / zMatElemNC(m,i,j), &c, &s );
   zMatElemNC(m,i,i) -= t * zMatElemNC(m,i,j);
   zMatElemNC(m,j,j) += t * zMatElemNC(m,i,j);
   zMatSetElemNC( m, i, j, 0 );
@@ -706,7 +648,7 @@ bool zMatSymEigJacobi(const zMat m, zVec eigval, zMat eigbase)
     ZALLOCERROR();
     return false;
   }
-  scale = _zMatEigScale( d );
+  scale = _zMatScalePow2( d );
   zMatIdent( eigbase );
   for( n=0; ; n++ ){
     is_complete = true;
@@ -737,54 +679,151 @@ bool zMatSymEigJacobi(const zMat m, zVec eigval, zMat eigbase)
   return ret;
 }
 
-/* sort singular values and corresponding bases. */
-static int _zMatSVDSort(const zMat m, zVec sv, zMat u)
+/* one-sided Jacobi's method (M. R. Hestenes, 1958) to orthogonalize the rows of the k x k leading
+ * block of a matrix a by rotations from the left side, which are accumulated to the first k columns
+ * of u. It returns the false value if it does not converge. */
+static bool _zMatSVDJacobi(zMat a, int k, zMat u)
 {
-  int i, im, rank;
+  int i, j, l, n;
+  double *ai, *aj, alpha, beta, gamma, tol, tol_i, norm_min, c, s, tmp1, tmp2;
+  bool is_complete;
 
-  rank = zMin( zMatRowSizeNC(m), zMatColSizeNC(m) );
-  for( i=0; i<rank; i++ ){
-    if( zIsTol( zDataMax( zVecBuf(sv)+i, zVecSizeNC(sv)-i, &im ), ZM_MAT_SVD_TOL ) ) break;
-    im += i;
+  /* the inner product of two orthogonal rows computed in floating-point arithmetic is up to k eps
+   * times the product of their norms. */
+  tol = k * DBL_EPSILON;
+  /* a row not longer than k eps times the Frobenius norm of the block, which is invariant under the
+   * rotations, consists of rounding errors, and is not orthogonalized, since the rotations with other
+   * rows would only exchange rounding errors. */
+  for( norm_min=0, i=0; i<k; i++ )
+    norm_min += zRawVecInnerProd( zMatRowBufNC(a,i), zMatRowBufNC(a,i), k );
+  norm_min = tol * sqrt( norm_min );
+  for( n=0; ; n++ ){
+    is_complete = true;
+    for( i=1; i<k; i++ ){
+      ai = zMatRowBufNC( a, i );
+      alpha = zRawVecInnerProd( ai, ai, k );
+      for( j=0; j<i; j++ ){
+        if( ( tol_i = sqrt( alpha ) ) <= norm_min ) break;
+        tol_i *= tol;
+        aj = zMatRowBufNC( a, j );
+        if( ( beta = sqrt( zRawVecInnerProd( aj, aj, k ) ) ) <= norm_min ) continue;
+        gamma = zRawVecInnerProd( ai, aj, k );
+        if( fabs( gamma ) <= tol_i * beta ) continue;
+        beta *= beta;
+        is_complete = false;
+        /* the rotation that makes the i-th and j-th rows orthogonal */
+        _zMatRotJacobiCS( 0.5 * ( beta - alpha ) / gamma, &c, &s );
+        for( l=0; l<k; l++ ){
+          tmp1 = ai[l];
+          tmp2 = aj[l];
+          ai[l] = c * tmp1 - s * tmp2;
+          aj[l] = s * tmp1 + c * tmp2;
+        }
+        for( l=0; l<zMatRowSizeNC(u); l++ ){
+          tmp1 = zMatElemNC( u, l, i );
+          tmp2 = zMatElemNC( u, l, j );
+          zMatSetElemNC( u, l, i, c * tmp1 - s * tmp2 );
+          zMatSetElemNC( u, l, j, s * tmp1 + c * tmp2 );
+        }
+        alpha = zRawVecInnerProd( ai, ai, k ); /* the i-th row is changed by the rotation */
+      }
+    }
+    if( is_complete ) return true;
+    if( n >= Z_MAX_ITER_NUM ){
+      ZITERWARN( Z_MAX_ITER_NUM );
+      return false;
+    }
+  }
+}
+
+/* sort the rows of the k x k leading block of a matrix a in descending order of their norms with the
+ * corresponding columns of u, and store the norms into sv. */
+static void _zMatSVDSort(zMat a, int k, zMat u, zVec sv)
+{
+  int i, im;
+
+  for( i=0; i<k; i++ )
+    zVecSetElemNC( sv, i, sqrt( zRawVecInnerProd( zMatRowBufNC(a,i), zMatRowBufNC(a,i), k ) ) );
+  for( i=0; i<k-1; i++ ){
+    zDataMax( zVecBuf(sv)+i, k-i, &im );
+    if( ( im += i ) == i ) continue;
     zVecSwapNC( sv, i, im );
-    zVecSetElemNC( sv, i, sqrt( zVecElemNC(sv,i) ) );
+    zMatSwapRowNC( a, i, im );
     zMatSwapColNC( u, i, im );
   }
-  if( ( rank = i ) < zVecSizeNC(sv) )
-    for( i=rank; i<zVecSizeNC(sv); i++ ) /* replace theoretically zero singular values with zeroes */
-      zVecSetElemNC( sv, i, 0 );
-  return rank;
 }
 
 /* singular value decomposition. */
 int zMatSVD(const zMat m, zMat u, zVec sv, zMat v)
 {
-  int i, j, rank;
-  zMat c, w = NULL;
-  double s;
+  int r, c, k, i, j, rank = -1;
+  double scale, d, *nu;
+  zMat a, hv = NULL;
+  zVec w = NULL;
 
-  if( !( c = zMatAllocSqr( zMatRowSizeNC(m) ) ) ){
-    ZALLOCERROR();
-    rank = -1;
-    goto TERMINATE;
+  r = zMatRowSizeNC(m);
+  c = zMatColSizeNC(m);
+  k = zMin( r, c );
+  if( !zMatIsSqr(u) || zMatRowSizeNC(u) != r || zMatColSizeNC(v) != c || zMatRowCapacity(v) < k ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+    return -1;
+  }
+  if( zVecSizeNC(sv) != r ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return -1;
+  }
+  a = zMatClone( m );
+  hv = zMatAlloc( k, r + c - k ); /* Householder vectors */
+  w = zVecAlloc( zMax( r, c ) );
+  if( !a || !hv || !w ) goto TERMINATE;
+  scale = _zMatScalePow2( a );
+  zMatIdent( u );
+  zMatZero( hv );
+  /* reduce m to a k x k triangular matrix by Householder reflections, namely, m = [L 0] H for r <= c
+   * (LQ decomposition), and m = H [R; 0] for r > c (QR decomposition), where H is orthogonal. A null
+   * vector nu, which is left for a zero column or row, represents the identity transformation. */
+  for( i=0; i<k; i++ ){
+    nu = zMatRowBufNC( hv, i ) + i;
+    if( r <= c ){ /* the i-th row is mapped to s e_i from the right side */
+      if( !_zMatHouseholderUnitNormal( zMatRowBufNC(a,i)+i, c-i, nu, &d ) ) continue;
+      if( i < r-1 ) _zMatHouseholderR( a, nu, c-i, i, i+1, r-1 );
+      zMatSetElemNC( a, i, i, d );
+      for( j=i+1; j<c; j++ ) zMatSetElemNC( a, i, j, 0 );
+    } else{ /* the i-th column is mapped to s e_i from the left side */
+      for( j=i; j<r; j++ ) zVecSetElemNC( w, j, zMatElemNC(a,j,i) );
+      if( !_zMatHouseholderUnitNormal( zVecBuf(w)+i, r-i, nu, &d ) ) continue;
+      if( i < c-1 ) _zMatHouseholderL( a, nu, r-i, i, i+1, c-1, zVecBuf(w) );
+      zMatSetElemNC( a, i, i, d );
+      for( j=i+1; j<r; j++ ) zMatSetElemNC( a, j, i, 0 );
+    }
+  }
+  /* the rows of the triangular matrix are orthogonalized as J^T T = W */
+  if( !_zMatSVDJacobi( a, k, u ) ) goto TERMINATE;
+  _zMatSVDSort( a, k, u, sv );
+  /* the rank and the singular values; a singular value relatively smaller than zTOL is regarded as zero */
+  for( rank=0; rank<k; rank++ )
+    if( !( zVecElemNC(sv,rank) > zTOL * zVecElemNC(sv,0) ) ) break;
+  /* the right singular vectors, which are the normalized rows of W */
+  zMatSetRowSizeNC( v, rank );
+  zMatZero( v );
+  for( i=0; i<rank; i++ )
+    for( j=0; j<k; j++ )
+      zMatSetElemNC( v, i, j, zMatElemNC(a,i,j) / zVecElemNC(sv,i) );
+  for( i=0; i<rank; i++ ) zVecElemNC(sv,i) *= scale;
+  for( ; i<r; i++ ) zVecSetElemNC( sv, i, 0 );
+  if( r <= c ){ /* m = J W H, where the right singular vectors are the rows of W H */
+    if( rank > 0 )
+      for( i=k-1; i>=0; i-- )
+        _zMatHouseholderR( v, zMatRowBufNC(hv,i)+i, c-i, i, 0, rank-1 );
+  } else{ /* m = H [J 0; 0 I] [W; 0], where the left singular vectors are the columns of H [J 0; 0 I] */
+    for( i=k-1; i>=0; i-- )
+      _zMatHouseholderL( u, zMatRowBufNC(hv,i)+i, r-i, i, 0, r-1, zVecBuf(w) );
   }
 
-  zMulMatMatTNC( m, m, c );
-  zMatSymEigJacobi( c, sv, u );
-  rank = _zMatSVDSort( m, sv, u );
-  if( !( w = zMatAlloc( zMatRowSizeNC(u), rank ) ) ) goto TERMINATE;
-  zMatGetNC( u, 0, 0, w );
-  zMatSetRowSize( v, rank );
-
-  zMulMatTMatNC( w, m, v );
-  for( i=0; i<rank; i++ ){
-    s = 1.0 / zVecElemNC(sv,i);
-    for( j=0; j<zMatColSizeNC(m); j++ )
-      zMatElemNC(v,i,j) *= s;
-  }
  TERMINATE:
-  zMatFree( w );
-  zMatFree( c );
+  zMatFree( a );
+  zMatFree( hv );
+  zVecFree( w );
   return rank;
 }
 

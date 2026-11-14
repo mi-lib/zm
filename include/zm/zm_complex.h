@@ -71,13 +71,11 @@ __BEGIN_DECLS
 
 /*! \brief create a complex number.
  *
- * zComplexCreate() creates a complex number whose real part
- * is \a r and imaginary part is \a i. The result is put
- * where \a c points.
+ * zComplexCreate() creates a complex number whose real part is \a r and imaginary part is \a i.
+ * The result is put where \a c points.
  *
- * _zComplexCreate() evaluates both \a r and \a i before
- * assigning them, so that the macros based on it work even if
- * \a c points the same with an operand.
+ * _zComplexCreate() evaluates both \a r and \a i before assigning them, so that the macros based on it
+ * work even if \a c points the same with an operand.
  */
 #define _zComplexCreate(c,r,i) do{\
   double __z_complex_re = (r), __z_complex_im = (i);\
@@ -88,9 +86,8 @@ __ZM_EXPORT zComplex *zComplexCreate(zComplex *c, double r, double i);
 
 /*! \brief create a complex number from the polar expression.
  *
- * zComplexCreatePolar() creates a complex number from the polar
- * expression with radius \a r and argument angle \a t
- * in Gaussian plane, where \a t is given in radians.
+ * zComplexCreatePolar() creates a complex number from the polar expression with radius \a r and argument
+ * angle \a t in Gaussian plane, where \a t is given in radians.
  * The result is put where \a c points.
  */
 #define _zComplexCreatePolar(c,r,t) _zComplexCreate( c, (r)*cos(t), (r)*sin(t) )
@@ -120,10 +117,8 @@ __ZM_EXPORT zComplex *zComplexTouchup(zComplex *c, double tol);
 
 /*! \brief test if a complex number is under the tolerance.
  *
- * zComplexIsTol() tests if the absolute values of
- * both real and imaginary parts of a given complex
- * number \a c is less than the tolerance \a tol,
- * where \a tol must be positive.
+ * zComplexIsTol() tests if the absolute values of both real and imaginary parts of a given complex
+ * number \a c is less than the tolerance \a tol, where \a tol must be positive.
  * The result is returned as a boolean value.
  */
 #define zComplexIsTol(c,tol) ( zIsTol((c)->re,tol) && zIsTol((c)->im,tol) )
@@ -158,15 +153,14 @@ __ZM_EXPORT double zComplexSqrAbs(const zComplex *c);
 __ZM_EXPORT double zComplexAbs(const zComplex *c);
 
 /*! \brief argument angle of a complex number
- * \retval the argument angle of a complex number \a c,
- * which is in radians between -PI and PI.
+ * \retval the argument angle of a complex number \a c, which is in radians between -PI and PI.
  */
 #define _zComplexArg(c) atan2( (c)->im, (c)->re )
 __ZM_EXPORT double zComplexArg(const zComplex *c);
 
 /*! \brief the complex conjugate of a complex number.
- * zComplexConj() computes the complex conjugate of a complex
- * number \a c. The result is stored where is pointed by \a cc.
+ * zComplexConj() computes the complex conjugate of a complex number \a c. The result is stored where
+ * is pointed by \a cc.
  * \retval a pointer \a cc.
  */
 #define _zComplexConj(c,cc) _zComplexCreate( cc, (c)->re, -(c)->im )
@@ -174,43 +168,34 @@ __ZM_EXPORT zComplex *zComplexConj(const zComplex *c, zComplex *cc);
 
 /*! \brief arithmatics of complex numbers.
  *
- * zComplexAdd() adds two complex numbers \a c1 and \a c2.
- * The result is put into \a c.
+ * zComplexAdd() adds two complex numbers \a c1 and \a c2. The result is put into \a c.
  *
- * zComplexSub() subtracts a complex number \a c2 from another
- * \a c1. The result is put into \a c.
+ * zComplexSub() subtracts a complex number \a c2 from another \a c1. The result is put into \a c.
  *
- * zComplexRev() reverses a complex number \a c.
- * The result is put into \a rc.
+ * zComplexRev() reverses a complex number \a c. The result is put into \a rc.
  *
- * zComplexMul() multiplies a complex number \a c by a real
- * number \a k. The result is put into \a ec.
+ * zComplexMul() multiplies a complex number \a c by a real number \a k. The result is put into \a ec.
  *
- * zComplexDiv() divides a complex number \a c by a real number
- * \a k. The result is put into \a rc.
+ * zComplexDiv() divides a complex number \a c by a real number \a k. The result is put into \a rc.
  *
- * zComplexCMul() multiplies a complex number \a c1 by another
- * \a c2. The result is put into \a c.
+ * zComplexCMul() multiplies a complex number \a c1 by another \a c2. The result is put into \a c.
  *
- * zComplexCMulConj() multiplies a complex number \a c1 by the
- * conjugate of another \a c2. The result is put into \a c.
+ * zComplexCMulConj() multiplies a complex number \a c1 by the conjugate of another \a c2. The result
+ * is put into \a c.
  *
- * zComplexCDiv() divides a complex number \a c1 by \another
- * \a c2. The result is put into \a c. It is based on Smith's
- * method, which does not compute the squared absolute value of
- * \a c2, so that it avoids overflow and underflow for a divisor
- * with a very large or small absolute value.
+ * zComplexCDiv() divides a complex number \a c1 by \another \a c2. The result is put into \a c.
+ * It is based on Smith's method, which does not compute the squared absolute value of \a c2, so that
+ * it avoids overflow and underflow for a divisor with a very large or small absolute value:
+ *  R. L. Smith, Algorithm 116: Complex Division, Communications of the ACM, 5(8):435, 1962.
  *
- * _zComplexAdd(), _zComplexSub(), _zComplexRev(), _zComplexMul(),
- * _zComplexDiv(), _zComplexCMul(), and _zComplexCMulConj() are
- * macro versions of the above functions, which do not return
- * values. _zComplexDiv() does not check if \a k is zero.
+ * _zComplexAdd(), _zComplexSub(), _zComplexRev(), _zComplexMul(), _zComplexDiv(), _zComplexCMul(), and
+ * _zComplexCMulConj() are macro versions of the above functions, which do not return values.
+ * _zComplexDiv() does not check if \a k is zero.
  * \return
- * These functions returns a pointer to the result.
+ * These functions return a pointer to the result.
  *
  * zComplexDiv() returns the null pointer if \a k is zero.
- * zComplexCDiv() returns the null pointer if \a c2 is zero, namely,
- * both the real and imaginary parts are zero.
+ * zComplexCDiv() returns the null pointer if both the real and the imaginary parts of \a c2 are zero.
  */
 #define _zComplexAdd(c1,c2,c)      _zComplexCreate( c, (c1)->re+(c2)->re, (c1)->im+(c2)->im )
 #define _zComplexSub(c1,c2,c)      _zComplexCreate( c, (c1)->re-(c2)->re, (c1)->im-(c2)->im )
@@ -262,29 +247,24 @@ __ZM_EXPORT zComplex *zComplexCDivDRC(zComplex *c1, const zComplex *c2);
 
 /*! \brief power and logarithm of complex numbers.
  *
- * zComplexPow() calculates a complex number \a c raised to the
- * power of a real number \a z. The result is put into \a pc.
+ * zComplexPow() calculates a complex number \a c raised to the power of a real number \a z. The result
+ * is put into \a pc.
  *
- * zComplexCPow() calculates a complex number \a c raised to the
- * power of another complex number \a z. The result is put into
- * \a pc.
+ * zComplexCPow() calculates a complex number \a c raised to the power of another complex number \a z.
+ * The result is put into \a pc.
  *
- * zComplexLog() calculates the base \a base (a real number)
- * logarithm of a complex number \a c. The result is put into
- * \a lc.
+ * zComplexLog() calculates the base \a base (a real number) logarithm of a complex number \a c. The result
+ * is put into \a lc.
  *
- * zComplexCLog() calculates the base \a base (a complex number)
- * logarithm of another complex number \a c. The result is put
- * into \a lc.
+ * zComplexCLog() calculates the base \a base (a complex number) logarithm of another complex number \a c.
+ * The result is put into \a lc.
  * \return
  * These functions returns a pointer to the result.
  * \notes
- * A number raised to the power of a complex number and a logarithm
- * of a complex number are indeed not unique because one complex
- * has non-unique argument angles.
- * zComplexPow(), zComplexCPow(), zComplexLog() and zComplexCLog()
- * calculate only one solution with the argument angle of \a c
- * between -pi and pi.
+ * A number raised to the power of a complex number and a logarithm of a complex number are indeed not
+ * unique because one complex has non-unique argument angles.
+ * zComplexPow(), zComplexCPow(), zComplexLog() and zComplexCLog() calculate only one solution with the
+ * argument angle of \a c between -pi and pi.
  */
 __ZM_EXPORT zComplex *zComplexPow(const zComplex *c, double z, zComplex *pc);
 __ZM_EXPORT zComplex *zComplexPowRef(const zComplex *c, double z, const zComplex *ref, zComplex *pc);
@@ -294,16 +274,12 @@ __ZM_EXPORT zComplex *zComplexCLog(const zComplex *c, const zComplex *base, zCom
 
 /*! \brief normalize a complex number.
  *
- * zComplexNormalize() normalizes a complex number \a c so as
- * to magnify its absolute value to be 1.
+ * zComplexNormalize() normalizes a complex number \a c so as to magnify its absolute value to be 1.
  * The result is stored where is pointed by \a nc.
- * If the absolute value of \a c is not greater than \a tol, it
- * does not normalize \a c, regarding it as zero, and sets \a nc
- * for zero. If zero or a negative value is given for \a tol,
- * zTOL is adopted instead.
+ * If the absolute value of \a c is not greater than \a tol, it does not normalize \a c, regarding it as
+ * zero, and sets \a nc for zero. If zero or a negative value is given for \a tol, zTOL is adopted instead.
  * \retval a pointer \a nc
- * \retval the null pointer if the absolute value of \a c is not
- * greater than the tolerance
+ * \retval the null pointer if the absolute value of \a c is not greater than the tolerance
  */
 __ZM_EXPORT zComplex *zComplexNormalize(const zComplex *c, double tol, zComplex *nc);
 
@@ -317,8 +293,8 @@ __ZM_EXPORT zComplex *zComplexFromZTK(zComplex *c, ZTK *ztk);
 
 /*! \brief primt a complex number.
  *
- * zComplexFPrint() prints a complex number \a c to the
- * current position of a file \a fp in the following style:
+ * zComplexFPrint() prints a complex number \a c to the current position of a file \a fp in the following
+ * style:
  *  x + y i
  */
 __ZM_EXPORT void zComplexFPrint(FILE *fp, const zComplex *c);
@@ -327,9 +303,8 @@ __ZM_EXPORT void zComplexFPrint(FILE *fp, const zComplex *c);
 
 /*! \brief print the coordinates of a complex number.
  *
- * zComplexCoordFPrint() prints the coordinates of a
- * complex number \a c on Gaussian plane to the current
- * position of \a file \a fp in the following style.
+ * zComplexCoordFPrint() prints the coordinates of a complex number \a c on Gaussian plane to the current
+ * position of \a file \a fp in the following style:
  *  x y
  */
 __ZM_EXPORT void zComplexCoordFPrint(FILE *fp, const zComplex *c);
@@ -339,18 +314,15 @@ __ZM_EXPORT void zComplexCoordFPrint(FILE *fp, const zComplex *c);
 
 /*! \brief check if a complex number is a member of an array.
  *
- * zComplexValIsIncluded() checks if a complex number \a c is
- * included in an array \a array.
- * zComplexValConjIsIncluded() checks if conjugate of \a c is
- * included in an array \a array.
- * For both functions, \a size is the size of the array, and
- * \a tol is the tolerance to regard two values are the same.
+ * zComplexValIsIncluded() checks if a complex number \a c is included in an array \a array.
+ * zComplexValConjIsIncluded() checks if conjugate of \a c is included in an array \a array.
+ * For both functions, \a size is the size of the array, and \a tol is the tolerance to regard two values
+ * are the same.
  * \return
- * zComplexValIsIncluded() returns the true value if \a c is
- * included in \a \array. Otherwise, the false value is returned.
- * zComplexValConjIsIncluded() returns the true value if conjugate
- * of \a c is included in \a \array. Otherwise, the false value
- * is returned.
+ * zComplexValIsIncluded() returns the true value if \a c is included in \a \array. Otherwise, the false
+ * value is returned.
+ * zComplexValConjIsIncluded() returns the true value if conjugate of \a c is included in \a \array.
+ * Otherwise, the false value is returned.
  */
 __ZM_EXPORT bool zComplexValIsIncluded(const zComplex *array, int size, const zComplex *c, double tol);
 __ZM_EXPORT bool zComplexValConjIsIncluded(const zComplex *array, int size, const zComplex *c, double tol);

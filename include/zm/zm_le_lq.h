@@ -11,6 +11,41 @@
 
 __BEGIN_DECLS
 
+/* NOTE: the following functions with the prefix of underscore are for internal use in the library,
+ * and not supposed to be used in user programs. Their specifications may be changed without notice. */
+
+/*! \brief exactly scale a matrix by a power of two (internal use).
+ *
+ * _zMatScalePow2() directly divides a matrix \a m by the power of two with which the absolute maximum
+ * component of \a m is in [1,2). It is used to avoid overflow and underflow in matrix decompositions.
+ * \return
+ * _zMatScalePow2() returns the power of two with which \a m is divided, or 1 if \a m is a zero matrix.
+ */
+__ZM_EXPORT double _zMatScalePow2(zMat m);
+
+/*! \brief Householder reflection (internal use).
+ *
+ * _zMatHouseholderUnitNormal() computes the unit normal vector \a nu of the Householder reflection
+ * I - 2 \a nu \a nu^T that maps an \a n-dimensional vector \a x to \a s e1, where |\a s|=|\a x|.
+ * The sign of \a s is chosen to be opposite to that of the first component of \a x in order to avoid
+ * cancellation. \a x is scaled by its absolute maximum component to avoid overflow and underflow.
+ * \a x and \a nu must not overlap.
+ *
+ * _zMatHouseholderL() applies the reflection to rows from the \a r0-th to the (\a r0+\a n-1)-th of a
+ * matrix \a m from the left side, where only columns from the \a c0-th to the \a c1-th are modified.
+ * \a w is a workspace with the column size of \a m.
+ *
+ * _zMatHouseholderR() applies the reflection to columns from the \a c0-th to the (\a c0+\a n-1)-th of a
+ * matrix \a m from the right side, where only rows from the \a r0-th to the \a r1-th are modified.
+ * \return
+ * _zMatHouseholderUnitNormal() returns the false value if \a x is the zero vector, for which no
+ * reflection is needed. Otherwise, it returns the true value.
+ * _zMatHouseholderL() and _zMatHouseholderR() return no value.
+ */
+__ZM_EXPORT bool _zMatHouseholderUnitNormal(const double *x, int n, double *nu, double *s);
+__ZM_EXPORT void _zMatHouseholderL(zMat m, const double *nu, int n, int r0, int c0, int c1, double *w);
+__ZM_EXPORT void _zMatHouseholderR(zMat m, const double *nu, int n, int c0, int r0, int r1);
+
 /*! \brief relative tolerance for rank detection in LQ decomposition.
  *
  * A row vector is regarded as linearly dependent on the preceding ones if the norm of its residual

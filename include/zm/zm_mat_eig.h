@@ -14,7 +14,9 @@ __BEGIN_DECLS
 
 /*! \brief transform a matrix to a Hessenberg matrix.
  *
- * zMatToHessenberg() transforms a matrix \a m to an upper Hessenberg matrix using Householder's method.
+ * zMatToHessenberg() transforms a matrix \a m to an upper Hessenberg matrix using Householder's method:
+ *  A. S. Householder, Unitary Triangularization of a Nonsymmetric Matrix, Journal of the ACM,
+ *  5(4):339-342, 1958.
  * The result is put into \a h.
  * Particularly, \a h will be a tridiagonal matrix when \a m is symmetric.
  *
@@ -34,7 +36,22 @@ __ZM_EXPORT zMat zMatToHessenberg(const zMat m, zMat h, zMat p);
 /*! \brief eigenvalues and eigenvectors of a real square matrix.
  *
  * zMatEigDQR() finds all eigenvalues and corresponding eigenvectors of a real square matrix \a m
- * based on the implicit double-shift QR method (J. G. F. Francis, 1961).
+ * based on the implicit double-shift QR method by J. G. F. Francis:
+ *  J. G. F. Francis, The QR Transformation: A Unitary Analogue to the LR Transformation -- Part 1,
+ *  The Computer Journal, 4(3):265-271, 1961.
+ *  J. G. F. Francis, The QR Transformation -- Part 2, The Computer Journal, 4(4):332-345, 1962.
+ * The implementation combines the following techniques.
+ * A subdiagonal component is regarded as zero relatively to its neighboring diagonal components,
+ * and the exceptional shifts at the 10th and 20th iterations, both of which follow a procedure by
+ * R. S. Martin, G. Peters and J. H. Wilkinson:
+ *  R. S. Martin, G. Peters and J. H. Wilkinson, The QR Algorithm for Real Hessenberg Matrices,
+ *  Numerische Mathematik, 14:219-231, 1970.
+ * Eigenvectors by back substitution on the real Schur form by G. Peters and J. H. Wilkinson:
+ *  G. Peters and J. H. Wilkinson, Eigenvectors of Real and Complex Matrices by LR and QR
+ *  Triangularizations, Numerische Mathematik, 16:181-204, 1970.
+ * A pivot smaller than the norm of the matrix multiplied by a small epsilon value is replaced with
+ * that value, which extends the replacement of a zero pivot in another procedure in the same paper.
+ *
  * The eigenvalues are stored in a complex vector \a eigval, while the corresponding eigenvectors are
  * put in columns of a complex matrix \a eigbase. Namely, the following equation holds:
  *  \a m \a eigbase = \a eigbase diag{ \a eigval }
@@ -79,13 +96,25 @@ __ZM_EXPORT double zMatEigPowerInv(const zMat a, zVec eigvec, int iter);
 
 /*! \brief diagonalize a symmetric matrix.
  *
- * zMatSymEigBisec() and zMatSymEigJacobi() diagonalizes a symmetric matrix \a m. The former is based
- * on the bisection method proposed by J. W. Givens in 1954, while the latter on the cyclic Jacobi's
- * method. zMatSymEigJacobi() regards an off-diagonal component m_ij as zero if
- * |m_ij| <= eps sqrt(|m_ii| |m_jj|), where eps is the machine epsilon, so that the result does not
- * depend on the scale of \a m.
- * The result diagonal values are stored in a vector form \a eigval, while the transformation matrix
- * is stored in \a eigbase. Namely, the following equation holds:
+ * zMatSymEigBisec() diagonalizes a symmetric matrix \a m based on the bisection method proposed by
+ * J. W. Givens:
+ *  W. Givens, Numerical Computation of the Characteristic Values of a Real Symmetric Matrix,
+ *  Oak Ridge National Laboratory, ORNL-1574, 1954.
+ *
+ * zMatSymEigJacobi() also diagonalizes a symmetric matrix \a m based on the cyclic Jacobi's method
+ * with an update formula by Rutishauser:
+ *  C. G. J. Jacobi, Ueber ein leichtes Verfahren, die in der Theorie der Saecularstoerungen
+ *  vorkommenden Gleichungen numerisch aufzuloesen, Journal fuer die reine und angewandte Mathematik,
+ *  30:51-94, 1846.
+ *  H. Rutishauser, The Jacobi Method for Real Symmetric Matrices, Numerische Mathematik, 9:1-10, 1966.
+ * It regards an off-diagonal component m_ij as zero if |m_ij| <= eps sqrt(|m_ii| |m_jj|), where eps
+ * is the machine epsilon, so that the result does not depend on the scale of \a m.
+ * The threshold of convergence is determined based on a criterion by J. Demmel and K. Veselic:
+ *  J. Demmel and K. Veselic, Jacobi's Method is More Accurate than QR, SIAM Journal on Matrix
+ *  Analysis and Applications, 13(4):1204-1245, 1992.
+ *
+ * For the both functions, the result diagonal values are stored in a vector form \a eigval, while the
+ * transformation matrix is stored in \a eigbase. Namely, the following equation holds:
  *   \a m \a eigbase = \a eigbase diag{ \a eigval }
  * The diagonal values are not sorted.
  * \return
@@ -109,24 +138,35 @@ __ZM_EXPORT bool zMatSymEigJacobi(const zMat m, zVec eigval, zMat eigbase);
  *
  * zMatSVD() decomposes a matrix \a m into the following form:
  *   \a m = \a u s \a v.
- * where \a u and \a v are orthonormal matrices and s is a diagonal matrix. Note that, different from
- * the standard SVD from, \a v is defined in non-transposed form.
- * The diagonal components of s are so-called singular values, which are stored in a vector \a sv.
- * The number of non-zero singular values coincides with the rank of \a m.
+ * where s is a diagonal matrix, the columns of \a u and the rows of \a v are orthonormal. Note that,
+ * different from the standard SVD form, \a v is defined in non-transposed form.
+ * The diagonal components of s are so-called singular values, which are stored in a vector \a sv in
+ * descending order. A singular value not greater than zTOL times the greatest one is regarded as zero.
+ * The number of non-zero singular values is the rank of \a m.
  *
  * The original sizes of each matrix have to be
  *  \a sv: n x 1
  *  \a u: n x n
  *  \a v: n x m,
- * respectively. However, the row size of \a v possibly changes after the function call, due to the rank
- * regression.
+ * respectively, where \a m is an n x m matrix. The row size of \a v is changed to the rank of \a m.
+ * Only the first rank columns of \a u are meaningful, and the rest of the components of \a sv are zeros.
+ *
+ * \a m is first reduced to a triangular matrix by Householder reflections, the rows of which are
+ * orthogonalized by the one-sided Jacobi's method. It applies LQ (or QR) decomposition by Householder
+ * reflections as a preprocessing by Z. Drmac and K. Veselic, and then, reduces the size of the matrix
+ * to be orthogonalized with the one-sided Jacobi's method by M. R. Hestenes:
+ *  Z. Drmac and K. Veselic, New Fast and Accurate Jacobi SVD Algorithm I, SIAM Journal on Matrix
+ *  Analysis and Applications, 29(4):1322-1342, 2008.
+ *  Z. Drmac and K. Veselic, New Fast and Accurate Jacobi SVD Algorithm II, SIAM Journal on Matrix
+ *  Analysis and Applications, 29(4):1343-1362, 2008.
+ *  M. R. Hestenes, Inversion of Matrices by Biorthogonalization and Related Results, Journal of the
+ *  Society for Industrial and Applied Mathematics, 6(1):51-90, 1958.
  * \return
- * zMatSVD() returns the rank of \a m, namely, the number of non-zero singular values of \a m.
+ * zMatSVD() returns the rank of \a m. If the sizes of the matrices and the vector do not match, it
+ * fails to allocate internal working memory, or the one-sided Jacobi's method does not converge, it
+ * returns -1.
  */
 __ZM_EXPORT int zMatSVD(const zMat m, zMat u, zVec sv, zMat v);
-
-/*! \def tolerance to discard too small singular values. */
-#define ZM_MAT_SVD_TOL ( 1.0e-6 )
 
 /*! \brief maximum singular value of a matrix.
  */

@@ -759,38 +759,72 @@ void assert_mat_sym_eig_jacobi_special(void)
   zAssert( zMatSymEigJacobi (special matrix), result );
 }
 
+/* check if m = u diag{sv} v, u^T u = I and v v^T = I for the first rank columns of u and rows of v,
+ * and the singular values are in descending order, with relative errors. */
+bool check_mat_svd(zMat m, zMat u, zVec sv, zMat v, int rank, double tol)
+{
+  int r, c, i, j, l;
+  double norm, d, e, f;
+  bool result = true;
+
+  r = zMatRowSizeNC(m);
+  c = zMatColSizeNC(m);
+  if( rank < 0 || rank > zMin( r, c ) || zMatRowSizeNC(v) != rank ){
+    eprintf( "invalid rank %d or row size of v %d\n", rank, zMatRowSizeNC(v) );
+    return false;
+  }
+  for( i=0; i<zVecSizeNC(sv); i++ )
+    if( i < rank ? !( zVecElemNC(sv,i) > 0 ) || ( i > 0 && zVecElemNC(sv,i) > zVecElemNC(sv,i-1) ) :
+                   zVecElemNC(sv,i) != 0 ){
+      eprintf( "invalid singular value #%d = %g\n", i, zVecElemNC(sv,i) );
+      result = false;
+    }
+  /* the residual is computed with the matrix scaled by the greatest singular value to avoid overflow */
+  f = rank > 0 ? zVecElemNC(sv,0) : 1;
+  for( norm=0, e=0, i=0; i<r; i++ )
+    for( j=0; j<c; j++ ){
+      norm += _zSqr( zMatElemNC(m,i,j) / f );
+      for( d=zMatElemNC(m,i,j)/f, l=0; l<rank; l++ )
+        d -= zMatElemNC(u,i,l) * ( zVecElemNC(sv,l) / f ) * zMatElemNC(v,l,j);
+      e += d * d;
+    }
+  norm = sqrt( norm );
+  if( !( sqrt( e ) <= tol * zMax( r, c ) * DBL_EPSILON * norm ) ){
+    eprintf( "relative residual |m - u s v| / |m| = %g\n", sqrt( e ) / norm );
+    result = false;
+  }
+  for( i=0; i<rank; i++ )
+    for( j=0; j<rank; j++ ){
+      for( d=( i == j ? -1 : 0 ), l=0; l<r; l++ )
+        d += zMatElemNC(u,l,i) * zMatElemNC(u,l,j);
+      if( !( fabs( d ) <= tol * zMax( r, c ) * DBL_EPSILON ) ){
+        eprintf( "left singular vectors #%d and #%d not orthonormal: %g\n", i, j, d );
+        result = false;
+      }
+      for( d=( i == j ? -1 : 0 ), l=0; l<c; l++ )
+        d += zMatElemNC(v,i,l) * zMatElemNC(v,j,l);
+      if( !( fabs( d ) <= tol * zMax( r, c ) * DBL_EPSILON ) ){
+        eprintf( "right singular vectors #%d and #%d not orthonormal: %g\n", i, j, d );
+        result = false;
+      }
+    }
+  return result;
+}
+
 bool assert_mat_svd_one(double a[], int n, int m)
 {
-  zMat ma, u, v, s, tmp1, tmp2;
+  zMat ma, u, v;
   zVec sv;
-  int i, rank;
-  bool result = true;
+  int rank;
+  bool result;
 
   ma = zMatCloneArray( a, n, m );
   u = zMatAllocSqr( n );
   v = zMatAlloc( n, m );
   sv = zVecAlloc( n );
-
   rank = zMatSVD( ma, u, sv, v );
-/*
-  zMatPrint( ma );
-  zVecPrint( sv );
-  zMatPrint( u );
-  zMatPrint( v );
-*/
-  s = zMatAlloc( n, rank );
-  tmp1 = zMatAlloc( n, rank );
-  tmp2 = zMatAlloc( n, m );
-  for( i=0; i<rank; i++ )
-    zMatSetElem( s, i, i, zVecElem(sv,i) );
-  zMulMatMat( u, s, tmp1 );
-  zMulMatMat( tmp1, v, tmp2 );
-  if( !zMatEqual( tmp2, ma, zTOL ) ){
-    zMatSubDRC( tmp2, ma );
-    eprintf( "|| USV - A || = %g\n", zMatNorm(tmp2) );
-    result = false;
-  }
-  zMatFreeAtOnce( 6, ma, u, v, s, tmp1, tmp2 );
+  result = check_mat_svd( ma, u, sv, v, rank, TOL_EIG );
+  zMatFreeAtOnce( 3, ma, u, v );
   zVecFree( sv );
   return result;
 }
@@ -882,6 +916,159 @@ void assert_mat_svd_random(void)
   zAssert( zMatSVD (random case), result );
 }
 
+void assert_mat_svd_scale(void)
+{
+  double a[] = {
+    2, 3,-2,
+   -3,14,-7,
+   -5,19,-9,
+  };
+  const int n = 3;
+  zMat m, u, v;
+  zVec sv;
+  double s;
+  bool result = true;
+
+  m = zMatAllocSqr( n );
+  u = zMatAllocSqr( n );
+  v = zMatAllocSqr( n );
+  sv = zVecAlloc( n );
+  /* the maximum component 1.9e308 at the last is greater than 2^1023, while the singular values do
+   * not overflow. */
+  for( s=1.0e-300; s<1.0e300; s = s < 1.0e280 ? s*1.0e20 : 1.0e307 ){
+    zMatCopyArray( a, n, n, m );
+    zMatMulDRC( m, s );
+    zMatSetRowSize( v, n );
+    if( zMatSVD( m, u, sv, v ) != n ||
+        !check_mat_svd( m, u, sv, v, n, TOL_EIG ) ){
+      eprintf( "failed for a matrix scaled by %g\n", s );
+      result = false;
+    }
+    if( s == 1.0e307 ) break;
+  }
+  zMatFree( m );
+  zMatFree( u );
+  zMatFree( v );
+  zVecFree( sv );
+  zAssert( zMatSVD (scaled matrix), result );
+}
+
+/* a random orthogonal matrix as the eigenvectors of a random symmetric matrix */
+void rand_orthogonal(zMat q)
+{
+  zMat s;
+  zVec e;
+  int i, j;
+
+  s = zMatAllocSqr( zMatRowSizeNC(q) );
+  e = zVecAlloc( zMatRowSizeNC(q) );
+  for( i=0; i<zMatRowSizeNC(q); i++ )
+    for( j=0; j<=i; j++ )
+      zMatSetElemNC( s, i, j, ( zMatElemNC(s,j,i) = zRandF(-1,1) ) );
+  zMatSymEigJacobi( s, e, q );
+  zMatFree( s );
+  zVecFree( e );
+}
+
+/* matrices of known ranks */
+void assert_mat_svd_rank(void)
+{
+  zMat m, u, v, u0, v0;
+  zVec sv;
+  int k, r, c, q, i, j, l, rank;
+  double sigma[40], d, scale;
+  bool result = true;
+
+  for( k=0; k<N; k++ ){
+    r = zRandI( 1, 20 );
+    c = zRandI( 1, 20 );
+    q = zRandI( 0, zMin( r, c ) );
+    scale = pow( 10, zRandF( -200, 200 ) );
+    m = zMatAlloc( r, c );
+    u = zMatAllocSqr( r );
+    v = zMatAlloc( r, c );
+    sv = zVecAlloc( r );
+    u0 = zMatAllocSqr( r );
+    v0 = zMatAllocSqr( c );
+    rand_orthogonal( u0 );
+    rand_orthogonal( v0 );
+    /* singular values from scale to scale x 1e-8, which are distinguished from zero */
+    for( i=0; i<q; i++ ) sigma[i] = scale * pow( 10, -8.0*i/q );
+    for( i=0; i<r; i++ )
+      for( j=0; j<c; j++ ){
+        for( d=0, l=0; l<q; l++ ) d += zMatElemNC(u0,i,l) * sigma[l] * zMatElemNC(v0,j,l);
+        zMatSetElemNC( m, i, j, d );
+      }
+    if( ( rank = zMatSVD( m, u, sv, v ) ) != q ){
+      eprintf( "rank of a %dx%d matrix = %d (expected %d)\n", r, c, rank, q );
+      result = false;
+    } else
+    if( !check_mat_svd( m, u, sv, v, rank, TOL_EIG ) ){
+      result = false;
+    } else
+      for( i=0; i<q; i++ )
+        if( !( fabs( zVecElemNC(sv,i) - sigma[i] ) <= TOL_EIG * zMax( r, c ) * DBL_EPSILON * sigma[0] ) ){
+          eprintf( "singular value #%d = %.17g (expected %.17g)\n", i, zVecElemNC(sv,i), sigma[i] );
+          result = false;
+        }
+    zMatFreeAtOnce( 5, m, u, v, u0, v0 );
+    zVecFree( sv );
+  }
+  for( r=1; r<=10; r++ )
+    for( c=1; c<=10; c++ ){
+      m = zMatAlloc( r, c );
+      u = zMatAllocSqr( r );
+      v = zMatAlloc( r, c );
+      sv = zVecAlloc( r );
+      /* zero matrix */
+      if( ( rank = zMatSVD( m, u, sv, v ) ) != 0 || !check_mat_svd( m, u, sv, v, rank, TOL_EIG ) ){
+        eprintf( "failed for the %dx%d zero matrix\n", r, c );
+        result = false;
+      }
+      /* matrix of ones */
+      for( i=0; i<r; i++ )
+        for( j=0; j<c; j++ ) zMatSetElemNC( m, i, j, 1 );
+      zMatSetRowSize( v, r );
+      if( ( rank = zMatSVD( m, u, sv, v ) ) != 1 || !check_mat_svd( m, u, sv, v, rank, TOL_EIG ) ||
+          !( fabs( zVecElemNC(sv,0) - sqrt(r*c) ) <= TOL_EIG * zMax( r, c ) * DBL_EPSILON * sqrt(r*c) ) ){
+        eprintf( "failed for the %dx%d matrix of ones\n", r, c );
+        result = false;
+      }
+      /* identity matrix multiplied by a small value */
+      zMatZero( m );
+      for( i=0; i<zMin(r,c); i++ ) zMatSetElemNC( m, i, i, 1.0e-3 );
+      zMatSetRowSize( v, r );
+      if( ( rank = zMatSVD( m, u, sv, v ) ) != zMin(r,c) || !check_mat_svd( m, u, sv, v, rank, TOL_EIG ) ){
+        eprintf( "failed for the %dx%d identity matrix multiplied by 1e-3\n", r, c );
+        result = false;
+      }
+      zMatFreeAtOnce( 3, m, u, v );
+      zVecFree( sv );
+    }
+  zAssert( zMatSVD (rank-deficient matrix), result );
+}
+
+void assert_mat_svd_invalid(void)
+{
+  zMat m, u, v;
+  zVec sv;
+  bool result = true;
+
+  m = zMatAlloc( 3, 4 );
+  u = zMatAllocSqr( 3 );
+  v = zMatAlloc( 3, 4 );
+  sv = zVecAlloc( 4 );
+  if( zMatSVD( m, u, sv, v ) != -1 ) result = false; /* size mismatch of sv */
+  zVecFree( sv );
+  sv = zVecAlloc( 3 );
+  zMatFree( u );
+  u = zMatAllocSqr( 4 );
+  if( zMatSVD( m, u, sv, v ) != -1 ) result = false; /* size mismatch of u */
+  zMatFreeAtOnce( 3, m, u, v );
+  zVecFree( sv );
+  zAssert( zMatSVD (invalid size), result );
+}
+
 void assert_mat_svd_minmax(void)
 {
   zMat m, u, v;
@@ -931,6 +1118,9 @@ int main(int argc, char *argv[])
   assert_mat_sym_eig_jacobi_special();
   assert_mat_svd();
   assert_mat_svd_random();
+  assert_mat_svd_scale();
+  assert_mat_svd_rank();
+  assert_mat_svd_invalid();
   assert_mat_svd_minmax();
   return 0;
 }
