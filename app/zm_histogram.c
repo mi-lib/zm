@@ -30,11 +30,12 @@ FILE *zm_histogram_read_option(char *argv[])
   if( option[HISTOGRAM_HELP].flag )
     zm_histogram_usage( argv[0] );
   if( zListIsEmpty( &arglist ) )
-    return stdin;
-  if( !( fp = fopen( zListHead(&arglist)->data, "r" ) ) ){
+    fp = stdin;
+  else if( !( fp = fopen( zListHead(&arglist)->data, "r" ) ) ){
     ZOPENERROR( zListHead(&arglist)->data );
     exit( EXIT_FAILURE );
   }
+  zStrAddrListDestroy( &arglist );
   return fp;
 }
 
@@ -61,9 +62,10 @@ bool zm_histogram_sample(FILE *fp, zVecList *list)
       zVecSetElemNC( v, i, val );
     }
     if( !zVecListInsertHead( list, v ) ){
-      ZALLOCERROR();
+      zVecFree( v );
       return false;
     }
+    zVecFree( v ); /* a clone of v is inserted */
   }
   if( zListIsEmpty( list ) ){
     ZRUNERROR( "empty data file" );
@@ -99,11 +101,13 @@ bool zm_histogram_output(zVecList *list)
     sprintf( filename, "%s%d", option[HISTOGRAM_OUTPUT].arg, data_id );
     if( !( fp = fopen( filename, "w" ) ) ){
       ZOPENERROR( filename );
+      zHistogramDestroy( &histogram );
       retval = false;
       break;
     }
     zHistogramFPrint( fp, &histogram );
     fclose( fp );
+    zHistogramDestroy( &histogram );
   }
   zVecFree( data );
   return retval;

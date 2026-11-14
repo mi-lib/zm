@@ -27,6 +27,7 @@ bool zm_ave_sample(FILE *fp, zVecList *list)
       zVecSetElemNC( v, i, val );
     }
     zVecListInsertHead( list, v );
+    zVecFree( v ); /* a clone of v is inserted */
   }
   return true;
 }

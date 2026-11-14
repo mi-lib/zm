@@ -46,8 +46,7 @@ static zVecListCell *_zVecListInsertTail(zVecList *list, zVec v, bool flag)
 }
 
 /* ********************************************************** */
-/* CLASS: zVecList
- * vector list class.
+/* vector list class.
  * ********************************************************** */
 
 /* insert a vector list cell at the head of a list. */
@@ -69,7 +68,7 @@ void zVecListDestroy(zVecList *list)
 
   while( !zListIsEmpty( list ) ){
     zListDeleteHead( list, &cell );
-    zFree( cell->data );
+    zVecFree( cell->data );
     zFree( cell );
   }
 }
@@ -145,7 +144,10 @@ zVecList *zVecListFScan(FILE *fp, zVecList *list)
 
   zListInit( list );
   while( ( v = zVecValueFScan( fp ) ) )
-    zVecListInsertHead( list, v );
+    if( !_zVecListInsertHead( list, v, false ) ){ /* not cloned, but v itself is inserted */
+      zVecFree( v );
+      break;
+    }
   if( zListIsEmpty( list ) )
     ZRUNWARN( ZM_WARN_VECLIST_EMPTY );
   return list;
@@ -161,8 +163,7 @@ void zVecListFPrint(FILE *fp, const zVecList *list)
 }
 
 /* ********************************************************** */
-/* CLASS: zVecAddrList
- * vector address list class.
+/* vector address list class.
  * ********************************************************** */
 
 /* insert a pointer to a vector to a list at the head. */
