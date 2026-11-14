@@ -1,3 +1,5 @@
+2026.11.14. Added tests of zVecListPCA for points on coordinate axes, random points, and invalid inputs. [test]
+2026.11.14. Debugged zVecListPCA to sort the scores in descending order with the loading, and to return the number of significant principal components correctly and -1 for an empty set. [zm_mva]
 2026.11.13. Modified the tests of zMatEig and zMatSymEigJacobi to reject NaN residuals and eigenvalues, and added test cases of a matrix with a component greater than 2^1023. [test]
 2026.11.13. Debugged zMatEigDQR and zMatSymEigJacobi that returned NaN for a matrix with a component greater than 2^1023, and unified the scaling of them into _zMatEigScale. [zm_mat_eig]
 2026.11.13. Added tests of zMatSymEigJacobi with relative residuals and orthonormality of eigenvectors for random, scaled, and special matrices instead of absolute residuals. [test]

@@ -107,6 +107,19 @@ zMat zVecListMeanCov(const zVecList *list, zVec mean, zMat cov)
   return zVecListCov( list, mean, cov );
 }
 
+/* sort scores in descending order with the corresponding columns of the loading matrix. */
+static void _zVecListPCASort(zVec score, zMat loading)
+{
+  int i, im;
+
+  for( i=0; i<zVecSizeNC(score)-1; i++ ){
+    zDataMax( zVecBuf(score)+i, zVecSizeNC(score)-i, &im );
+    if( ( im += i ) == i ) continue;
+    zVecSwapNC( score, i, im );
+    zMatSwapColNC( loading, i, im );
+  }
+}
+
 /* principal component analysis. */
 int zVecListPCA(const zVecList *points, double cr, zVec mean, zVec score, zMat loading)
 {
@@ -114,9 +127,12 @@ int zVecListPCA(const zVecList *points, double cr, zVec mean, zVec score, zMat l
   int s, n;
   double score_th, score_sum;
 
+  if( zListIsEmpty( points ) ){
+    ZRUNERROR( ZM_ERR_MVA_EMPTYSET );
+    return -1;
+  }
   s = zVecSize( zListHead(points)->data );
   if( !( cov = zMatAllocSqr(s) ) ){
-    ZALLOCERROR();
     n = -1;
     goto TERMINATE;
   }
@@ -125,12 +141,11 @@ int zVecListPCA(const zVecList *points, double cr, zVec mean, zVec score, zMat l
     n = -1;
     goto TERMINATE;
   }
-  /* contribution ratio */
+  _zVecListPCASort( score, loading );
+  /* the number of principal components, the cumulative contribution ratio of which reaches cr */
   score_th = cr * zVecElemSum( score );
-  for( score_sum=0, n=0; n<s; n++ ){
+  for( score_sum=0, n=0; n<s && score_sum<score_th; n++ )
     score_sum += zVecElemNC(score,n);
-    if( score_sum > score_th ) break;
-  }
 
  TERMINATE:
   zMatFree( cov );

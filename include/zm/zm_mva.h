@@ -83,10 +83,15 @@ __ZM_EXPORT zMat zVecListMeanCov(const zVecList *list, zVec mean, zMat cov);
  * zVecListPCA() computes the mean vector, the score and the loading of a give set of vector points
  * of a list \a points through the principal component analysis, and store them into \a mean, \a score,
  * and \a loading, respectively.
- * \a cr is the threshold contribution ratio. If the score of a component is less than it, the component
- * is ignored.
+ * The scores, namely, the variances along the principal axes, are sorted in descending order, and
+ * the columns of \a loading are the corresponding principal axes.
+ * \a cr is the threshold of the cumulative contribution ratio. The first n principal components are
+ * regarded as significant, where n is the smallest number with which the ratio of the sum of the first
+ * n scores to the sum of all the scores is not less than \a cr.
  * \return
- * zVecListPCA() returns the number of significant (i.e., unignored) components.
+ * zVecListPCA() returns the number of significant principal components. If \a points is empty, the
+ * sizes of \a mean, \a score and \a loading do not match the size of the vectors, or the
+ * diagonalization fails, it returns -1.
  */
 __ZM_EXPORT int zVecListPCA(const zVecList *points, double cr, zVec mean, zVec score, zMat loading);
 
