@@ -80,17 +80,22 @@ __ZM_EXPORT double zMatEigPowerInv(const zMat a, zVec eigvec, int iter);
 /*! \brief diagonalize a symmetric matrix.
  *
  * zMatSymEigBisec() and zMatSymEigJacobi() diagonalizes a symmetric matrix \a m. The former is based
- * on the bisection method proposed by J. W. Givens in 1954, while the latter on Jacobi's method with
- * Wilkinson's formula.
+ * on the bisection method proposed by J. W. Givens in 1954, while the latter on the cyclic Jacobi's
+ * method. zMatSymEigJacobi() regards an off-diagonal component m_ij as zero if
+ * |m_ij| <= eps sqrt(|m_ii| |m_jj|), where eps is the machine epsilon, so that the result does not
+ * depend on the scale of \a m.
  * The result diagonal values are stored in a vector form \a eigval, while the transformation matrix
  * is stored in \a eigbase. Namely, the following equation holds:
  *   \a m \a eigbase = \a eigbase diag{ \a eigval }
+ * The diagonal values are not sorted.
  * \return
  * zMatSymEigBisec() and zMatSymEigJacobi() return the false value if
  *  - \a m is not a square matrix
  *  - the sizes of \a m and \a eigbase are not equal
  *  - the size of \a eigval does not coincide with the row size of \a m
  *  - it fails to allocate internal working memory
+ * zMatSymEigJacobi() also returns the false value if the off-diagonal components do not converge to
+ * zero within Z_MAX_ITER_NUM sweeps, where \a eigval and \a eigbase hold the incomplete results.
  * Otherwise, they return the true value.
  * \notes
  * When \a m is not symmetric, those functions do not work as expected.

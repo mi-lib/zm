@@ -103,7 +103,7 @@ bool check_mat_eig(zMat m, zCVec eigval, zCMat eigbase, double tol)
     zCMulMatVec( cm, eigvec, r );
     zComplexRev( zCVecElemNC(eigval,i), &z );
     zCVecCatDRC( r, &z, eigvec );
-    if( zCVecNorm( r ) > tol * n * DBL_EPSILON * norm ){
+    if( !( zCVecNorm( r ) <= tol * n * DBL_EPSILON * norm ) ){ /* negated to reject NaN */
       eprintf( "eigenpair #%d: relative residual = %g\n", i, zCVecNorm(r) / norm );
       result = false;
     }
@@ -290,6 +290,11 @@ bool check_mat_eig_val(zCVec eigval, zCVec expected, double tol)
         jmin = j;
       }
     }
+    if( jmin < 0 ){ /* the eigenvalue is NaN */
+      eprintf( "eigenvalue %g%+gi is invalid\n", zCVecElemNC(eigval,i)->re, zCVecElemNC(eigval,i)->im );
+      result = false;
+      continue;
+    }
     used[jmin] = true;
     if( dmin > tol ){
       eprintf( "eigenvalue %g%+gi mismatches %g%+gi\n",
@@ -299,6 +304,29 @@ bool check_mat_eig_val(zCVec eigval, zCVec expected, double tol)
   }
   zFree( used );
   return result;
+}
+
+/* eigenvectors are independent of the scale, and eigenvalues are proportional to it. */
+bool assert_mat_eig_scale_one(double a[], int n, double s, zMat m, zCVec eigval, zCMat eigbase)
+{
+  int i;
+
+  zMatCopyArray( a, n, n, m );
+  zMatMulDRC( m, s );
+  if( !zMatEig( m, eigval, eigbase, 0 ) ){
+    eprintf( "failed for a matrix scaled by %g\n", s );
+    return false;
+  }
+  zMatCopyArray( a, n, n, m );
+  for( i=0; i<n; i++ ){
+    zCVecElemNC(eigval,i)->re /= s;
+    zCVecElemNC(eigval,i)->im /= s;
+  }
+  if( !check_mat_eig( m, eigval, eigbase, TOL_EIG ) ){
+    eprintf( "inaccurate for a matrix scaled by %g\n", s );
+    return false;
+  }
+  return true;
 }
 
 void assert_mat_eig_scale(void)
@@ -313,31 +341,15 @@ void assert_mat_eig_scale(void)
   zCVec eigval;
   zCMat eigbase;
   double s;
-  int i;
   bool result = true;
 
-  m = zMatCloneArray( a, n, n );
+  m = zMatAllocSqr( n );
   eigval = zCVecAlloc( n );
   eigbase = zCMatAllocSqr( n );
-  for( s=1.0e-300; s<1.0e300; s*=1.0e20 ){
-    zMatCopyArray( a, n, n, m );
-    zMatMulDRC( m, s );
-    if( !zMatEig( m, eigval, eigbase, 0 ) ){
-      eprintf( "failed for a matrix scaled by %g\n", s );
-      result = false;
-      continue;
-    }
-    /* eigenvectors are independent of the scale, and eigenvalues are proportional to it. */
-    zMatCopyArray( a, n, n, m );
-    for( i=0; i<n; i++ ){
-      zCVecElemNC(eigval,i)->re /= s;
-      zCVecElemNC(eigval,i)->im /= s;
-    }
-    if( !check_mat_eig( m, eigval, eigbase, TOL_EIG ) ){
-      eprintf( "inaccurate for a matrix scaled by %g\n", s );
-      result = false;
-    }
-  }
+  for( s=1.0e-300; s<1.0e300; s*=1.0e20 )
+    if( !assert_mat_eig_scale_one( a, n, s, m, eigval, eigbase ) ) result = false;
+  /* the maximum component 1e308 is greater than 2^1023, while the eigenvalues do not overflow. */
+  if( !assert_mat_eig_scale_one( a, n, 1.0e307, m, eigval, eigbase ) ) result = false;
   zMatFree( m );
   zCVecFree( eigval );
   zCMatFree( eigbase );
@@ -519,6 +531,41 @@ bool check_mat_sym_eig(zMat m, zVec eigval, zMat eigbase, int c)
   return result;
 }
 
+/* check if m eigbase = eigbase diag{eigval} and eigbase^T eigbase = I with relative errors. */
+bool check_mat_sym_eig_rel(zMat m, zVec eigval, zMat eigbase, double tol)
+{
+  int i, n;
+  zMat vtv;
+  zVec v, e;
+  double norm;
+  bool result = true;
+
+  n = zMatRowSizeNC(m);
+  vtv = zMatAllocSqr( n );
+  v = zVecAlloc( n );
+  e = zVecAlloc( n );
+  norm = zMatNorm( m );
+  for( i=0; i<n; i++ ){
+    zMatGetCol( eigbase, i, v );
+    zMulMatVec( m, v, e );
+    zVecCatDRC( e, -zVecElem(eigval,i), v );
+    if( !( zVecNorm( e ) <= tol * n * DBL_EPSILON * norm ) ){ /* negated to reject NaN */
+      eprintf( "eigenpair #%d: relative residual = %g\n", i, zVecNorm(e) / norm );
+      result = false;
+    }
+  }
+  zMulMatTMat( eigbase, eigbase, vtv );
+  for( i=0; i<n; i++ ) zMatElemNC(vtv,i,i) -= 1;
+  if( !( zMatNorm( vtv ) <= tol * n * DBL_EPSILON ) ){
+    eprintf( "eigenvectors not orthonormal: |V^T V - I| = %g\n", zMatNorm(vtv) );
+    result = false;
+  }
+  zMatFree( vtv );
+  zVecFree( v );
+  zVecFree( e );
+  return result;
+}
+
 void assert_mat_sym_eig(void)
 {
 #define R 1.41421356237
@@ -536,8 +583,7 @@ void assert_mat_sym_eig(void)
   m = zMatCloneArray( array, n, n );
   eigbase = zMatAllocSqr( n );
   eigval = zVecAlloc( n );
-  zMatSymEigJacobi( m, eigval, eigbase );
-  result = check_mat_sym_eig( m, eigval, eigbase, -1 );
+  result = zMatSymEigJacobi( m, eigval, eigbase ) && check_mat_sym_eig_rel( m, eigval, eigbase, TOL_EIG );
   zMatFree( m );
   zMatFree( eigbase );
   zVecFree( eigval );
@@ -568,9 +614,10 @@ void assert_mat_sym_eig_random(void)
   result_bisec = check_mat_sym_eig( m, eigval, eigbase, c2-c1 );
 
   c1 = clock();
-  zMatSymEigJacobi( m, eigval, eigbase );
+  result_jacobi = zMatSymEigJacobi( m, eigval, eigbase );
   c2 = clock();
-  result_jacobi = check_mat_sym_eig( m, eigval, eigbase, c2-c1 );
+  eprintf( "computation time(clk) = %d\n", (int)( c2 - c1 ) );
+  if( result_jacobi ) result_jacobi = check_mat_sym_eig_rel( m, eigval, eigbase, TOL_EIG );
 
   zMatFree( m );
   zMatFree( eigbase );
@@ -578,6 +625,138 @@ void assert_mat_sym_eig_random(void)
 
   zAssert( zMatSymEigBisec (random), result_bisec );
   zAssert( zMatSymEigJacobi (random), result_jacobi );
+}
+
+/* eigenvectors are independent of the scale, and eigenvalues are proportional to it. */
+bool assert_mat_sym_eig_jacobi_scale_one(double a[], int n, double s, zMat m, zVec eigval, zMat eigbase)
+{
+  zMatCopyArray( a, n, n, m );
+  zMatMulDRC( m, s );
+  if( !zMatSymEigJacobi( m, eigval, eigbase ) ){
+    eprintf( "failed for a matrix scaled by %g\n", s );
+    return false;
+  }
+  zMatCopyArray( a, n, n, m );
+  zVecDivDRC( eigval, s );
+  if( !check_mat_sym_eig_rel( m, eigval, eigbase, TOL_EIG ) ){
+    eprintf( "inaccurate for a matrix scaled by %g\n", s );
+    return false;
+  }
+  return true;
+}
+
+void assert_mat_sym_eig_jacobi_scale(void)
+{
+  double a[] = {
+    4, 1,-2, 2,
+    1, 2, 0, 1,
+   -2, 0, 3,-2,
+    2, 1,-2,-1,
+  };
+  const int n = 4;
+  zMat m, eigbase;
+  zVec eigval;
+  double s;
+  bool result = true;
+
+  m = zMatAllocSqr( n );
+  eigbase = zMatAllocSqr( n );
+  eigval = zVecAlloc( n );
+  for( s=1.0e-300; s<1.0e300; s*=1.0e20 )
+    if( !assert_mat_sym_eig_jacobi_scale_one( a, n, s, m, eigval, eigbase ) ) result = false;
+  /* the maximum component 1e308 is greater than 2^1023, while the eigenvalues do not overflow. */
+  if( !assert_mat_sym_eig_jacobi_scale_one( a, n, 2.5e307, m, eigval, eigbase ) ) result = false;
+  zMatFree( m );
+  zMatFree( eigbase );
+  zVecFree( eigval );
+  zAssert( zMatSymEigJacobi (scaled matrix), result );
+}
+
+/* expected is sorted and freed in this function. */
+bool assert_mat_sym_eig_jacobi_special_one(zMat m, zVec expected)
+{
+  zMat eigbase;
+  zVec eigval;
+  int i;
+  bool result;
+
+  eigbase = zMatAllocSqr( zMatRowSizeNC(m) );
+  eigval = zVecAlloc( zMatRowSizeNC(m) );
+  result = zMatSymEigJacobi( m, eigval, eigbase ) && check_mat_sym_eig_rel( m, eigval, eigbase, TOL_EIG );
+  if( result && expected ){
+    zDataSort( zVecBuf(eigval), zVecSizeNC(eigval) );
+    zDataSort( zVecBuf(expected), zVecSizeNC(expected) );
+    for( i=0; i<zVecSizeNC(eigval); i++ )
+      if( !( fabs( zVecElemNC(eigval,i) - zVecElemNC(expected,i) ) <=
+             TOL_EIG * zVecSizeNC(eigval) * DBL_EPSILON * zMax( zMatNorm(m), 1 ) ) ){
+        eprintf( "eigenvalue #%d: %.17g / %.17g\n", i, zVecElemNC(eigval,i), zVecElemNC(expected,i) );
+        result = false;
+      }
+  }
+  zMatFree( m );
+  zMatFree( eigbase );
+  zVecFree( eigval );
+  zVecFree( expected );
+  return result;
+}
+
+void assert_mat_sym_eig_jacobi_special(void)
+{
+  zMat m;
+  zVec e;
+  int n, i, j;
+  bool result = true;
+
+  for( n=1; n<=20; n++ ){
+    /* zero matrix */
+    if( !assert_mat_sym_eig_jacobi_special_one( zMatAllocSqr( n ), zVecAlloc( n ) ) ){
+      eprintf( "failed for the zero matrix (n=%d)\n", n );
+      result = false;
+    }
+    /* matrix of ones, the eigenvalues of which are n and zeros */
+    m = zMatAllocSqr( n );
+    e = zVecAlloc( n );
+    for( i=0; i<n; i++ )
+      for( j=0; j<n; j++ ) zMatSetElemNC( m, i, j, 1 );
+    zVecSetElemNC( e, 0, n );
+    if( !assert_mat_sym_eig_jacobi_special_one( m, e ) ){
+      eprintf( "failed for the matrix of ones (n=%d)\n", n );
+      result = false;
+    }
+    /* tridiagonal matrix of 2 and -1, the eigenvalues of which are 2 - 2 cos(k pi/(n+1)) */
+    m = zMatAllocSqr( n );
+    e = zVecAlloc( n );
+    for( i=0; i<n; i++ ){
+      zMatSetElemNC( m, i, i, 2 );
+      if( i > 0 ) zMatSetElemNC( m, i, i-1, -1 );
+      if( i < n-1 ) zMatSetElemNC( m, i, i+1, -1 );
+      zVecSetElemNC( e, i, 2 - 2*cos( (i+1)*zPI/(n+1) ) );
+    }
+    if( !assert_mat_sym_eig_jacobi_special_one( m, e ) ){
+      eprintf( "failed for the tridiagonal matrix (n=%d)\n", n );
+      result = false;
+    }
+    /* identity matrix with off-diagonal components much smaller than zTOL */
+    m = zMatAllocSqr( n );
+    e = zVecAlloc( n );
+    for( i=0; i<n; i++ )
+      for( j=0; j<n; j++ ) zMatSetElemNC( m, i, j, i == j ? 1 : 1.0e-20 );
+    zVecSetAll( e, 1 - 1.0e-20 );
+    zVecSetElemNC( e, 0, 1 + ( n - 1 ) * 1.0e-20 );
+    if( !assert_mat_sym_eig_jacobi_special_one( m, e ) ){
+      eprintf( "failed for the identity matrix with tiny perturbation (n=%d)\n", n );
+      result = false;
+    }
+    /* components of very different magnitudes */
+    m = zMatAllocSqr( n );
+    for( i=0; i<n; i++ )
+      for( j=0; j<n; j++ ) zMatSetElemNC( m, i, j, i == j ? ( i % 2 ? 1.0e100 : -1.0e-100 ) : 1.0e-75 );
+    if( !assert_mat_sym_eig_jacobi_special_one( m, NULL ) ){
+      eprintf( "failed for the matrix of very different components (n=%d)\n", n );
+      result = false;
+    }
+  }
+  zAssert( zMatSymEigJacobi (special matrix), result );
 }
 
 bool assert_mat_svd_one(double a[], int n, int m)
@@ -748,6 +927,8 @@ int main(int argc, char *argv[])
   assert_mat_sym_eig_power();
   assert_mat_sym_eig();
   assert_mat_sym_eig_random();
+  assert_mat_sym_eig_jacobi_scale();
+  assert_mat_sym_eig_jacobi_special();
   assert_mat_svd();
   assert_mat_svd_random();
   assert_mat_svd_minmax();

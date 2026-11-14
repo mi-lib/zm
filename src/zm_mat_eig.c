@@ -8,16 +8,14 @@
 
 /* Householder reflection */
 
-/* unit normal vector nu of the Householder reflection I - 2 nu nu^T that maps x to s e1, where |s|=|x|.
- * The sign of s is chosen to be opposite to that of the first component of x in order to avoid
- * cancellation. It returns the false value if x is the zero vector, for which no reflection is needed. */
+/* unit normal vector nu of the Householder reflection. */
 static bool _zHouseholderVec(const double *x, int n, double *nu, double *s)
 {
-  double scale = 0, r = 0, d;
+  double scale = 0, r = 0, d, scale_tmp;
   int i;
 
   for( i=0; i<n; i++ )
-    if( fabs( x[i] ) > scale ) scale = fabs( x[i] );
+    if( ( scale_tmp = fabs( x[i] ) ) > scale ) scale = scale_tmp;
   if( scale == 0 ) return false;
   for( i=0; i<n; i++ ){ /* scaled to avoid overflow and underflow */
     nu[i] = x[i] / scale;
@@ -32,14 +30,13 @@ static bool _zHouseholderVec(const double *x, int n, double *nu, double *s)
   return true;
 }
 
-/* apply a Householder reflection to rows from r0 to r0+n-1 of a matrix from the left side,
- * where only columns from c0 to c1 are modified. w is a workspace with the column size of m. */
-static void _zHouseholderApplyL(zMat m, const double *nu, int n, int r0, int c0, int c1, double *w)
+/* partially apply a Householder reflection to rows from the left side. */
+static void _zHouseholderL(zMat m, const double *nu, int n, int r0, int c0, int c1, double *w)
 {
   int i, j;
   double a, *row;
 
-  for( j=c0; j<=c1; j++ ) w[j] = 0;
+  zRawVecZero( w + c0, c1 - c0 + 1 );
   for( i=0; i<n; i++ ){ /* w = nu^T m */
     row = zMatRowBufNC( m, r0+i );
     for( a=nu[i], j=c0; j<=c1; j++ ) w[j] += a * row[j];
@@ -50,9 +47,8 @@ static void _zHouseholderApplyL(zMat m, const double *nu, int n, int r0, int c0,
   }
 }
 
-/* apply a Householder reflection to columns from c0 to c0+n-1 of a matrix from the right side,
- * where only rows from r0 to r1 are modified. */
-static void _zHouseholderApplyR(zMat m, const double *nu, int n, int c0, int r0, int r1)
+/* partially apply a Householder reflection to columns from the right side. */
+static void _zHouseholderR(zMat m, const double *nu, int n, int c0, int r0, int r1)
 {
   int i;
   double *p;
@@ -74,7 +70,6 @@ zMat zMatToHessenberg(const zMat m, zMat h, zMat p)
     ZRUNERROR( ZM_ERR_MAT_NOTSQR );
     return NULL;
   }
-  /* target hessian matrix */
   if( h ){
     if( !zMatSizeEqual( m, h ) ){
       ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -93,7 +88,6 @@ zMat zMatToHessenberg(const zMat m, zMat h, zMat p)
   nu = zVecAlloc( n );
   w = zVecAlloc( n );
   if( !nu || !w ){
-    ZALLOCERROR();
     h = NULL;
     goto TERMINATE;
   }
@@ -103,12 +97,12 @@ zMat zMatToHessenberg(const zMat m, zMat h, zMat p)
       zVecSetElemNC( w, i, zMatElemNC(h,k+1+i,k) );
     /* a reflection is skipped only if the column is exactly zero. */
     if( !_zHouseholderVec( zVecBuf(w), len, zVecBuf(nu), &s ) ) continue;
-    _zHouseholderApplyL( h, zVecBuf(nu), len, k+1, k+1, n-1, zVecBuf(w) );
-    _zHouseholderApplyR( h, zVecBuf(nu), len, k+1, 0, n-1 );
+    _zHouseholderL( h, zVecBuf(nu), len, k+1, k+1, n-1, zVecBuf(w) );
+    _zHouseholderR( h, zVecBuf(nu), len, k+1, 0, n-1 );
     /* the k-th column is theoretically mapped to s e1. */
     zMatSetElemNC( h, k+1, k, s );
     for( i=k+2; i<n; i++ ) zMatSetElemNC( h, i, k, 0 );
-    if( p ) _zHouseholderApplyR( p, zVecBuf(nu), len, k+1, 0, n-1 );
+    if( p ) _zHouseholderR( p, zVecBuf(nu), len, k+1, 0, n-1 );
   }
  TERMINATE:
   zVecFree( nu );
@@ -118,13 +112,7 @@ zMat zMatToHessenberg(const zMat m, zMat h, zMat p)
 
 /* eigenvalue analysis by double-shift QR method (J. G. F. Francis, 1961) */
 
-/* find the top row of the lowest unreduced block of a Hessenberg matrix that ends at the r-th row.
- * A subdiagonal component is regarded as zero if it is negligible relative to its neighboring
- * diagonal components, and then zero is exactly assigned to it.
- * If the iteration stagnates, a subdiagonal component not greater than n eps times the norm of the
- * matrix is also regarded as zero, which is a perturbation comparable to the backward error of the
- * QR method itself. This happens for a cluster of close eigenvalues, for which the subdiagonal
- * components stay at the level of rounding errors. */
+/* find the top row of the lowest unreduced block of a Hessenberg matrix. */
 static int _zMatEigDQRSplit(zMat h, int r, double norm, bool stagnant)
 {
   int l;
@@ -132,7 +120,8 @@ static int _zMatEigDQRSplit(zMat h, int r, double norm, bool stagnant)
 
   for( l=r; l>0; l-- ){
     if( ( s = fabs( zMatElemNC(h,l-1,l-1) ) + fabs( zMatElemNC(h,l,l) ) ) == 0 ) s = norm;
-    if( ( a = fabs( zMatElemNC(h,l,l-1) ) ) <= DBL_EPSILON * s || ( stagnant && a <= zMatRowSizeNC(h) * DBL_EPSILON * norm ) ){
+    if( ( a = fabs( zMatElemNC(h,l,l-1) ) ) <= DBL_EPSILON * s ||
+        ( stagnant && a <= zMatRowSizeNC(h) * DBL_EPSILON * norm ) ){
       zMatSetElemNC( h, l, l-1, 0 );
       break;
     }
@@ -140,10 +129,7 @@ static int _zMatEigDQRSplit(zMat h, int r, double norm, bool stagnant)
   return l;
 }
 
-/* one step of implicit double-shift QR iteration (bulge chasing) on an unreduced block from the l-th
- * to the r-th rows, where s and t are the sum and the product of the shifts, respectively.
- * If z is not the null pointer, the whole Hessenberg matrix is transformed and the transformation
- * is accumulated to z. Otherwise, only the active block is transformed. */
+/* one step of implicit double-shift QR iteration (bulge chasing) on an unreduced block. */
 static void _zMatEigDQRStep(zMat h, zMat z, int l, int r, double s, double t, double *nu, double *w)
 {
   int n, k, nr, cmax, rmin;
@@ -164,19 +150,18 @@ static void _zMatEigDQRStep(zMat h, zMat z, int l, int r, double s, double t, do
       x[2] = nr == 3 ? zMatElemNC(h,k+2,k-1) : 0;
     }
     if( !_zHouseholderVec( x, nr, nu, &sv ) ) continue;
-    _zHouseholderApplyL( h, nu, nr, k, k, cmax, w );
+    _zHouseholderL( h, nu, nr, k, k, cmax, w );
     if( k > l ){
       zMatSetElemNC( h, k, k-1, sv );
       zMatSetElemNC( h, k+1, k-1, 0 );
       if( nr == 3 ) zMatSetElemNC( h, k+2, k-1, 0 );
     }
-    _zHouseholderApplyR( h, nu, nr, k, rmin, _zMin( k+3, r ) );
-    if( z ) _zHouseholderApplyR( z, nu, nr, k, 0, n-1 );
+    _zHouseholderR( h, nu, nr, k, rmin, _zMin( k+3, r ) );
+    if( z ) _zHouseholderR( z, nu, nr, k, 0, n-1 );
   }
 }
 
-/* rotate the p-th and (p+1)-th rows and columns of a quasi-upper triangular matrix t by a Givens
- * rotation G = [ c -s ; s c ] as t <- G^T t G, and accumulate it to z as z <- z G. */
+/* rotate a quasi-upper triangular matrix by a Givens rotation. */
 static void _zMatEigDQRRot(zMat t, zMat z, int p, double c, double s)
 {
   int i, q = p + 1;
@@ -202,9 +187,7 @@ static void _zMatEigDQRRot(zMat t, zMat z, int p, double c, double s)
   }
 }
 
-/* eigenvalues of a deflated 2x2 block at the p-th and (p+1)-th rows.
- * If z is not the null pointer and the eigenvalues are real, the block is triangularized by a Givens
- * rotation, which is accumulated to z. */
+/* eigenvalues of a deflated 2x2 block. */
 static void _zMatEigDQR2x2(zMat h, zMat z, int p, zComplex *e1, zComplex *e2)
 {
   double a, b, c, d, hd, disc, q, x, l1, l2, v1, v2, r1, r2;
@@ -218,8 +201,10 @@ static void _zMatEigDQR2x2(zMat h, zMat z, int p, zComplex *e1, zComplex *e2)
   }
   hd = 0.5 * ( a - d );
   if( ( disc = hd*hd + b*c ) < 0 ){ /* a pair of complex conjugate eigenvalues */
-    _zComplexCreate( e1, d + hd, sqrt( -disc ) );
-    _zComplexCreate( e2, d + hd,-sqrt( -disc ) );
+    d += hd;
+    q = sqrt( -disc );
+    _zComplexCreate( e1, d, q );
+    _zComplexCreate( e2, d,-q );
     return;
   }
   /* real eigenvalues computed without cancellation */
@@ -234,9 +219,11 @@ static void _zMatEigDQR2x2(zMat h, zMat z, int p, zComplex *e1, zComplex *e2)
     r1 = _zSqr( b ) + _zSqr( l1 - a );
     r2 = _zSqr( l1 - d ) + _zSqr( c );
     if( r1 >= r2 ){
-      v1 = b;      v2 = l1 - a;
+      v1 = b;
+      v2 = l1 - a;
     } else{
-      v1 = l1 - d; v2 = c;
+      v1 = l1 - d;
+      v2 = c;
       r1 = r2;
     }
     if( r1 > 0 ){
@@ -264,8 +251,7 @@ static void _zMatEigDQRPerturb(zComplex *c, double delta)
   if( _zComplexAbs( c ) < delta ) _zComplexCreate( c, delta, 0 );
 }
 
-/* back substitution to find an eigenvector y of a quasi-upper triangular matrix t for an eigenvalue
- * lambda, where the components of y from the (i+1)-th to the last-th are given. */
+/* backward substitution to find an eigenvector of a quasi-upper triangular matrix for an eigenvalue. */
 static void _zMatEigDQRBackSubst(zMat t, const zComplex *lambda, zComplex *y, int i, int last, double delta)
 {
   int j, k;
@@ -306,7 +292,7 @@ static void _zMatEigDQRBackSubst(zMat t, const zComplex *lambda, zComplex *y, in
       _zComplexZero( &r1 );
       for( j=i+1; j<=last; j++ )
         _zComplexCMulSub( &r1, zMatElemNC(t,i,j), &y[j] );
-      _zComplexCreate( &a11, zMatElemNC(t,i,i) - lambda->re, -lambda->im );
+      zComplexCreate( &a11, zMatElemNC(t,i,i) - lambda->re, -lambda->im );
       _zMatEigDQRPerturb( &a11, delta );
       zComplexCDiv( &r1, &a11, &y[i] );
     }
@@ -319,7 +305,7 @@ static void _zMatEigDQRBackSubst(zMat t, const zComplex *lambda, zComplex *y, in
   }
 }
 
-/* transform an eigenvector y of a quasi-upper triangular matrix to that of the original matrix by z,
+/* transform an eigenvector of a quasi-upper triangular matrix to that of the original matrix,
  * normalize it, and put it into the col-th column of eigbase. */
 static void _zMatEigDQRPutVec(zMat z, zComplex *y, int last, zCMat eigbase, int col, bool conj)
 {
@@ -378,9 +364,9 @@ static bool _zMatEigDQRVec(zMat t, zMat z, zCVec eigval, zCMat eigbase, double n
       /* an eigenvector of the 2x2 block, chosen from two candidates to avoid cancellation */
       if( _zSqr(b) + _zSqr(lambda->re-a) + _zSqr(lambda->im) >= _zSqr(lambda->re-d) + _zSqr(lambda->im) + _zSqr(c) ){
         _zComplexCreate( &y[k], b, 0 );
-        _zComplexCreate( &y[k+1], lambda->re - a, lambda->im );
+        zComplexCreate( &y[k+1], lambda->re - a, lambda->im );
       } else{
-        _zComplexCreate( &y[k], lambda->re - d, lambda->im );
+        zComplexCreate( &y[k], lambda->re - d, lambda->im );
         _zComplexCreate( &y[k+1], c, 0 );
       }
       _zMatEigDQRBackSubst( t, lambda, y, k-1, k+1, delta );
@@ -396,6 +382,19 @@ static bool _zMatEigDQRVec(zMat t, zMat z, zCVec eigval, zCMat eigbase, double n
   }
   zFree( y );
   return true;
+}
+
+/* exactly scale a matrix by a power of two to avoid overflow and underflow in eigenvalue computation. */
+static double _zMatEigScale(zMat m)
+{
+  double scale;
+  int e;
+
+  if( ( scale = zDataAbsMax( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), NULL ) ) == 0 ) return 1;
+  frexp( scale, &e );
+  scale = ldexp( 1.0, e - 1 );
+  zMatDivDRC( m, scale );
+  return scale;
 }
 
 /* eigenvalues and eigenvectors by double-shift QR method. */
@@ -425,22 +424,9 @@ bool zMatEigDQR(const zMat m, zCVec eigval, zCMat eigbase, int iter)
   nu = zVecAlloc( 3 );
   ws = zVecAlloc( zMatRowSizeNC(m) );
   if( eigbase ) z = zMatAllocSqr( zMatRowSizeNC(m) );
-  if( !h || !nu || !ws || ( eigbase && !z ) ){
-    ZALLOCERROR();
-    goto TERMINATE;
-  }
-  /* scale the matrix by a power of two, which is exact, to avoid overflow and underflow */
-  for( scale=0, r=0; r<zMatRowSizeNC(h); r++ )
-    for( l=0; l<zMatColSizeNC(h); l++ )
-      if( fabs( zMatElemNC(h,r,l) ) > scale ) scale = fabs( zMatElemNC(h,r,l) );
-  if( scale > 0 ){
-    frexp( scale, &l );
-    scale = ldexp( 1.0, l );
-    for( r=0; r<zMatRowSizeNC(h); r++ )
-      for( l=0; l<zMatColSizeNC(h); l++ )
-        zMatElemNC(h,r,l) /= scale;
-  } else
-    scale = 1;
+  if( !h || !nu || !ws || ( eigbase && !z ) ) goto TERMINATE;
+
+  scale = _zMatEigScale( h );
   if( !zMatToHessenberg( h, NULL, z ) ) goto TERMINATE;
   norm = zMatNorm( h );
   ZITERINIT( iter );
@@ -627,7 +613,6 @@ static bool _zMatSymEigBisecR(const zMat m, zVec eigval, zMat eigbase, int iter)
   b = zMatAllocSqr( zMatRowSizeNC(m) );
   eigvec = zVecAlloc( zMatRowSizeNC(m) );
   if( !ms || !b || !eigvec ){
-    ZALLOCERROR();
     ret = false;
     goto TERMINATE;
   }
@@ -667,91 +652,89 @@ bool zMatSymEigBisec(const zMat m, zVec eigval, zMat eigbase)
   return true;
 }
 
-/* shift diagonal values of a matrix to accelerate diagonalization. */
-static double _zMatSymEigJacobiShift(zMat m, double *shift)
-{
-  zComplex c_shift[2];
-  double b, c;
-
-  b =-zMatBuf(m)[0] - zMatElemNC(m,1,1);
-  c = zMatBuf(m)[0] * zMatElemNC(m,1,1) - zMatElemNC(m,1,0) * zMatElemNC(m,0,1);
-  zQESolve( 1, b, c, c_shift );
-  c = fabs( c_shift[0].re - zMatBuf(m)[0] ) < fabs( c_shift[1].re - zMatBuf(m)[0] ) ?
-    c_shift[0].re : c_shift[1].re;
-  zMatShift( m, -c );
-  return shift ? ( *shift = c ) : c;
-}
-
-/* transform a matrix by Jacobi's rotation based on Wilkinson's formula. */
+/* Jacobi's rotation to eliminate the (i,j) component of a symmetric matrix with the smaller rotation
+ * angle (|angle| <= pi/4), where the diagonal components are updated by Rutishauser's formula. Ref.:
+ *  H. Rutishauser, The Jacobi method for real symmetric matrices, Handbook for Automatic Computation
+ *  (Wilkinson-Reinsch eds.), Vol. II, 1971.
+ */
 static void _zMatSymEigJacobiRot(zMat m, zMat eigbase, int i, int j)
 {
   int k;
-  double as, ad, ti, c, s;
-  double tmp1, tmp2;
+  double theta, r, t, c, s, tmp1, tmp2;
 
-  as = 0.5 * ( zMatElemNC(m,i,i) + zMatElemNC(m,j,j) );
-  ad = 0.5 * ( zMatElemNC(m,i,i) - zMatElemNC(m,j,j) );
-  ti = sqrt( ad*ad + _zSqr( zMatElemNC(m,i,j) ) );
-  if( ad < 0 ) ti = -ti;
-  c = sqrt( 0.5 + 0.5*ad/ti );
-  s = 0.5 * zMatElemNC(m,i,j) / ( ti * c );
-
-  zMatSetElemNC( m, i, i, as + ti );
-  zMatSetElemNC( m, j, j, as - ti );
+  theta = 0.5 * ( zMatElemNC(m,j,j) - zMatElemNC(m,i,i) ) / zMatElemNC(m,i,j);
+  /* the half-angle formulae from cos 2phi = |theta| / r and sin 2phi = 1 / r, where r = sqrt(1+theta^2),
+   * give a more orthogonal rotation than c = 1 / sqrt(1+t^2) from t = tan phi. For a large theta,
+   * theta^2 would overflow, and r is approximated by |theta|. */
+  r = fabs( theta ) < 1.0e150 ? sqrt( 1 + theta*theta ) : fabs( theta );
+  c = sqrt( 0.5 + 0.5 * fabs( theta ) / r );
+  s = 0.5 / ( r * c );
+  if( theta < 0 ) s = -s;
+  t = s / c;
+  zMatElemNC(m,i,i) -= t * zMatElemNC(m,i,j);
+  zMatElemNC(m,j,j) += t * zMatElemNC(m,i,j);
   zMatSetElemNC( m, i, j, 0 );
   zMatSetElemNC( m, j, i, 0 );
   for( k=0; k<zMatRowSizeNC(m); k++ ){
     /* update of transformation matrix */
     tmp1 = zMatElemNC( eigbase, k, i );
     tmp2 = zMatElemNC( eigbase, k, j );
-    zMatSetElemNC( eigbase, k, i, c * tmp1 + s * tmp2 );
-    zMatSetElemNC( eigbase, k, j,-s * tmp1 + c * tmp2 );
-    /* update of eigenmatrix */
+    zMatSetElemNC( eigbase, k, i, c * tmp1 - s * tmp2 );
+    zMatSetElemNC( eigbase, k, j, s * tmp1 + c * tmp2 );
+    /* update of the matrix being diagonalized */
     if( k == i || k == j ) continue;
-    tmp1 = zMatElemNC( m, i, k );
-    tmp2 = zMatElemNC( m, j, k );
-    zMatSetElemNC( m, i, k, c * tmp1 + s * tmp2 );
-    zMatSetElemNC( m, j, k,-s * tmp1 + c * tmp2 );
-    zMatSetElemNC( m, k, i, zMatElemNC( m, i, k ) );
-    zMatSetElemNC( m, k, j, zMatElemNC( m, j, k ) );
+    tmp1 = zMatElemNC( m, k, i );
+    tmp2 = zMatElemNC( m, k, j );
+    zMatSetElemNC( m, k, i, c * tmp1 - s * tmp2 );
+    zMatSetElemNC( m, k, j, s * tmp1 + c * tmp2 );
+    zMatSetElemNC( m, i, k, zMatElemNC( m, k, i ) );
+    zMatSetElemNC( m, j, k, zMatElemNC( m, k, j ) );
   }
 }
 
-/* diagonalize a symmetric matrix by Jacobi's method. */
+/* diagonalize a symmetric matrix by the cyclic Jacobi's method. */
+#define _zMatSymEigJacobiSqrtDiag(m,i) sqrt( fabs( zMatElemNC(m,i,i) ) )
 bool zMatSymEigJacobi(const zMat m, zVec eigval, zMat eigbase)
 {
-  int i, j, n = 0;
-  double shift;
-  bool is_complete;
+  int i, j, n;
+  double scale, tol_i;
+  bool is_complete, ret = false;
   zMat d;
 
   _zMatSymEigCheckSize( m, eigval, eigbase );
-  if( !( d = zMatClone( m ) ) ){ /* diagonal matrix */
+  if( !( d = zMatClone( m ) ) ){ /* to be diagonalized */
     ZALLOCERROR();
     return false;
   }
+  scale = _zMatEigScale( d );
   zMatIdent( eigbase );
-  _zMatSymEigJacobiShift( d, &shift );
-  do{
+  for( n=0; ; n++ ){
     is_complete = true;
-    for( i=1; i<zMatRowSizeNC(d); i++ )
+    for( i=1; i<zMatRowSizeNC(d); i++ ){
+      tol_i = DBL_EPSILON * _zMatSymEigJacobiSqrtDiag(d,i);
       for( j=0; j<i; j++ ){
-        if( zIsTiny( zMatElemNC(d,i,j) ) ) continue;
+        /* the threshold relative to the diagonal components (J. Demmel and K. Veselic, 1992) does not
+         * depend on the scale of the matrix, and keeps the relative accuracy of small eigenvalues of
+         * a positive definite matrix. */
+        if( fabs( zMatElemNC(d,i,j) ) <= tol_i * _zMatSymEigJacobiSqrtDiag(d,j) ) continue;
         is_complete = false;
-        /* iterative elimination of non-diagonal components */
         _zMatSymEigJacobiRot( d, eigbase, i, j );
+        tol_i = DBL_EPSILON * _zMatSymEigJacobiSqrtDiag(d,i); /* m_ii is changed by the rotation */
       }
-    if( n++ > Z_MAX_ITER_NUM ){
+    }
+    if( is_complete ) break;
+    if( n >= Z_MAX_ITER_NUM ){
       ZITERWARN( Z_MAX_ITER_NUM );
       goto TERMINATE;
     }
-  } while( !is_complete );
+  }
+  ret = true;
 
  TERMINATE:
   for( j=0; j<zMatRowSizeNC(m); j++ )
-    zVecSetElemNC( eigval, j, zMatElemNC(d,j,j) + shift );
+    zVecSetElemNC( eigval, j, zMatElemNC(d,j,j) * scale );
   zMatFree( d );
-  return true;
+  return ret;
 }
 
 /* sort singular values and corresponding bases. */
@@ -789,10 +772,7 @@ int zMatSVD(const zMat m, zMat u, zVec sv, zMat v)
   zMulMatMatTNC( m, m, c );
   zMatSymEigJacobi( c, sv, u );
   rank = _zMatSVDSort( m, sv, u );
-  if( !( w = zMatAlloc( zMatRowSizeNC(u), rank ) ) ){
-    ZALLOCERROR();
-    goto TERMINATE;
-  }
+  if( !( w = zMatAlloc( zMatRowSizeNC(u), rank ) ) ) goto TERMINATE;
   zMatGetNC( u, 0, 0, w );
   zMatSetRowSize( v, rank );
 
@@ -814,10 +794,7 @@ static bool _zMatSingularValueMat(const zMat m, zMat *r, zVec *e)
   if( zMatRowSizeNC(m) > zMatColSizeNC(m) ){
     *r = zMatAllocSqr( zMatColSizeNC(m) );
     *e = zVecAlloc( zMatColSizeNC(m) );
-    if( !*r || !*e ){
-      ZALLOCERROR();
-      return false;
-    }
+    if( !*r || !*e ) return false;
     zMulMatTMat( m, m, *r );
   } else{
     *r = zMatAllocSqr( zMatRowSizeNC(m) );
