@@ -1223,6 +1223,62 @@ void assert_mat_det_scale(void)
   zAssert( zMatDet (scaled and singular matrices), result );
 }
 
+/* zLESolveCholesky() has to solve a linear equation with a positive definite symmetric matrix decomposed
+   by zMatDecompCholesky(), also when the right-hand-side vector and the answer are the same vector. */
+#define TOL_CHOLESKY ( 1.0e-14 )
+void assert_le_cholesky(void)
+{
+  zMat m, a, l;
+  zVec b, x, x2, r;
+  zIndex index;
+  int i, j, n, trial, rank;
+  double s, err, errmax = 0;
+  bool result1 = true, result2 = true;
+  const int ntrial = 1000;
+  const double tol = TOL_CHOLESKY;
+
+  for( trial=0; trial<ntrial; trial++ ){
+    n = zRandI( 1, 10 );
+    s = pow( 10, zRandF( -6, 6 ) );
+    m = zMatAllocSqr( n );
+    a = zMatAllocSqr( n );
+    l = zMatAllocSqr( n );
+    index = zIndexCreate( n );
+    b = zVecAlloc( n );
+    x = zVecAlloc( n );
+    x2 = zVecAlloc( n );
+    r = zVecAlloc( n );
+    for( i=0; i<n; i++ )
+      for( j=0; j<n; j++ ) zMatSetElemNC( m, i, j, zRandF(-1,1) );
+    zMulMatMatTNC( m, m, a );
+    for( i=0; i<n; i++ ) zMatElemNC(a,i,i) += 0.1;
+    zMatMulDRC( a, s );
+    zVecRandUniform( b, -s, s );
+    if( ( rank = zMatDecompCholesky( a, l, index ) ) != n ){
+      eprintf( "unexpected rank %d of a %dx%d positive definite matrix\n", rank, n, n );
+      result1 = false;
+    } else{
+      zLESolveCholesky( l, b, x, index );
+      zMulMatVec( a, x, r );
+      zVecSubDRC( r, b );
+      if( ( err = zVecNorm( r ) / ( zMatNorm( a ) * zVecNorm( x ) + zVecNorm( b ) ) ) > errmax ) errmax = err;
+      if( !( err <= tol ) ){
+        eprintf( "relative residual = %g\n", err );
+        result1 = false;
+      }
+      zVecCopy( b, x2 );
+      zLESolveCholesky( l, x2, x2, index );
+      if( !zVecEqual( x, x2, 0 ) ) result2 = false;
+    }
+    zMatFreeAtOnce( 3, m, a, l );
+    zVecFreeAtOnce( 4, b, x, x2, r );
+    zIndexFree( index );
+  }
+  eprintf( "maximum relative residual = %g ", errmax );
+  zAssert( zLESolveCholesky, result1 );
+  zAssert( zLESolveCholesky (the same vector for the right-hand side and the answer), result2 );
+}
+
 int main(void)
 {
   zRandInit();
@@ -1231,6 +1287,7 @@ int main(void)
   assert_mat_det_adj(); /* zMatAdj() and zMatDet() are used in assert_le() */
   assert_mat_det_scale();
   assert_le();
+  assert_le_cholesky();
   assert_mat_vec_sweep_out(); /* zLESolveGauss() is used to make the reference */
   assert_le_mat_capacity();
   assert_le_gauss_seidel();

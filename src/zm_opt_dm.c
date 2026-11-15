@@ -646,7 +646,12 @@ static double _zOptDMDamp(zOptDM *opt, double lambda)
 /* the norm of the gradient vector relative to the initial one. */
 static double _zOptDMDampGradRatio(zOptDM *opt)
 {
-  return opt->_g0 > 0 ? zVecNorm( opt->_g ) / opt->_g0 : 1.0;
+  double r;
+
+  if( opt->_g0 <= 0 ) return 1.0;
+  /* the ratio is bounded by one, since the damping coefficient larger than the initial one makes
+     the step too short when the gradient vector grows, e.g., toward a pole. */
+  return ( r = zVecNorm( opt->_g ) / opt->_g0 ) > 1 ? 1 : r;
 }
 
 /* damping coefficient of Levenberg-Marquardt method: lambda = |g| / |g0| */
@@ -672,19 +677,36 @@ static double _zOptDMDampDec(zOptDM *opt, void *dummy)
   return _zOptDMDamp( opt, _zMin( lg, d / opt->_dec0 ) );
 }
 
-/* Levenberg-Marquardt method */
+/* Levenberg-Marquardt method.
+ * the damping coefficient tau added to the diagonal components of the Hessian matrix H is increased
+ * from mu given by the damping method until H + tau I becomes positive definite, so that the direction
+ * is descent even if H is indefinite (cf. Algorithm 3.3 of J. Nocedal and S. J. Wright, Numerical
+ * Optimization, 2nd ed., Springer, 2006). tau starts from b - min_i H_ii if min_i H_ii + mu <= 0, where
+ * b = c max_i |H_ii| for lm_damp_coeff c. it is doubled if H + tau I is nearly singular, and is increased
+ * to max{ 2 tau, b } if it is indefinite. _hw is used for the Cholesky factor. */
 static zVec _zOptDMVecLM(zOptDM *opt, const zVec var, zVec d, void *util)
 {
-  int i;
-  double m;
+  int i, n, rank;
+  double h, hmin = HUGE_VAL, hmax = 0, b, tau;
 
   opt->_hess( opt, var, opt->_h, util );
-  m = opt->_damp( opt, util );
-  for( i=0; i<zVecSizeNC(opt->_g); i++ )
-    zMatElemNC(opt->_h,i,i) += m;
-  /* the right-hand-side vector is copied to _q since zLESolveGaussDST destroys it. */
-  zVecCopyNC( opt->_g, opt->_q );
-  return zLESolveGaussDST( opt->_h, opt->_q, opt->_d, opt->_idx, opt->_r );
+  tau = opt->_damp( opt, util );
+  n = zVecSizeNC(opt->_g);
+  for( i=0; i<n; i++ ){
+    if( fabs( h = zMatElemNC(opt->_h,i,i) ) > hmax ) hmax = fabs( h );
+    if( h < hmin ) hmin = h;
+  }
+  b = hmax > 0 ? opt->lm_damp_coeff * hmax : zVecNorm( opt->_g );
+  if( hmin + tau <= 0 ) tau = b - hmin;
+  for( ; zIsFinite( tau ); tau = rank < 0 ? _zMax( 2*tau, b ) : 2*tau ){
+    zMatCopyNC( opt->_h, opt->_hw );
+    for( i=0; i<n; i++ )
+      zMatElemNC(opt->_hw,i,i) += tau;
+    if( ( rank = zMatDecompCholesky( opt->_hw, opt->_hw, opt->_idx ) ) == n )
+      return zLESolveCholesky( opt->_hw, opt->_g, d, opt->_idx );
+    zMatColResize( opt->_hw, n ); /* restore the size reduced for a rank-deficient matrix */
+  }
+  return zVecSetAll( d, NAN ); /* the Hessian matrix is not finite. */
 }
 
 /* variable metric method */
@@ -716,6 +738,7 @@ zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVec,void*), zV
   opt->lm_damp_coeff = ZM_OPT_DM_LM_DEFAULT_DAMP_COEFF;
   opt->_damp = _zOptDMDampGrad;
   opt->_hw = NULL;
+  opt->_to_start = false;
   opt->_x = zVecAlloc( dim );
   opt->_d = zVecAlloc( dim );
   opt->_g = zVecAlloc( dim );
@@ -766,13 +789,13 @@ zOptDM *zOptDMAssignSD(zOptDM *opt, const char *stepmethod, double scale)
 
 zOptDM *zOptDMAssignLM(zOptDM *opt, const char *dampmethod, const char *stepmethod, double scale)
 {
-  if( dampmethod && strcmp( dampmethod, "dec" ) == 0 ){ /* Newton decrement */
-    if( !opt->_hw && !( opt->_hw = zMatAllocSqr( zVecSizeNC(opt->_g) ) ) ){
-      ZALLOCERROR();
-      return NULL;
-    }
+  if( !opt->_hw && !( opt->_hw = zMatAllocSqr( zVecSizeNC(opt->_g) ) ) ){
+    ZALLOCERROR();
+    return NULL;
+  }
+  if( dampmethod && strcmp( dampmethod, "dec" ) == 0 ) /* Newton decrement */
     opt->_damp = _zOptDMDampDec;
-  } else
+  else
     opt->_damp = _zOptDMDampGrad; /* norm of the gradient vector as default */
   opt->_vec = _zOptDMVecLM;
   opt->_update_h = _zOptDMUpdateNone;

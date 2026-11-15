@@ -123,6 +123,20 @@ __ZM_EXPORT zVec zLESolveU(const zMat u, const zVec b, zVec ans);
 __ZM_EXPORT zVec zLESolveUCP(const zMat u, const zVec b, zVec ans, const zIndex index);
 __ZM_EXPORT zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, const zIndex index);
 
+/*! \brief linear equation solver by Cholesky decomposition method.
+ *
+ * zLESolveCholesky() solves linear equation \a l \a l ^T x = \a b, where \a l is the Cholesky factor of
+ * a positive definite symmetric matrix obtained by zMatDecompCholesky(), namely, the rows \a index[0],
+ * \a index[1], ... of \a l are lower triangular in this order. The answer is put into \a ans.
+ * \a b and \a ans can be the same vector.
+ * \return
+ * zLESolveCholesky() returns a pointer \a ans if it succeeds. If the sizes of \a l, \a b, \a ans and
+ * \a index mismatch, it returns the null pointer.
+ * \sa
+ * zMatDecompCholesky
+ */
+__ZM_EXPORT zVec zLESolveCholesky(const zMat l, const zVec b, zVec ans, const zIndex index);
+
 /*! \brief linear equation solver by LU decomposition method and residual iteration.
  *
  * zLESolveLURI() solves linear equation \a a x = \a b based on LU decomposition and improves accuracy

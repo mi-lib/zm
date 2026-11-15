@@ -240,6 +240,40 @@ zVec zLESolveUCP(const zMat u, const zVec b, zVec ans, const zIndex index)
   return ans;
 }
 
+/* a solver for L L^T x = b with the Cholesky factor L, where the rows index[0], index[1], ... of L are lower
+   triangular in this order. the intermediate and final answers are put at the permuted positions of ans,
+   so that b and ans can be the same vector. */
+zVec zLESolveCholesky(const zMat l, const zVec b, zVec ans, const zIndex index)
+{
+  int i, j, n;
+  double x;
+
+  if( !zMatIsSqr(l) ){
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
+    return NULL;
+  }
+  if( zMatRowSize(l) != zIndexSizeNC(index) ||
+      zVecSize(b) != zIndexSizeNC(index) ||
+      zVecSize(ans) != zIndexSizeNC(index) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
+    return NULL;
+  }
+  n = zIndexSizeNC(index);
+  for( i=0; i<n; i++ ){ /* forward substitution */
+    x = zVecElemNC( b, zIndexElemNC(index,i) );
+    for( j=0; j<i; j++ )
+      x -= zMatElemNC(l,zIndexElemNC(index,i),j) * zVecElemNC(ans,zIndexElemNC(index,j));
+    zVecSetElemNC( ans, zIndexElemNC(index,i), x / zMatElemNC(l,zIndexElemNC(index,i),i) );
+  }
+  for( i=n-1; i>=0; i-- ){ /* backward substitution */
+    x = zVecElemNC( ans, zIndexElemNC(index,i) );
+    for( j=i+1; j<n; j++ )
+      x -= zMatElemNC(l,zIndexElemNC(index,j),i) * zVecElemNC(ans,zIndexElemNC(index,j));
+    zVecSetElemNC( ans, zIndexElemNC(index,i), x / zMatElemNC(l,zIndexElemNC(index,i),i) );
+  }
+  return ans;
+}
+
 /* a solver for LUx=b. */
 zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, const zIndex index)
 {

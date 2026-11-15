@@ -127,9 +127,11 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zOptDM ){
  *
  * Levenberg-Marquardt's method of zOptDM adds the damping coefficient mu to the diagonal components of
  * the Hessian matrix H, where mu = c lambda max_i |H_ii|. c is lm_damp_coeff of zOptDM, and lambda is a
- * dimensionless value that decreases as the iteration converges, which is specified by the damping
- * method (see zOptDMAssignLM()). Since mu is proportional to the magnitude of H, the step is invariant
- * with respect to the scales of the variable and the function. If c is too large, the iteration behaves
+ * dimensionless value not greater than one that decreases as the iteration converges, which is specified
+ * by the damping method (see zOptDMAssignLM()). Since mu is proportional to the magnitude of H, the step
+ * is invariant with respect to the scales of the variable and the function.
+ * If H + mu I is not positive definite, e.g., near a saddle point, the damping coefficient is increased
+ * until it becomes positive definite, so that the direction is descent. If c is too large, the iteration behaves
  * like the steepest descent method at the beginning, and might go to another local minimum.
  * lm_damp_coeff is initialized by ZM_OPT_DM_LM_DEFAULT_DAMP_COEFF in zOptDMCreate(), and set by
  * zOptDMSetLMDampCoeff().
@@ -221,10 +223,11 @@ __ZM_EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVe
  *  estimates twice the deviation of the function from the minimum, and d0 is that at the initial
  *  point. d coincides with |F|^2 for the least square problem of F(x)=0 with the Gauss-Newton
  *  approximation of the Hessian matrix if the Jacobian matrix of F is regular. It requires to solve
- *  an additional linear equation at every iteration, and a workspace is allocated internally when it
- *  is assigned at the first time.
+ *  an additional linear equation at every iteration.
  * If H vanishes, mu = |g| is used instead.
  * "grad" is assigned if it is the null pointer or another string.
+ * zOptDMAssignLM() allocates a workspace for the Cholesky decomposition internally when it is called at
+ * the first time.
  *
  * \a updatemethod for zOptDMAssignVM() specifies the update formula of the quasi-Hessian matrix,
  * namely, "DFP" for Davidon-Fletcher-Powell's formula and others for Broyden-Fletcher-Goldfarb-Shanno's.

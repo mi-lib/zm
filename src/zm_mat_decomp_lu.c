@@ -336,8 +336,7 @@ static int _zMatDecompCholeskyDST(zMat l, zIndex index, double tol)
       a = 0;
     } else
     if( a < 0 ){
-      ZRUNERROR( ZM_ERR_MAT_NOTPOSITIVESEMIDEFINITE );
-      return -1;
+      return -1; /* not positive semi-definite */
     } else{
       zMatSetElemNC( l, p, p, ( a = sqrt( a ) ) );
       a = 1.0 / a;
