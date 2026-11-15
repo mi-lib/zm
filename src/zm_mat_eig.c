@@ -405,52 +405,137 @@ bool zMatEigDQR(const zMat m, zCVec eigval, zCMat eigbase, int iter)
   return ret;
 }
 
+/* seed of the random number generator for the initial vector of the power method. */
+#define ZM_EIG_POWER_SEED 1
+
+/* power method: the dominant eigenvalue mu of a linear map v -> w and the corresponding unit eigenvector.
+ * The initial vector is random to avoid being orthogonal to the dominant eigenvector, where a local random
+ * number generator with a fixed seed is used, so that the result is reproducible and the random number
+ * sequence of the caller is not disturbed.
+ * The iteration is regarded as converged if the residual |w - mu v| for a unit vector v is not greater
+ * than zTOL times |mu|. It returns 1 if it converges, 0 if it does not converge within iter steps, or -1
+ * if it fails to allocate working memory. In the latter two cases, the last estimates are stored. */
+static int _zMatEigPowerIter(void (* mul)(void*,const zVec,zVec), void *util, zVec v, int iter, double *mu)
+{
+  zRandMT mt; /* a local random number generator */
+  zVec w, r;
+  double norm;
+  int i, ret = -1;
+
+  *mu = 0;
+  w = zVecAlloc( zVecSizeNC(v) );
+  r = zVecAlloc( zVecSizeNC(v) );
+  if( !w || !r ) goto TERMINATE;
+  zRandInitSeedMT( &mt, ZM_EIG_POWER_SEED );
+  do{ /* a random initial unit vector */
+    for( i=0; i<zVecSizeNC(v); i++ )
+      zVecSetElemNC( v, i, zRandMTF( &mt, -1, 1 ) );
+  } while( !( ( norm = zVecNorm( v ) ) > 0 ) );
+  zVecDivDRC( v, norm );
+  for( ret=0, i=0; i<iter; i++ ){
+    mul( util, v, w );
+    *mu = zVecInnerProdNC( v, w );
+    zVecCatNC( w, -*mu, v, r );
+    if( zVecNorm( r ) <= zTOL * fabs( *mu ) ){ /* including the case where w = O */
+      ret = 1;
+      break;
+    }
+    zVecDivNC( w, zVecNorm( w ), v );
+  }
+ TERMINATE:
+  zVecFree( w );
+  zVecFree( r );
+  return ret;
+}
+
+/* multiply a vector by a matrix for the power method. */
+static void _zMatEigPowerMulMat(void *util, const zVec v, zVec w)
+{
+  zMulMatVecNC( (zMat)util, v, w );
+}
+
+/* check if a matrix is square and the size of a vector is consistent with it. */
+#define _zMatEigPowerCheckSize(m,eigvec) do{\
+  if( !zMatIsSqr( m ) ){\
+    ZRUNERROR( ZM_ERR_MAT_NOTSQR );\
+    return 0;\
+  }\
+  if( zMatColSizeNC(m) != zVecSizeNC(eigvec) ){\
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );\
+    return 0;\
+  }\
+} while(0)
+
 /* calculate the dominant eigenvalue. */
 double zMatEigPower(const zMat m, zVec eigvec, int iter)
 {
-  zVec ev, err;
-  double eigval = 1.0;
-  int i;
+  double eigval;
 
-  err = zVecAlloc( zVecSizeNC(eigvec) );
-  ev = zVecAlloc( zVecSizeNC(eigvec) );
-  if( !err || !ev ) goto TERMINATE;
-  zVecRandUniform( eigvec, -1, 1 );
-
+  _zMatEigPowerCheckSize( m, eigvec );
   ZITERINIT( iter );
-  for( i=0; i<iter; i++ ){
-    zVecNormalize( eigvec, 0, ev );
-    zMulMatVecNC( m, ev, eigvec );
-    eigval = zVecInnerProd( ev, eigvec );
-    zVecCatNC( eigvec, -eigval, ev, err );
-    if( zVecIsTiny( err ) ) goto TERMINATE;
-  }
- TERMINATE:
-  zVecDivDRC( eigvec, eigval );
-  zVecFree( ev );
-  zVecFree( err );
+  if( _zMatEigPowerIter( _zMatEigPowerMulMat, m, eigvec, iter, &eigval ) == 0 ) ZITERWARN( iter );
   return eigval;
+}
+
+/* LU decomposition of a matrix for the inverse power method. */
+typedef struct{
+  zMat l, u;
+  zIndex index;
+  zVec y;
+} _zMatEigPowerInvLU;
+
+/* LU-decompose a square matrix for the inverse power method. It returns 1 if it succeeds, 0 if the
+ * matrix is singular, or -1 if it fails to allocate working memory. */
+static int _zMatEigPowerInvLUAlloc(_zMatEigPowerInvLU *lu, const zMat m)
+{
+  int rank;
+
+  lu->y = NULL;
+  if( ( rank = zMatDecompLUAlloc( m, &lu->l, &lu->u, &lu->index ) ) < 0 ) return -1;
+  if( rank < zMatRowSizeNC(m) ) return 0;
+  return ( lu->y = zVecAlloc( zMatRowSizeNC(m) ) ) ? 1 : -1;
+}
+
+/* free the LU decomposition for the inverse power method. */
+static void _zMatEigPowerInvLUFree(_zMatEigPowerInvLU *lu)
+{
+  zMatFree( lu->l );
+  zMatFree( lu->u );
+  zIndexFree( lu->index );
+  zVecFree( lu->y );
+}
+
+/* multiply a vector by the inverse of a matrix, namely, solve the equation l u w = v. */
+static void _zMatEigPowerMulInv(void *util, const zVec v, zVec w)
+{
+  _zMatEigPowerInvLU *lu;
+
+  lu = (_zMatEigPowerInvLU *)util;
+  zLESolveL( lu->l, v, lu->y, lu->index );
+  zLESolveU( lu->u, lu->y, w );
 }
 
 /* calculate the minimal eigenvalue. */
 double zMatEigPowerInv(const zMat m, zVec eigvec, int iter)
 {
-  zMat m_inv;
+  _zMatEigPowerInvLU lu;
   double eigval = 0;
+  int ret;
 
-  if( !zMatIsSqr( m ) ){
-    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
-    return 0;
+  _zMatEigPowerCheckSize( m, eigvec );
+  if( ( ret = _zMatEigPowerInvLUAlloc( &lu, m ) ) <= 0 ){
+    if( ret == 0 ) ZRUNERROR( ZM_ERR_MAT_SINGULAR );
+    zVecZero( eigvec );
+    goto TERMINATE;
   }
-  if( !( m_inv = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) ) ) )
-    return 0;
-  if( zMatInv( m, m_inv ) )
-    eigval = zMatEigPower( m_inv, eigvec, iter );
-  else
-    ZRUNERROR( ZM_ERR_MAT_SINGULAR );
-
-  zMatFree( m_inv );
-  return 1.0 / eigval;
+  ZITERINIT( iter );
+  if( ( ret = _zMatEigPowerIter( _zMatEigPowerMulInv, &lu, eigvec, iter, &eigval ) ) == 0 )
+    ZITERWARN( iter );
+  if( ret >= 0 )
+    eigval = 1.0 / eigval; /* the dominant eigenvalue of the inverse is never zero. */
+ TERMINATE:
+  _zMatEigPowerInvLUFree( &lu );
+  return eigval;
 }
 
 #define ZM_EIGSYS_ITER_NUM 10
@@ -534,38 +619,40 @@ static void _zMatSymEigBisecRec(const zMat a, double emin, int nmin, double emax
     _zMatSymEigBisecRec( a, emin, nmin, e, n, &eig[n-nmax] );
 }
 
-/* compute a unitary matrix consisting of eigenvectors for real-number eigenvalues. */
+/* compute a unitary matrix consisting of eigenvectors for real-number eigenvalues by the inverse
+ * iteration with shifts slightly different from the eigenvalues. */
 static bool _zMatSymEigBisecR(const zMat m, zVec eigval, zMat eigbase, int iter)
 {
-  int i;
-  zMat ms, b;
+  _zMatEigPowerInvLU lu;
+  zMat ms;
   zVec eigvec;
-  double shift = zTOL * 1.0e1;
-  bool ret = true;
+  double norm, shift, mu;
+  int i, ret;
+  bool result = false;
 
   ms = zMatAllocSqr( zMatRowSizeNC(m) );
-  b = zMatAllocSqr( zMatRowSizeNC(m) );
   eigvec = zVecAlloc( zMatRowSizeNC(m) );
-  if( !ms || !b || !eigvec ){
-    ret = false;
-    goto TERMINATE;
-  }
-
+  if( !ms || !eigvec ) goto TERMINATE;
+  if( !( ( norm = zMatNorm( m ) ) > 0 ) ) norm = 1; /* zero matrix */
   for( i=0; i<zVecSizeNC(eigval); i++ ){
-    zMatCopyNC( m, ms );
-    zVecRandUniform( eigvec, -1, 1 );
-    zMatShift( ms, -zVecElemNC(eigval,i)-shift );
-    while( !zMatInv( ms, b ) )
-      zMatShift( ms, -( shift*=10 ) );
-    zMatEigPower( b, eigvec, iter );
+    for( shift=1.0e1*zTOL*norm; ; shift*=10 ){ /* the shift relative to the norm of the matrix */
+      zMatCopyNC( m, ms );
+      zMatShift( ms, -zVecElemNC(eigval,i)-shift );
+      if( ( ret = _zMatEigPowerInvLUAlloc( &lu, ms ) ) > 0 ) break;
+      _zMatEigPowerInvLUFree( &lu );
+      if( ret < 0 ) goto TERMINATE;
+    }
+    ret = _zMatEigPowerIter( _zMatEigPowerMulInv, &lu, eigvec, iter, &mu );
+    _zMatEigPowerInvLUFree( &lu );
+    if( ret < 0 ) goto TERMINATE;
     zMatPutCol( eigbase, i, eigvec );
   }
+  result = true;
 
  TERMINATE:
   zMatFree( ms );
-  zMatFree( b );
   zVecFree( eigvec );
-  return ret;
+  return result;
 }
 
 /* diagonalize a symmetric matrix by bisection method (J. W. Givens, 1954). */
@@ -827,66 +914,60 @@ int zMatSVD(const zMat m, zMat u, zVec sv, zMat v)
   return rank;
 }
 
-/* allocate internal matrix and vector for workspace. */
-static bool _zMatSingularValueMat(const zMat m, zMat *r, zVec *e)
+/* singular values of a matrix by SVD. It returns the rank of the matrix, or -1 if it fails. The singular
+ * values are stored in *sv in descending order, which has to be freed by the caller if it succeeds. */
+static int _zMatSingularValue(const zMat m, zVec *sv)
 {
-  if( zMatRowSizeNC(m) > zMatColSizeNC(m) ){
-    *r = zMatAllocSqr( zMatColSizeNC(m) );
-    *e = zVecAlloc( zMatColSizeNC(m) );
-    if( !*r || !*e ) return false;
-    zMulMatTMat( m, m, *r );
-  } else{
-    *r = zMatAllocSqr( zMatRowSizeNC(m) );
-    *e = zVecAlloc( zMatRowSizeNC(m) );
-    if( !*r || !*e ){
-      ZALLOCERROR();
-      return false;
-    }
-    zMulMatMatT( m, m, *r );
+  zMat u, v;
+  int rank = -1;
+
+  u = zMatAllocSqr( zMatRowSizeNC(m) );
+  v = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
+  *sv = zVecAlloc( zMatRowSizeNC(m) );
+  if( u && v && *sv ) rank = zMatSVD( m, u, *sv, v );
+  zMatFree( u );
+  zMatFree( v );
+  if( rank < 0 ){
+    zVecFree( *sv );
+    *sv = NULL;
   }
-  zVecRandUniform( *e, -1, 1 );
-  return true;
+  return rank;
 }
 
 /* maximum singular value of a matrix. */
 double zMatSingularValueMax(const zMat m)
 {
-  zMat r;
-  zVec e;
-  double s = 0;
+  zVec sv;
+  double s;
 
-  if( _zMatSingularValueMat( m, &r, &e ) )
-    s = sqrt( zMatEigPower( r, e, 0 ) );
-  zMatFree( r );
-  zVecFree( e );
+  if( _zMatSingularValue( m, &sv ) < 0 ) return NAN;
+  s = zMatMinSizeNC(m) > 0 ? zVecElemNC(sv,0) : 0;
+  zVecFree( sv );
   return s;
 }
 
 /* minimum singular value of a matrix. */
 double zMatSingularValueMin(const zMat m)
 {
-  zMat r;
-  zVec e;
-  double s = 0;
+  zVec sv;
+  int k;
+  double s;
 
-  if( _zMatSingularValueMat( m, &r, &e ) )
-    s = sqrt( zMatEigPowerInv( r, e, 0 ) );
-  zMatFree( r );
-  zVecFree( e );
+  if( _zMatSingularValue( m, &sv ) < 0 ) return NAN;
+  s = ( k = zMatMinSizeNC(m) ) > 0 ? zVecElemNC(sv,k-1) : 0;
+  zVecFree( sv );
   return s;
 }
 
 /* condition number of a matrix. */
 double zMatCondNum(const zMat m)
 {
-  zMat r;
-  zVec e;
-  double smax, smin;
+  zVec sv;
+  int rank;
+  double c;
 
-  if( !_zMatSingularValueMat( m, &r, &e ) ) return NAN;
-  smax = sqrt( zMatEigPower( r, e, 0 ) );
-  smin = sqrt( zMatEigPowerInv( r, e, 0 ) );
-  zMatFree( r );
-  zVecFree( e );
-  return smin > zTOL ? smax / smin : HUGE_VAL;
+  if( ( rank = _zMatSingularValue( m, &sv ) ) < 0 ) return NAN;
+  c = rank > 0 && rank == zMatMinSizeNC(m) ? zVecElemNC(sv,0) / zVecElemNC(sv,rank-1) : HUGE_VAL;
+  zVecFree( sv );
+  return c;
 }

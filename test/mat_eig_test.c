@@ -467,47 +467,6 @@ void assert_mat_eig_random(void)
   zAssert( zMatEigDQR (multiple eigenvalues), result_cluster );
 }
 
-void assert_mat_sym_eig_power(void)
-{
-  zMat l, m, eigbase;
-  zVec v, eigval, error;
-  double s, s_ref;
-  const int size = 10;
-  const double tol = 1.0e-8;
-  bool result_max = true, result_min = true;
-  int i;
-
-  l = zMatAllocSqr( size );
-  m = zMatAllocSqr( size );
-  eigbase = zMatAllocSqr( size );
-  v = zVecAlloc( size );
-  eigval = zVecAlloc( size );
-  error = zVecAlloc( size );
-  for( i=0; i<N; i++ ){
-    zMatRandUniform( l, -10, 10 );
-    zMulMatTMat( l, l, m );
-    zMatSymEigJacobi( m, eigval, eigbase );
-    s = zMatEigPower( m, v, 0 );
-    zMulMatVec( m, v, error );
-    zVecCatDRC( error, -s, v );
-    if( !zEqual( s, ( s_ref = zVecElemMax(eigval,NULL) ), tol ) ){
-      eprintf( "mistamch the greatest eigenvalue: %g / %g\n", s, s_ref );
-      result_max = false;
-    }
-    s = zMatEigPowerInv( m, v, 0 );
-    zMulMatVec( m, v, error );
-    zVecCatDRC( error, -s, v );
-    if( !zEqual( s, ( s_ref = zVecElemMin(eigval,NULL) ), tol ) ){
-      eprintf( "mistamch the least eigenvalue: %g / %g\n", s, s_ref );
-      result_min = false;
-    }
-  }
-  zMatFreeAtOnce( 3, l, m, eigbase );
-  zVecFreeAtOnce( 3, v, eigval, error );
-  zAssert( zMatEigPower, result_max );
-  zAssert( zMatEigPowerInv, result_min );
-}
-
 bool check_mat_sym_eig(zMat m, zVec eigval, zMat eigbase, int c)
 {
   zVec v, e;
@@ -1069,6 +1028,193 @@ void assert_mat_svd_invalid(void)
   zAssert( zMatSVD (invalid size), result );
 }
 
+/* a matrix q diag(d) q^-1 with a random orthogonal (sym) or non-orthogonal (!sym) matrix q. */
+void mat_known_eig(zMat m, zVec d, bool sym)
+{
+  zMat q, qinv, t;
+  int i, j;
+
+  q = zMatAllocSqr( zVecSizeNC(d) );
+  qinv = zMatAllocSqr( zVecSizeNC(d) );
+  t = zMatAllocSqr( zVecSizeNC(d) );
+  if( sym ){
+    rand_orthogonal( q );
+    zMatTNC( q, qinv );
+  } else{
+    do{
+      zMatRandUniform( q, -1, 1 );
+      for( i=0; i<zVecSizeNC(d); i++ ) zMatElemNC(q,i,i) += 3; /* to be well-conditioned */
+    } while( !zMatInv( q, qinv ) );
+  }
+  for( i=0; i<zVecSizeNC(d); i++ )
+    for( j=0; j<zVecSizeNC(d); j++ ) zMatSetElemNC( t, i, j, zMatElemNC(q,i,j) * zVecElemNC(d,j) );
+  zMulMatMat( t, qinv, m );
+  zMatFreeAtOnce( 3, q, qinv, t );
+}
+
+/* check an eigenvalue and a unit eigenvector computed by the (inverse) power method, where the residual
+ * of the eigenvector is evaluated relative to res_scale (the eigenvalue for the power method, and the norm
+ * of m for the inverse power method, since the convergence is judged for the inverse of m). */
+bool check_mat_eig_power(zMat m, double eigval, zVec eigvec, double eigval_ref, double tol, double res_scale)
+{
+  zVec r;
+  bool result = true;
+
+  r = zVecAlloc( zVecSizeNC(eigvec) );
+  zMulMatVec( m, eigvec, r );
+  zVecCatDRC( r, -eigval, eigvec );
+  if( !( fabs( eigval - eigval_ref ) <= tol * fabs( eigval_ref ) ) ){
+    eprintf( "eigenvalue = %.17g (expected %.17g)\n", eigval, eigval_ref );
+    result = false;
+  }
+  if( !( fabs( zVecNorm( eigvec ) - 1 ) <= 10 * DBL_EPSILON ) ){
+    eprintf( "eigenvector not normalized (norm = %.17g)\n", zVecNorm( eigvec ) );
+    result = false;
+  }
+  if( !( zVecNorm( r ) <= 10 * zTOL * res_scale ) ){
+    eprintf( "residual of the eigenvector = %g (eigenvalue = %g)\n", zVecNorm( r ), eigval );
+    result = false;
+  }
+  zVecFree( r );
+  return result;
+}
+
+/* the dominant and least-dominant eigenvalues of matrices with known eigenvalues of various scales. */
+void assert_mat_eig_power(void)
+{
+  const int size = 10;
+  const double scale[] = { -1.0e-8, 1.0e-8, -1.0, 1.0, -1.0e8, 1.0e8 };
+  const double ratio = 0.5; /* ratio of the second dominant eigenvalue to the dominant one */
+  const double kappa[] = { 1.0e1, 1.0e4 }; /* ratio of the dominant eigenvalue to the least-dominant one */
+  zMat m;
+  zVec d, v;
+  double s;
+  int i, k, kk, t;
+  bool result_max = true, result_min = true, result_special = true;
+
+  m = zMatAllocSqr( size );
+  d = zVecAlloc( size );
+  v = zVecAlloc( size );
+  for( t=0; t<N; t++ ){
+    for( k=0; k<(int)(sizeof(scale)/sizeof(double)); k++ ){
+      /* dominant eigenvalue */
+      zVecSetElemNC( d, 0, scale[k] );
+      for( i=1; i<size; i++ ) zVecSetElemNC( d, i, zRandF(-ratio,ratio) * scale[k] );
+      mat_known_eig( m, d, t % 2 == 0 ); /* the error of a non-symmetric case is amplified by the condition number of the eigenvalue */
+      s = zMatEigPower( m, v, 0 );
+      if( !check_mat_eig_power( m, s, v, scale[k], t % 2 == 0 ? 1.0e-14 : 1.0e-10, fabs( s ) ) ) result_max = false;
+      /* least-dominant eigenvalue of symmetric matrices */
+      kk = t % 2;
+      zVecSetElemNC( d, 0, scale[k] / kappa[kk] );
+      for( i=1; i<size; i++ ) zVecSetElemNC( d, i, zRandF(2,kappa[kk]) * ( zRandI(0,1) ? 1 : -1 ) * fabs( scale[k] ) / kappa[kk] );
+      mat_known_eig( m, d, true );
+      s = zMatEigPowerInv( m, v, 0 );
+      if( !check_mat_eig_power( m, s, v, scale[k] / kappa[kk], 100 * kappa[kk] * DBL_EPSILON, zMatNorm( m ) ) ) result_min = false;
+    }
+  }
+  /* zero matrix: the eigenvalue is zero and any unit vector is an eigenvector. */
+  zMatZero( m );
+  if( zMatEigPower( m, v, 0 ) != 0 || !( fabs( zVecNorm( v ) - 1 ) <= 10 * DBL_EPSILON ) ) result_special = false;
+  /* singular matrix for the inverse power method */
+  if( zMatEigPowerInv( m, v, 0 ) != 0 || !zVecIsTol( v, 0 ) ) result_special = false;
+  /* size mismatch */
+  zVecSetSize( v, size-1 );
+  if( zMatEigPower( m, v, 0 ) != 0 || zMatEigPowerInv( m, v, 0 ) != 0 ) result_special = false;
+  zMatFree( m );
+  zVecFreeAtOnce( 2, d, v );
+  zAssert( zMatEigPower, result_max );
+  zAssert( zMatEigPowerInv, result_min );
+  zAssert( zMatEigPower + zMatEigPowerInv (zero matrix and size mismatch), result_special );
+}
+
+/* reproducibility of the (inverse) power method and independence of the random number sequence of the caller. */
+void assert_mat_eig_power_reproducible(void)
+{
+  const int size = 10;
+  zMat m, eigbase;
+  zVec d, v1, v2, eigval;
+  zRandMT mt;
+  double s1, s2, r1, r2;
+  int i;
+  bool result_rep = true, result_seq;
+
+  m = zMatAllocSqr( size );
+  eigbase = zMatAllocSqr( size );
+  d = zVecAlloc( size );
+  v1 = zVecAlloc( size );
+  v2 = zVecAlloc( size );
+  eigval = zVecAlloc( size );
+  for( i=0; i<size; i++ ) zVecSetElemNC( d, i, zRandF(-1,1) );
+  mat_known_eig( m, d, true );
+  /* the same results for the same matrix */
+  s1 = zMatEigPower( m, v1, 0 );
+  s2 = zMatEigPower( m, v2, 0 );
+  if( s1 != s2 || !zVecMatch( v1, v2 ) ) result_rep = false;
+  s1 = zMatEigPowerInv( m, v1, 0 );
+  s2 = zMatEigPowerInv( m, v2, 0 );
+  if( s1 != s2 || !zVecMatch( v1, v2 ) ) result_rep = false;
+  /* the random number sequence of the caller is not affected */
+  mt = *zRandMTDefault();
+  r1 = zRandF( 0, 1 );
+  *zRandMTDefault() = mt;
+  zMatEigPower( m, v1, 0 );
+  zMatEigPowerInv( m, v1, 0 );
+  zMatSymEigBisec( m, eigval, eigbase );
+  r2 = zRandF( 0, 1 );
+  result_seq = r1 == r2;
+  zMatFreeAtOnce( 2, m, eigbase );
+  zVecFreeAtOnce( 4, d, v1, v2, eigval );
+  zAssert( zMatEigPower + zMatEigPowerInv (reproducibility), result_rep );
+  zAssert( zMatEigPower + zMatEigPowerInv + zMatSymEigBisec (random number sequence of the caller), result_seq );
+}
+
+/* singular values and condition numbers of matrices with known singular values of various scales. */
+void assert_mat_singular_value(void)
+{
+  const int rowsize = 20, colsize = 10;
+  const double scale[] = { 1.0e-8, 1.0, 1.0e8 };
+  const double kappa[] = { 1.0e2, 1.0e6 };
+  zMat m, u, v;
+  double sv[10], smax, smin, c;
+  int i, j, k, ks, kk, t;
+  bool result = true, result_deg = true;
+
+  m = zMatAlloc( rowsize, colsize );
+  u = zMatAllocSqr( rowsize );
+  v = zMatAllocSqr( colsize );
+  for( t=0; t<N; t++ )
+    for( ks=0; ks<(int)(sizeof(scale)/sizeof(double)); ks++ )
+      for( kk=0; kk<(int)(sizeof(kappa)/sizeof(double)); kk++ ){
+        rand_orthogonal( u );
+        rand_orthogonal( v );
+        for( k=0; k<colsize; k++ ) sv[k] = scale[ks] * pow( kappa[kk], -(double)k/(colsize-1) );
+        for( i=0; i<rowsize; i++ )
+          for( j=0; j<colsize; j++ ){
+            for( c=0, k=0; k<colsize; k++ ) c += zMatElemNC(u,i,k) * sv[k] * zMatElemNC(v,j,k);
+            zMatSetElemNC( m, i, j, c );
+          }
+        smax = zMatSingularValueMax( m );
+        smin = zMatSingularValueMin( m );
+        c = zMatCondNum( m );
+        if( !( fabs( smax - sv[0] ) <= 1.0e-13 * sv[0] ) ||
+            !( fabs( smin - sv[colsize-1] ) <= 100 * kappa[kk] * DBL_EPSILON * sv[colsize-1] ) ||
+            !( fabs( c - kappa[kk] ) <= 100 * kappa[kk] * DBL_EPSILON * kappa[kk] ) ){
+          eprintf( "scale = %g, kappa = %g: max = %.17g, min = %.17g, condition number = %.17g\n", scale[ks], kappa[kk], smax, smin, c );
+          result = false;
+        }
+      }
+  /* rank-deficient and zero matrices */
+  zMatRandUniform( m, -1, 1 );
+  zMatSetElemNC( m, 0, 0, 0 );
+  for( i=0; i<rowsize; i++ ) zMatSetElemNC( m, i, colsize-1, 2 * zMatElemNC(m,i,0) );
+  if( zMatSingularValueMin( m ) != 0 || zMatCondNum( m ) != HUGE_VAL ) result_deg = false;
+  zMatZero( m );
+  if( zMatSingularValueMax( m ) != 0 || zMatSingularValueMin( m ) != 0 || zMatCondNum( m ) != HUGE_VAL ) result_deg = false;
+  zMatFreeAtOnce( 3, m, u, v );
+  zAssert( zMatSingularValueMax + zMatSingularValueMin + zMatCondNum, result );
+  zAssert( zMatSingularValueMin + zMatCondNum (rank-deficient matrices), result_deg );
+}
+
 void assert_mat_svd_minmax(void)
 {
   zMat m, u, v;
@@ -1111,7 +1257,6 @@ int main(int argc, char *argv[])
   assert_mat_eig_scale();
   assert_mat_eig_special();
   assert_mat_eig_random();
-  assert_mat_sym_eig_power();
   assert_mat_sym_eig();
   assert_mat_sym_eig_random();
   assert_mat_sym_eig_jacobi_scale();
@@ -1122,5 +1267,8 @@ int main(int argc, char *argv[])
   assert_mat_svd_rank();
   assert_mat_svd_invalid();
   assert_mat_svd_minmax();
+  assert_mat_eig_power();
+  assert_mat_eig_power_reproducible();
+  assert_mat_singular_value();
   return 0;
 }
