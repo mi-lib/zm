@@ -112,6 +112,10 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
  * zODEDestroy() returns no value.
  *
  * zODEUpdate() returns a pointer \a x, or the null pointer without updating \a x if \a dt is zero.
+ * It also returns the null pointer if the implicit methods "BEuler", "TR", "Gauss", "Radau" and "Gear"
+ * fail to solve the nonlinear equation, where \a x is not updated and the history of "Gear" is not
+ * advanced, or if the adaptive step size control (zODEUpdateDC() and the embedded Runge-Kutta methods)
+ * fails even with the minimum time step, where \a x is updated up to the last accepted time step.
  * \sa
  * zODEAssign
  */
@@ -169,7 +173,7 @@ __ZM_EXPORT void zODEAssignFunc(zODE *ode, zVec (* catf)(zVec,double,zVec,zVec,v
  * No need to call these functions in user's codes.
  * \return
  * _zODECreateHistory() and _zODECreateHistoryDC() return a pointer \a x, or the null pointer if they fail
- * to create \a starter.
+ * to create \a starter or to update \a x by \a starter.
  */
 __ZM_EXPORT zVec _zODECreateHistory(zODE *ode, zODE *starter, void (* push)(zODE*,double,zVec,void*), double *t, zVec x, double dt, void *util);
 __ZM_EXPORT zVec _zODECreateHistoryDC(zODE *ode, zODE *starter, void (* push)(zODE*,double,zVec,void*), double *t, zVec x, double dt, void *util);
@@ -242,10 +246,27 @@ __ZM_EXPORT double zODEStepErr(const zVec x0, const zVec x1, const zVec x2, doub
  * \notes
  * This is for internal implementations of the library. No need to call this function in user's codes.
  * \return
- * _zODEUpdateAdaptive() returns a pointer \a x. If \a x becomes not a number, the rest of the interval is
- * abandoned.
+ * _zODEUpdateAdaptive() returns a pointer \a x. If \a trial returns a value that is not finite even for
+ * the minimum time step ZM_ODE_DT_TOL, e.g., the state becomes not a number or the nonlinear equation of
+ * an implicit method cannot be solved, the rest of the interval is abandoned, and the null pointer is
+ * returned, where \a x is the state at the last accepted time step.
  */
 __ZM_EXPORT zVec _zODEUpdateAdaptive(zODE *ode, double t, zVec x, double dt, int order, double (* trial)(zODE*,double,zVec,double,void*,void*), void (* accept)(zODE*,zVec,void*,void*), void *util, void *data);
+
+/*! \brief scale of the state for the nonlinear equation of an implicit method.
+ *
+ * _zODEImplicitScale() computes the differential vectors at the state \a x at the beginning \a t and the
+ * end \a t + \a dt of a time step into \a v and \a w, respectively, and returns the scale of the state
+ * and its change in the time step, namely, |x|inf + |dt| max{ |v|inf, |w|inf }, to which the residual
+ * of the nonlinear equation solved in the time step is to be relatively small. The differential vector
+ * at the end catches the change of the state driven by an external input after \a t.
+ * \a util is for programmer s utility.
+ * \notes
+ * This is for internal implementations of the library. No need to call this function in user's codes.
+ * \return
+ * _zODEImplicitScale() returns the scale, which is not finite if \a v is not.
+ */
+__ZM_EXPORT double _zODEImplicitScale(zODE *ode, double t, zVec x, double dt, zVec v, zVec w, void *util);
 
 __END_DECLS
 

@@ -167,14 +167,25 @@ zVec zODECreateHistoryGear(zODE *ode, double *t, zVec x, double dt, void *util)
 zVec zODEUpdateGear(zODE *ode, double t, zVec x, double dt, void *util)
 {
   _zODE_Gear *ws;
+  double s;
+  int i;
 
   ws = (_zODE_Gear *)ode->_ws;
   ws->t = t;
   ws->dt = dt;
   ws->util = util;
   zVecCopyNC( x, *zRingHead(&ws->hist) );
-  /* the residual is to be relatively small to the state. the default maximum iteration number is used. */
-  zNLESolve( &ws->nle, x, ode, zTOL, zTOL*zVecElemAbsMax(x,NULL), 0, NULL );
+  /* the residual is to be relatively small to the scale of the state and its change in a time step,
+   * and also to that of the history, which can be much larger than the state, e.g., for a stiff equation.
+   * the default maximum iteration number is used. */
+  s = _zODEImplicitScale( ode, t, x, dt, ws->v, ws->vp, util );
+  for( i=0; i<zVecSizeNC(ws->a); i++ )
+    s += fabs( zVecElemNC(ws->a,i) ) * zVecElemAbsMax( *zRingElem(&ws->hist,i), NULL );
+  if( !zIsFinite( s ) || zNLESolve( &ws->nle, x, ode, zTOL, zTOL*s, 0, NULL ) < 0 ){
+    /* the state is restored, and the history is not advanced. */
+    zVecCopyNC( *zRingHead(&ws->hist), x );
+    return NULL;
+  }
   zRingDecHead( &ws->hist );
   return x;
 }

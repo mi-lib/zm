@@ -134,7 +134,10 @@ __ZM_EXPORT zNLE *zNLEAssignBroyden(zNLE *nle);
  * It fails if the maximum absolute component of the step
  * becomes smaller than \a tol_step ( |\a var|inf + s0 ),
  * where s0 is the maximum absolute component of the initial
- * guess (1 if it is zero),
+ * guess. If the initial guess is zero, s0 is that of the
+ * first step for Newton-Raphson's method and Broyden's
+ * method (1 if it is zero as well), or 1 for
+ * Levenberg-Marquardt's method,
  * namely, the iteration stagnates at a point where the
  * residual is not small enough, e.g., a local minimum of
  * the norm of the residual.

@@ -40,12 +40,12 @@ static double _zODETrialDC(zODE *ode, double t, zVec x, double dt, void *util, v
 
   /* full-step update */
   zVecCopyNC( x, ode->_x1 );
-  zODEUpdate( ode, t, ode->_x1, dt, util );
+  if( !zODEUpdate( ode, t, ode->_x1, dt, util ) ) return HUGE_VAL; /* an implicit method fails */
   /* half-step-twice update */
   zVecCopyNC( x, ode->_x2 );
   hdt = 0.5 * dt;
-  zODEUpdate( ode, t,     ode->_x2, hdt, util );
-  zODEUpdate( ode, t+hdt, ode->_x2, hdt, util );
+  if( !zODEUpdate( ode, t,     ode->_x2, hdt, util ) ||
+      !zODEUpdate( ode, t+hdt, ode->_x2, hdt, util ) ) return HUGE_VAL;
   /* for a method of order p, the error of x2 is estimated as ( x2 - x1 ) / ( 2^p - 1 ). */
   return zODEStepErr( x, ode->_x1, ode->_x2, 1.0 / ( ( 1 << _zODEOrderDC(ode) ) - 1 ) );
 }

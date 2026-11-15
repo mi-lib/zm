@@ -93,7 +93,8 @@ __ZM_EXPORT void zODE2AssignFunc(zODE2 *ode, zVec (* catf1)(zVec,double,zVec,zVe
  * zODE2Destroy() returns no value.
  *
  * zODE2Update() returns a pointer \a x, or the null pointer without updating \a x and \a dx if \a dt is
- * zero.
+ * zero. For "Regular", it also returns the null pointer if zODEUpdate() of the first-order ODE solver
+ * fails (see zODEUpdate()), where \a x and \a dx are not updated.
  * \sa
  * zODE2Assign, zODECreate, zODEDestroy, zODEUpdate
  */

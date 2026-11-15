@@ -792,15 +792,15 @@ void assert_ode_adaptive_nan(void)
   bool result = true;
 
   /* the time step is shortened down to ZM_ODE_DT_TOL around t=0.5, and the rest of the interval is
-   * abandoned after the state becomes not a number. Euler method never evaluates the function for t>0.5. */
+   * abandoned with the null pointer returned when the trial fails even with ZM_ODE_DT_TOL. Euler method
+   * never evaluates the function for t>0.5, and succeeds. */
   for( k=0; k<METHOD_ADAPTIVE_NUM; k++ ){
     method = method_adaptive( k, &driver );
     method_assign( &ode, method );
     driver->create( &ode, 1, 0, nan_after_half );
     x = zVecCreateList( 1, 0.0 );
     count = 0;
-    driver->update( &ode, 0, x, 1.0, &count );
-    if( count > count_max ){
+    if( ( driver->update( &ode, 0, x, 1.0, &count ) != NULL ) != ( method->update == zODEUpdateEuler ) || count > count_max ){
       eprintf( "%s%s: x = %g, %d calls\n", method->name, driver->suffix, zVecElemNC(x,0), count );
       result = false;
     }
@@ -1155,6 +1155,118 @@ void assert_ode_gear_boundary(void)
   zAssert( zODEUpdate (Gear method close to the boundary of the domain), result );
 }
 
+/* implicit methods to be tested for the nonlinear equation, where Gear method is tested separately */
+static const method_t method_implicit[] = {
+  METHOD( BEuler, 0, 1 ),
+  METHOD( TR,     0, 2 ),
+  METHOD( Gauss,  0, 4 ),
+  METHOD( Radau,  0, 3 ),
+};
+#define METHOD_IMPLICIT_NUM ( sizeof(method_implicit)/sizeof(method_t) )
+
+/* check if every update of an implicit method succeeds from the state x0 with the history filled with
+ * h0 (only for Gear method). */
+bool ode_implicit_success_check(const method_t *method, int step, zVec (* f)(double,zVec,void*,zVec), double h0, double x0, double dt, int n)
+{
+  zODE ode;
+  zVec x;
+  int i;
+  bool result = true;
+
+  method_create( &ode, method, 1, step, f );
+  x = zVecCreateList( 1, h0 );
+  zODEInitHistory( &ode, 0, x, NULL );
+  zVecSetElemNC( x, 0, x0 );
+  for( i=0; i<n; i++ )
+    if( zODEUpdate( &ode, i*dt, x, dt, NULL ) != x ){
+      eprintf( "%s (%d steps): failed at step %d from x = %g\n", method->name, step, i, x0 );
+      result = false;
+      break;
+    }
+  zVecFree( x );
+  zODEDestroy( &ode );
+  return result;
+}
+
+/* 22. success of implicit methods to solve the nonlinear equation for a state which is much smaller than
+ * one, starts from zero, or is much smaller than the history. the tolerance of the residual has to be
+ * relative to the scales of the state, its change in a time step and the history. */
+void assert_ode_implicit_success(void)
+{
+  const method_t gear = METHOD( Gear, 0, 0 );
+  int k;
+  bool result = true;
+
+  for( k=0; k<METHOD_IMPLICIT_NUM; k++ ){
+    /* decays down to 1e-50 */
+    if( !ode_implicit_success_check( &method_implicit[k], 0, stiff, 1.0, 1.0, 0.1, 50 ) ) result = false;
+    /* starts from zero, driven by an input which is zero at the beginning */
+    if( !ode_implicit_success_check( &method_implicit[k], 0, poly6, 0.0, 0.0, 0.00625, 20 ) ) result = false;
+  }
+  for( k=1; k<=6; k++ ){
+    if( !ode_implicit_success_check( &gear, k, stiff, 1.0, 1.0, 0.1, 50 ) ) result = false;
+    if( !ode_implicit_success_check( &gear, k, poly6, 0.0, 0.0, 0.00625, 20 ) ) result = false;
+    /* the history is much larger than the state */
+    if( !ode_implicit_success_check( &gear, k, stiff, 1.0, 1.0e-15, 0.1, 10 ) ) result = false;
+  }
+  zAssert( zODEUpdate (success of implicit methods to solve the nonlinear equation), result );
+}
+
+/* x' = 1 + x^2 (Riccati equation), with which the nonlinear equations of implicit methods have no
+ * solution for x = 1 and dt = 1, since the solution diverges at t = pi/4. */
+zVec riccati(double t, zVec x, void *dummy, zVec dx)
+{
+  zVecSetElemNC( dx, 0, 1 + zSqr( zVecElemNC(x,0) ) );
+  return dx;
+}
+
+/* 23. failure of implicit methods to solve the nonlinear equation, where the state is not updated and the
+ * history of Gear method is not advanced. */
+void assert_ode_implicit_failure(void)
+{
+  const method_t gear = METHOD( Gear, 0, 0 );
+  const double dt = 0.01;
+  zODE ode;
+  zVec x;
+  double x_fail;
+  int i, k;
+  bool result = true;
+
+  for( k=0; k<METHOD_IMPLICIT_NUM+6; k++ ){
+    if( k < METHOD_IMPLICIT_NUM )
+      method_create( &ode, &method_implicit[k], 1, 0, riccati );
+    else
+      method_create( &ode, &gear, 1, k-METHOD_IMPLICIT_NUM+1, riccati );
+    x = zVecCreateList( 1, 1.0 );
+    zODEInitHistory( &ode, 0, x, NULL );
+    if( zODEUpdate( &ode, 0, x, 1.0, NULL ) || zVecElemNC(x,0) != 1.0 ){
+      eprintf( "%s: x = %g after a failure (expected 1)\n", k < METHOD_IMPLICIT_NUM ? method_implicit[k].name : "Gear", zVecElemNC(x,0) );
+      result = false;
+    }
+    zVecFree( x );
+    zODEDestroy( &ode );
+  }
+  /* the updates after a failure coincide with those without the failure. */
+  for( k=2; k<=6; k++ ){
+    method_create( &ode, &gear, 1, k, riccati );
+    x = zVecCreateList( 1, 1.0 );
+    zODEInitHistory( &ode, 0, x, NULL );
+    zODEUpdate( &ode, 0, x, 1.0, NULL );
+    for( i=0; i<k; i++ ) zODEUpdate( &ode, i*dt, x, dt, NULL );
+    x_fail = zVecElemNC(x,0);
+    zVecSetElemNC( x, 0, 1.0 );
+    zODEInitHistory( &ode, 0, x, NULL );
+    for( i=0; i<k; i++ ) zODEUpdate( &ode, i*dt, x, dt, NULL );
+    if( zVecElemNC(x,0) != x_fail ){
+      eprintf( "Gear (%d steps): x = %.17g after a failure (expected %.17g)\n", k, x_fail, zVecElemNC(x,0) );
+      result = false;
+    }
+    zVecFree( x );
+    zODEDestroy( &ode );
+  }
+  zAssert( zODEUpdate (failure of implicit methods to solve the nonlinear equation), result );
+}
+
 int main(void)
 {
   assert_ode_order_onestep();
@@ -1178,5 +1290,7 @@ int main(void)
   assert_ode2_history();
   assert_ode2_leapfrog_time();
   assert_ode_gear_boundary();
+  assert_ode_implicit_success();
+  assert_ode_implicit_failure();
   return EXIT_SUCCESS;
 }

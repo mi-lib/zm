@@ -77,7 +77,8 @@ static void _zNLEEvalRes(zNLE *nle, const zVec var, void *util, double *err)
 
 /* the iteration succeeds if the residual becomes small, namely, |f|inf <= tol_err, and fails if
  * - the step becomes small relatively to the variable, namely, |p|inf <= tol_step ( |x|inf + s0 ), where
- *   s0 is |x0|inf for the initial guess x0, or 1 if x0 = 0,
+ *   s0 is |x0|inf for the initial guess x0. if x0 = 0, s0 is |d0|inf for the first Newton step d0 instead,
+ *   since the scale of the variable is unknown (1 if d0 = 0 as well),
  * - the number of iterations exceeds the given upper limit iter, or
  * - the function cannot be evaluated along the step, or
  * - the residual at the initial guess or the descent direction includes NaN or infinity.
@@ -164,7 +165,7 @@ static int _zNLESolveNewton(zNLE *nle, zVec var, void *util, double tol_step, do
   workspace.v_ispace = nle->_opt._p;
   workspace.index_le = nle->_opt._idx;
   workspace.v_scale = nle->_opt._q;
-  if( ( nle->_opt._xscale = zVecElemAbsMax( var, NULL ) ) == 0 ) nle->_opt._xscale = 1.0; /* see _zNLEStepIsSmall */
+  nle->_opt._xscale = zVecElemAbsMax( var, NULL ); /* see _zNLEStepIsSmall */
   nle->f( var, nle->_f, util );
   if( !zVecIsFinite( nle->_f ) ) goto TERMINATE; /* the residual cannot be evaluated at the initial guess */
   if( zVecIsTol( nle->_f, tol_err ) ){
@@ -183,6 +184,9 @@ static int _zNLESolveNewton(zNLE *nle, zVec var, void *util, double tol_step, do
     if( !zLESolveSRDST( nle->_j, nle->_fw, nle->_opt._r, nle->we, nle->_opt._d, &workspace ) ||
         !zVecIsFinite( nle->_opt._d ) )
       goto RESTART;
+    /* for the zero initial guess, the scale of the variable is estimated from the first step. */
+    if( nle->_opt._xscale == 0 &&
+        ( nle->_opt._xscale = zVecElemAbsMax( nle->_opt._d, NULL ) ) == 0 ) nle->_opt._xscale = 1.0;
     /* directional derivative of the squared norm of the residual along -d */
     zVecAmpNC( nle->_f, nle->we, nle->_fw );
     zMulMatTVecNC( nle->_j, nle->_fw, nle->_opt._g );

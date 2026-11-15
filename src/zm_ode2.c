@@ -111,7 +111,7 @@ static void _zODE2RegularUnpack(zODE2 *ode, zVec x, zVec v)
 zVec zODE2UpdateRegular(zODE2 *ode, double t, zVec x, zVec v, double dt, void *util)
 {
   _zODE2RegularPack( ode, x, v, util );
-  zODEUpdate( &ode->_ode, t, ode->_x, dt, ode );
+  if( !zODEUpdate( &ode->_ode, t, ode->_x, dt, ode ) ) return NULL; /* x and v are not updated */
   _zODE2RegularUnpack( ode, x, v );
   return x;
 }

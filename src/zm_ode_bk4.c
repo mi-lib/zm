@@ -80,6 +80,23 @@ void zODEDestroyBK4(zODE *ode)
   ode->f = NULL;
 }
 
+/* solve the nonlinear equation of Butcher-Kuntzmann method from the initial guess k1 = k2 = 0, where the
+ * error of the state, which is dt times that of k, is to be relatively small to the scale of the state
+ * and its change in a time step. the initial guess f(t,x) of k can lead the iteration to a wrong solution
+ * for a stiff equation. */
+static bool _zODESolveBK4(zODE *ode, double t, zVec x, double dt, void *util)
+{
+  _zODE_BK4 *ws;
+  double s;
+
+  ws = (_zODE_BK4 *)ode->_ws;
+  ws->util = util;
+  zVecCopyNC( x, ws->x );
+  s = _zODEImplicitScale( ode, t, x, dt, &ws->k1, ws->xt, util );
+  zVecZero( ws->k );
+  return zIsFinite( s ) && zNLESolve( &ws->nle, ws->k, ode, zTOL, zTOL*s/fabs(dt), ws->iter, NULL ) >= 0;
+}
+
 /* directly integrate variable by ODE based on Gauss method. */
 zVec zODEUpdateGauss(zODE *ode, double t, zVec x, double dt, void *util)
 {
@@ -93,12 +110,7 @@ zVec zODEUpdateGauss(zODE *ode, double t, zVec x, double dt, void *util)
   ws->a11 = ws->a22 = 0.25 *dt;
   ws->a12 = (0.25+bk4_c)*dt;
   ws->a21 = (0.25-bk4_c)*dt;
-
-  ws->util = util;
-  zVecCopyNC( x, ws->x );
-  zVecZero( ws->k );
-  /* the error of the state is dt times that of k, which is to be relatively small to the state. */
-  zNLESolve( &ws->nle, ws->k, ode, zTOL, zTOL*zVecElemAbsMax(x,NULL)/fabs(dt), ws->iter, NULL );
+  if( !_zODESolveBK4( ode, t, x, dt, util ) ) return NULL;
   dt *= 0.5;
   ode->cat( x, dt, &ws->k1, x, util );
   ode->cat( x, dt, &ws->k2, x, util );
@@ -116,12 +128,7 @@ zVec zODEUpdateRadau(zODE *ode, double t, zVec x, double dt, void *util)
   ws->t2 = t + dt;
   ws->a11 = -5.0 * ( ws->a12 = -1.0/12 *dt );
   ws->a21 =  3.0 * ( ws->a22 =  0.25   *dt );
-
-  ws->util = util;
-  zVecCopyNC( x, ws->x );
-  zVecZero( ws->k );
-  /* the error of the state is dt times that of k, which is to be relatively small to the state. */
-  zNLESolve( &ws->nle, ws->k, ode, zTOL, zTOL*zVecElemAbsMax(x,NULL)/fabs(dt), ws->iter, NULL );
+  if( !_zODESolveBK4( ode, t, x, dt, util ) ) return NULL;
   ode->cat( x, ws->a21, &ws->k1, x, util );
   ode->cat( x, ws->a22, &ws->k2, x, util );
   return x;

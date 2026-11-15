@@ -61,16 +61,17 @@ zVec _zODEUpdateAdaptive(zODE *ode, double t, zVec x, double dt, int order, doub
     /* the last step is shortened to reach the end of the interval exactly */
     hs = ( is_last = ( h >= rest * ( 1 - zTOL ) ) ) ? rest : h;
     err = trial( ode, t, x, sgn*hs, util, data );
+    if( !zIsFinite( err ) && hs <= ZM_ODE_DT_TOL ){
+      /* the trial fails even with the minimum time step, e.g., the state becomes not a number or the
+       * nonlinear equation of an implicit method cannot be solved, so that the rest of the interval is
+       * abandoned at the last accepted state, and the step is predicted from scratch in the next update. */
+      ode->_h = 0;
+      return NULL;
+    }
     if( err <= 1 || hs <= ZM_ODE_DT_TOL ){ /* accept (the step is not shortened any more if it is small enough) */
       accept( ode, x, util, data );
       t += sgn*hs;
       rest = is_last ? 0 : rest - hs;
-      if( !zIsFinite( err ) ){
-        /* the state is not a number any more, so that the rest of the interval is abandoned, and the
-         * step is predicted from scratch in the next update. */
-        ode->_h = 0;
-        return x;
-      }
       hs *= _zODEStepRatio( err, order, is_rejected ? 1 : ZM_ODE_STEP_RATIO_MAX );
       /* the shortened last step does not shorten the prediction */
       h = is_last ? zMax( h, hs ) : hs;
@@ -94,7 +95,10 @@ zVec _zODECreateHistory(zODE *ode, zODE *starter, void (* push)(zODE*,double,zVe
   if( !zODECreate( starter, zVecSizeNC(x), 0, ode->f ) ) return NULL;
   for( i=1; i<ode->order; i++, *t+=dt ){
     push( ode, *t, x, util );
-    zODEUpdate( starter, *t, x, dt, util );
+    if( !zODEUpdate( starter, *t, x, dt, util ) ){
+      x = NULL;
+      break;
+    }
   }
   zODEDestroy( starter );
   return x;
@@ -108,8 +112,19 @@ zVec _zODECreateHistoryDC(zODE *ode, zODE *starter, void (* push)(zODE*,double,z
   if( !zODECreateDC( starter, zVecSizeNC(x), 0, ode->f ) ) return NULL;
   for( i=1; i<ode->order; i++, *t+=dt ){
     push( ode, *t, x, util );
-    zODEUpdateDC( starter, *t, x, dt, util );
+    if( !zODEUpdateDC( starter, *t, x, dt, util ) ){
+      x = NULL;
+      break;
+    }
   }
   zODEDestroyDC( starter );
   return x;
+}
+
+/* scale of the state and its change in a time step for the nonlinear equation of an implicit method. */
+double _zODEImplicitScale(zODE *ode, double t, zVec x, double dt, zVec v, zVec w, void *util)
+{
+  ode->f( t, x, util, v );
+  ode->f( t+dt, x, util, w );
+  return zVecElemAbsMax( x, NULL ) + fabs( dt ) * zMax( zVecElemAbsMax( v, NULL ), zVecElemAbsMax( w, NULL ) );
 }
