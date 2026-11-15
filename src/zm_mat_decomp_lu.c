@@ -149,6 +149,155 @@ int zMatDecompLUAlloc(const zMat m, zMat *l, zMat *u, zIndex *index)
   return zMatDecompLU( m, *l, *u, *index );
 }
 
+/* find the pivot of the complete pivoting among the k-th and the following rows and columns of m,
+ * where the i-th row and the j-th column mean the index_row[i]-th row and the index_col[j]-th column
+ * of m if the index vectors are given, or the i-th row and the j-th column of m otherwise. */
+static double _zMatDecompLUCPPivot(const zMat m, const zIndex index_row, const zIndex index_col, int k, int *p, int *q)
+{
+  int i, j;
+  double max = 0, tmp;
+
+#define _zmat_decomp_row(i) ( index_row ? zIndexElemNC(index_row,i) : (i) )
+#define _zmat_decomp_col(j) ( index_col ? zIndexElemNC(index_col,j) : (j) )
+  *p = *q = k;
+  for( i=k; i<zMatRowSizeNC(m); i++ )
+    for( j=k; j<zMatColSizeNC(m); j++ )
+      if( ( tmp = fabs( zMatElemNC(m,_zmat_decomp_row(i),_zmat_decomp_col(j)) ) ) > max ){
+        max = tmp;
+        *p = i;
+        *q = j;
+      }
+#undef _zmat_decomp_row
+#undef _zmat_decomp_col
+  return max;
+}
+
+/* LU decomposition of column-long rectangular matrices with complete pivoting (destructive).
+ * u has to be initially set for the original matrix. Rows of u are physically swapped, while columns
+ * are not, so that u keeps the correspondence of columns to the original matrix. */
+static int _zMatDecompLUCPDST_U(zMat l, zMat u, zIndex index_row, zIndex index_col, double tol)
+{
+  int i, j, k, p, q, cr, cj;
+  double pivot, f, *ur, *ui;
+
+  zMatZero( l );
+  zIndexOrder( index_row, 0 );
+  zIndexOrder( index_col, 0 );
+  for( k=0; k<zMatRowSizeNC(u); k++ ){
+    if( !( _zMatDecompLUCPPivot( u, NULL, index_col, k, &p, &q ) > tol ) ) break; /* remaining rows are dependent */
+    if( p != k ){
+      zMatSwapRowNC( u, k, p );
+      zIndexSwapNC( index_row, k, p );
+    }
+    zIndexSwapNC( index_col, k, q );
+    cr = zIndexElemNC(index_col,k);
+    ur = zMatRowBufNC(u,k);
+    zMatSetElemNC( l, zIndexElemNC(index_row,k), k, ( pivot = ur[cr] ) );
+    ur[cr] = 1;
+    for( j=k+1; j<zMatColSizeNC(u); j++ ) ur[zIndexElemNC(index_col,j)] /= pivot; /* U row */
+    for( i=k+1; i<zMatRowSizeNC(u); i++ ){ /* L column and elimination of the other rows */
+      ui = zMatRowBufNC(u,i);
+      zMatSetElemNC( l, zIndexElemNC(index_row,i), k, ( f = ui[cr] ) );
+      ui[cr] = 0;
+      for( j=k+1; j<zMatColSizeNC(u); j++ ){
+        cj = zIndexElemNC(index_col,j);
+        ui[cj] -= f * ur[cj];
+      }
+    }
+  }
+  if( k < zMatRowSizeNC(u) ){ /* automatically adjust sizes of factorized matrices */
+    zMatColResize( l, k ); /* to be column-full-rank */
+    zMatRowResize( u, k ); /* to be row-full-rank */
+  }
+  return k; /* rank of the original matrix */
+}
+
+/* LU decomposition of row-long rectangular matrices with complete pivoting (destructive).
+ * l has to be initially set for the original matrix. Columns of l are physically swapped, while rows
+ * are not, so that l keeps the correspondence of rows to the original matrix. */
+static int _zMatDecompLUCPDST_L(zMat l, zMat u, zIndex index_row, zIndex index_col, double tol)
+{
+  int i, j, k, p, q;
+  double pivot, f, *lk, *li, *uk;
+
+  zMatZero( u );
+  zIndexOrder( index_row, 0 );
+  zIndexOrder( index_col, 0 );
+  for( k=0; k<zMatColSizeNC(l); k++ ){
+    if( !( _zMatDecompLUCPPivot( l, index_row, NULL, k, &p, &q ) > tol ) ) break; /* remaining columns are dependent */
+    zIndexSwapNC( index_row, k, p );
+    if( q != k ){
+      zMatSwapColNC( l, k, q );
+      zIndexSwapNC( index_col, k, q );
+    }
+    lk = zMatRowBufNC(l,zIndexElemNC(index_row,k));
+    uk = zMatRowBufNC(u,k);
+    pivot = lk[k];
+    uk[zIndexElemNC(index_col,k)] = 1;
+    for( j=k+1; j<zMatColSizeNC(l); j++ ) uk[zIndexElemNC(index_col,j)] = lk[j] / pivot; /* U row */
+    zRawVecZero( lk + k + 1, zMatColSizeNC(l) - k - 1 ); /* the pivot remains as a component of L */
+    for( i=k+1; i<zMatRowSizeNC(l); i++ ){ /* elimination of the other rows, the k-th components of which remain as L */
+      li = zMatRowBufNC(l,zIndexElemNC(index_row,i));
+      f = li[k];
+      for( j=k+1; j<zMatColSizeNC(l); j++ ) li[j] -= f * uk[zIndexElemNC(index_col,j)];
+    }
+  }
+  if( k < zMatColSizeNC(l) ){ /* automatically adjust sizes of factorized matrices */
+    zMatColResize( l, k ); /* to be column-full-rank */
+    zMatRowResize( u, k ); /* to be row-full-rank */
+  }
+  return k; /* rank of the original matrix */
+}
+
+/* LU decomposition of a matrix with complete pivoting. */
+int zMatDecompLUCP(const zMat m, zMat l, zMat u, zIndex index_row, zIndex index_col)
+{
+  double tol;
+
+  if( zMatRowSize(m) != zIndexSizeNC(index_row) || zMatColSize(m) != zIndexSizeNC(index_col) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+    return -1;
+  }
+  tol = ZM_LU_DECOMP_TOL * zMatElemAbsMax( m, NULL, NULL );
+  if( zMatRowSizeNC(m) > zMatColSizeNC(m) ){ /* row-long rectangular matrix */
+    if( !zMatSizeEqual( m, l ) || !zMatRowColSizeEqual( u, l ) || !zMatIsSqr( u ) ){
+      ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+      return -1;
+    }
+    zMatCopyNC( m, l );
+    return _zMatDecompLUCPDST_L( l, u, index_row, index_col, tol );
+  }
+  /* column-long rectangular matrix */
+  if( !zMatSizeEqual( m, u ) || !zMatRowSizeEqual( m, l ) || !zMatIsSqr( l ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+    return -1;
+  }
+  zMatCopyNC( m, u );
+  return _zMatDecompLUCPDST_U( l, u, index_row, index_col, tol );
+}
+
+/* LU decomposition with complete pivoting with an automatic matrix allocation. */
+int zMatDecompLUCPAlloc(const zMat m, zMat *l, zMat *u, zIndex *index_row, zIndex *index_col)
+{
+  int minsize;
+
+  minsize = zMin( zMatRowSizeNC(m), zMatColSizeNC(m) );
+  *l = zMatAlloc( zMatRowSizeNC(m), minsize );
+  *u = zMatAlloc( minsize, zMatColSizeNC(m) );
+  *index_row = zIndexCreate( zMatRowSizeNC(m) );
+  *index_col = zIndexCreate( zMatColSizeNC(m) );
+  if( !*l || !*u || !*index_row || !*index_col ){
+    zMatFree( *l );
+    zMatFree( *u );
+    zIndexFree( *index_row );
+    zIndexFree( *index_col );
+    *l = *u = NULL;
+    *index_row = *index_col = NULL;
+    return -1;
+  }
+  return zMatDecompLUCP( m, *l, *u, *index_row, *index_col );
+}
+
 /* rearrange columns of a matrix as l'[i][j] = l[i][index[j]], and zero the upper part of the pivoted rows. */
 static void _zMatDecompCholeskyArrange(zMat l, zIndex index)
 {

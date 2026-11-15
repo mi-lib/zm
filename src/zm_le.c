@@ -223,6 +223,23 @@ zVec zLESolveU(const zMat u, const zVec b, zVec ans)
   return ans;
 }
 
+/* a solver for Ux=y, where U is an upper triangular matrix with columns permuted by index. */
+zVec zLESolveUCP(const zMat u, const zVec b, zVec ans, const zIndex index)
+{
+  int i, j, c;
+  double x;
+
+  for( i=zVecSizeNC(b)-1; i>=0; i-- ){
+    x = zVecElemNC( b, i );
+    for( j=zVecSizeNC(b)-1; j>i; j-- ){
+      c = zIndexElemNC(index,j);
+      x -= zMatElemNC(u,i,c)*zVecElemNC(ans,c);
+    }
+    zVecSetElemNC( ans, zIndexElemNC(index,i), x );
+  }
+  return ans;
+}
+
 /* a solver for LUx=b. */
 zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, const zIndex index)
 {

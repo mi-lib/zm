@@ -449,6 +449,61 @@ zVec le_gen_rowlong_ref(const zMat f1, const zMat f2, const zVec b, zVec x)
   return x;
 }
 
+/* a rank-3 matrix, the third column of which is nearly dependent on the first and the second ones. */
+void le_gen_nearly_dependent_col(zMat m, double delta)
+{
+  zMat b;
+  double c0, c1, c2;
+  int i, j;
+
+  b = zMatAlloc( zMatRowSizeNC(m), 3 );
+  zMatRandUniform( b, -1, 1 );
+  for( j=0; j<zMatColSizeNC(m); j++ ){
+    if( j == 0 ){ c0 = 1; c1 = 0; c2 = 0; } else
+    if( j == 1 ){ c0 = 0; c1 = 1; c2 = 0; } else
+    if( j == 2 ){ c0 = 1; c1 = 1; c2 = delta; } else{
+      c0 = zRandF(-1,1); c1 = zRandF(-1,1); c2 = zRandF(-1,1);
+    }
+    for( i=0; i<zMatRowSizeNC(m); i++ )
+      zMatSetElemNC( m, i, j, c0*zMatElemNC(b,i,0) + c1*zMatElemNC(b,i,1) + c2*zMatElemNC(b,i,2) );
+  }
+  zMatFree( b );
+}
+
+/* generalized linear equation solver based on LU decomposition for matrices with nearly dependent
+ * columns, the solutions of which are compared with those based on LQ decomposition. */
+#define TOL_LU_RANK 1.0e-8
+void assert_le_gen_lu_rank(void)
+{
+  const int size[][2] = { { 8, 5 }, { 5, 8 }, { 8, 8 } };
+  const int testnum = 1000;
+  const double tol = TOL_LU_RANK;
+  zMat a;
+  zVec b, x_lu, x_lq;
+  int i, k;
+  double err, err_max = 0;
+  bool result = true;
+
+  for( k=0; k<3; k++ ){
+    a = zMatAlloc( size[k][0], size[k][1] );
+    b = zVecAlloc( size[k][0] );
+    x_lu = zVecAlloc( size[k][1] );
+    x_lq = zVecAlloc( size[k][1] );
+    for( i=0; i<testnum; i++ ){
+      le_gen_nearly_dependent_col( a, 1.0e-7 );
+      zVecRandUniform( b, -1, 1 );
+      zLESolveMP_LU( a, b, NULL, NULL, x_lu );
+      zLESolveMP_LQ( a, b, NULL, NULL, x_lq );
+      if( ( err = zVecDist( x_lu, x_lq ) / zVecNorm( x_lq ) ) > err_max ) err_max = err;
+      if( !( err <= tol ) ) result = false;
+    }
+    zMatFree( a );
+    zVecFreeAtOnce( 3, b, x_lu, x_lq );
+  }
+  eprintf( "maximum relative difference from the solution based on LQ decomposition = %g\n", err_max );
+  zAssert( zLESolveMP_LU (nearly dependent columns), result );
+}
+
 /* generalized linear equation solver for row-long (overdetermined) matrices. */
 void assert_le_gen_rowlong(void)
 {
@@ -1182,6 +1237,7 @@ int main(void)
   assert_le_gauss_seidel_scale();
   assert_le_gen();
   assert_le_gen_rowlong();
+  assert_le_gen_lu_rank();
   assert_le_gen_aux();
   assert_le_mpnull();
   assert_le_ref_norm_min();

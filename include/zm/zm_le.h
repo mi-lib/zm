@@ -107,14 +107,20 @@ __ZM_EXPORT zVec zLESolveGauss(const zMat a, const zVec b, zVec ans);
  * \a l y = \a b and \a u x = y are solved by zLESolveL() and zLESolveU(), respectively.
  *
  * zLESolveL() needs the pivot index since zLUDecomp() pivots the original coefficient matrix.
+ *
+ * zLESolveUCP() solves \a u x = \a b, where \a u is an upper triangular matrix with columns permuted by
+ * an index vector \a index, namely, the components of \a u at the pivots are one, which are found in
+ * the columns \a index[0], \a index[1], ... of \a u in this order. Such \a u is obtained by the LU
+ * decomposition with complete pivoting zMatDecompLUCP(), where \a index corresponds to its column index.
  * \return
- * zLESolveLU(), zLESolveL() and zLESolveU() return a pointer \a ans, if succeeding. Otherwise, they
+ * zLESolveLU(), zLESolveL(), zLESolveU() and zLESolveUCP() return a pointer \a ans, if succeeding. Otherwise, they
  * return the null pointer if the original matrix is singular.
  * \sa
  * zLUDecomp
  */
 __ZM_EXPORT zVec zLESolveL(const zMat l, const zVec b, zVec ans, const zIndex index);
 __ZM_EXPORT zVec zLESolveU(const zMat u, const zVec b, zVec ans);
+__ZM_EXPORT zVec zLESolveUCP(const zMat u, const zVec b, zVec ans, const zIndex index);
 __ZM_EXPORT zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, const zIndex index);
 
 /*! \brief linear equation solver by LU decomposition method and residual iteration.

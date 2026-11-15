@@ -849,6 +849,64 @@ bool assert_mat_decomp_qr(int rowsize, int colsize, int rank_max, int n)
   return result;
 }
 
+/* check LU decomposition with complete pivoting: the rank, l u = m, l is a lower triangular matrix
+ * with rows permuted by index_row, and u is an upper triangular matrix with columns permuted by
+ * index_col, the components of which at the pivots are one. */
+bool check_mat_decomp_lucp(zMat m, int rank_expected, double tol)
+{
+  zMat l, u;
+  zIndex index_row, index_col;
+  int i, k, rank;
+  bool result = true;
+
+  if( ( rank = zMatDecompLUCPAlloc( m, &l, &u, &index_row, &index_col ) ) != rank_expected ){
+    eprintf( "assigned rank = %d / detected rank = %d\n", rank_expected, rank );
+    result = false;
+    goto TERMINATE;
+  }
+  if( rank > 0 && !check_matrix_composition( m, l, u, tol * zMatElemAbsMax( m, NULL, NULL ) ) ) result = false;
+  if( !check_mat_decomp_lq_index( l, index_row, rank ) ) result = false;
+  for( k=0; k<rank; k++ ){
+    if( zMatElemNC(u,k,zIndexElemNC(index_col,k)) != 1 ) result = false;
+    for( i=k+1; i<rank; i++ )
+      if( zMatElemNC(u,i,zIndexElemNC(index_col,k)) != 0 ) result = false;
+  }
+  if( !result ) eprintf( "invalid LU decomposition with complete pivoting (%d x %d)\n", zMatRowSizeNC(m), zMatColSizeNC(m) );
+ TERMINATE:
+  zMatFreeAtOnce( 2, l, u );
+  zIndexFree( index_row );
+  zIndexFree( index_col );
+  return result;
+}
+
+/* LU decomposition with complete pivoting for random matrices of known ranks, matrices with nearly
+ * dependent rows and columns, and the zero matrix. */
+bool assert_mat_decomp_lucp(int rowsize, int colsize, int n)
+{
+  zMat m, mt;
+  int i, rank;
+  bool result = true;
+  const double tol = 1.0e-11;
+
+  m = zMatAlloc( rowsize, colsize );
+  mt = zMatAlloc( colsize, rowsize );
+  for( i=0; i<n; i++ ){
+    rank = zRandI( 1, zMin( rowsize, colsize ) );
+    generate_matrix_composition( m, rank );
+    if( !check_mat_decomp_lucp( m, rank, tol ) ) result = false;
+    if( zMin( rowsize, colsize ) < 3 ) continue;
+    generate_matrix_nearly_dependent_row( m, 1.0e-7 ); /* rank 3 with a nearly dependent row */
+    if( !check_mat_decomp_lucp( m, 3, tol ) ) result = false;
+    generate_matrix_nearly_dependent_row( mt, 1.0e-7 );
+    zMatTNC( mt, m ); /* rank 3 with a nearly dependent column */
+    if( !check_mat_decomp_lucp( m, 3, tol ) ) result = false;
+  }
+  zMatZero( m );
+  if( !check_mat_decomp_lucp( m, 0, tol ) ) result = false;
+  zMatFreeAtOnce( 2, m, mt );
+  return result;
+}
+
 int main(void)
 {
   const int size_large = 8;
@@ -866,6 +924,9 @@ int main(void)
   zAssert( zMatDecompLU (8x8), assert_mat_decomp_lu( size_large, size_large, rank, n ) );
   zAssert( zMatDecompLU (dependent columns), assert_mat_decomp_lu_dependent_cols() );
   zAssert( zMatDecompLU (scale-independent rank detection), assert_mat_decomp_lu_scale() );
+  zAssert( zMatDecompLUCP (5x8), assert_mat_decomp_lucp( size_small, size_large, n ) );
+  zAssert( zMatDecompLUCP (8x5), assert_mat_decomp_lucp( size_large, size_small, n ) );
+  zAssert( zMatDecompLUCP (8x8), assert_mat_decomp_lucp( size_large, size_large, n ) );
   zAssert( zMatDecompLQ (5x8), assert_mat_decomp_lq_one( size_small, size_large, size_small, n ) );
   zAssert( zMatDecompLQ (8x5), assert_mat_decomp_lq_one( size_large, size_small, size_small, n ) );
   zAssert( zMatDecompLQ (8x8), assert_mat_decomp_lq_one( size_large, size_large, size_small, n ) );

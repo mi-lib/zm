@@ -1,3 +1,8 @@
+2026.11.15. Added tests of zMatDecompLUCP for matrices of known ranks, matrices with nearly dependent rows and columns, and the zero matrix, and of zLESolveMP_LU for matrices with nearly dependent columns. [test]
+2026.11.15. Debugged zLESolveMP_LU that overestimated the rank of a matrix with nearly dependent columns, by using zMatDecompLUCP, and modified zLESolveMP_LU_DST to accept the decomposition by zMatDecompLUCP. [zm_le_gen]
+2026.11.15. Renamed index_lu of zLEWorkspace to index_row, and added index_col for the LU decomposition with complete pivoting. [zm_le_gen]
+2026.11.15. Added zLESolveUCP to solve an equation with an upper triangular matrix with columns permuted. [zm_le]
+2026.11.15. Added zMatDecompLUCP and zMatDecompLUCPAlloc for the LU decomposition with complete pivoting. [zm_mat_decomp_lu]
 2026.11.15. Modified the test of zMatSymEigBisec to evaluate relative residuals and orthonormality of eigenvectors, and added tests of it for matrices with multiple eigenvalues of various scales and the zero and identity matrices, and of zVecOrthogonalize for the case where the output is the same with the input. [test]
 2026.11.15. Modified zMatEigPower and zMatEigPowerInv to adopt the latest iterate as the eigenvector when they converge. [zm_mat_eig]
 2026.11.15. Debugged zMatSymEigBisec to find different orthogonalized eigenvectors for a cluster of eigenvalues in the inverse iteration. [zm_mat_eig]

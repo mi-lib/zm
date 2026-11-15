@@ -25,7 +25,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zLEWorkspace ){
   /* for LU/LQ factorization */
   zMat l_facto;     /* left hand matrix */
   zMat r_facto;     /* right hand matrix */
-  zIndex index_lu;  /* an index vector for LU decomposition */
+  zIndex index_row; /* an index vector of rows for LU/LQ decomposition */
+  zIndex index_col; /* an index vector of columns for LU decomposition with complete pivoting */
   /*! \endcond */
 };
 
@@ -101,8 +102,11 @@ __ZM_EXPORT zVec zLESolveRefNormMin(const zMat a, const zVec b, const zVec w, co
  * cloned in advance.
  *
  * zLESolveMP_LU_DST() solves a generalized linear equation a ans = b with internal workspace \a workspace,
- * where the coefficient matrix a has to be decomposed into L and U matrices, and the vector b has to be
- * cloned in advance.
+ * where the coefficient matrix a has to be decomposed into L and U matrices by the LU decomposition
+ * with complete pivoting zMatDecompLUCP() with the index vectors index_row and index_col of \a workspace,
+ * and the vector b has to be cloned in advance. Note that the decomposition by zMatDecompLU() based on
+ * partial pivoting is not accepted, since the U matrix is supposed to be an upper triangular matrix with
+ * columns permuted by index_col.
  *
  * zLESolveMPNullDST() solves a generalized linear equation a ans = b and simultaneously finds the null-space
  * projector with internal workspace \a workspace, where the coefficient matrix a has to be decomposed into
@@ -118,7 +122,7 @@ __ZM_EXPORT zVec zLESolveRefNormMin(const zMat a, const zVec b, const zVec w, co
  * \return
  * These functions return a pointer \a ans.
  * \sa
- * zMatDecompLQ, zMatDecompLU
+ * zMatDecompLQ, zMatDecompLUCP
  */
 __ZM_EXPORT zVec zLESolveMP_LQ_DST(zLEWorkspace *workspace, const zVec we, const zVec wn, int rank, zVec ans);
 __ZM_EXPORT zVec zLESolveMP_LU_DST(zLEWorkspace *workspace, const zVec we, const zVec wn, int rank, zVec ans);
@@ -138,7 +142,7 @@ __ZM_EXPORT zVec zLESolveMPNullDST(zLEWorkspace *workspace, const zVec we, const
  *
  * Three methods to find the MP-inverse solution are available.
  * zLESolveMP_LQ() uses LQ decomposition.
- * zLESolveMP_LU() uses LU decomposition.
+ * zLESolveMP_LU() uses LU decomposition with complete pivoting (see zMatDecompLUCP()).
  * zLESolveMP_SVD() uses the singular value decomposition, which does not accept weights.
  * zLESolveMP() is an alias to zLESolveMP_LQ().
  *

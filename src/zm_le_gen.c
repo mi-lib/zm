@@ -21,7 +21,7 @@ void zLEWorkspaceInit(zLEWorkspace *workspace)
   workspace->v_mp_ispace = NULL;
   /* for LU/LQ factorization */
   workspace->l_facto = workspace->r_facto = NULL;
-  workspace->index_lu = NULL;
+  workspace->index_row = workspace->index_col = NULL;
 }
 
 /* allocate workspace for generalized linear equation solvers. */
@@ -60,7 +60,8 @@ bool zLEWorkspaceClone(zLEWorkspace *src, zLEWorkspace *cln)
 
   if( src->l_facto && !( cln->l_facto = zMatClone( src->l_facto ) ) ) ret = false;
   if( src->r_facto && !( cln->r_facto = zMatClone( src->r_facto ) ) ) ret = false;
-  if( src->index_lu && !( cln->index_lu = zIndexClone( src->index_lu ) ) ) ret = false;
+  if( src->index_row && !( cln->index_row = zIndexClone( src->index_row ) ) ) ret = false;
+  if( src->index_col && !( cln->index_col = zIndexClone( src->index_col ) ) ) ret = false;
   if( !ret ) zLEWorkspaceFree( cln );
   return ret;
 }
@@ -112,15 +113,17 @@ static bool _zLEWorkspaceAllocLR(zLEWorkspace *workspace, int num_equation, int 
   minsize = zMin( num_equation, num_variable );
   workspace->l_facto = zMatAlloc( num_equation, minsize );
   workspace->r_facto = zMatAlloc( minsize, num_variable );
-  workspace->index_lu = zIndexCreate( num_equation );
-  return workspace->l_facto && workspace->r_facto && workspace->index_lu;
+  workspace->index_row = zIndexCreate( num_equation );
+  workspace->index_col = zIndexCreate( num_variable );
+  return workspace->l_facto && workspace->r_facto && workspace->index_row && workspace->index_col;
 }
 
 /* free workspace for a linear equation solver with matrix decomposition. */
 static void _zLEWorkspaceFreeLR(zLEWorkspace *workspace)
 {
   zMatFreeAtOnce( 2, workspace->l_facto, workspace->r_facto );
-  zIndexFree( workspace->index_lu );
+  zIndexFree( workspace->index_row );
+  zIndexFree( workspace->index_col );
 }
 
 /* allocate workspace for LQ/LU decomposition and generalized linear equation solvers based on MP inverse. */
@@ -300,7 +303,7 @@ zVec zLESolveRefNormMin(const zMat a, const zVec b, const zVec w, const zVec ref
 static void _zLESolveMP_L(zLEWorkspace *workspace, const zVec we, int rank)
 {
   if( zMatIsSqr( workspace->l_facto ) )
-    zLESolveL( workspace->l_facto, workspace->b_copy, workspace->v_mp_ispace, workspace->index_lu );
+    zLESolveL( workspace->l_facto, workspace->b_copy, workspace->v_mp_ispace, workspace->index_row );
   else
     zLESolveErrorMinDST( workspace->l_facto, workspace->b_copy, we, workspace->v_mp_ispace, workspace );
 }
@@ -320,7 +323,7 @@ zVec zLESolveMP_LU_DST(zLEWorkspace *workspace, const zVec we, const zVec wn, in
 {
   _zLESolveMP_L( workspace, we, rank );
   zMatIsSqr( workspace->r_facto ) ?
-    zLESolveU( workspace->r_facto, workspace->v_mp_ispace, ans ) :
+    zLESolveUCP( workspace->r_facto, workspace->v_mp_ispace, ans, workspace->index_col ) :
     zLESolveNormMinDST( workspace->r_facto, workspace->v_mp_ispace, wn, ans, workspace );
   return ans;
 }
@@ -350,7 +353,7 @@ zVec zLESolveMP_LQ(const zMat a, const zVec b, const zVec wn, const zVec we, zVe
   zLEWorkspace workspace;
 
   if( !_zLEWorkspaceAllocMPAndCopyAB( &workspace, a, b ) ) goto TERMINATE;
-  if( ( rank = zMatDecompLQ( a, workspace.l_facto, workspace.r_facto, workspace.index_lu ) ) > 0 ){
+  if( ( rank = zMatDecompLQ( a, workspace.l_facto, workspace.r_facto, workspace.index_row ) ) > 0 ){
     zLEWorkspaceResizeMP( &workspace, rank );
     zLESolveMP_LQ_DST( &workspace, we, wn, rank, ans );
   }
@@ -366,7 +369,7 @@ zVec zLESolveMP_LU(const zMat a, const zVec b, const zVec wn, const zVec we, zVe
   zLEWorkspace workspace;
 
   if( !_zLEWorkspaceAllocMPAndCopyAB( &workspace, a, b ) ) goto TERMINATE;
-  if( ( rank = zMatDecompLU( a, workspace.l_facto, workspace.r_facto, workspace.index_lu ) ) > 0 ){
+  if( ( rank = zMatDecompLUCP( a, workspace.l_facto, workspace.r_facto, workspace.index_row, workspace.index_col ) ) > 0 ){
     zLEWorkspaceResizeMP( &workspace, rank );
     zLESolveMP_LU_DST( &workspace, we, wn, rank, ans );
   }
@@ -412,7 +415,7 @@ zVec zLESolveMPNull(const zMat a, const zVec b, const zVec wn, const zVec we, zV
   zLEWorkspace workspace;
 
   if( !_zLEWorkspaceAllocMPAndCopyAB( &workspace, a, b ) ) goto TERMINATE;
-  if( ( rank = zMatDecompLQ( a, workspace.l_facto, workspace.r_facto, workspace.index_lu ) ) > 0 ){
+  if( ( rank = zMatDecompLQ( a, workspace.l_facto, workspace.r_facto, workspace.index_row ) ) > 0 ){
     zLEWorkspaceResizeMP( &workspace, rank );
     zLESolveMPNullDST( &workspace, we, wn, rank, ans, mn );
   }

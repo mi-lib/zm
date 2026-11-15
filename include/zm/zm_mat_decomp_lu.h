@@ -45,6 +45,37 @@ __BEGIN_DECLS
 __ZM_EXPORT int zMatDecompLU(const zMat m, zMat l, zMat u, zIndex index);
 __ZM_EXPORT int zMatDecompLUAlloc(const zMat m, zMat *l, zMat *u, zIndex *index);
 
+/*! \brief LU decomposition with complete pivoting.
+ *
+ * zMatDecompLUCP() decomposes a matrix \a m into a lower triangular matrix \a l and an upper triangular
+ * matrix \a u based on Crout method with complete pivoting, namely, \a l \a u = \a m.
+ * At each step, the component with the largest absolute value among the remaining rows and columns is
+ * chosen as the pivot, so that the rank of \a m is detected reliably even if \a m has columns nearly
+ * dependent on the others, for which zMatDecompLU() based on partial pivoting could overestimate the
+ * rank.
+ * \a index_row and \a index_col are index vectors for order description of rows and columns,
+ * respectively. The pivots are found at the (\a index_row[0], 0), (\a index_row[1], 1), ... components
+ * of \a l, and at the (0, \a index_col[0]), (1, \a index_col[1]), ... components of \a u in this order,
+ * where the components of \a u at the pivots are one. The rows of \a l correspond to those of \a m,
+ * and the columns of \a u correspond to those of \a m. Namely, \a l is a lower triangular matrix with
+ * rows permuted by \a index_row, and \a u is an upper triangular matrix with columns permuted by
+ * \a index_col. The sizes of \a index_row and \a index_col have to be the same with the row and column
+ * sizes of \a m, respectively.
+ * The sizes of \a l and \a u, the size adjustment for a degenerated matrix, and the rank detection are
+ * the same with zMatDecompLU(). It does not allocate any internal memory.
+ *
+ * zMatDecompLUCPAlloc() automatically allocates matrices \a l and \a u in addition to the index vectors
+ * \a index_row and \a index_col, and then conducts the LU decomposition with complete pivoting.
+ * \return
+ * zMatDecompLUCP() and zMatDecompLUCPAlloc() return the rank of \a m.
+ * If they fail to allocate memory or find mismatches of sizes of matrices and index vectors, they
+ * return -1.
+ * \sa
+ * zLESolveUCP
+ */
+__ZM_EXPORT int zMatDecompLUCP(const zMat m, zMat l, zMat u, zIndex index_row, zIndex index_col);
+__ZM_EXPORT int zMatDecompLUCPAlloc(const zMat m, zMat *l, zMat *u, zIndex *index_row, zIndex *index_col);
+
 /*! \brief relative tolerance for rank detection in Cholesky decomposition.
  *
  * A pivot is regarded as zero if its absolute value is not greater than this value times the maximum
