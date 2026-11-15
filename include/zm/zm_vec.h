@@ -527,9 +527,16 @@ __ZM_EXPORT double zVecInnerProd(const zVec v1, const zVec v2);
  * is given for \a tol, zTOL is adopted instead. See also
  * zRawVecNormalize().
  *
+ * zVecWSqrNorm() and zVecWNorm() calculate the squared
+ * weighted norm and the weighted norm of \a v with the weight
+ * vector \a w, respectively.
+ *
  * zVecSqrDist() calculates the squared distance between
  * \a v1 and \a v2. zVecDist() calculates the distance
  * between the two.
+ * zVecNorm(), zVecWNorm() and zVecDist() compute the values
+ * accurately even if the squared values underflow or
+ * overflow. See also zRawVecNorm().
  * \return
  * zVecSqrNorm(), zVecNorm(), zVecSqrDist() and zVecDist()
  * return the value calculated.
@@ -542,14 +549,14 @@ __ZM_EXPORT double zVecInnerProd(const zVec v1, const zVec v2);
 __ZM_EXPORT double zVecSqrNorm(const zVec v);
 __ZM_EXPORT double zVecNorm(const zVec v);
 __ZM_EXPORT double zVecWSqrNormNC(const zVec v, const zVec w);
-#define zVecWNormNC(v,w)    sqrt( zVecWSqrNormNC(v,w) )
+#define zVecWNormNC(v,w)    zRawVecWNorm( zVecBufNC(v), zVecBufNC(w), zVecSizeNC(v) )
 __ZM_EXPORT double zVecWSqrNorm(const zVec v, const zVec w);
-#define zVecWNorm(v,w)      sqrt( zVecWSqrNorm(v,w) )
+__ZM_EXPORT double zVecWNorm(const zVec v, const zVec w);
 __ZM_EXPORT double zVecInfNorm(const zVec v);
 __ZM_EXPORT zVec zVecNormalize(const zVec src, double tol, zVec dest);
 #define zVecNormalizeDRC(v,tol) zVecNormalize(v,tol,v)
 #define zVecSqrDist(v1,v2)  zRawVecSqrDist(zVecBuf(v1),zVecBuf(v2),zVecSizeNC(v1))
-#define zVecDist(v1,v2)     sqrt( zVecSqrDist( v1, v2 ) )
+#define zVecDist(v1,v2)     zRawVecDist(zVecBuf(v1),zVecBuf(v2),zVecSizeNC(v1))
 
 /*! \brief projection and orthogonalization of a vector.
  *

@@ -107,6 +107,36 @@ void assert_div_normalize_tol(void)
   zAssert( zCVecNormalize + zCVecNormalizeDRC (tolerance), result_normalize );
 }
 
+/* norm of complex vectors, the squared norms of which underflow or overflow. */
+void assert_cvec_norm_range(void)
+{
+  const int scale[] = { -1020, -600, -520, 0, 520, 600, 1000 };
+  zCVec v, s;
+  double val, ref;
+  int i, j, k, size;
+  bool result = true;
+
+  for( i=0; i<1000; i++ ){
+    size = zRandI( 1, 10 );
+    v = zCVecAlloc( size );
+    s = zCVecAlloc( size );
+    for( j=0; j<size; j++ ) _zComplexCreate( zCVecElemNC(v,j), zRandF(-1,1), zRandF(-1,1) );
+    ref = sqrt( zCVecSqrNorm( v ) );
+    for( k=0; k<(int)( sizeof(scale)/sizeof(int) ); k++ ){
+      for( j=0; j<size; j++ )
+        _zComplexCreate( zCVecElemNC(s,j), ldexp( zCVecElemNC(v,j)->re, scale[k] ), ldexp( zCVecElemNC(v,j)->im, scale[k] ) );
+      val = ldexp( zCVecNorm( s ), -scale[k] );
+      if( scale[k] > -1000 && !( fabs( val - ref ) <= 4 * ( 2 * size + 1 ) * DBL_EPSILON * ref ) ){
+        eprintf( "zCVecNorm (scale 2^%d): %.17g, expected %.17g\n", scale[k], val, ref );
+        result = false;
+      }
+    }
+    zCVecFree( v );
+    zCVecFree( s );
+  }
+  zAssert( zCVecNorm (underflow and overflow), result );
+}
+
 int main(void)
 {
   zRandInit();
@@ -114,5 +144,6 @@ int main(void)
   assert_cmul_cdiv_drc();
   assert_cdiv_scale();
   assert_div_normalize_tol();
+  assert_cvec_norm_range();
   return EXIT_SUCCESS;
 }

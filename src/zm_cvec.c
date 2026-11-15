@@ -413,6 +413,22 @@ double zCVecSqrNorm(const zCVec v)
   return zComplexAbs( zCVecInnerProdNC( v, v, &z ) );
 }
 
+/* norm of a complex vector. */
+double zCVecNorm(const zCVec v)
+{
+  double s, scale = 0;
+  int i;
+
+  s = zCVecSqrNorm( v );
+  if( _zIsNormalDouble( s ) ) return sqrt( s );
+  /* underflow, overflow, or not-a-number */
+  for( s=0, i=0; i<zCVecSizeNC(v); i++ ){
+    zNormScaledAdd( zCVecElemNC(v,i)->re, &scale, &s );
+    zNormScaledAdd( zCVecElemNC(v,i)->im, &scale, &s );
+  }
+  return zNormScaledSqrt( scale, s );
+}
+
 /* normalize a complex vector. */
 zCVec zCVecNormalize(const zCVec src, double tol, zCVec dest)
 {

@@ -566,6 +566,16 @@ double zVecWSqrNorm(const zVec v, const zVec w)
   return zVecWSqrNormNC( v, w );
 }
 
+/* weighted norm of a vector. */
+double zVecWNorm(const zVec v, const zVec w)
+{
+  if( !zVecSizeEqual(v,w) ){
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
+    return 0;
+  }
+  return zVecWNormNC( v, w );
+}
+
 /* infinity norm of a vector. */
 double zVecInfNorm(const zVec v)
 {

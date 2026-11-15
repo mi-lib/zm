@@ -215,7 +215,8 @@ __ZM_EXPORT zComplex *zCVecInnerProd(const zCVec v1, const zCVec v2, zComplex *z
 /*! \brief normalize vector.
  *
  * zCVecSqrNorm() calculates the squared norm of a complex vector \a v. zCVecNorm() calculates
- * the norm of \a v.
+ * the norm of \a v. Even if the squared norm underflows or overflows, zCVecNorm() computes the norm
+ * accurately by scaling \a v by a power of two.
  *
  * zCVecNormalize() normalizes a complex vector \a src, namely, divides it by the norm of itself,
  * and puts the result into \a dest.
@@ -233,7 +234,7 @@ __ZM_EXPORT zComplex *zCVecInnerProd(const zCVec v1, const zCVec v2, zComplex *z
  * different.
  */
 __ZM_EXPORT double zCVecSqrNorm(const zCVec v);
-#define zCVecNorm(v)         sqrt( zCVecSqrNorm(v) )
+__ZM_EXPORT double zCVecNorm(const zCVec v);
 __ZM_EXPORT zCVec zCVecNormalize(const zCVec src, double tol, zCVec dest);
 #define zCVecNormalizeDRC(v,tol) zCVecNormalize(v,tol,v)
 

@@ -326,24 +326,15 @@ double zRawMatSqrNorm(const double *m, int colcapacity, int rowsize, int colsize
 /* norm of a raw matrix. */
 double zRawMatNorm(const double *m, int colcapacity, int rowsize, int colsize)
 {
-  const double *mp;
-  double s, scale = 0, x;
-  int i;
+  double s, scale = 0;
+  int i, j;
 
   s = zRawMatSqrNorm( m, colcapacity, rowsize, colsize );
-  if( s >= DBL_MIN && _zIsFinite( s ) ) return sqrt( s );
-  /* underflow, overflow, or not-a-number (detected by zRawVecAbsMaxPow2()); scale by a power of two. */
-  for( mp=m, i=0; i<rowsize; i++, mp+=colcapacity ){
-    x = zRawVecAbsMaxPow2( mp, colsize );
-    if( !_zIsFinite( x ) ) return x;
-    if( x > scale ) scale = x;
-  }
-  if( scale == 0 ) return 0;
-  for( s=0, mp=m, i=0; i<rowsize; i++, mp+=colcapacity ){
-    x = zRawVecNorm( mp, colsize ) / scale;
-    s += x * x;
-  }
-  return sqrt( s ) * scale;
+  if( _zIsNormalDouble( s ) ) return sqrt( s );
+  /* underflow, overflow, or not-a-number */
+  for( s=0, i=0; i<rowsize; i++, m+=colcapacity )
+    for( j=0; j<colsize; j++ ) zNormScaledAdd( m[j], &scale, &s );
+  return zNormScaledSqrt( scale, s );
 }
 
 /* transpose a raw matrix. */

@@ -233,9 +233,28 @@ __ZM_EXPORT double zRawVecInnerProd(const double *v1, const double *v2, int size
  * \a size is the size of \a v.
  * \return
  * zRawVecAbsMaxPow2() returns the power of two. If \a v is a zero vector, it returns zero. If \a v
- * has not-a-number or infinity, it returns not-a-number or infinity, respectively.
+ * has NaN or infinity, it returns NaN or infinity, respectively.
  */
 __ZM_EXPORT double zRawVecAbsMaxPow2(const double *v, int size);
+
+/*! \brief scaled sum of squares.
+ *
+ * zNormScaledAdd() adds the square of a value \a x to a sum of squares, which is represented by
+ * \a ssq times the square of \a scale. \a scale is a power of two, by which the absolute values of all
+ * the values added so far divided are less than two, so that the squares never overflow nor underflow
+ * unless they are negligible. Since the scale is updated by multiplications of powers of two, no
+ * rounding error is introduced by the scaling. \a scale and \a ssq have to be initialized for zeros.
+ * If NaN or infinity is added, \a scale is set for it, where NaN has priority.
+ * zNormScaledSqrt() returns the square root of the sum of squares represented by \a scale and
+ * \a ssq, namely, \a scale times the square root of \a ssq, or \a scale itself if it is not finite.
+ * They are used to compute norms and distances accurately even if the squared values underflow or
+ * overflow.
+ * \notes
+ * These functions are provided to make the implementations of functions in the library compact. Using
+ * them in user programs is not recommended; use those functions instead.
+ */
+__ZM_EXPORT void zNormScaledAdd(double x, double *scale, double *ssq);
+__ZM_EXPORT double zNormScaledSqrt(double scale, double ssq);
 
 /*! \brief normalize a raw vector.
  *
@@ -254,6 +273,11 @@ __ZM_EXPORT double zRawVecAbsMaxPow2(const double *v, int size);
  *
  * zRawVecSqrDist() returns the squared distance between \a v1 and \a v2.
  * zRawVecDist() returns the distance between \a v1 and \a v2.
+ * zRawVecWSqrNorm() and zRawVecWNorm() return the squared weighted norm and the weighted norm of \a v
+ * with the weight vector \a w, namely, sum w_i v_i^2 and its square root, respectively. The components
+ * of \a w are supposed to be non-negative.
+ * zRawVecNorm(), zRawVecWNorm() and zRawVecDist() compute the values accurately even if the squared
+ * values underflow or overflow, by scaling the vectors by powers of two only in such cases.
  *
  * \a size is the size of the vector(s).
  * \return
@@ -265,11 +289,11 @@ __ZM_EXPORT double zRawVecAbsMaxPow2(const double *v, int size);
 __ZM_EXPORT double zRawVecSqrNorm(const double *v, int size);
 __ZM_EXPORT double zRawVecNorm(const double *v, int size);
 __ZM_EXPORT double zRawVecWSqrNorm(const double *v, const double *w, int size);
-#define zRawVecWNorm(v,w,size)      sqrt( zRawVecWSqrNorm(v,w,size) )
+__ZM_EXPORT double zRawVecWNorm(const double *v, const double *w, int size);
 __ZM_EXPORT double *zRawVecNormalize(const double *src, int size, double tol, double *dest);
 #define zRawVecNormalizeDRC(v,size,tol) zRawVecNormalize(v,size,tol,v)
 __ZM_EXPORT double zRawVecSqrDist(const double *v1, const double *v2, int size);
-#define zRawVecDist(v1,v2,size)     sqrt( zRawVecSqrDist( v1, v2, size ) )
+__ZM_EXPORT double zRawVecDist(const double *v1, const double *v2, int size);
 
 /*! \brief print a raw vector.
  *

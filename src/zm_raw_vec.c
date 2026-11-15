@@ -298,36 +298,66 @@ double zRawVecSqrNorm(const double *v, int size)
   return zRawVecInnerProd( v, v, size );
 }
 
+/* the power of two 2^(e-1) such that a positive finite value x divided by it is in [1,2). */
+static double _zPow2Floor(double x)
+{
+  int e;
+
+  frexp( x, &e );
+  return ldexp( 1.0, e - 1 );
+}
+
 /* the power of two not greater than the absolute maximum component of a raw vector. */
 double zRawVecAbsMaxPow2(const double *v, int size)
 {
   double absmax = 0, x;
-  int e;
 
   for( ; size-->0; v++ ){
     if( _zIsNan( *v ) ) return *v;
     if( ( x = fabs( *v ) ) > absmax ) absmax = x;
   }
-  if( absmax == 0 || !_zIsFinite( absmax ) ) return absmax;
-  frexp( absmax, &e );
-  return ldexp( 1.0, e - 1 );
+  return absmax == 0 || !_zIsFinite( absmax ) ? absmax : _zPow2Floor( absmax );
+}
+
+/* add the square of a value to a scaled sum of squares. */
+void zNormScaledAdd(double x, double *scale, double *ssq)
+{
+  double r;
+
+  if( _zIsNan( *scale ) ) return;
+  if( !_zIsFinite( x ) ){ /* NaN has priority over infinity */
+    *scale = _zIsNan( x ) ? x : HUGE_VAL;
+    return;
+  }
+  if( !_zIsFinite( *scale ) || x == 0 ) return;
+  if( ( x = fabs( x ) ) >= 2 * *scale ){ /* a larger power of two to scale the values */
+    r = _zPow2Floor( x );
+    if( *scale > 0 ){
+      *ssq *= *scale / r; /* exact multiplications by powers of two */
+      *ssq *= *scale / r;
+    }
+    *scale = r;
+  }
+  x /= *scale;
+  *ssq += x * x;
+}
+
+/* square root of a scaled sum of squares. */
+double zNormScaledSqrt(double scale, double ssq)
+{
+  return _zIsFinite( scale ) ? sqrt( ssq ) * scale : scale;
 }
 
 /* norm of a raw vector. */
 double zRawVecNorm(const double *v, int size)
 {
-  double s, scale, x;
+  double s, scale = 0;
 
   s = zRawVecSqrNorm( v, size );
-  if( s >= DBL_MIN && _zIsFinite( s ) ) return sqrt( s );
-  /* underflow, overflow, or not-a-number (detected by zRawVecAbsMaxPow2()); scale by a power of two. */
-  scale = zRawVecAbsMaxPow2( v, size );
-  if( scale == 0 || !_zIsFinite( scale ) ) return scale;
-  for( s=0; size-->0; v++ ){
-    x = *v / scale;
-    s += x * x;
-  }
-  return sqrt( s ) * scale;
+  if( _zIsNormalDouble( s ) ) return sqrt( s );
+  /* underflow, overflow, or not-a-number */
+  for( s=0; size-->0; v++ ) zNormScaledAdd( *v, &scale, &s );
+  return zNormScaledSqrt( scale, s );
 }
 
 /* weighted squared norm of a raw vector. */
@@ -342,6 +372,18 @@ double zRawVecWSqrNorm(const double *v, const double *w, int size)
     s_prev = s;
   }
   return _zIsFinite( s ) ? s + q : s; /* q is not-a-number if s overflows */
+}
+
+/* weighted norm of a raw vector. */
+double zRawVecWNorm(const double *v, const double *w, int size)
+{
+  double s, scale = 0;
+
+  s = zRawVecWSqrNorm( v, w, size );
+  if( _zIsNormalDouble( s ) ) return sqrt( s );
+  /* underflow, overflow, or not-a-number */
+  for( s=0; size-->0; v++, w++ ) zNormScaledAdd( sqrt( *w ) * *v, &scale, &s );
+  return zNormScaledSqrt( scale, s );
 }
 
 /* normalize a raw vector. */
@@ -368,6 +410,18 @@ double zRawVecSqrDist(const double *v1, const double *v2, int size)
   for( d=0, i=0; i<size; i++ )
     d += zSqr( v1[i] - v2[i] );
   return d;
+}
+
+/* distance between two raw vectors. */
+double zRawVecDist(const double *v1, const double *v2, int size)
+{
+  double s, scale = 0;
+
+  s = zRawVecSqrDist( v1, v2, size );
+  if( _zIsNormalDouble( s ) ) return sqrt( s );
+  /* underflow, overflow, or not-a-number */
+  for( s=0; size-->0; v1++, v2++ ) zNormScaledAdd( *v1 - *v2, &scale, &s );
+  return zNormScaledSqrt( scale, s );
 }
 
 /* print components of a raw vector out to a file. */

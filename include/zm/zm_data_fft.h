@@ -39,7 +39,7 @@ __BEGIN_DECLS
  * a complex spectrum matrix. The result two-dimensional spacial series will be put into a matrix \a result.
  *
  * (Acknowledgment)
- * This implementation is based on the code by Dr. Takuya Ooura
+ * This implementation is a modification of the code by Dr. Takuya Ooura
  * (in http://www.kurims.kyoto-u.ac.jp/~ooura/fftman/index.html).
  * \return
  * These functions return the false value if the sizes of \a data and \a result are not equal or they fail
