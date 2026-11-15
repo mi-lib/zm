@@ -271,8 +271,11 @@ void zRawVecScale(const double *src, const double *min, const double *max, doubl
 /* uniformly scale a raw vector with two boundary values. */
 void zRawVecScaleUniform(const double *src, double min, double max, double *dest, int size)
 {
+  double d;
+
+  d = max - min;
   while( size-- > 0 )
-    *dest++ = min + *src++ * ( max - min );
+    *dest++ = min + *src++ * d;
 }
 
 /* inner product of two raw vectors. */
@@ -286,13 +289,45 @@ double zRawVecInnerProd(const double *v1, const double *v2, int size)
     q += v - r;
     s_prev = s;
   }
-  return s + q;
+  return _zIsFinite( s ) ? s + q : s; /* q is not-a-number if s overflows */
 }
 
 /* squared norm of a raw vector. */
 double zRawVecSqrNorm(const double *v, int size)
 {
   return zRawVecInnerProd( v, v, size );
+}
+
+/* the power of two not greater than the absolute maximum component of a raw vector. */
+double zRawVecAbsMaxPow2(const double *v, int size)
+{
+  double absmax = 0, x;
+  int e;
+
+  for( ; size-->0; v++ ){
+    if( _zIsNan( *v ) ) return *v;
+    if( ( x = fabs( *v ) ) > absmax ) absmax = x;
+  }
+  if( absmax == 0 || !_zIsFinite( absmax ) ) return absmax;
+  frexp( absmax, &e );
+  return ldexp( 1.0, e - 1 );
+}
+
+/* norm of a raw vector. */
+double zRawVecNorm(const double *v, int size)
+{
+  double s, scale, x;
+
+  s = zRawVecSqrNorm( v, size );
+  if( s >= DBL_MIN && _zIsFinite( s ) ) return sqrt( s );
+  /* underflow, overflow, or not-a-number (detected by zRawVecAbsMaxPow2()); scale by a power of two. */
+  scale = zRawVecAbsMaxPow2( v, size );
+  if( scale == 0 || !_zIsFinite( scale ) ) return scale;
+  for( s=0; size-->0; v++ ){
+    x = *v / scale;
+    s += x * x;
+  }
+  return sqrt( s ) * scale;
 }
 
 /* weighted squared norm of a raw vector. */
@@ -306,7 +341,7 @@ double zRawVecWSqrNorm(const double *v, const double *w, int size)
     q += vs - r;
     s_prev = s;
   }
-  return s + q;
+  return _zIsFinite( s ) ? s + q : s; /* q is not-a-number if s overflows */
 }
 
 /* normalize a raw vector. */

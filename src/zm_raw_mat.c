@@ -310,7 +310,7 @@ double zRawMatColInnerProd(const double *m, int colcapacity, const double *v, in
     q += c - r;
     s_prev = s;
   }
-  return s + q;
+  return _zIsFinite( s ) ? s + q : s; /* q is not-a-number if s overflows */
 }
 
 /* squared norm of a raw matrix. */
@@ -321,6 +321,29 @@ double zRawMatSqrNorm(const double *m, int colcapacity, int rowsize, int colsize
   for( ; --rowsize>=0; m+=colcapacity )
     norm += zRawVecSqrNorm( m, colsize );
   return norm;
+}
+
+/* norm of a raw matrix. */
+double zRawMatNorm(const double *m, int colcapacity, int rowsize, int colsize)
+{
+  const double *mp;
+  double s, scale = 0, x;
+  int i;
+
+  s = zRawMatSqrNorm( m, colcapacity, rowsize, colsize );
+  if( s >= DBL_MIN && _zIsFinite( s ) ) return sqrt( s );
+  /* underflow, overflow, or not-a-number (detected by zRawVecAbsMaxPow2()); scale by a power of two. */
+  for( mp=m, i=0; i<rowsize; i++, mp+=colcapacity ){
+    x = zRawVecAbsMaxPow2( mp, colsize );
+    if( !_zIsFinite( x ) ) return x;
+    if( x > scale ) scale = x;
+  }
+  if( scale == 0 ) return 0;
+  for( s=0, mp=m, i=0; i<rowsize; i++, mp+=colcapacity ){
+    x = zRawVecNorm( mp, colsize ) / scale;
+    s += x * x;
+  }
+  return sqrt( s ) * scale;
 }
 
 /* transpose a raw matrix. */
@@ -372,7 +395,7 @@ double zRawMatTrace(const double *m, int colcapacity, int rowsize, int colsize)
     q += *m - r;
     trace_prev = trace;
   }
-  return trace + q;
+  return _zIsFinite( trace ) ? trace + q : trace; /* q is not-a-number if trace overflows */
 }
 
 /* multiply a raw vector by a raw matrix. */

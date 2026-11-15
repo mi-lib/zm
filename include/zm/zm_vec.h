@@ -514,7 +514,8 @@ __ZM_EXPORT double zVecInnerProd(const zVec v1, const zVec v2);
 /*! \brief normalize a vector.
  *
  * zVecSqrNorm() calculates the squared norm of the vector
- * \a v. zVecNorm() calculates the norm of \a v.
+ * \a v. zVecNorm() calculates the norm of \a v. See also
+ * zRawVecNorm().
  *
  * zVecNormalize() normalizes the vector \a src, namely,
  * \a src is divided by the norm of itself. The result is
@@ -539,7 +540,7 @@ __ZM_EXPORT double zVecInnerProd(const zVec v1, const zVec v2);
  * \a src and \a dest are different.
  */
 __ZM_EXPORT double zVecSqrNorm(const zVec v);
-#define zVecNorm(v)         sqrt( zVecSqrNorm(v) )
+__ZM_EXPORT double zVecNorm(const zVec v);
 __ZM_EXPORT double zVecWSqrNormNC(const zVec v, const zVec w);
 #define zVecWNormNC(v,w)    sqrt( zVecWSqrNormNC(v,w) )
 __ZM_EXPORT double zVecWSqrNorm(const zVec v, const zVec w);

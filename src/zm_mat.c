@@ -619,6 +619,12 @@ double zMatSqrNorm(const zMat m)
   return zRawMatSqrNorm( zMatBufNC(m), zMatColCapacity(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
 }
 
+/* norm of a matrix. */
+double zMatNorm(const zMat m)
+{
+  return zRawMatNorm( zMatBufNC(m), zMatColCapacity(m), zMatRowSizeNC(m), zMatColSizeNC(m) );
+}
+
 /* infinity norm of a matrix. */
 double zMatInfNorm(const zMat m)
 {

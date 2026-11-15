@@ -1,3 +1,8 @@
+2026.11.14. Debugged _zMatScalePow2 that ignored the column capacity of a matrix. [zm_mat_decomp_lq]
+2026.11.14. Debugged zRawVecInnerProd, zRawVecWSqrNorm, zRawMatColInnerProd, zRawMatTrace, and zDataSum to return HUGE_VAL when the sum overflowed. [zm_raw_vec, zm_raw_mat, zm_stat]
+2026.11.14. Added tests of zRawVecAbsMaxPow2, zRawVecNorm, and zRawMatNorm for vectors and matrices with very small and large components. [test]
+2026.11.14. Added zRawVecAbsMaxPow2 to find the power of two for exact scaling, and unified the scalings in zRawVecNorm, zRawMatNorm, _zMatScalePow2, and _zMatHouseholderUnitNormal with it. [zm_raw_vec, zm_raw_mat, zm_mat_decomp_lq]
+2026.11.14. Debugged zRawVecNorm, zRawMatNorm, zVecNorm, and zMatNorm by scaling the vector or the matrix by a power of two when the squared norm underflowed or overflowed made them functions. [zm_raw_vec, zm_raw_mat, zm_vec, zm_mat]
 2026.11.14. Debugged _zOptDMStepBrentEval to cast a pointer for C++. [zm_opt_dm]
 2026.11.14. Renamed zm_le_pivot, zm_le_lu, and zm_le_lq to zm_mat_pivot, zm_mat_decomp_lu, and zm_mat_decomp_lq, respectively, and added zm_mat_decomp.h, which is included by zm_le.h. [zm_mat_pivot, zm_mat_decomp, zm_mat_decomp_lu, zm_mat_decomp_lq, zm_le]
 2026.11.14. Modified zMatDecompLQ, zMatDecompLQAlloc, and zMatDecompQR to scale the matrix by a power of two to avoid overflow and underflow. [zm_le_lq]

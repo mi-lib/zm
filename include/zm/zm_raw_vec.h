@@ -225,10 +225,23 @@ __ZM_EXPORT void zRawVecScaleUniform(const double *src, double min, double max, 
  */
 __ZM_EXPORT double zRawVecInnerProd(const double *v1, const double *v2, int size);
 
+/*! \brief the power of two not greater than the absolute maximum component of a raw vector.
+ *
+ * zRawVecAbsMaxPow2() finds the power of two 2^(e-1) such that the absolute maximum component of a
+ * raw vector \a v divided by it is in [1,2). Since the division by a power of two is exact unless the
+ * result is subnormal, it is used to scale a vector or a matrix in order to avoid overflow and underflow.
+ * \a size is the size of \a v.
+ * \return
+ * zRawVecAbsMaxPow2() returns the power of two. If \a v is a zero vector, it returns zero. If \a v
+ * has not-a-number or infinity, it returns not-a-number or infinity, respectively.
+ */
+__ZM_EXPORT double zRawVecAbsMaxPow2(const double *v, int size);
+
 /*! \brief normalize a raw vector.
  *
  * zRawVecSqrNorm() returns the squared norm of a raw vector \a v.
- * zRawVecNorm() returns the norm of \a v.
+ * zRawVecNorm() returns the norm of \a v. Even if the squared norm underflows or overflows, it
+ * computes the norm accurately by scaling \a v by a power of two.
  *
  * zRawVecNormalize() normalizes a raw vector \a src, namely, \a src is divided by the norm of itself.
  * The result is put into \a dest.
@@ -250,7 +263,7 @@ __ZM_EXPORT double zRawVecInnerProd(const double *v1, const double *v2, int size
  * if the norm of the vector is not greater than the tolerance.
  */
 __ZM_EXPORT double zRawVecSqrNorm(const double *v, int size);
-#define zRawVecNorm(v,size)         sqrt( zRawVecSqrNorm(v,size) )
+__ZM_EXPORT double zRawVecNorm(const double *v, int size);
 __ZM_EXPORT double zRawVecWSqrNorm(const double *v, const double *w, int size);
 #define zRawVecWNorm(v,w,size)      sqrt( zRawVecWSqrNorm(v,w,size) )
 __ZM_EXPORT double *zRawVecNormalize(const double *src, int size, double tol, double *dest);

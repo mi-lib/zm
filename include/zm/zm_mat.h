@@ -482,10 +482,10 @@ __ZM_EXPORT zMat zMatCat(const zMat m1, double k, const zMat m2, zMat m);
  * \return
  * zMatSqrNorm() returns the squared norm of a matrix \a m.
  * \return
- * zMatNorm() returns the norm of \a m.
+ * zMatNorm() returns the norm of \a m. See also zRawMatNorm().
  */
 __ZM_EXPORT double zMatSqrNorm(const zMat m);
-#define zMatNorm(m) sqrt( zMatSqrNorm(m) )
+__ZM_EXPORT double zMatNorm(const zMat m);
 
 __ZM_EXPORT double zMatInfNorm(const zMat m);
 

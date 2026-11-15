@@ -543,7 +543,20 @@ void assert_raw_mat_norm(void)
    10.0,10.0,10.0, 10.0,
   };
 
+  double n[] = {
+    3.0e-200, 0.0, 1.0e300,
+    0.0, 4.0e-200, 1.0e300,
+  };
+  double l[] = {
+    3.0e200, 0.0, 1.0e-300,
+    0.0, 4.0e200, 1.0e-300,
+  };
+
   zAssert( zRawMatSqrNorm, zEqual( zRawMatSqrNorm( m, 4, 2, 3 ), 1.0*1.0+2.0*2.0+3.0*3.0+4.0*4.0+5.0*5.0+6.0*6.0, zTOL ) );
+  zAssert( zRawMatNorm, zEqual( zRawMatNorm( m, 4, 2, 3 ), sqrt( 1.0*1.0+2.0*2.0+3.0*3.0+4.0*4.0+5.0*5.0+6.0*6.0 ), zTOL ) );
+  zAssert( zRawMatNorm (underflow and overflow),
+    fabs( zRawMatNorm( n, 3, 2, 2 ) / 5.0e-200 - 1 ) <= 4 * DBL_EPSILON &&
+    fabs( zRawMatNorm( l, 3, 2, 2 ) / 5.0e200 - 1 ) <= 4 * DBL_EPSILON );
 }
 
 void assert_raw_mat_transpose(void)

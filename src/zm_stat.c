@@ -169,7 +169,7 @@ double zDataSum(const double *data, int size)
     q += data[i] - r;
     s_prev = s;
   }
-  return s + q;
+  return _zIsFinite( s ) ? s + q : s; /* q is not-a-number if s overflows */
 }
 
 /* mean of all values of data. */

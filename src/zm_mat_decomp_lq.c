@@ -11,12 +11,15 @@
 /* exactly scale a matrix by a power of two to avoid overflow and underflow. */
 double _zMatScalePow2(zMat m)
 {
-  double scale;
-  int e;
+  double scale = 0, x;
+  int i;
 
-  if( ( scale = zDataAbsMax( zMatBuf(m), zMatRowSizeNC(m)*zMatColSizeNC(m), NULL ) ) == 0 ) return 1;
-  frexp( scale, &e );
-  scale = ldexp( 1.0, e - 1 );
+  for( i=0; i<zMatRowSizeNC(m); i++ ){
+    x = zRawVecAbsMaxPow2( zMatRowBufNC(m,i), zMatColSizeNC(m) );
+    if( !_zIsFinite( x ) ) return 1;
+    if( x > scale ) scale = x;
+  }
+  if( scale == 0 ) return 1;
   zMatDivDRC( m, scale );
   return scale;
 }
@@ -24,13 +27,11 @@ double _zMatScalePow2(zMat m)
 /* unit normal vector nu of the Householder reflection. */
 bool _zMatHouseholderUnitNormal(const double *x, int n, double *nu, double *s)
 {
-  double scale = 0, r = 0, d, scale_tmp;
+  double scale, r = 0, d;
   int i;
 
-  for( i=0; i<n; i++ )
-    if( ( scale_tmp = fabs( x[i] ) ) > scale ) scale = scale_tmp;
-  if( scale == 0 ) return false;
-  for( i=0; i<n; i++ ){ /* scaled to avoid overflow and underflow */
+  if( ( scale = zRawVecAbsMaxPow2( x, n ) ) == 0 ) return false;
+  for( i=0; i<n; i++ ){ /* exactly scaled by a power of two to avoid overflow and underflow */
     nu[i] = x[i] / scale;
     r += nu[i] * nu[i];
   }

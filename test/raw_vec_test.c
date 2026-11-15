@@ -226,6 +226,51 @@ void assert_raw_vec_div_range(void)
   zAssert( zRawVecDivDRC (very small or large divisor), result_drc );
 }
 
+/* norm of a vector, the squared norm of which underflows or overflows. */
+#define N_NORM_TEST 1000
+void assert_raw_vec_norm_range(void)
+{
+  const int scale[] = { -1020, -1000, -600, -540, -520, -300, 0, 300, 500, 511, 520, 600, 1000, 1021 };
+  double v[TEST_VEC_SIZE], w[TEST_VEC_SIZE], norm, ref;
+  const double tiny[] = { 0, 4.9406564584124654e-324, 0 }; /* the smallest subnormal number */
+  const double huge[] = { 0, DBL_MAX, 0 };
+  const double zero[] = { 0, 0, 0 };
+  const double v1[] = { 0.75, -3.5, 2 };
+  const double v2[] = { 0.5, -0.25, 0.999 };
+  const double inf[] = { 1, HUGE_VAL, 1 };
+  double nan[] = { 1, 0, 1 };
+  int i, j, k, size;
+  bool result = true, result_special;
+
+  for( i=0; i<N_NORM_TEST; i++ ){
+    size = zRandI( 1, TEST_VEC_SIZE );
+    for( j=0; j<size; j++ ) v[j] = zRandF( -1, 1 );
+    for( k=0; k<(int)( sizeof(scale)/sizeof(int) ); k++ ){
+      for( j=0; j<size; j++ ) w[j] = ldexp( v[j], scale[k] );
+      norm = ldexp( zRawVecNorm( w, size ), -scale[k] );
+      for( j=0; j<size; j++ ) w[j] = ldexp( w[j], -scale[k] ); /* exact, even for subnormal components */
+      ref = sqrt( zRawVecSqrNorm( w, size ) );
+      if( !( fabs( norm - ref ) <= 2 * ( size + 1 ) * DBL_EPSILON * ref ) ){
+        eprintf( "scale 2^%d: norm = %.17g, expected %.17g\n", scale[k], norm, ref );
+        result = false;
+      }
+    }
+  }
+  nan[1] = sqrt( -zRandF( 1, 2 ) );
+  result_special =
+    zRawVecNorm( tiny, 3 ) == tiny[1] && zRawVecNorm( huge, 3 ) == DBL_MAX &&
+    zRawVecNorm( zero, 3 ) == 0 && zRawVecNorm( zero, 0 ) == 0 &&
+    zRawVecNorm( inf, 3 ) == HUGE_VAL && zIsNan( zRawVecNorm( nan, 3 ) ) &&
+    zRawVecSqrNorm( huge, 3 ) == HUGE_VAL; /* not a not-a-number by compensated summation */
+  zAssert( zRawVecAbsMaxPow2,
+    zRawVecAbsMaxPow2( v1, 3 ) == 2 && zRawVecAbsMaxPow2( v2, 3 ) == 0.5 &&
+    zRawVecAbsMaxPow2( tiny, 3 ) == tiny[1] && zRawVecAbsMaxPow2( huge, 3 ) == ldexp( 1.0, 1023 ) &&
+    zRawVecAbsMaxPow2( zero, 3 ) == 0 && zRawVecAbsMaxPow2( zero, 0 ) == 0 &&
+    zRawVecAbsMaxPow2( inf, 3 ) == HUGE_VAL && zIsNan( zRawVecAbsMaxPow2( nan, 3 ) ) );
+  zAssert( zRawVecNorm (underflow and overflow), result );
+  zAssert( zRawVecNorm (special values), result_special );
+}
+
 int main(void)
 {
   zRandInit();
@@ -238,5 +283,6 @@ int main(void)
   assert_raw_vec_normalize();
   assert_raw_vec_normalize_tol();
   assert_raw_vec_div_range();
+  assert_raw_vec_norm_range();
   return EXIT_SUCCESS;
 }

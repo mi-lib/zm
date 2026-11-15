@@ -544,6 +544,12 @@ double zVecSqrNorm(const zVec v)
   return zVecInnerProdNC( v, v );
 }
 
+/* norm of a vector. */
+double zVecNorm(const zVec v)
+{
+  return zRawVecNorm( zVecBufNC(v), zVecSizeNC(v) );
+}
+
 /* weighted squared norm of a vector without checking size consistency. */
 double zVecWSqrNormNC(const zVec v, const zVec w)
 {

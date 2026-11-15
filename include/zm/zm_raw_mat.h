@@ -257,12 +257,13 @@ __ZM_EXPORT double zRawMatColInnerProd(const double *m, int colcapacity, const d
  *
  * \return
  * zRawMatSqrNorm() returns the squared norm of a raw matrix \a m.
- * zRawMatNorm() returns the norm of \a m.
+ * zRawMatNorm() returns the norm of \a m. Even if the squared norm underflows or overflows, it
+ * computes the norm accurately by scaling \a m by a power of two.
  *
  * \a rowsize and \a colsize are the row and column size of \a m, respectively.
  */
 __ZM_EXPORT double zRawMatSqrNorm(const double *m, int colcapacity, int rowsize, int colsize);
-#define zRawMatNorm(m,colcapacity,rowsize,colsize) sqrt( zRawMatSqrNorm( m, colcapacity, rowsize, colsize ) )
+__ZM_EXPORT double zRawMatNorm(const double *m, int colcapacity, int rowsize, int colsize);
 
 /*! \brief transpose a raw matrix.
  *
