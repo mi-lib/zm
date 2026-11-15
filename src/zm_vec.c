@@ -605,8 +605,12 @@ zVec zVecProj(const zVec v, const zVec n, zVec pv)
 /* create an orthonormal vector. */
 zVec zVecOrthogonalize(const zVec v, const zVec n, zVec ov)
 {
-  if( !zVecProj( v, n, ov ) ) return NULL;
-  return zVecSubNC( v, ov, ov );
+  if( !zVecSizeEqual( v, n ) || !zVecSizeEqual( v, ov ) ){
+    ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
+    return NULL;
+  }
+  /* the coefficient is computed in advance so that ov can be the same with v or n. */
+  return zVecCatNC( v, -zVecInnerProdNC( v, n ) / zVecSqrNorm( n ), n, ov );
 }
 
 /* distance from a vector to an edge. */

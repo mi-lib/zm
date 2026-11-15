@@ -498,29 +498,6 @@ void assert_mat_eig_dqr_scalar(void)
   zAssert( zMatEigDQR (perturbed scalar matrices), result );
 }
 
-bool check_mat_sym_eig(zMat m, zVec eigval, zMat eigbase, int c)
-{
-  zVec v, e;
-  int i;
-  bool result = true;
-
-  v = zVecAlloc( zVecSizeNC(eigval) );
-  e = zVecAlloc( zVecSizeNC(eigval) );
-  for( i=0; i<zVecSizeNC(eigval); i++ ){
-    zMatGetCol( eigbase, i, v );
-    zMulMatVec( m, v, e );
-    zVecCatDRC( e, -zVecElem(eigval,i), v );
-    if( !zVecIsTiny( e ) ){
-      printf( "eig#%d: eig.val. = %g,  error = %g\n", i, zVecElem(eigval,i), zVecNorm(e) );
-      result = false;
-    }
-  }
-  if( c > 0 ) eprintf( "computation time(clk) = %d\n", c );
-  zVecFree( v );
-  zVecFree( e );
-  return result;
-}
-
 /* check if m eigbase = eigbase diag{eigval} and eigbase^T eigbase = I with relative errors. */
 bool check_mat_sym_eig_rel(zMat m, zVec eigval, zMat eigbase, double tol)
 {
@@ -601,7 +578,8 @@ void assert_mat_sym_eig_random(void)
   c1 = clock();
   zMatSymEigBisec( m, eigval, eigbase );
   c2 = clock();
-  result_bisec = check_mat_sym_eig( m, eigval, eigbase, c2-c1 );
+  eprintf( "computation time(clk) = %d\n", (int)( c2 - c1 ) );
+  result_bisec = check_mat_sym_eig_rel( m, eigval, eigbase, TOL_EIG );
 
   c1 = clock();
   result_jacobi = zMatSymEigJacobi( m, eigval, eigbase );
@@ -1246,6 +1224,56 @@ void assert_mat_singular_value(void)
   zAssert( zMatSingularValueMin + zMatCondNum (rank-deficient matrices), result_deg );
 }
 
+/* symmetric matrices with multiple eigenvalues of various scales, the zero matrix, and the identity
+ * matrix for the bisection method. */
+void assert_mat_sym_eig_bisec_special(void)
+{
+  const double scale[] = { 1.0e-200, 1.0e-8, 1.0, 1.0e8, 1.0e200 };
+  zMat m, q, eigbase;
+  zVec eigval;
+  double s;
+  int i, j, k, n, t, ks;
+  bool result_multiple = true, result_special = true;
+
+  for( t=0; t<N; t++ )
+    for( ks=0; ks<(int)( sizeof(scale)/sizeof(double) ); ks++ ){
+      n = zRandI( 2, 10 );
+      m = zMatAllocSqr( n );
+      q = zMatAllocSqr( n );
+      eigbase = zMatAllocSqr( n );
+      eigval = zVecAlloc( n );
+      rand_orthogonal( q );
+      for( k=0; k<n; k++ ) zVecSetElemNC( eigval, k, zRandI(-2,2) * scale[ks] ); /* multiple eigenvalues */
+      for( i=0; i<n; i++ )
+        for( j=0; j<=i; j++ ){
+          for( s=0, k=0; k<n; k++ ) s += zMatElemNC(q,i,k) * zVecElemNC(eigval,k) * zMatElemNC(q,j,k);
+          zMatSetElemNC( m, i, j, s );
+          zMatSetElemNC( m, j, i, s );
+        }
+      if( !zMatSymEigBisec( m, eigval, eigbase ) || !check_mat_sym_eig_rel( m, eigval, eigbase, TOL_EIG ) ){
+        eprintf( "failed for a %d x %d matrix of scale %g\n", n, n, scale[ks] );
+        result_multiple = false;
+      }
+      zMatFreeAtOnce( 3, m, q, eigbase );
+      zVecFree( eigval );
+    }
+  n = 5;
+  m = zMatAllocSqr( n );
+  eigbase = zMatAllocSqr( n );
+  eigval = zVecAlloc( n );
+  zMatZero( m );
+  if( !zMatSymEigBisec( m, eigval, eigbase ) || !zVecIsTol( eigval, 0 ) ||
+      !check_mat_sym_eig_rel( m, eigval, eigbase, TOL_EIG ) ) result_special = false;
+  zMatIdent( m );
+  if( !zMatSymEigBisec( m, eigval, eigbase ) || !check_mat_sym_eig_rel( m, eigval, eigbase, TOL_EIG ) ) result_special = false;
+  for( i=0; i<n; i++ )
+    if( !( fabs( zVecElemNC(eigval,i) - 1 ) <= TOL_EIG * n * DBL_EPSILON ) ) result_special = false;
+  zMatFreeAtOnce( 2, m, eigbase );
+  zVecFree( eigval );
+  zAssert( zMatSymEigBisec (multiple eigenvalues of various scales), result_multiple );
+  zAssert( zMatSymEigBisec (zero and identity matrices), result_special );
+}
+
 void assert_mat_svd_minmax(void)
 {
   zMat m, u, v;
@@ -1291,6 +1319,7 @@ int main(int argc, char *argv[])
   assert_mat_eig_dqr_scalar();
   assert_mat_sym_eig();
   assert_mat_sym_eig_random();
+  assert_mat_sym_eig_bisec_special();
   assert_mat_sym_eig_jacobi_scale();
   assert_mat_sym_eig_jacobi_special();
   assert_mat_svd();

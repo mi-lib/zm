@@ -412,6 +412,10 @@ bool zMatEigDQR(const zMat m, zCVec eigval, zCMat eigbase, int iter)
 
 /* seed of the random number generator for the initial vector of the power method. */
 #define ZM_EIG_POWER_SEED 1
+/* minimum ratio of the norm of an orthogonalized initial vector to the original one, and the maximum
+ * number of trials to generate it. */
+#define ZM_EIG_POWER_ORTH_MIN 1.0e-3
+#define ZM_EIG_POWER_ORTH_TRIAL 100
 
 /* power method: the dominant eigenvalue mu of a linear map v -> w and the corresponding unit eigenvector.
  * The initial vector is random to avoid being orthogonal to the dominant eigenvector, where a local random
@@ -420,28 +424,38 @@ bool zMatEigDQR(const zMat m, zCVec eigval, zCMat eigbase, int iter)
  * The iteration is regarded as converged if the residual |w - mu v| for a unit vector v is not greater
  * than zTOL times |mu|. It returns 1 if it converges, 0 if it does not converge within iter steps, or -1
  * if it fails to allocate working memory. In the latter two cases, the last estimates are stored. */
-static int _zMatEigPowerIter(void (* mul)(void*,const zVec,zVec), void *util, zVec v, int iter, double *mu)
+static int _zMatEigPowerIter(void (* mul)(void*,const zVec,zVec), void (* orth)(void*,zVec), void *util, zVec v, int iter, double *mu)
 {
   zRandMT mt; /* a local random number generator */
   zVec w, r;
-  double norm;
-  int i, ret = -1;
+  double norm, norm0;
+  int i, k, ret = -1;
 
   *mu = 0;
   w = zVecAlloc( zVecSizeNC(v) );
   r = zVecAlloc( zVecSizeNC(v) );
   if( !w || !r ) goto TERMINATE;
   zRandInitSeedMT( &mt, ZM_EIG_POWER_SEED );
-  do{ /* a random initial unit vector */
+  for( k=0; ; k++ ){ /* a random initial unit vector, which is orthogonalized by orth if given */
     for( i=0; i<zVecSizeNC(v); i++ )
       zVecSetElemNC( v, i, zRandMTF( &mt, -1, 1 ) );
-  } while( !( ( norm = zVecNorm( v ) ) > 0 ) );
+    norm0 = zVecNorm( v );
+    if( orth ) orth( util, v );
+    /* retry if the vector is almost in the subspace excluded by orth */
+    if( ( norm = zVecNorm( v ) ) > ZM_EIG_POWER_ORTH_MIN * norm0 && norm > 0 ) break;
+    if( k >= ZM_EIG_POWER_ORTH_TRIAL ){
+      ret = -1; /* failure, which never happens unless a numerical breakdown occurs */
+      goto TERMINATE;
+    }
+  }
   zVecDivDRC( v, norm );
   for( ret=0, i=0; i<iter; i++ ){
     mul( util, v, w );
     *mu = zVecInnerProdNC( v, w );
     zVecCatNC( w, -*mu, v, r );
     if( zVecNorm( r ) <= zTOL * fabs( *mu ) ){ /* including the case where w = O */
+      /* the latest iterate, which is more accurate than v, is adopted unless it is the zero vector. */
+      if( ( norm = zVecNorm( w ) ) > 0 ) zVecDivNC( w, norm, v );
       ret = 1;
       break;
     }
@@ -478,7 +492,7 @@ double zMatEigPower(const zMat m, zVec eigvec, int iter)
 
   _zMatEigPowerCheckSize( m, eigvec );
   ZITERINIT( iter );
-  if( _zMatEigPowerIter( _zMatEigPowerMulMat, m, eigvec, iter, &eigval ) == 0 ) ZITERWARN( iter );
+  if( _zMatEigPowerIter( _zMatEigPowerMulMat, NULL, m, eigvec, iter, &eigval ) == 0 ) ZITERWARN( iter );
   return eigval;
 }
 
@@ -534,7 +548,7 @@ double zMatEigPowerInv(const zMat m, zVec eigvec, int iter)
     goto TERMINATE;
   }
   ZITERINIT( iter );
-  if( ( ret = _zMatEigPowerIter( _zMatEigPowerMulInv, &lu, eigvec, iter, &eigval ) ) == 0 )
+  if( ( ret = _zMatEigPowerIter( _zMatEigPowerMulInv, NULL, &lu, eigvec, iter, &eigval ) ) == 0 )
     ZITERWARN( iter );
   if( ret >= 0 )
     eigval = 1.0 / eigval; /* the dominant eigenvalue of the inverse is never zero. */
@@ -561,22 +575,30 @@ double zMatEigPowerInv(const zMat m, zVec eigvec, int iter)
   }\
 } while(0)
 
-/* compute the range in which all eigenvalues exist based on Gerschgorin's theorem. */
-static void _zMatSymEigBisecRange(const zMat m, double *emin, double *emax)
+/* the range of eigenvalues of a symmetric tridiagonal matrix by Gerschgorin's theorem, which is slightly
+ * widened so that the Sturm's counts at the ends include all the eigenvalues. It returns the true value
+ * if the range is a point, namely, the matrix is a scalar matrix, the eigenvalues of which are emin. */
+static bool _zMatSymEigBisecRange(const zMat m, double *emin, double *emax)
 {
   int i;
   double ml, mr, e;
 
-  *emin = *emax = 0;
+  *emin = *emax = zMatElemNC(m,0,0);
   for( ml=0, i=0; i<zMatRowSizeNC(m); i++, ml=mr ){
     mr = i < zMatRowSizeNC(m)-1 ? fabs( zMatElemNC(m,i,i+1) ) : 0;
     if( ( e = zMatElemNC(m,i,i) + ( ml + mr ) ) > *emax ) *emax = e;
     if( ( e = zMatElemNC(m,i,i) - ( ml + mr ) ) < *emin ) *emin = e;
   }
+  if( *emin == *emax ) return true;
+  e = 2 * DBL_EPSILON * ( fabs( *emin ) + fabs( *emax ) ) + DBL_MIN;
+  *emin -= e;
+  *emax += e;
+  return false;
 }
 
-/* Sturm's function series. */
-static int _zMatSymEigBisecSturm(const zMat a, double e)
+/* Sturm's function series, which counts the eigenvalues not less than e. A zero pivot is replaced
+ * by pivmin, which is tiny relative to the norm of the matrix. */
+static int _zMatSymEigBisecSturm(const zMat a, double e, double pivmin)
 {
   int i, n = 0;
   double r, p1, p2;
@@ -585,7 +607,7 @@ static int _zMatSymEigBisecSturm(const zMat a, double e)
   if( p1 <= 0 ) n++;
   for( i=1; i<zMatRowSizeNC(a); i++ ){
     r = zMatElemNC(a,i,i-1);
-    p2 = e - zMatElemNC(a,i,i) - r*r / ( p1 == 0 ? zTOL : p1 );
+    p2 = e - zMatElemNC(a,i,i) - r*r / ( p1 == 0 ? pivmin : p1 );
     if( p2 < 0 ) n++;
     p1 = p2;
   }
@@ -593,88 +615,137 @@ static int _zMatSymEigBisecSturm(const zMat a, double e)
 }
 
 /* compute one eigenvalue by bisection shooting. */
-static void _zMatSymEigBisecOne(const zMat a, double emin, int nmin, double emax, int nmax, double *eig)
+static void _zMatSymEigBisecOne(const zMat a, double emin, int nmin, double emax, double pivmin, double *eig)
 {
   double e, d, d_old;
-  int n;
 
   for( d_old=HUGE_VAL; ; d_old=d ){
     e = emin + 0.5 * ( d = emax - emin );
     if( d == d_old ) break;
-    n = _zMatSymEigBisecSturm( a, e );
-    if( n == nmin ) emin = e;
+    if( _zMatSymEigBisecSturm( a, e, pivmin ) == nmin ) emin = e;
     else emax = e;
   }
   *eig = e;
 }
 
-/* compute all eigenvalues recursively by bisection method. */
-static void _zMatSymEigBisecRec(const zMat a, double emin, int nmin, double emax, int nmax, double *eig)
+/* compute all eigenvalues recursively by bisection method. The eigenvalues in [emin,emax) are stored
+ * in eig in descending order. */
+static void _zMatSymEigBisecRec(const zMat a, double emin, int nmin, double emax, int nmax, double pivmin, double *eig)
 {
   int n;
   double e;
 
   if( nmin - nmax == 1 )
-    return _zMatSymEigBisecOne( a, emin, nmin, emax, nmax, eig );
-
-  n = _zMatSymEigBisecSturm( a, ( e = 0.5 * ( emax + emin ) ) );
+    return _zMatSymEigBisecOne( a, emin, nmin, emax, pivmin, eig );
+  if( !( ( e = 0.5 * ( emax + emin ) ) > emin && e < emax ) ){
+    /* the interval cannot be bisected any more, where multiple eigenvalues are regarded as the same. */
+    for( n=0; n<nmin-nmax; n++ ) eig[n] = e;
+    return;
+  }
+  n = _zMatSymEigBisecSturm( a, e, pivmin );
+  n = _zLimit( n, nmax, nmin ); /* to keep the consistency of the counts against rounding errors */
   if( n > nmax )
-    _zMatSymEigBisecRec( a, e, n, emax, nmax, &eig[0] );
+    _zMatSymEigBisecRec( a, e, n, emax, nmax, pivmin, &eig[0] );
   if( n < nmin )
-    _zMatSymEigBisecRec( a, emin, nmin, e, n, &eig[n-nmax] );
+    _zMatSymEigBisecRec( a, emin, nmin, e, n, pivmin, &eig[n-nmax] );
+}
+
+/* relative threshold to regard eigenvalues as a cluster, the eigenvectors of which are orthogonalized. */
+#define ZM_EIG_BISEC_CLUSTER_TOL ( 1.0e-3 )
+
+/* inverse iteration for the eigenvectors in a cluster of eigenvalues. */
+typedef struct{
+  _zMatEigPowerInvLU lu;
+  zMat w; /* eigenvectors stored in rows */
+  int c0, c1; /* the eigenvectors in the c0-th to (c1-1)-th rows are in the cluster */
+} _zMatSymEigBisecInvIter;
+
+/* orthogonalize a vector against the eigenvectors in the same cluster. */
+static void _zMatSymEigBisecOrth(void *util, zVec v)
+{
+  _zMatSymEigBisecInvIter *ii;
+  zVecStruct u;
+  int j;
+
+  ii = (_zMatSymEigBisecInvIter *)util;
+  for( j=ii->c0; j<ii->c1; j++ ){
+    zVecAssignArray( &u, zMatColSizeNC(ii->w), zMatRowBufNC(ii->w,j) );
+    zVecOrthogonalize( v, &u, v );
+  }
+}
+
+/* multiply a vector by the inverse of a matrix, and orthogonalize it against the eigenvectors in
+ * the same cluster. */
+static void _zMatSymEigBisecMulInv(void *util, const zVec v, zVec w)
+{
+  _zMatEigPowerMulInv( &((_zMatSymEigBisecInvIter *)util)->lu, v, w );
+  _zMatSymEigBisecOrth( util, w );
 }
 
 /* compute a unitary matrix consisting of eigenvectors for real-number eigenvalues by the inverse
- * iteration with shifts slightly different from the eigenvalues. */
-static bool _zMatSymEigBisecR(const zMat m, zVec eigval, zMat eigbase, int iter)
+ * iteration with shifts slightly different from the eigenvalues, where the eigenvectors for a cluster
+ * of eigenvalues are orthogonalized with each other (G. Peters and J. H. Wilkinson, 1971). */
+static bool _zMatSymEigBisecR(const zMat m, double scale, zVec eigval, zMat eigbase, int iter)
 {
-  _zMatEigPowerInvLU lu;
+  _zMatSymEigBisecInvIter ii;
   zMat ms;
-  zVec eigvec;
+  zVecStruct eigvec;
   double norm, shift, mu;
   int i, ret;
   bool result = false;
 
   ms = zMatAllocSqr( zMatRowSizeNC(m) );
-  eigvec = zVecAlloc( zMatRowSizeNC(m) );
-  if( !ms || !eigvec ) goto TERMINATE;
-  if( !( ( norm = zMatNorm( m ) ) > 0 ) ) norm = 1; /* zero matrix */
-  for( i=0; i<zVecSizeNC(eigval); i++ ){
+  ii.w = zMatAllocSqr( zMatRowSizeNC(m) );
+  if( !ms || !ii.w ) goto TERMINATE;
+  zMatDiv( m, scale, ms ); /* the same scaling with the eigenvalues */
+  if( !( ( norm = zMatNorm( ms ) ) > 0 ) ) norm = 1; /* zero matrix */
+  for( ii.c0=0, i=0; i<zVecSizeNC(eigval); i++ ){
+    if( i > 0 && !( zVecElemNC(eigval,i-1) - zVecElemNC(eigval,i) <= ZM_EIG_BISEC_CLUSTER_TOL * norm ) )
+      ii.c0 = i; /* a new cluster */
+    ii.c1 = i;
     for( shift=1.0e1*zTOL*norm; ; shift*=10 ){ /* the shift relative to the norm of the matrix */
-      zMatCopyNC( m, ms );
+      zMatDiv( m, scale, ms );
       zMatShift( ms, -zVecElemNC(eigval,i)-shift );
-      if( ( ret = _zMatEigPowerInvLUAlloc( &lu, ms ) ) > 0 ) break;
-      _zMatEigPowerInvLUFree( &lu );
+      if( ( ret = _zMatEigPowerInvLUAlloc( &ii.lu, ms ) ) > 0 ) break;
+      _zMatEigPowerInvLUFree( &ii.lu );
       if( ret < 0 ) goto TERMINATE;
     }
-    ret = _zMatEigPowerIter( _zMatEigPowerMulInv, &lu, eigvec, iter, &mu );
-    _zMatEigPowerInvLUFree( &lu );
+    zVecAssignArray( &eigvec, zMatColSizeNC(ii.w), zMatRowBufNC(ii.w,i) );
+    ret = _zMatEigPowerIter( _zMatSymEigBisecMulInv, _zMatSymEigBisecOrth, &ii, &eigvec, iter, &mu );
+    _zMatEigPowerInvLUFree( &ii.lu );
     if( ret < 0 ) goto TERMINATE;
-    zMatPutCol( eigbase, i, eigvec );
   }
+  zMatTNC( ii.w, eigbase );
   result = true;
 
  TERMINATE:
   zMatFree( ms );
-  zVecFree( eigvec );
+  zMatFree( ii.w );
   return result;
 }
 
 /* diagonalize a symmetric matrix by bisection method (J. W. Givens, 1954). */
 bool zMatSymEigBisec(const zMat m, zVec eigval, zMat eigbase)
 {
-  double emin, emax;
-  int nmin, nmax;
+  double emin, emax, scale, pivmin;
+  int i, nmin, nmax;
 
   _zMatSymEigCheckSize( m, eigval, eigbase );
   /* eigenvalues */
   zMatCopyNC( m, eigbase ); /* temporary working space */
+  scale = _zMatScalePow2( eigbase ); /* to avoid overflow and underflow */
   zMatToHessenberg( eigbase, NULL, NULL );
-  _zMatSymEigBisecRange( eigbase, &emin, &emax );
-  nmin = _zMatSymEigBisecSturm( eigbase, emin );
-  nmax = _zMatSymEigBisecSturm( eigbase, emax );
-  _zMatSymEigBisecRec( eigbase, emin, nmin, emax, nmax, zVecBuf(eigval) );
-  _zMatSymEigBisecR( m, eigval, eigbase, ZM_EIGSYS_ITER_NUM );
+  pivmin = zMax( DBL_EPSILON * zMatNorm( eigbase ), DBL_MIN );
+  if( _zMatSymEigBisecRange( eigbase, &emin, &emax ) ){ /* a scalar matrix */
+    zVecSetAll( eigval, emin );
+  } else{
+    nmin = _zMatSymEigBisecSturm( eigbase, emin, pivmin );
+    nmax = _zMatSymEigBisecSturm( eigbase, emax, pivmin );
+    _zMatSymEigBisecRec( eigbase, emin, nmin, emax, nmax, pivmin, zVecBuf(eigval) );
+  }
+  /* eigenvectors of the scaled matrix */
+  if( !_zMatSymEigBisecR( m, scale, eigval, eigbase, ZM_EIGSYS_ITER_NUM ) ) return false;
+  for( i=0; i<zVecSizeNC(eigval); i++ ) zVecElemNC(eigval,i) *= scale;
   return true;
 }
 

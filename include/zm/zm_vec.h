@@ -498,53 +498,40 @@ __ZM_EXPORT zVec zVecScaleUniform(const zVec src, double min, double max, zVec d
 
 /*! \brief inner product of vector.
  *
- * zVecInnerProdNC() and zVecInnerProd() calculates the
- * inner products of the two vector \a v1 and \a v2.
+ * zVecInnerProdNC() and zVecInnerProd() calculates the inner products of the two vector \a v1 and \a v2.
  * \return
- * zVecInnerProdNC() and zVecInnerProd() return the inner
- * product.
+ * zVecInnerProdNC() and zVecInnerProd() return the inner product.
  * \notes
- * zVecInnerProdNC() does not check the size consistency
- * between \a v1 and \a v2. If it is not urgent and you
- * are not hasty, you should use zVecInnerProd().
+ * zVecInnerProdNC() does not check the size consistency between \a v1 and \a v2. If it is not urgent and
+ * you are not hasty, you should use zVecInnerProd().
  */
 __ZM_EXPORT double zVecInnerProdNC(const zVec v1, const zVec v2);
 __ZM_EXPORT double zVecInnerProd(const zVec v1, const zVec v2);
 
 /*! \brief normalize a vector.
  *
- * zVecSqrNorm() calculates the squared norm of the vector
- * \a v. zVecNorm() calculates the norm of \a v. See also
- * zRawVecNorm().
+ * zVecSqrNorm() calculates the squared norm of the vector \a v. zVecNorm() calculates the norm of \a v.
  *
- * zVecNormalize() normalizes the vector \a src, namely,
- * \a src is divided by the norm of itself. The result is
- * put into \a dest.
- * zVecNormalizeDRC() directly normalizes the vector \a v.
- * If the norm of \a src is not greater than \a tol, they do
- * not normalize it, regarding it as a zero vector, and set all
- * components of \a dest for zeros. If zero or a negative value
- * is given for \a tol, zTOL is adopted instead. See also
- * zRawVecNormalize().
+ * zVecNormalize() normalizes the vector \a src, namely, \a src is divided by the norm of itself. The
+ * result is put into \a dest.
+ * zVecNormalizeDRC() directly normalizes the vector \a v. If the norm of \a src is not greater than
+ * \a tol, they do not normalize it, regarding it as a zero vector, and set all components of \a dest
+ * for zeros. If zero or a negative value is given for \a tol, zTOL is adopted instead.
  *
- * zVecWSqrNorm() and zVecWNorm() calculate the squared
- * weighted norm and the weighted norm of \a v with the weight
- * vector \a w, respectively.
+ * zVecWSqrNorm() and zVecWNorm() calculate the squared weighted norm and the weighted norm of \a v with
+ * the weight vector \a w, respectively.
  *
- * zVecSqrDist() calculates the squared distance between
- * \a v1 and \a v2. zVecDist() calculates the distance
- * between the two.
- * zVecNorm(), zVecWNorm() and zVecDist() compute the values
- * accurately even if the squared values underflow or
- * overflow. See also zRawVecNorm().
+ * zVecSqrDist() calculates the squared distance between \a v1 and \a v2. zVecDist() calculates the
+ * distance between the two.
+ * zVecNorm(), zVecWNorm() and zVecDist() compute the values accurately even if the squared values underflow
+ * or overflow.
  * \return
- * zVecSqrNorm(), zVecNorm(), zVecSqrDist() and zVecDist()
- * return the value calculated.
+ * zVecSqrNorm(), zVecNorm(), zVecSqrDist() and zVecDist() return the value calculated.
  *
- * zVecNormalize() and zVecNormalizeDRC() return the
- * pointer to the result, or the null pointer if the norm of
- * the vector is not greater than the tolerance or the sizes of
- * \a src and \a dest are different.
+ * zVecNormalize() and zVecNormalizeDRC() return the pointer to the result, or the null pointer if the
+ * norm of the vector is not greater than the tolerance or the sizes of \a src and \a dest are different.
+ * \sa
+ * zRawVecNorm, zRawVecNormalize
  */
 __ZM_EXPORT double zVecSqrNorm(const zVec v);
 __ZM_EXPORT double zVecNorm(const zVec v);
@@ -563,11 +550,11 @@ __ZM_EXPORT zVec zVecNormalize(const zVec src, double tol, zVec dest);
  * zVecProj() projects a vector \a v onto the line directed by \a n, and put the result into \a pv;
  * \a pv is parallel to \a n.
  *
- * zVec3DOrthogonalize() orthogonalizes \a v with respect to \a n, and puts it into \a ov. Namely,
- * \a ov is orthogonal to \a n.
+ * zVecOrthogonalize() orthogonalizes \a v with respect to \a n, and puts it into \a ov. Namely,
+ * \a ov is orthogonal to \a n. \a ov can be the same with \a v or \a n.
  * \return
- * zVec3DProj() returns a pointer \a pv.
- * zVec3DOrthogonalize() returns a pointer \a ov.
+ * zVecProj() returns a pointer \a pv.
+ * zVecOrthogonalize() returns a pointer \a ov.
  * Both functions return the null pointer if sizes of given vectors are not equal.
  */
 __ZM_EXPORT zVec zVecProj(const zVec v, const zVec n, zVec pv);

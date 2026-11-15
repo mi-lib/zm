@@ -116,6 +116,14 @@ __ZM_EXPORT double zMatEigPowerInv(const zMat a, zVec eigvec, int iter);
  * J. W. Givens:
  *  W. Givens, Numerical Computation of the Characteristic Values of a Real Symmetric Matrix,
  *  Oak Ridge National Laboratory, ORNL-1574, 1954.
+ * The eigenvalues are stored in descending order, where multiple eigenvalues are repeated. The
+ * eigenvectors are computed by the inverse iteration, in which those for a cluster of eigenvalues, the
+ * differences of which are not greater than 1e-3 times the norm of \a m, are orthogonalized with each
+ * other, following a procedure by G. Peters and J. H. Wilkinson:
+ *  G. Peters and J. H. Wilkinson, The Calculation of Specified Eigenvectors by Inverse Iteration,
+ *  in J. H. Wilkinson and C. Reinsch (eds.), Handbook for Automatic Computation, Vol. II, Linear
+ *  Algebra, Contribution II/18, pp. 418-439, Springer, 1971.
+ * \a m is scaled by a power of two in advance to avoid overflow and underflow.
  *
  * zMatSymEigJacobi() also diagonalizes a symmetric matrix \a m based on the cyclic Jacobi's method
  * with an update formula by Rutishauser:
@@ -132,7 +140,7 @@ __ZM_EXPORT double zMatEigPowerInv(const zMat a, zVec eigvec, int iter);
  * For the both functions, the result diagonal values are stored in a vector form \a eigval, while the
  * transformation matrix is stored in \a eigbase. Namely, the following equation holds:
  *   \a m \a eigbase = \a eigbase diag{ \a eigval }
- * The diagonal values are not sorted.
+ * The diagonal values computed by zMatSymEigJacobi() are not sorted.
  * \return
  * zMatSymEigBisec() and zMatSymEigJacobi() return the false value if
  *  - \a m is not a square matrix

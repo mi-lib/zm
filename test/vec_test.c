@@ -233,7 +233,7 @@ void assert_vec_normalize(void)
 
 void assert_vec_orthogonalize(void)
 {
-  zVec v, n, o;
+  zVec v, n, o, w;
   const int size = 10, testnum = 100;
   int i;
   bool result1 = true, result2 = true;
@@ -241,6 +241,7 @@ void assert_vec_orthogonalize(void)
   v = zVecAlloc( size );
   n = zVecAlloc( size );
   o = zVecAlloc( size );
+  w = zVecAlloc( size );
   for( i=0; i<testnum; i++ ){
     zVecRandUniform( v, -10, 10 );
     zVecRandUniform( n, -10, 10 );
@@ -249,10 +250,13 @@ void assert_vec_orthogonalize(void)
       eprintf( "[%d] error = %g\n", i, zVecInnerProd( n, o ) );
       result1 = false;
     }
+    zVecCopy( v, w );
+    zVecOrthogonalize( w, n, w );
+    if( !zVecEqual( o, w, zTOL ) ) result2 = false;
     zVecOrthogonalize( v, n, n );
     if( !zVecEqual( o, n, zTOL ) ) result2 = false;
   }
-  zVecFreeAtOnce( 3, v, n, o );
+  zVecFreeAtOnce( 4, v, n, o, w );
   zAssert( zVecProj + zVecOrthogonalize, result1 );
   zAssert( zVecOrthogonalize (override), result2 );
 }
