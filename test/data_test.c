@@ -92,6 +92,9 @@ void assert_data_median(void)
 
 #define FFT_TEST_N   100
 #define FFT_TEST_DIM  10
+/* the errors of FFT are evaluated relative to the maximum magnitude of the data or the spectrum, since
+ * the rounding errors spread over all components. */
+#define FFT_TEST_TOL  1.0e-13
 
 void assert_fft(void)
 {
@@ -99,6 +102,8 @@ void assert_fft(void)
   zVec data;
   zCVec res;
   zVec inv;
+  zComplex c;
+  double err, cmax;
   int i;
   bool result1 = true;
   bool result2 = true;
@@ -115,11 +120,22 @@ void assert_fft(void)
     zVecSetElemNC( data, i, zFourierVal( &f, 2*zPI*i/FFT_TEST_N ) );
 
   zFFT( data, res );
-  for( i=0; i<FFT_TEST_DIM; i++ )
-    if( !zEqual( zCVecElemNC(res,i)->re, f.cc[i], zTOL ) ||
-        !zEqual( zCVecElemNC(res,i)->im, f.sc[i], zTOL ) ) result1 = false;
+  for( cmax=err=0, i=0; i<FFT_TEST_DIM; i++ ){
+    zComplexCreate( &c, f.cc[i], f.sc[i] );
+    cmax = zMax( cmax, zComplexAbs( &c ) );
+    zComplexSubDRC( &c, zCVecElemNC(res,i) );
+    err = zMax( err, zComplexAbs( &c ) );
+  }
+  if( !( err <= FFT_TEST_TOL * cmax ) ){
+    eprintf( "zFFT: relative error = %g\n", err / cmax );
+    result1 = false;
+  }
   zFFTInv( res, inv );
-  if( !zVecEqual( data, inv, zTOL ) ) result2 = false;
+  zVecSubDRC( inv, data );
+  if( !( ( err = zVecElemAbsMax( inv, NULL ) ) <= FFT_TEST_TOL * zVecElemAbsMax( data, NULL ) ) ){
+    eprintf( "zFFTInv: relative error = %g\n", err / zVecElemAbsMax( data, NULL ) );
+    result2 = false;
+  }
   zVecFree( data );
   zCVecFree( res );
   zVecFree( inv );
@@ -135,6 +151,7 @@ void assert_fft2(void)
   zCMat res;
   zMat inv;
   zComplex c1, c2, c;
+  double err, cmax;
   int i, j;
   bool result1 = true;
   bool result2 = true;
@@ -155,22 +172,26 @@ void assert_fft2(void)
       zMatSetElemNC( data, i, j, zFourierVal( &f1, 2*zPI*j/FFT_TEST_N ) * zFourierVal( &f2, 2*zPI*i/FFT_TEST_N ) );
 
   zFFT2( data, res );
-  for( i=0; i<FFT_TEST_DIM; i++ ){
+  for( cmax=err=0, i=0; i<FFT_TEST_DIM; i++ ){
     zComplexCreate( &c2, f2.cc[i], f2.sc[i] );
     for( j=0; j<FFT_TEST_DIM; j++ ){
       zComplexCreate( &c1, f1.cc[j], f1.sc[j] );
       zComplexCMul( &c1, &c2, &c );
-      if( !zComplexEqual( zCMatElemNC(res,i,j), &c, zTOL ) ){
-        eprintf( "(%d,%d)\n", i, j );
-        zComplexFPrint( stderr, zCMatElemNC(res,i,j) ); zFEndl( stderr );
-        zComplexFPrint( stderr, &c ); zFEndl( stderr );
-        zFEndl( stderr );
-        result1 = false;
-      }
+      cmax = zMax( cmax, zComplexAbs( &c ) );
+      zComplexSubDRC( &c, zCMatElemNC(res,i,j) );
+      err = zMax( err, zComplexAbs( &c ) );
     }
   }
+  if( !( err <= FFT_TEST_TOL * cmax ) ){
+    eprintf( "zFFT2: relative error = %g\n", err / cmax );
+    result1 = false;
+  }
   zFFT2Inv( res, inv );
-  if( !zMatEqual( data, inv, zTOL ) ) result2 = false;
+  zMatSubDRC( inv, data );
+  if( !( ( err = zMatElemAbsMax( inv, NULL, NULL ) ) <= FFT_TEST_TOL * zMatElemAbsMax( data, NULL, NULL ) ) ){
+    eprintf( "zFFT2Inv: relative error = %g\n", err / zMatElemAbsMax( data, NULL, NULL ) );
+    result2 = false;
+  }
 
   zMatFree( data );
   zCMatFree( res );

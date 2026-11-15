@@ -1,3 +1,4 @@
+2026.11.15. Modified the tests of zFFT, zFFTInv, zFFT2, and zFFT2Inv to evaluate the maximum errors relative to the maximum magnitudes of the spectra or the data. [test]
 2026.11.15. Added tests of LQ decompositions for matrices with nearly dependent rows and of the order of rows given by the index vector, and of zMatDecompQR. [test]
 2026.11.15. Debugged zMatDecompQR to adjust the sizes of the factorized matrices for degenerated matrices. [zm_mat_decomp_lq]
 2026.11.15. Modified zLESolveMP_LQ and zLESolveMPNull to be based on the row-pivoted LQ decomposition, and zMatMPInv, zMatMPInvNull, and zMulMPInvMatMat to follow the change of zMatDecompLQAlloc. [zm_le_gen, zm_le_mat_mpinv]
