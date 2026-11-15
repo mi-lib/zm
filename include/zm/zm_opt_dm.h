@@ -198,8 +198,11 @@ __ZM_EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVe
  *    It is suitable for Newton-like directions, e.g., the variable metric method, for which the unit
  *    step length is natural, when the gradient vector is expensive. It is the cheapest as long as the
  *    full step is accepted.
- *    It is not suitable for the steepest descent method or the conjugate gradient method, for which
- *    the step length depends on the magnitude of the direction vector, since it cannot extrapolate.
+ *    Since it cannot extrapolate, the initial trial step length for the steepest descent method and the
+ *    conjugate gradient method, whose direction vector does not have the scale of the step, is estimated
+ *    from the curvature of the function along the previous step (Barzilai-Borwein's step length).
+ *    Nevertheless, "MT" or "Brent" is preferable for the conjugate gradient method, which requires an
+ *    accurate line search.
  *  - "Brent" requires only the function value at every trial step, but many trials.
  *    It is suitable if each iteration is expensive, e.g., Levenberg-Marquardt's method that computes
  *    the Hessian matrix, since it minimizes the number of iterations. It is also suitable for the
@@ -237,6 +240,9 @@ __ZM_EXPORT zOptDM *zOptDMCreate(zOptDM *opt, int dim, double (* eval)(const zVe
  *  D. F. Shanno and K. H. Phua, Matrix Conditioning and Nonlinear Optimization, Mathematical
  *  Programming, 14(1), pp. 149--160, 1978.
  * See also Eq.(6.20) of J. Nocedal and S. J. Wright, Numerical Optimization, 2nd ed., Springer, 2006.
+ * Broyden-Fletcher-Goldfarb-Shanno's formula is recommended in general, since Davidon-Fletcher-Powell's
+ * formula is less effective in correcting the quasi-Hessian matrix with an inexact line search, and
+ * might converge slowly (see Section 6.1 of the above book).
  * \return
  * These functions return a pointer \a opt. zOptDMAssignLM() returns the null pointer if it fails
  * to allocate the workspace.

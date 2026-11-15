@@ -110,7 +110,8 @@ void assert_opt_dm_ds(void)
 {
   zOptDM opt;
   zVec var, ans;
-  double k[] = { 1.0, 1.0e2, 1.0e4, 1.0e6, 0 }, *kp;
+  double k[] = { 1.0e-6, 1.0e-4, 1.0e-2, 1.0, 1.0e2, 1.0e4, 1.0e6, 0 }, *kp;
+  const char *label[] = { "SD", "VM", "CG" };
   bool result = true;
   int i;
   const double tol = 1.0e-6;
@@ -121,14 +122,17 @@ void assert_opt_dm_ds(void)
   for( i=0; i<DIM; i++ ) zVecSetElemNC( ans, i, i );
   zOptDMCreate( &opt, DIM, quad_eval, quad_grad, NULL );
   for( kp=k; *kp>0; kp++ ){
-    for( i=0; i<2; i++ ){
+    for( i=0; i<3; i++ ){
       if( i == 0 )
         zOptDMAssignSD( &opt, "DS", 0 );
       else
+      if( i == 1 )
         zOptDMAssignVM( &opt, "BFGS", "DS", 0 );
+      else
+        zOptDMAssignCG( &opt, "DS", 0 );
       zVecSetAll( var, 1.0 );
       if( zOptDMSolve( &opt, var, kp, zTOL, 0, NULL ) < 0 || zVecDist( var, ans ) > tol ){
-        eprintf( "%s (DS), k=%g: |x-x*| = %g\n", i == 0 ? "SD" : "VM", *kp, zVecDist( var, ans ) );
+        eprintf( "%s (DS), k=%g: |x-x*| = %g\n", label[i], *kp, zVecDist( var, ans ) );
         result = false;
       }
     }
@@ -1482,6 +1486,80 @@ void assert_opt_dm_lm_indefinite(void)
   zAssert( zOptDMSolve (Levenberg-Marquardt method not converging to a saddle point), result2 );
 }
 
+/* an asymmetric quadratic function f(x) = 1/2 sum_i c_i y_i^2 for y = R x, where c_i = a_i if y_i >= 0 and b_i
+   otherwise, and R is the rotation matrix by th. the minimum is zero at the origin. */
+typedef struct{
+  double a[2], b[2], th;
+} asym_t;
+
+static void asym_y(const zVec var, asym_t *p, double y[])
+{
+  y[0] = cos(p->th)*zVecElemNC(var,0) - sin(p->th)*zVecElemNC(var,1);
+  y[1] = sin(p->th)*zVecElemNC(var,0) + cos(p->th)*zVecElemNC(var,1);
+}
+
+double asym_eval(const zVec var, void *util)
+{
+  asym_t *p = util;
+  double y[2];
+  int i;
+  double val = 0;
+
+  asym_y( var, p, y );
+  for( i=0; i<2; i++ ) val += 0.5 * ( y[i] >= 0 ? p->a[i] : p->b[i] ) * y[i]*y[i];
+  return val;
+}
+
+zVec asym_grad(const zVec var, zVec g, void *util)
+{
+  asym_t *p = util;
+  double y[2], gy[2];
+  int i;
+
+  asym_y( var, p, y );
+  for( i=0; i<2; i++ ) gy[i] = ( y[i] >= 0 ? p->a[i] : p->b[i] ) * y[i];
+  zVecSetElemNC( g, 0, cos(p->th)*gy[0] + sin(p->th)*gy[1] );
+  zVecSetElemNC( g, 1,-sin(p->th)*gy[0] + cos(p->th)*gy[1] );
+  return g;
+}
+
+/* the search has to restart from the steepest descent direction if the direction is not descent. the
+   direction of the conjugate gradient method with Dennis-Schnabel's backtracking is not descent if the
+   accepted step overshoots the minimum along the line and the gradient vector reverses, which happens for
+   the asymmetric quadratic functions below. without the restart, the line search does not detect any
+   decrease, and the iteration falsely converges. */
+void assert_opt_dm_restart(void)
+{
+  asym_t p[] = {
+    { { 2.2, 0.13 }, { 112, 0.88 }, 0.5 },
+    { { 3.3, 0.65 }, { 54.8, 25.8 }, 2.21 },
+    { { 1.2, 8.3 }, { 3.3, 248 }, 2.53 },
+  };
+  double x0[][2] = { { 0.23, 0.21 }, { -0.93, 0.17 }, { -0.48, -0.94 } };
+  zOptDM opt;
+  zVec var;
+  double e;
+  int i, ret;
+  bool result = true;
+
+  var = zVecAlloc( 2 );
+  for( i=0; i<sizeof(p)/sizeof(asym_t); i++ ){
+    zOptDMCreate( &opt, 2, asym_eval, asym_grad, NULL );
+    zOptDMAssignCG( &opt, "DS", 0 );
+    zVecSetElemList( var, x0[i][0], x0[i][1] );
+    zEchoOff();
+    ret = zOptDMSolve( &opt, var, &p[i], zTOL, 0, &e );
+    zEchoOn();
+    zOptDMDestroy( &opt );
+    if( ret < 0 || !( e < 1.0e-12 ) ){
+      eprintf( "case %d: returned %d, f = %g (to be zero)\n", i, ret, e );
+      result = false;
+    }
+  }
+  zVecFree( var );
+  zAssert( zOptDMSolve (restart for non-descent direction), result );
+}
+
 int main(void)
 {
   zRandInit();
@@ -1508,5 +1586,6 @@ int main(void)
   assert_opt_dm_boundary();
   assert_opt_dm_unbounded();
   assert_opt_dm_lm_indefinite();
+  assert_opt_dm_restart();
   return 0;
 }

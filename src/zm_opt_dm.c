@@ -430,6 +430,18 @@ static double _zOptDMStepDSLimit(double at, double a)
   return at < 0.1*a ? 0.1*a : at;
 }
 
+/* the initial trial step length of Dennis-Schnabel's backtracking, which cannot expand the step length. */
+static double _zOptDMStepDSInit(zOptDM *opt)
+{
+  double pq;
+
+  if( opt->_to_start || ( opt->_vec != _zOptDMVecSD && opt->_vec != _zOptDMVecCG ) )
+    return _zMin( 1.0, _zOptDMStepMax( opt ) );
+  if( ( pq = zVecInnerProdNC( opt->_p, opt->_q ) ) > 0 )
+    return _zMin( zVecSqrNorm( opt->_p ) / pq, _zOptDMStepMax( opt ) );
+  return _zOptDMStepMax( opt ); /* negative curvature */
+}
+
 /* test the sufficient decrease condition. a trial step length where the function is not evaluated is rejected. */
 static bool _zOptDMStepDSTest(double e0, double e1, double a, double df)
 {
@@ -442,8 +454,8 @@ static zVec _zOptDMStepDS(zOptDM *opt, const zVec var, double tol, void *util, d
 
   s = zVecInnerProdNC( opt->_g, opt->_d ); /* ascendant direction */
   df = opt->_df * s;
-  /* initial test from full-length step */
-  a1 = _zMin( 1.0, _zOptDMStepMax( opt ) ); /* the backtracking cannot expand the step length */
+  /* initial test from the initial trial step length */
+  a1 = _zOptDMStepDSInit( opt );
   if( _zOptDMStepDSTest( e0, ( *e1 = _zOptDMStepEval( opt, var, util, a1 ) ), a1, df ) &&
       _zOptDMStepGradIsFinite( opt, util ) ) goto TERMINATE;
   /* w = ( f(a) - f(0) - a f'(0) ) / a^2, where f'(0) = -s.

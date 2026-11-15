@@ -1,3 +1,5 @@
+2026.11.15. Added a test of the restart from the steepest descent direction for a non-descent direction of the conjugate gradient method, and extended the test of Dennis-Schnabel's line search to small scales of the function and the conjugate gradient method. [test]
+2026.11.15. Modified Dennis-Schnabel's line search to start from Barzilai-Borwein's step length for the steepest descent method and the conjugate gradient method, or from the upper bound of the step length for a non-positive curvature. [zm_opt_dm]
 2026.11.15. Added tests of the direction of Levenberg-Marquardt method for an indefinite Hessian matrix and the convergence not to a saddle point. Modified the test of Levenberg-Marquardt method near a saddle point. [test]
 2026.11.15. Modified Levenberg-Marquardt method to increase the damping coefficient until the damped Hessian matrix becomes positive definite. [zm_opt_dm]
 2026.11.15. Added a test of zLESolveCholesky. [test]
