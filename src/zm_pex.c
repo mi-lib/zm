@@ -228,7 +228,7 @@ zPex zPexCExp(zCVec factor)
   zCVec ifactor;
   zPex pr, pc, p = NULL;
 
-  if( !zCVecToReImVec( factor, &rfactor, &ifactor, ZM_PEX_EQ_TOL ) ) return NULL;
+  if( !zCVecToReImVec( factor, &rfactor, &ifactor, zTOL ) ) return NULL;
   pr = rfactor ? _zPexExp( rfactor ) : NULL;
   pc = ifactor ? _zPexExpIm( ifactor ) : NULL;
   if( pr && pc )

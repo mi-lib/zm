@@ -126,8 +126,18 @@ __ZM_EXPORT zComplex *zComplexTouchup(zComplex *c, double tol);
 /*! \brief test if a complex nubmer is under the default tolerance. */
 #define zComplexIsTiny(c)    zComplexIsTol( c, zTOL )
 
-/*! \brief check if a complex number is a real number. */
-#define zComplexIsReal(c,tol) zIsTol( (c)->im, tol )
+/*! \brief check if a complex number is a real number.
+ *
+ * zComplexIsReal() checks if a complex number \a c is a real number, namely, if the absolute value of
+ * the imaginary part is not greater than \a tol times the absolute value of \a c, so that the result
+ * does not depend on the scale of \a c.
+ * \notes
+ * An appropriate tolerance depends on the problem. For example, computed multiple roots of a polynomial
+ * equation have imaginary parts much larger than rounding errors.
+ * \return
+ * zComplexIsReal() returns a boolean value.
+ */
+#define zComplexIsReal(c,tol) ( fabs( (c)->im ) <= (tol) * zComplexAbs( c ) )
 
 /*! \brief check if two complex numbers are equal. */
 #define zComplexEqual(c1,c2,tol) ( zEqual( (c1)->re, (c2)->re, tol ) && zEqual( (c1)->im, (c2)->im, tol ) )
@@ -135,8 +145,15 @@ __ZM_EXPORT zComplex *zComplexTouchup(zComplex *c, double tol);
 /*! \brief check if two complex numbers are exactly the same. */
 #define zComplexMatch(c1,c2) ( (c1)->re == (c2)->re && (c1)->im == (c2)->im )
 
-/*! \brief check if two complex numbers are co-conjugate. */
-#define zComplexCoconj(c1,c2,tol) ( zEqual( (c1)->re, (c2)->re, tol ) && zEqual( (c1)->im, -(c2)->im, tol ) )
+/*! \brief check if two complex numbers are co-conjugate.
+ *
+ * zComplexCoconj() checks if two complex numbers \a c1 and \a c2 are conjugate to each other, namely,
+ * if the absolute values of the difference of their real parts and the sum of their imaginary parts are
+ * not greater than \a tol times the greater one of the absolute values of \a c1 and \a c2.
+ * \return
+ * zComplexCoconj() returns a boolean value.
+ */
+__ZM_EXPORT bool zComplexCoconj(const zComplex *c1, const zComplex *c2, double tol);
 
 /* arithmatics */
 
@@ -147,6 +164,11 @@ __ZM_EXPORT zComplex *zComplexTouchup(zComplex *c, double tol);
 __ZM_EXPORT double zComplexSqrAbs(const zComplex *c);
 
 /*! \brief absolute value of a complex number
+ *
+ * zComplexAbs() computes the absolute value of a complex number \a c accurately even if the squared
+ * absolute value underflows or overflows, by computing it as a sqrt(1+(b/a)^2) only in such cases,
+ * where a and b are the greater and the smaller of the absolute values of the real and imaginary parts.
+ * _zComplexAbs() is a macro version of zComplexAbs() without the care of underflow and overflow.
  * \retval the absolute value of a complex number \a c.
  */
 #define _zComplexAbs(c) sqrt( _zComplexSqrAbs(c) )
@@ -344,7 +366,7 @@ inline bool zComplex::operator==(const zComplex &anotherval){ return zComplexEqu
 inline bool zComplex::operator!=(const zComplex &anotherval){ return !zComplexEqual( this, const_cast<zComplex*>(&anotherval), zTOL ); }
 
 inline double zComplex::sqrAbs(){ return _zComplexSqrAbs( this ); }
-inline double zComplex::abs(){ return _zComplexAbs( this ); }
+inline double zComplex::abs(){ return zComplexAbs( this ); }
 inline double zComplex::arg(){ return _zComplexArg( this ); }
 inline zComplex zComplex::conj(){ zComplex conjugate; _zComplexConj( this, &conjugate ); return conjugate; }
 inline zComplex zComplex::operator-(){ zComplex rev; _zComplexRev( this, &rev ); return rev; }

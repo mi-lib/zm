@@ -121,10 +121,25 @@ __ZM_EXPORT bool zCVecEqual(const zCVec v1, const zCVec v2, double tol);
 __ZM_EXPORT bool zCVecIsTol(const zCVec v, double tol);
 #define zCVecIsTiny(v) zCVecIsTol( v, zTOL )
 
-/*! \brief split a complex vector into real and imaginary vectors. */
+/*! \brief split a complex vector into real and imaginary vectors.
+ *
+ * zCVecToReImVec() splits a complex vector \a cvec into a vector of real numbers \a rvec and a complex
+ * vector of the other numbers \a ivec, which are paired as conjugates by zCVecConjPair(). A component
+ * of \a cvec is regarded as a real number by zComplexIsReal() with the tolerance \a tol, so that the
+ * result does not depend on the scale of \a cvec.
+ * \return
+ * zCVecToReImVec() returns the false value if it fails to allocate memory or to pair the complex numbers.
+ */
 __ZM_EXPORT bool zCVecToReImVec(const zCVec cvec, zVec *rvec, zCVec *ivec, double tol);
 
-/*! \brief reorder a complex vector as co-conjugate numbers are paired as adjacencies. */
+/*! \brief reorder a complex vector as co-conjugate numbers are paired as adjacencies.
+ *
+ * zCVecConjPair() reorders a complex vector \a v so that conjugate numbers are adjacent to each other.
+ * Two complex numbers are regarded as conjugate by zComplexCoconj() with the tolerance \a tol.
+ * \return
+ * zCVecConjPair() returns a pointer \a v, or the null pointer if the size of \a v is odd or a number
+ * that has no conjugate counterpart is found.
+ */
 __ZM_EXPORT zCVec zCVecConjPair(zCVec v, double tol);
 
 /*! \brief basic arithmetics for the complex vector.

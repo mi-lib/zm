@@ -50,7 +50,16 @@ double zComplexSqrAbs(const zComplex *c)
 /* absolute value of a complex number. */
 double zComplexAbs(const zComplex *c)
 {
-  return _zComplexAbs( c );
+  double s, a, b;
+
+  s = _zComplexSqrAbs( c );
+  if( _zIsNormalDouble( s ) ) return sqrt( s );
+  /* underflow, overflow, or not-a-number of the squared absolute value */
+  if( _zIsNan( c->re ) || _zIsNan( c->im ) ) return NAN;
+  if( ( a = fabs( c->re ) ) < ( b = fabs( c->im ) ) ) zSwap( double, a, b );
+  if( a == 0 || !_zIsFinite( a ) ) return a;
+  b /= a;
+  return a * sqrt( 1 + b * b );
 }
 
 /* argument angle of a complex number. */
@@ -191,7 +200,7 @@ zComplex *zComplexPow(const zComplex *c, double z, zComplex *pc)
 {
   double r, theta;
 
-  r = _zComplexAbs( c );
+  r = zComplexAbs( c );
   theta = _zComplexArg( c );
   _zComplexCreatePolar( pc, pow( r, z ), theta * z );
   return pc;
@@ -202,7 +211,7 @@ zComplex *zComplexPowRef(const zComplex *c, double z, const zComplex *ref, zComp
 {
   double r, theta, w;
 
-  r = pow( _zComplexAbs(c), z );
+  r = pow( zComplexAbs(c), z );
   theta = _zComplexArg(c) * z;
   w = 2 * zPI * z;
   if( ref && !zIsTiny(z) )
@@ -216,7 +225,7 @@ zComplex *zComplexCPow(const zComplex *c, const zComplex *z, zComplex *pc)
 {
   double r, theta;
 
-  r = _zComplexAbs( c );
+  r = zComplexAbs( c );
   theta = _zComplexArg( c );
   return zComplexCreatePolar( pc,
     pow( r, z->re ) * exp( -z->im * theta ), z->re*theta + z->im*log(r) );
@@ -231,7 +240,7 @@ zComplex *zComplexLog(const zComplex *c, double base, zComplex *lc)
     ZRUNERROR( ZM_ERR_INVALID_LOGBASE );
     return NULL;
   }
-  r = _zComplexAbs( c );
+  r = zComplexAbs( c );
   theta = _zComplexArg( c );
   d = log( base );
   _zComplexCreate( lc, log(r)/d, theta/d );
@@ -243,7 +252,7 @@ zComplex *zComplexCLog(const zComplex *c, const zComplex *base, zComplex *lc)
 {
   double rb, thetab, lrb, d, rc, thetac, lrc;
 
-  rb = _zComplexAbs( base );
+  rb = zComplexAbs( base );
   thetab = _zComplexArg( base );
   if( rb == 0 ){
     ZRUNERROR( ZM_ERR_INVALID_LOGBASE );
@@ -254,7 +263,7 @@ zComplex *zComplexCLog(const zComplex *c, const zComplex *base, zComplex *lc)
     ZRUNERROR( ZM_ERR_INVALID_LOGBASE );
     return NULL;
   }
-  rc = _zComplexAbs( c );
+  rc = zComplexAbs( c );
   thetac = _zComplexArg( c );
   lrc = log( rc );
   _zComplexCreate( lc,
@@ -269,7 +278,7 @@ zComplex *zComplexNormalize(const zComplex *c, double tol, zComplex *nc)
 
   if( tol <= 0 ) tol = zTOL;
   /* an absolute value that is not a number is also rejected, since the comparison is false. */
-  if( !( ( r = _zComplexAbs( c ) ) > tol ) ){
+  if( !( ( r = zComplexAbs( c ) ) > tol ) ){
     ZRUNWARN( ZM_ERR_VEC_ZERONORM );
     _zComplexZero( nc );
     return NULL;
@@ -348,6 +357,15 @@ bool zComplexValIsIncluded(const zComplex *array, int size, const zComplex *c, d
   for( i=0; i<size; i++ )
     if( zComplexEqual( &array[i], c, tol ) ) return true;
   return false;
+}
+
+/* check if two complex numbers are co-conjugate. */
+bool zComplexCoconj(const zComplex *c1, const zComplex *c2, double tol)
+{
+  double r;
+
+  r = tol * zMax( zComplexAbs( c1 ), zComplexAbs( c2 ) );
+  return fabs( c1->re - c2->re ) <= r && fabs( c1->im + c2->im ) <= r;
 }
 
 /* check if conjugate of a complex number is a member of an array. */

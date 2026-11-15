@@ -1,4 +1,5 @@
 #include <zm/zm.h>
+#include <float.h>
 
 #define NUM 100
 
@@ -191,6 +192,59 @@ bool assert_cmul_inplace(void)
   return true;
 }
 
+/* absolute values of complex numbers, the squared absolute values of which underflow or overflow. */
+bool assert_abs_range(void)
+{
+  const int scale[] = { -1022, -600, 0, 600, 1022 };
+  zComplex c0, c;
+  double v, ref;
+  int i, k;
+  bool result = true;
+
+  for( i=0; i<1000; i++ ){
+    /* the real part, which dominates the absolute value, is not less than 0.5 */
+    _zComplexCreate( &c0, zRandF(0.5,1) * ( zRandI(0,1) ? 1 : -1 ), zRandF(-1,1) );
+    ref = sqrt( c0.re*c0.re + c0.im*c0.im );
+    for( k=0; k<(int)( sizeof(scale)/sizeof(int) ); k++ ){
+      _zComplexCreate( &c, ldexp( c0.re, scale[k] ), ldexp( c0.im, scale[k] ) );
+      v = ldexp( zComplexAbs( &c ), -scale[k] );
+      if( !( fabs( v - ref ) <= 4 * DBL_EPSILON * ref ) ) result = false;
+    }
+  }
+  _zComplexCreate( &c, ldexp( 1.0, -1074 ), 0 ); /* the smallest subnormal number */
+  if( zComplexAbs( &c ) != ldexp( 1.0, -1074 ) ) result = false;
+  _zComplexCreate( &c, DBL_MAX, 0 );
+  if( zComplexAbs( &c ) != DBL_MAX ) result = false;
+  _zComplexCreate( &c, 0, 0 );
+  if( zComplexAbs( &c ) != 0 ) result = false;
+  _zComplexCreate( &c, HUGE_VAL, 1 );
+  if( zComplexAbs( &c ) != HUGE_VAL ) result = false;
+  return result;
+}
+
+/* relative judgements of real numbers and co-conjugate numbers, which do not depend on the scale. */
+bool assert_isreal_coconj(void)
+{
+  const double scale[] = { 1.0e-300, 1.0e-100, 1.0, 1.0e100, 1.0e300 };
+  zComplex c1, c2;
+  int k;
+
+  for( k=0; k<(int)( sizeof(scale)/sizeof(double) ); k++ ){
+    _zComplexCreate( &c1, scale[k], 1.0e-13 * scale[k] );
+    if( !zComplexIsReal( &c1, zTOL ) ) return false;
+    _zComplexCreate( &c1, scale[k], 1.0e-11 * scale[k] );
+    if( zComplexIsReal( &c1, zTOL ) ) return false;
+    _zComplexCreate( &c1, scale[k], 2 * scale[k] );
+    _zComplexCreate( &c2, scale[k], -2 * ( 1 + 1.0e-13 ) * scale[k] );
+    if( !zComplexCoconj( &c1, &c2, zTOL ) ) return false;
+    _zComplexCreate( &c2, scale[k], -2 * ( 1 + 1.0e-11 ) * scale[k] );
+    if( zComplexCoconj( &c1, &c2, zTOL ) ) return false;
+  }
+  zComplexZero( &c1 );
+  zComplexZero( &c2 );
+  return zComplexIsReal( &c1, zTOL ) && zComplexCoconj( &c1, &c2, zTOL );
+}
+
 int main(int argc, char *argv[])
 {
   zRandInit();
@@ -200,6 +254,8 @@ int main(int argc, char *argv[])
   zAssert( zComplexDiv + zComplexNormalize (tolerance), assert_div_normalize_tol() );
   zAssert( zComplexCDiv + zComplexCDivDRC + zComplexInv (division by zero), assert_cdiv_zero() );
   zAssert( zComplexValIsIncluded, assert_isincluded() );
+  zAssert( zComplexAbs (underflow and overflow), assert_abs_range() );
+  zAssert( zComplexIsReal + zComplexCoconj (relative judgements), assert_isreal_coconj() );
   zAssert( zQESolve, assert_qesolve() );
   zAssert( zCESolve, assert_cesolve() );
   return 0;
