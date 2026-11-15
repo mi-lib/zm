@@ -76,8 +76,12 @@ static int _zMatEigDQRSplit(zMat h, int r, double norm, bool stagnant)
   return l;
 }
 
-/* one step of implicit double-shift QR iteration (bulge chasing) on an unreduced block. */
-static void _zMatEigDQRStep(zMat h, zMat z, int l, int r, double s, double t, double *nu, double *w)
+/* one step of implicit double-shift QR iteration (bulge chasing) on an unreduced block.
+ * The shifts mu1 and mu2 are the eigenvalues of a 2x2 matrix [a b; c d], which are given by a, d and
+ * bc = b c. The first column of (H-mu1 I)(H-mu2 I) = H^2 - (a+d) H + (ad-bc) I is computed with the
+ * differences of the diagonal components from a and d in order to avoid cancellation when the shifts are
+ * close to the diagonal components (R. S. Martin, G. Peters and J. H. Wilkinson, 1970). */
+static void _zMatEigDQRStep(zMat h, zMat z, int l, int r, double a, double d, double bc, double *nu, double *w)
 {
   int n, k, nr, cmax, rmin;
   double x[3], sv;
@@ -85,9 +89,8 @@ static void _zMatEigDQRStep(zMat h, zMat z, int l, int r, double s, double t, do
   n = zMatRowSizeNC(h);
   cmax = z ? n - 1 : r;
   rmin = z ? 0 : l;
-  /* the first column of (H-mu1 I)(H-mu2 I) = H^2 - s H + t I */
-  x[0] = zMatElemNC(h,l,l) * ( zMatElemNC(h,l,l) - s ) + zMatElemNC(h,l,l+1) * zMatElemNC(h,l+1,l) + t;
-  x[1] = zMatElemNC(h,l+1,l) * ( zMatElemNC(h,l,l) + zMatElemNC(h,l+1,l+1) - s );
+  x[0] = ( zMatElemNC(h,l,l) - a ) * ( zMatElemNC(h,l,l) - d ) - bc + zMatElemNC(h,l,l+1) * zMatElemNC(h,l+1,l);
+  x[1] = zMatElemNC(h,l+1,l) * ( ( zMatElemNC(h,l,l) - a ) + ( zMatElemNC(h,l+1,l+1) - d ) );
   x[2] = zMatElemNC(h,l+1,l) * zMatElemNC(h,l+2,l+1);
   for( k=l; k<r; k++ ){
     nr = _zMin( 3, r - k + 1 );
@@ -337,7 +340,7 @@ static bool _zMatEigDQRVec(zMat t, zMat z, zCVec eigval, zCMat eigbase, double n
 bool zMatEigDQR(const zMat m, zCVec eigval, zCMat eigbase, int iter)
 {
   int r, l, its;
-  double norm, s, t, w, scale;
+  double norm, a, d, bc, w, scale;
   zMat h, z = NULL;
   zVec nu = NULL, ws = NULL;
   bool ret = false;
@@ -381,15 +384,17 @@ bool zMatEigDQR(const zMat m, zCVec eigval, zCMat eigbase, int iter)
       ZITERWARN( iter );
       goto TERMINATE;
     }
-    if( ++its == ZM_EIGDQR_EXCEPTIONAL_SHIFT_1 || its == ZM_EIGDQR_EXCEPTIONAL_SHIFT_2 ){ /* exceptional shift to break a stagnation */
+    if( ++its == ZM_EIGDQR_EXCEPTIONAL_SHIFT_1 || its == ZM_EIGDQR_EXCEPTIONAL_SHIFT_2 ){
+      /* exceptional shift to break a stagnation, which is relative to the last diagonal component */
       w = fabs( zMatElemNC(h,r,r-1) ) + fabs( zMatElemNC(h,r-1,r-2) );
-      s = 1.5 * w;
-      t = w * w;
+      a = d = zMatElemNC(h,r,r) + 0.75 * w;
+      bc = -0.4375 * w * w;
     } else{ /* eigenvalues of the trailing 2x2 block */
-      s = zMatElemNC(h,r-1,r-1) + zMatElemNC(h,r,r);
-      t = zMatElemNC(h,r-1,r-1) * zMatElemNC(h,r,r) - zMatElemNC(h,r-1,r) * zMatElemNC(h,r,r-1);
+      a = zMatElemNC(h,r-1,r-1);
+      d = zMatElemNC(h,r,r);
+      bc = zMatElemNC(h,r-1,r) * zMatElemNC(h,r,r-1);
     }
-    _zMatEigDQRStep( h, z, l, r, s, t, zVecBuf(nu), zVecBuf(ws) );
+    _zMatEigDQRStep( h, z, l, r, a, d, bc, zVecBuf(nu), zVecBuf(ws) );
   }
   ret = eigbase ? _zMatEigDQRVec( h, z, eigval, eigbase, norm ) : true;
   for( r=0; r<zCVecSizeNC(eigval); r++ ){

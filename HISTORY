@@ -1,3 +1,5 @@
+2026.11.15. Added a test of zMatEigDQR for perturbed scalar matrices, and modified the test of zMatEigPower to generate well-conditioned non-symmetric matrices. [test]
+2026.11.15. Debugged zMatEigDQR that stagnated for a matrix close to a scalar matrix due to the cancellation in the first column of the double-shift polynomial, by computing it with the differences of the diagonal components from the shifts, and modified the exceptional shifts to be relative to the last diagonal component. [zm_mat_eig]
 2026.11.15. Added tests of zMatEigPower and zMatEigPowerInv for the reproducibility and the independence of the random number sequence of the caller, for matrices with known eigenvalues of various scales, and of zMatSingularValueMax, zMatSingularValueMin, and zMatCondNum for matrices with known singular values of various scales and rank-deficient matrices. [test]
 2026.11.15. Modified zMatCondNum to return HUGE_VAL for a matrix that is not full-rank in the same criterion as zMatSVD. [zm_mat_eig]
 2026.11.15. Modified zMatSingularValueMax, zMatSingularValueMin, and zMatCondNum to be based on zMatSVD. [zm_mat_eig]

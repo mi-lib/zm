@@ -467,6 +467,37 @@ void assert_mat_eig_random(void)
   zAssert( zMatEigDQR (multiple eigenvalues), result_cluster );
 }
 
+/* a scalar matrix perturbed by rounding-level errors, which had made the double-shift QR iteration
+ * stagnate due to the cancellation in the first column of the shift polynomial. */
+void assert_mat_eig_dqr_scalar(void)
+{
+  const double lambda[] = { -1.0, 2.5, -1.0e3, 1.0e-3 };
+  zMat m;
+  zCVec eigval;
+  zCMat eigbase;
+  int i, j, k, t, n;
+  bool result = true;
+
+  for( t=0; t<N; t++ )
+    for( k=0; k<(int)(sizeof(lambda)/sizeof(double)); k++ ){
+      n = zRandI( 2, 10 );
+      m = zMatAllocSqr( n );
+      eigval = zCVecAlloc( n );
+      eigbase = zCMatAllocSqr( n );
+      for( i=0; i<n; i++ )
+        for( j=0; j<n; j++ )
+          zMatSetElemNC( m, i, j, ( i == j ? lambda[k] : 0 ) + zRandF(-10,10) * DBL_EPSILON * fabs( lambda[k] ) );
+      if( !zMatEigDQR( m, eigval, eigbase, 0 ) || !check_mat_eig( m, eigval, eigbase, 10*TOL_EIG ) ){
+        eprintf( "failed for %d x %d matrix around %g I\n", n, n, lambda[k] );
+        result = false;
+      }
+      zMatFree( m );
+      zCVecFree( eigval );
+      zCMatFree( eigbase );
+    }
+  zAssert( zMatEigDQR (perturbed scalar matrices), result );
+}
+
 bool check_mat_sym_eig(zMat m, zVec eigval, zMat eigbase, int c)
 {
   zVec v, e;
@@ -1040,11 +1071,11 @@ void mat_known_eig(zMat m, zVec d, bool sym)
   if( sym ){
     rand_orthogonal( q );
     zMatTNC( q, qinv );
-  } else{
-    do{
-      zMatRandUniform( q, -1, 1 );
-      for( i=0; i<zVecSizeNC(d); i++ ) zMatElemNC(q,i,i) += 3; /* to be well-conditioned */
-    } while( !zMatInv( q, qinv ) );
+  } else{ /* |q - I|_inf <= 1/2, so that the condition number of q is not greater than 3, since the power
+           * method cannot satisfy the convergence criterion for a highly non-normal matrix. */
+    zMatRandUniform( q, -0.5/zVecSizeNC(d), 0.5/zVecSizeNC(d) );
+    for( i=0; i<zVecSizeNC(d); i++ ) zMatElemNC(q,i,i) += 1;
+    zMatInv( q, qinv );
   }
   for( i=0; i<zVecSizeNC(d); i++ )
     for( j=0; j<zVecSizeNC(d); j++ ) zMatSetElemNC( t, i, j, zMatElemNC(q,i,j) * zVecElemNC(d,j) );
@@ -1257,6 +1288,7 @@ int main(int argc, char *argv[])
   assert_mat_eig_scale();
   assert_mat_eig_special();
   assert_mat_eig_random();
+  assert_mat_eig_dqr_scalar();
   assert_mat_sym_eig();
   assert_mat_sym_eig_random();
   assert_mat_sym_eig_jacobi_scale();

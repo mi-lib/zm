@@ -42,7 +42,9 @@ __ZM_EXPORT zMat zMatToHessenberg(const zMat m, zMat h, zMat p);
  *  J. G. F. Francis, The QR Transformation -- Part 2, The Computer Journal, 4(4):332-345, 1962.
  * The implementation combines the following techniques.
  * A subdiagonal component is regarded as zero relatively to its neighboring diagonal components,
- * and the exceptional shifts at the 10th and 20th iterations, both of which follow a procedure by
+ * the first column of the double-shift polynomial is computed with the differences of the diagonal
+ * components from the shifts to avoid cancellation, and the exceptional shifts relative to the last
+ * diagonal component are applied at the 10th and 20th iterations, all of which follow a procedure by
  * R. S. Martin, G. Peters and J. H. Wilkinson:
  *  R. S. Martin, G. Peters and J. H. Wilkinson, The QR Algorithm for Real Hessenberg Matrices,
  *  Numerische Mathematik, 14:219-231, 1970.
