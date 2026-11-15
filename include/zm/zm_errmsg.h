@@ -66,7 +66,6 @@
 #define ZM_ERR_MAT_NOTSYMMETRIC            "not a symmetric matrix"
 #define ZM_ERR_MAT_SINGULAR                "matrix is singular"
 #define ZM_ERR_MAT_NOTPOSITIVESEMIDEFINITE "matrix is not positive-semidefinite"
-#define ZM_ERR_MAT_CANNOTDECOMPOSEZEROMAT  "cannot decompose zero-matrix to L and Q matrices"
 
 #define ZM_ERR_VEC_SIZENOTFOUND            "vector size not specified"
 #define ZM_ERR_MAT_SIZENOTFOUND            "matrix size not specified"

@@ -611,6 +611,7 @@ void assert_le_ref_norm_min(void)
   const double tol_opt = 1.0e-13; /* tolerance of the relative error of the optimality */
   zMat a, l, q;
   zVec b, ref, w, x, r, d, p, v;
+  zIndex index;
   double err, opt, scale;
   int i, k;
   bool result = true;
@@ -626,6 +627,7 @@ void assert_le_ref_norm_min(void)
   d = zVecAlloc( colsize );
   p = zVecAlloc( colsize );
   v = zVecAlloc( rowsize );
+  index = zIndexCreate( rowsize );
   for( k=0; k<testnum; k++ ){
     zMatRandUniform( a, -10, 10 );
     zVecRandUniform( b, -10, 10 );
@@ -638,7 +640,7 @@ void assert_le_ref_norm_min(void)
         zVecElemNC(b,i) *= scale;
       }
     zLESolveRefNormMin( a, b, w, ref, x );
-    zMatDecompLQ( a, l, q ); /* a is row-full-rank */
+    zMatDecompLQ( a, l, q, index ); /* a is row-full-rank */
     err = le_backward_error( a, x, b, r );
     opt = le_ref_norm_min_optimality( q, x, ref, w, d, p, v );
     if( err > tol_err || opt > tol_opt ){
@@ -648,6 +650,7 @@ void assert_le_ref_norm_min(void)
   }
   zMatFreeAtOnce( 3, a, l, q );
   zVecFreeAtOnce( 8, b, ref, w, x, r, d, p, v );
+  zIndexFree( index );
   zAssert( zLESolveRefNormMin, result );
 }
 

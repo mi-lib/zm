@@ -303,6 +303,57 @@ bool assert_mat_decomp_lu_scale(void)
   return result;
 }
 
+/* check if l is a lower triangular matrix with rows permuted by index, namely, the index[k]-th row of l
+ * has no nonzero component in the columns after the k-th (k < rank) or the rank-th (k >= rank). */
+bool check_mat_decomp_lq_index(zMat l, zIndex index, int rank)
+{
+  int i, j, k;
+
+  for( k=0; k<zIndexSizeNC(index); k++ ){
+    i = zIndexElemNC(index,k);
+    for( j=( k < rank ? k+1 : rank ); j<zMatColSizeNC(l); j++ )
+      if( zMatElemNC(l,i,j) != 0 ){
+        eprintf( "l is not lower triangular with rows permuted by the index: l(%d,%d) = %g\n", i, j, zMatElemNC(l,i,j) );
+        return false;
+      }
+  }
+  return true;
+}
+
+/* LQ decompositions with a check of the index vector. They return -2 if the check fails. */
+int test_lq(zMat m, zMat l, zMat q)
+{
+  zIndex index;
+  int rank;
+
+  if( !( index = zIndexCreate( zMatRowSizeNC(m) ) ) ) return -1;
+  if( ( rank = zMatDecompLQ( m, l, q, index ) ) >= 0 && !check_mat_decomp_lq_index( l, index, rank ) ) rank = -2;
+  zIndexFree( index );
+  return rank;
+}
+
+int test_lq_full(zMat m, zMat l, zMat q)
+{
+  zIndex index;
+  int rank;
+
+  if( !( index = zIndexCreate( zMatRowSizeNC(m) ) ) ) return -1;
+  if( ( rank = zMatDecompLQFull( m, l, q, index ) ) >= 0 && !check_mat_decomp_lq_index( l, index, rank ) ) rank = -2;
+  zIndexFree( index );
+  return rank;
+}
+
+int test_lq_null(zMat m, zMat l, zMat q, zMat qnull)
+{
+  zIndex index;
+  int rank;
+
+  if( !( index = zIndexCreate( zMatRowSizeNC(m) ) ) ) return -1;
+  if( ( rank = zMatDecompLQNull( m, l, q, qnull, index ) ) >= 0 && !check_mat_decomp_lq_index( l, index, rank ) ) rank = -2;
+  zIndexFree( index );
+  return rank;
+}
+
 bool assert_mat_decomp_lq_one(int rowsize, int colsize, int rank_max, int n)
 {
   zMat mat, l, q;
@@ -319,7 +370,7 @@ bool assert_mat_decomp_lq_one(int rowsize, int colsize, int rank_max, int n)
     zMatResetSize( q );
     rank = zRandI( 1, rank_max );
     generate_matrix_composition( mat, rank );
-    rank_result = zMatDecompLQ( mat, l, q );
+    rank_result = test_lq( mat, l, q );
     if( rank_result != rank )
       eprintf( "assigned rank = %d / detected rank = %d, forcibly truncate.\n", rank, rank_result );
     if( check_matrix_composition( mat, l, q, tol ) && check_matrix_orthogonality( q, rank, tol ) ) count_success++;
@@ -343,7 +394,7 @@ bool assert_mat_decomp_lq_zero(int rowsize, int colsize)
   q = zMatAlloc( size, colsize );
   if( m && l && q ){
     zMatZero( m );
-    if( zMatDecompLQ( m, l, q ) == 0 &&
+    if( test_lq( m, l, q ) == 0 &&
         zMatRowSizeNC(l) == rowsize && zMatColSizeNC(l) == 0 &&
         zMatRowSizeNC(q) == 0 && zMatColSizeNC(q) == colsize ) result = true;
   }
@@ -374,7 +425,7 @@ bool assert_mat_decomp_lq_dependent_rows(void)
   for( i=0; i<2; i++ ){
     zMatSetSize( l, zMatRowSizeNC( m[i] ), zMatRowSizeNC( m[i] ) );
     zMatSetSize( q, zMatRowSizeNC( m[i] ), zMatColSizeNC( m[i] ) );
-    rank = zMatDecompLQ( m[i], l, q );
+    rank = test_lq( m[i], l, q );
     if( rank != 2 ||
         !check_matrix_composition( m[i], l, q, tol ) ||
         !check_matrix_orthogonality( q, rank, tol ) ) result = false;
@@ -413,7 +464,7 @@ bool assert_mat_decomp_lq_rank(void)
     size = zMatMinSize( m[i] );
     zMatSetSize( l, zMatRowSizeNC( m[i] ), size );
     zMatSetSize( q, size, zMatColSizeNC( m[i] ) );
-    rank = zMatDecompLQ( m[i], l, q );
+    rank = test_lq( m[i], l, q );
     if( rank != 2 || zMatColSizeNC(l) != rank || zMatRowSizeNC(q) != rank ) result = false;
   }
  TERMINATE:
@@ -432,7 +483,7 @@ bool check_mat_decomp_lq(zMat m, int rank_expected, double tol_comp, double tol_
   l = zMatAlloc( zMatRowSizeNC(m), size );
   q = zMatAlloc( size, zMatColSizeNC(m) );
   if( !l || !q ) goto TERMINATE;
-  if( ( rank = zMatDecompLQ( m, l, q ) ) <= 0 ) goto TERMINATE;
+  if( ( rank = test_lq( m, l, q ) ) <= 0 ) goto TERMINATE;
   if( rank_expected >= 0 && rank != rank_expected ){
     eprintf( "assigned rank = %d / detected rank = %d\n", rank_expected, rank );
     goto TERMINATE;
@@ -525,7 +576,7 @@ bool assert_mat_decomp_lq_full_one(int rowsize, int colsize, int rank_max, int n
     zMatResetSize( q );
     rank = zRandI( 1, rank_max );
     generate_matrix_composition( mat, rank );
-    rank_result = zMatDecompLQFull( mat, l, q );
+    rank_result = test_lq_full( mat, l, q );
     if( rank_result != rank ){
       eprintf( "assigned rank = %d / detected rank = %d, forcibly truncate.\n", rank, rank_result );
     }
@@ -555,7 +606,7 @@ bool assert_mat_decomp_lq_nullspace(int rowsize, int colsize, int rank, int n)
     zMatResetSize( l );
     zMatResetSize( q );
     generate_matrix_composition( mat, rank );
-    rank_result = zMatDecompLQNull( mat, l, q, qnull );
+    rank_result = test_lq_null( mat, l, q, qnull );
     if( zMatColSizeNC(mat) == rank_result ){
       count_success++;
     } else{
@@ -586,7 +637,7 @@ bool check_mat_decomp_lq_full(zMat m, int rank_expected, double tol)
   q = zMatAllocSqr( zMatColSizeNC(m) );
   qnull = zMatAllocSqr( zMatColSizeNC(m) );
   if( !l || !q || !qnull ) goto TERMINATE;
-  if( ( rank = zMatDecompLQFull( m, l, q ) ) != rank_expected ){
+  if( ( rank = test_lq_full( m, l, q ) ) != rank_expected ){
     eprintf( "assigned rank = %d / detected rank = %d\n", rank_expected, rank );
     goto TERMINATE;
   }
@@ -594,7 +645,7 @@ bool check_mat_decomp_lq_full(zMat m, int rank_expected, double tol)
       !check_matrix_orthogonality( q, zMatColSizeNC(m), tol ) ) goto TERMINATE;
   zMatResetSize( l );
   zMatResetSize( q );
-  if( ( rank = zMatDecompLQNull( m, l, q, qnull ) ) != rank_expected ||
+  if( ( rank = test_lq_null( m, l, q, qnull ) ) != rank_expected ||
       zMatRowSizeNC(qnull) != zMatColSizeNC(m) || zMatColSizeNC(qnull) != zMatColSizeNC(m) - rank ){
     eprintf( "invalid size of null space (%d x %d) for rank %d\n", zMatRowSizeNC(qnull), zMatColSizeNC(qnull), rank );
     goto TERMINATE;
@@ -693,6 +744,111 @@ bool assert_mat_decomp_lq_full_scale(void)
   return result;
 }
 
+/* a row nearly dependent on the preceding ones must not be chosen as a pivot before an independent one;
+ * otherwise, the noise in the orthogonalization amplified by the small residual of the row makes the
+ * other dependent rows look independent. */
+void generate_matrix_nearly_dependent_row(zMat m, double delta)
+{
+  zMat b;
+  double c0, c1, c2;
+  int i, j;
+
+  b = zMatAlloc( 3, zMatColSizeNC(m) ); /* rank 3 */
+  zMatRandUniform( b, -1, 1 );
+  for( j=0; j<zMatColSizeNC(m); j++ ){
+    zMatSetElemNC( m, 0, j, zMatElemNC(b,0,j) );
+    zMatSetElemNC( m, 1, j, zMatElemNC(b,1,j) );
+    zMatSetElemNC( m, 2, j, zMatElemNC(b,0,j) + zMatElemNC(b,1,j) + delta * zMatElemNC(b,2,j) );
+  }
+  for( i=3; i<zMatRowSizeNC(m); i++ ){ /* linear combinations of the three rows of b */
+    c0 = zRandF( -1, 1 );
+    c1 = zRandF( -1, 1 );
+    c2 = zRandF( -1, 1 );
+    for( j=0; j<zMatColSizeNC(m); j++ )
+      zMatSetElemNC( m, i, j, c0*zMatElemNC(b,0,j) + c1*zMatElemNC(b,1,j) + c2*zMatElemNC(b,2,j) );
+  }
+  zMatFree( b );
+}
+
+bool assert_mat_decomp_lq_pivot(int n)
+{
+  zMat m[2], l, q;
+  int i, k, rank;
+  bool result = true;
+
+  m[0] = zMatAlloc( 8, 5 ); /* row-long case */
+  m[1] = zMatAlloc( 5, 8 ); /* column-long case */
+  l = zMatAlloc( 8, 8 );
+  q = zMatAlloc( 8, 8 );
+  if( !m[0] || !m[1] || !l || !q ){
+    result = false;
+    goto TERMINATE;
+  }
+  for( i=0; i<n; i++ ){
+    generate_matrix_nearly_dependent_row( m[0], 1.0e-7 );
+    generate_matrix_nearly_dependent_row( m[1], 1.0e-7 );
+    for( k=0; k<2; k++ ){
+      zMatSetSize( l, zMatRowSizeNC(m[k]), zMatMinSize(m[k]) );
+      zMatSetSize( q, zMatMinSize(m[k]), zMatColSizeNC(m[k]) );
+      if( ( rank = test_lq( m[k], l, q ) ) != 3 ){
+        eprintf( "zMatDecompLQ (%d x %d): rank = %d (expected 3)\n", zMatRowSizeNC(m[k]), zMatColSizeNC(m[k]), rank );
+        result = false;
+      }
+      zMatSetSize( l, zMatRowSizeNC(m[k]), zMatColSizeNC(m[k]) );
+      zMatSetSize( q, zMatColSizeNC(m[k]), zMatColSizeNC(m[k]) );
+      if( ( rank = test_lq_full( m[k], l, q ) ) != 3 ){
+        eprintf( "zMatDecompLQFull (%d x %d): rank = %d (expected 3)\n", zMatRowSizeNC(m[k]), zMatColSizeNC(m[k]), rank );
+        result = false;
+      }
+    }
+  }
+ TERMINATE:
+  zMatFreeAtOnce( 4, m[0], m[1], l, q );
+  return result;
+}
+
+/* QR decomposition: q r = m, q is column-orthonormal, and r is upper triangular with columns permuted by
+ * the index. */
+bool assert_mat_decomp_qr(int rowsize, int colsize, int rank_max, int n)
+{
+  zMat m, q, r, qt, rt;
+  zIndex index;
+  int i, rank;
+  bool result = true;
+  const double tol = 1.0e-10;
+
+  m = zMatAlloc( rowsize, colsize );
+  q = zMatAlloc( rowsize, zMin( rowsize, colsize ) );
+  r = zMatAlloc( zMin( rowsize, colsize ), colsize );
+  qt = zMatAlloc( zMin( rowsize, colsize ), rowsize );
+  rt = zMatAlloc( colsize, zMin( rowsize, colsize ) );
+  index = zIndexCreate( colsize );
+  if( !m || !q || !r || !qt || !rt || !index ){
+    result = false;
+    goto TERMINATE;
+  }
+  for( i=0; i<n; i++ ){
+    zMatResetSize( q );
+    zMatResetSize( r );
+    generate_matrix_composition( m, zRandI( 1, rank_max ) );
+    if( ( rank = zMatDecompQR( m, q, r, index ) ) <= 0 ){
+      result = false;
+      continue;
+    }
+    zMatSetSize( qt, rank, rowsize );
+    zMatSetSize( rt, colsize, rank );
+    zMatTNC( q, qt );
+    zMatTNC( r, rt );
+    if( !check_matrix_composition( m, q, r, tol * zMax( zMatElemAbsMax( m, NULL, NULL ), 1.0 ) ) ||
+        !check_matrix_orthogonality( qt, rank, tol ) ||
+        !check_mat_decomp_lq_index( rt, index, rank ) ) result = false;
+  }
+ TERMINATE:
+  zMatFreeAtOnce( 5, m, q, r, qt, rt );
+  zIndexFree( index );
+  return result;
+}
+
 int main(void)
 {
   const int size_large = 8;
@@ -719,6 +875,7 @@ int main(void)
   zAssert( zMatDecompLQ (error rejection in compactions), assert_mat_decomp_lq_rank() );
   zAssert( zMatDecompLQ (scale-independent rank detection), assert_mat_decomp_lq_scale() );
   zAssert( zMatDecompLQ (ill-conditioned matrices), assert_mat_decomp_lq_illcond() );
+  zAssert( zMatDecompLQ + zMatDecompLQFull (nearly dependent rows), assert_mat_decomp_lq_pivot( n ) );
   zAssert( zMatDecompLQFull (5x8), assert_mat_decomp_lq_full_one( size_small, size_large, size_small, n ) );
   zAssert( zMatDecompLQFull (8x5), assert_mat_decomp_lq_full_one( size_large, size_small, size_small, n ) );
   zAssert( zMatDecompLQFull (8x8), assert_mat_decomp_lq_full_one( size_large, size_large, size_small, n ) );
@@ -726,5 +883,7 @@ int main(void)
   zAssert( zMatDecompLQFull + zMatDecompLQNull (scale-independent rank detection), assert_mat_decomp_lq_full_scale() );
   zAssert( zMatDecompLQNull (5x8), assert_mat_decomp_lq_nullspace( size_small, size_large, rank, n ) );
   zAssert( zMatDecompLQNull (8x5), assert_mat_decomp_lq_nullspace( size_large, size_small, rank, n ) );
+  zAssert( zMatDecompQR (5x8), assert_mat_decomp_qr( size_small, size_large, size_small, n ) );
+  zAssert( zMatDecompQR (8x5), assert_mat_decomp_qr( size_large, size_small, size_small, n ) );
   return 0;
 }

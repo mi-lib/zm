@@ -10,11 +10,13 @@
 static int _zMatMPInvAllocWork1(const zMat m, zMat *l, zMat *q)
 {
   int rank;
+  zIndex index;
 
-  if( ( rank = zMatDecompLQAlloc( m, l, q ) ) < 0 ){
+  if( ( rank = zMatDecompLQAlloc( m, l, q, &index ) ) < 0 ){
     zMatFreeAtOnce( 2, *l, *q );
     return -1;
   }
+  zIndexFree( index ); /* the order of rows is not used, since l is not solved by forward substitution. */
   return rank;
 }
 

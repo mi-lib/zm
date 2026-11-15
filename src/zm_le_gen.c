@@ -350,7 +350,7 @@ zVec zLESolveMP_LQ(const zMat a, const zVec b, const zVec wn, const zVec we, zVe
   zLEWorkspace workspace;
 
   if( !_zLEWorkspaceAllocMPAndCopyAB( &workspace, a, b ) ) goto TERMINATE;
-  if( ( rank = zMatDecompLQ( a, workspace.l_facto, workspace.r_facto ) ) > 0 ){
+  if( ( rank = zMatDecompLQ( a, workspace.l_facto, workspace.r_facto, workspace.index_lu ) ) > 0 ){
     zLEWorkspaceResizeMP( &workspace, rank );
     zLESolveMP_LQ_DST( &workspace, we, wn, rank, ans );
   }
@@ -412,7 +412,7 @@ zVec zLESolveMPNull(const zMat a, const zVec b, const zVec wn, const zVec we, zV
   zLEWorkspace workspace;
 
   if( !_zLEWorkspaceAllocMPAndCopyAB( &workspace, a, b ) ) goto TERMINATE;
-  if( ( rank = zMatDecompLQ( a, workspace.l_facto, workspace.r_facto ) ) > 0 ){
+  if( ( rank = zMatDecompLQ( a, workspace.l_facto, workspace.r_facto, workspace.index_lu ) ) > 0 ){
     zLEWorkspaceResizeMP( &workspace, rank );
     zLESolveMPNullDST( &workspace, we, wn, rank, ans, mn );
   }

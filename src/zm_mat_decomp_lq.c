@@ -73,32 +73,49 @@ void _zMatHouseholderR(zMat m, const double *nu, int n, int c0, int r0, int r1)
   }
 }
 
-/* check if the residual of a row vector after orthogonalization is negligible relative to its original norm. */
-static bool _zMatDecompLQIsDependent(double residual, double norm, double tol)
+/* the maximum norm of row vectors of a matrix. */
+static double _zMatRowNormMax(const zMat m)
 {
-  return residual <= tol * norm;
+  int i;
+  double norm, norm_max = 0;
+
+  for( i=0; i<zMatRowSizeNC(m); i++ )
+    if( ( norm = zRawVecNorm( zMatRowBufNC(m,i), zMatColSizeNC(m) ) ) > norm_max ) norm_max = norm;
+  return norm_max;
 }
 
-/* LQ decomposition of column-long rectangular matrices based on modified Gram=Schmidt's method. (destructive) */
-static int _zMatDecompLQDST_Q(zMat l, zMat q) /* q has to be initially set for the original matrix. */
+/* LQ decomposition of column-long rectangular matrices based on modified Gram=Schmidt's method with row
+ * pivoting. (destructive) */
+static int _zMatDecompLQDST_Q(zMat l, zMat q, zIndex index) /* q has to be initially set for the original matrix. */
 {
-  int i, j, rank;
-  double *qp, r, norm;
+  int i, p, rank;
+  double *qk, *qi, r, norm, tol;
 
   zMatZero( l );
-  for( rank=0, i=0; i<zMatRowSizeNC(q); i++ ){
-    qp = zMatRowBufNC(q,i);
-    norm = zRawVecNorm( qp, zMatColSizeNC(q) );
-    for( j=0; j<rank; j++ ){
-      r = zRawVecInnerProd( qp, zMatRowBufNC(q,j), zMatColSizeNC(q) );
-      zRawVecCatDRC( qp, -r, zMatRowBufNC(q,j), zMatColSizeNC(q) );
-      zMatSetElemNC( l, i, j, r );
+  zIndexOrder( index, 0 );
+  tol = ZM_LQ_DECOMP_TOL * _zMatRowNormMax( q );
+  for( rank=0; rank<zMatRowSizeNC(q); rank++ ){
+    /* pivoting: the row with the largest residual is orthonormalized next (rows are physically swapped). */
+    for( r=0, p=i=rank; i<zMatRowSizeNC(q); i++ )
+      if( ( norm = zRawVecNorm( zMatRowBufNC(q,i), zMatColSizeNC(q) ) ) > r ){
+        r = norm;
+        p = i;
+      }
+    if( !( r > tol ) ) break; /* the residuals of all the remaining rows are negligible. */
+    if( p != rank ){
+      zMatSwapRowNC( q, rank, p );
+      zIndexSwapNC( index, rank, p );
     }
-    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm(qp,zMatColSizeNC(q)) ), norm, ZM_LQ_DECOMP_TOL ) ) continue;
-    zRawVecDiv( qp, r, zMatRowBufNC(q,rank), zMatColSizeNC(q) );
-    zMatSetElemNC( l, i, rank++, r );
+    qk = zMatRowBufNC(q,rank);
+    zRawVecDivDRC( qk, r, zMatColSizeNC(q) );
+    zMatSetElemNC( l, zIndexElemNC(index,rank), rank, r );
+    for( i=rank+1; i<zMatRowSizeNC(q); i++ ){ /* orthogonalization of the remaining rows */
+      qi = zMatRowBufNC(q,i);
+      r = zRawVecInnerProd( qi, qk, zMatColSizeNC(q) );
+      zRawVecCatDRC( qi, -r, qk, zMatColSizeNC(q) );
+      zMatSetElemNC( l, zIndexElemNC(index,i), rank, r );
+    }
   }
-  if( rank == 0 ) ZRUNERROR( ZM_ERR_MAT_CANNOTDECOMPOSEZEROMAT );
   if( rank < zMatRowSizeNC(q) ){ /* automatically adjust sizes of factorized matrices */
     zMatColResize( l, rank ); /* to be column-full-rank */
     zMatRowResize( q, rank ); /* to be row-full-rank */
@@ -106,123 +123,39 @@ static int _zMatDecompLQDST_Q(zMat l, zMat q) /* q has to be initially set for t
   return rank;
 }
 
-/* LQ decomposition of row-long rectangular matrices based on modified Gram=Schmidt's method. (destructive) */
-static int _zMatDecompLQDST_L(zMat l, zMat q) /* l has to be initially set for the original matrix. */
+/* full-sized LQ decomposition based on Householder method with row pivoting. (destructive) */
+static int _zMatDecompLQFullDST(zMat m, zMat q, zIndex index) /* m has to be initially set for the original matrix. */
 {
-  int i, j, rank = 0;
-  double r0, r, norm, *ws = NULL, *v;
-
-  for( i=0; i<zMatRowSizeNC(l); i++ ){
-    if( ( r0 = zRawVecNorm( zMatRowBufNC(l,i), zMatColSizeNC(l) ) ) > 0 ){
-      ws = zMatRowBufNC(l,i);
-      break;
-    }
-    zRawVecZero( zMatRowBufNC(l,i), zMatColSizeNC(l) ); /* leading null rows */
-  }
-  if( !ws ){
-    ZRUNERROR( ZM_ERR_MAT_CANNOTDECOMPOSEZEROMAT );
-    goto ZMAT_DECOMP_LQ_L_RESIZE;
-  }
-  zRawVecDiv( ws, r0, zMatRowBufNC(q,0), zMatColSizeNC(l) );
-  for( rank=1, i++; i<zMatRowSizeNC(l); i++ ){
-    /* the row vector is orthogonalized in the next row of q, or in ws if q is already full. */
-    v = rank < zMatColSizeNC(l) ? zMatRowBufNC(q,rank) : ws;
-    zRawVecCopy( zMatRowBufNC(l,i), v, zMatColSizeNC(l) );
-    norm = zRawVecNorm( v, zMatColSizeNC(l) );
-    for( j=0; j<rank; j++ ){
-      r = zRawVecInnerProd( v, zMatRowBufNC(q,j), zMatColSizeNC(q) );
-      zRawVecCatDRC( v, -r, zMatRowBufNC(q,j), zMatColSizeNC(q) );
-      zMatSetElemNC( l, i, j, r );
-    }
-    if( rank >= zMatColSizeNC(l) ) continue;
-    zRawVecZero( zMatRowBufNC(l,i) + rank, zMatColSizeNC(l) - rank );
-    if( _zMatDecompLQIsDependent( ( r = zRawVecNorm( v, zMatColSizeNC(q) ) ), norm, ZM_LQ_DECOMP_TOL ) ) continue;
-    zRawVecDivDRC( v, r, zMatColSizeNC(q) );
-    zMatSetElemNC( l, i, rank++, r );
-  }
-  *ws = r0;
-  zRawVecZero( ws + 1, zMatColSizeNC(l) - 1 );
- ZMAT_DECOMP_LQ_L_RESIZE:
-  if( rank < zMatRowSizeNC(q) ){ /* automatically adjust sizes of factorized matrices */
-    zMatColResize( l, rank ); /* to be column-full-rank */
-    zMatRowResize( q, rank ); /* to be row-full-rank */
-  }
-  return rank;
-}
-
-/* LQ decomposition based on modified Gram=Schmidt's method. */
-int zMatDecompLQ(const zMat m, zMat l, zMat q)
-{
-  int rank;
-  double scale;
-
-  if( zMatRowSizeNC(m) > zMatColSizeNC(m) ){ /* row-long rectangular matrix */
-    if( !zMatSizeEqual( m, l ) || !zMatRowColSizeEqual( q, l ) || !zMatIsSqr( q ) ){
-      ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
-      return -1;
-    }
-    zMatCopyNC( m, l );
-    scale = _zMatScalePow2( l );
-    rank = _zMatDecompLQDST_L( l, q );
-  } else{ /* column-long rectangular matrix */
-    if( !zMatSizeEqual( m, q ) || !zMatRowSizeEqual( m, l ) || !zMatIsSqr( l ) ){
-      ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
-      return -1;
-    }
-    zMatCopyNC( m, q );
-    scale = _zMatScalePow2( q );
-    rank = _zMatDecompLQDST_Q( l, q );
-  }
-  zMatMulDRC( l, scale ); /* the scaling by a power of two to avoid overflow and underflow is undone */
-  return rank;
-}
-
-/* LQ decomposition with an automatic matrix allocation. */
-int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q)
-{
-  int minsize;
-
-  minsize = zMin( zMatRowSizeNC(m), zMatColSizeNC(m) );
-  *l = zMatAlloc( zMatRowSizeNC(m), minsize );
-  *q = zMatAlloc( minsize, zMatColSizeNC(m) );
-  if( !*l || !*q ){
-    zMatFree( *l );
-    zMatFree( *q );
-    *l = *q = NULL;
-    return -1;
-  }
-  return zMatDecompLQ( m, *l, *q );
-}
-
-/* full-sized LQ decomposition based on Householder method. (destructive) */
-static int _zMatDecompLQFullDST(zMat m, zMat q)
-{
-  double scale, s, norm;
+  double scale, s, norm, norm_max, tol;
   double *u, *nu;
-  int i, colsize, rank;
+  int i, p, colsize, rank;
 
   scale = _zMatScalePow2( m );
+  tol = ZM_LQ_DECOMP_TOL * _zMatRowNormMax( m );
+  zIndexOrder( index, 0 );
   /* forward reflections: the k-th reflection is I - 2 nu nu^T, where the unit vector nu is stored in
-   * the k-th row of q. */
+   * the k-th row of q. Rows of m are not physically swapped to keep the correspondence to the original. */
   zMatZero( q );
-  for( rank=0, i=0; i<zMatRowSizeNC(m) && rank<zMatColSizeNC(m); i++ ){
-    /* the norm of a row vector is preserved through the orthogonal transformations. */
-    norm = zRawVecNorm( zMatRowBufNC(m,i), zMatColSizeNC(m) );
-    u = &zMatElemNC(m,i,rank);
+  for( rank=0; rank<zMatRowSizeNC(m) && rank<zMatColSizeNC(m); rank++ ){
     colsize = zMatColSizeNC(m) - rank;
+    /* pivoting: the row with the largest remaining components is reflected next. */
+    for( norm_max=0, p=i=rank; i<zMatRowSizeNC(m); i++ )
+      if( ( norm = zRawVecNorm( &zMatElemNC(m,zIndexElemNC(index,i),rank), colsize ) ) > norm_max ){
+        norm_max = norm;
+        p = i;
+      }
+    if( !( norm_max > tol ) ) break; /* the remaining components of all the remaining rows are negligible. */
+    zIndexSwapNC( index, rank, p );
+    u = &zMatElemNC(m,zIndexElemNC(index,rank),rank);
     nu = &zMatElemNC(q,rank,rank);
-    if( !_zMatHouseholderUnitNormal( u, colsize, nu, &s ) ||
-        _zMatDecompLQIsDependent( fabs( s ), norm, ZM_LQ_DECOMP_TOL ) ){
-      zRawVecZero( nu, colsize );
-      zRawVecZero( u, colsize ); /* linearly dependent on the preceding rows */
-      continue;
-    }
-    if( i < zMatRowSizeNC(m) - 1 )
-      _zMatHouseholderR( m, nu, colsize, rank, i+1, zMatRowSizeNC(m)-1 );
+    _zMatHouseholderUnitNormal( u, colsize, nu, &s );
+    for( i=rank+1; i<zMatRowSizeNC(m); i++ )
+      _zMatHouseholderR( m, nu, colsize, rank, zIndexElemNC(index,i), zIndexElemNC(index,i) );
     *u = s;
     zRawVecZero( u + 1, colsize - 1 );
-    rank++;
   }
+  for( i=rank; i<zMatRowSizeNC(m); i++ ) /* the remaining components of linearly dependent rows are discarded. */
+    zRawVecZero( &zMatElemNC(m,zIndexElemNC(index,i),rank), zMatColSizeNC(m) - rank );
   /* backward accumulation: q = H_{rank-1} ... H_0 is computed by multiplying H_{rank-1}, ..., H_0 from
    * the right side of the identity matrix, where only the trailing block of q is modified at each step. */
   for( i=rank; i<zMatColSizeNC(q); i++ )
@@ -241,37 +174,95 @@ static int _zMatDecompLQFullDST(zMat m, zMat q)
   return rank;
 }
 
-/* full-sized LQ decomposition based on Householder method. */
-int zMatDecompLQFull(const zMat m, zMat l, zMat q)
+/* LQ decomposition. */
+int zMatDecompLQ(const zMat m, zMat l, zMat q, zIndex index)
 {
-  if( !zMatSizeEqual( m, l ) || !zMatRowColSizeEqual( q, m ) || !zMatIsSqr( q ) ){
+  int rank;
+  double scale;
+
+  if( zMatRowSizeNC(m) != zIndexSizeNC(index) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+    return -1;
+  }
+  if( zMatRowSizeNC(m) > zMatColSizeNC(m) ){ /* row-long rectangular matrix */
+    if( !zMatSizeEqual( m, l ) || !zMatRowColSizeEqual( q, l ) || !zMatIsSqr( q ) ){
+      ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+      return -1;
+    }
+    zMatCopyNC( m, l );
+    rank = _zMatDecompLQFullDST( l, q, index );
+    if( rank < zMatColSizeNC(l) ){ /* automatically adjust sizes of factorized matrices */
+      zMatColResize( l, rank ); /* to be column-full-rank */
+      zMatRowResize( q, rank ); /* to be row-full-rank */
+    }
+  } else{ /* column-long rectangular matrix */
+    if( !zMatSizeEqual( m, q ) || !zMatRowSizeEqual( m, l ) || !zMatIsSqr( l ) ){
+      ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+      return -1;
+    }
+    zMatCopyNC( m, q );
+    scale = _zMatScalePow2( q );
+    rank = _zMatDecompLQDST_Q( l, q, index );
+    zMatMulDRC( l, scale ); /* the scaling by a power of two to avoid overflow and underflow is undone */
+  }
+  return rank;
+}
+
+/* LQ decomposition with an automatic matrix allocation. */
+int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q, zIndex *index)
+{
+  int minsize;
+
+  minsize = zMin( zMatRowSizeNC(m), zMatColSizeNC(m) );
+  *l = zMatAlloc( zMatRowSizeNC(m), minsize );
+  *q = zMatAlloc( minsize, zMatColSizeNC(m) );
+  *index = zIndexCreate( zMatRowSizeNC(m) );
+  if( !*l || !*q || !*index ){
+    zMatFree( *l );
+    zMatFree( *q );
+    zIndexFree( *index );
+    *l = *q = NULL;
+    *index = NULL;
+    return -1;
+  }
+  return zMatDecompLQ( m, *l, *q, *index );
+}
+
+/* full-sized LQ decomposition based on Householder method. */
+int zMatDecompLQFull(const zMat m, zMat l, zMat q, zIndex index)
+{
+  if( !zMatSizeEqual( m, l ) || !zMatRowColSizeEqual( q, m ) || !zMatIsSqr( q ) ||
+      zMatRowSizeNC(m) != zIndexSizeNC(index) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return -1;
   }
   zMatCopyNC( m, l );
-  return _zMatDecompLQFullDST( l, q );
+  return _zMatDecompLQFullDST( l, q, index );
 }
 
 /* full-sized LQ decomposition with an automatic matrix allocation based on Householder method. */
-int zMatDecompLQFullAlloc(const zMat m, zMat *l, zMat *q)
+int zMatDecompLQFullAlloc(const zMat m, zMat *l, zMat *q, zIndex *index)
 {
   *l = zMatAlloc( zMatRowSizeNC(m), zMatColSizeNC(m) );
   *q = zMatAllocSqr( zMatColSizeNC(m) );
-  if( !*l || !*q ){
+  *index = zIndexCreate( zMatRowSizeNC(m) );
+  if( !*l || !*q || !*index ){
     zMatFree( *l );
     zMatFree( *q );
+    zIndexFree( *index );
     *l = *q = NULL;
+    *index = NULL;
     return -1;
   }
-  return zMatDecompLQFull( m, *l, *q );
+  return zMatDecompLQFull( m, *l, *q, *index );
 }
 
 /* LQ decomposition based on Householder method. */
-int zMatDecompLQNull(const zMat m, zMat l, zMat q, zMat qnull)
+int zMatDecompLQNull(const zMat m, zMat l, zMat q, zMat qnull, zIndex index)
 {
   int rank;
 
-  if( ( rank = zMatDecompLQFull( m, l, q ) ) >= 0 && qnull ){
+  if( ( rank = zMatDecompLQFull( m, l, q, index ) ) >= 0 && qnull ){
     zMatSetColSizeNC( qnull, zMatColSizeNC(m) - rank );
     zMatTGetNC( q, rank, 0, qnull );
     zMatSetColSizeNC( l, rank );
@@ -281,7 +272,7 @@ int zMatDecompLQNull(const zMat m, zMat l, zMat q, zMat qnull)
 }
 
 /* QR decomposition. */
-int zMatDecompQR(const zMat m, zMat q, zMat r)
+int zMatDecompQR(const zMat m, zMat q, zMat r, zIndex index)
 {
   zMat mcp, qcp, rcp;
   int rank = -1;
@@ -289,12 +280,11 @@ int zMatDecompQR(const zMat m, zMat q, zMat r)
   mcp = zMatAlloc( zMatColSizeNC(m), zMatRowSizeNC(m) );
   qcp = zMatAlloc( zMatColSizeNC(q), zMatRowSizeNC(q) );
   rcp = zMatAlloc( zMatColSizeNC(r), zMatRowSizeNC(r) );
-  if( !mcp || !qcp || !rcp ){
-    ZALLOCERROR();
-    goto TERMINATE;
-  }
+  if( !mcp || !qcp || !rcp ) goto TERMINATE;
   zMatTNC( m, mcp );
-  rank = zMatDecompLQ( mcp, rcp, qcp );
+  if( ( rank = zMatDecompLQ( mcp, rcp, qcp, index ) ) < 0 ) goto TERMINATE;
+  zMatColResize( q, rank ); /* to be column-full-rank */
+  zMatRowResize( r, rank ); /* to be row-full-rank */
   zMatTNC( qcp, q );
   zMatTNC( rcp, r );
 
