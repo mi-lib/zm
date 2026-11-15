@@ -1357,6 +1357,88 @@ void assert_opt_dm_boundary(void)
   zAssert( zOptDMSolve (minimum near a barrier), result4 );
 }
 
+/* f(x) = log x and f(x) = -1/x, which are unbounded below toward the pole x = 0 */
+double unbounded_log_eval(const zVec var, void *dummy)
+{
+  return log( zVecElemNC(var,0) );
+}
+
+zVec unbounded_log_grad(const zVec var, zVec g, void *dummy)
+{
+  zVecSetElemNC( g, 0, 1 / zVecElemNC(var,0) );
+  return g;
+}
+
+double unbounded_pole_eval(const zVec var, void *dummy)
+{
+  return zVecElemNC(var,0) > 0 ? -1 / zVecElemNC(var,0) : NAN;
+}
+
+zVec unbounded_pole_grad(const zVec var, zVec g, void *dummy)
+{
+  zVecSetElemNC( g, 0, zVecElemNC(var,0) > 0 ? 1 / zSqr( zVecElemNC(var,0) ) : NAN );
+  return g;
+}
+
+/* every method has to fail for a function unbounded below toward a pole, where the step becomes negligible
+   while the function still decreases steeply. Levenberg-Marquardt method with Dennis-Schnabel's line search
+   is excluded, since it takes a little fraction of the distance to the pole at each step for a negative
+   Hessian matrix, so that the decrease within the negligible step is small.
+   every method has to succeed from an initial guess very close to the minimum, where the initial gradient
+   vector is very small. */
+void assert_opt_dm_unbounded(void)
+{
+  struct{
+    double (* eval)(const zVec,void*);
+    zVec (* grad)(const zVec,zVec,void*);
+  } *uc, ucase[] = {
+    { unbounded_log_eval, unbounded_log_grad },
+    { unbounded_pole_eval, unbounded_pole_grad },
+    { NULL, NULL },
+  };
+  zOptDM opt;
+  zVec var1, var4;
+  method_t *meth;
+  double tol[] = { 1.0e-3, 1.0e-6, zTOL }, *t, e;
+  int i, ret;
+  bool result1 = true, result2 = true;
+
+  var1 = zVecAlloc( 1 );
+  var4 = zVecAlloc( DIM );
+  for( meth=method; meth->label; meth++ )
+    for( t=tol; t<tol+sizeof(tol)/sizeof(double); t++ ){
+      if( !( meth->assign == assign_lm && strcmp( meth->stepmethod, "DS" ) == 0 ) )
+        for( uc=ucase; uc->eval; uc++ )
+          for( i=0; i<2; i++ ){ /* analytical and numerical gradient vectors */
+            zOptDMCreate( &opt, 1, uc->eval, i == 0 ? uc->grad : NULL, NULL );
+            meth->assign( &opt, meth->stepmethod, meth->updatemethod );
+            zVecSetElemNC( var1, 0, 1.0 );
+            zEchoOff();
+            ret = zOptDMSolve( &opt, var1, NULL, *t, 0, &e );
+            zEchoOn();
+            zOptDMDestroy( &opt );
+            if( ret >= 0 ){
+              eprintf( "%s: returned %d, f = %g at x = %g for tol = %g\n", meth->label, ret, e, zVecElemNC(var1,0), *t );
+              result1 = false;
+            }
+          }
+      zOptDMCreate( &opt, DIM, quad_eval, quad_grad, NULL );
+      meth->assign( &opt, meth->stepmethod, meth->updatemethod );
+      zVecSetElemList( var4, 1.0e-9, 1.0+1.0e-9, 2.0-1.0e-9, 3.0+1.0e-9 );
+      zEchoOff();
+      ret = zOptDMSolve( &opt, var4, NULL, *t, 0, &e );
+      zEchoOn();
+      zOptDMDestroy( &opt );
+      if( ret < 0 ){
+        eprintf( "%s: returned %d from the initial guess close to the minimum for tol = %g\n", meth->label, ret, *t );
+        result2 = false;
+      }
+    }
+  zVecFreeAtOnce( 2, var1, var4 );
+  zAssert( zOptDMSolve (failure for a function unbounded below), result1 );
+  zAssert( zOptDMSolve (initial guess close to the minimum), result2 );
+}
+
 int main(void)
 {
   zRandInit();
@@ -1381,5 +1463,6 @@ int main(void)
   assert_opt_dm_nonfinite_init();
   assert_opt_dm_nonfinite_grad();
   assert_opt_dm_boundary();
+  assert_opt_dm_unbounded();
   return 0;
 }

@@ -820,7 +820,9 @@ void zOptDMDestroy(zOptDM *opt)
 /* the iteration terminates if
  * - the gradient vector becomes small relatively to the initial one, namely, |g|inf <= tol_grad |g0|inf,
  * - the step becomes small relatively to the variable, namely, |p|inf <= tol ( |x|inf + s0 ), where s0
- *   is |x0|inf for the initial guess x0, or 1 if x0 = 0, or
+ *   is |x0|inf for the initial guess x0, or 1 if x0 = 0, unless the first-order decrease of the function
+ *   within the step is larger than that at the initial guess, namely, |g|inf tol ( |x|inf + s0 ) >
+ *   |g0|inf s0, which implies that the function is unbounded below, or
  * - the number of iterations exceeds the given upper limit iter.
  * it also fails if the line search does not find any step.
  * it fails without iteration if the function value or the gradient vector at the initial guess is
@@ -828,7 +830,7 @@ void zOptDMDestroy(zOptDM *opt)
 int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, double *eval)
 {
   int i;
-  double _e_dummy, e, gmin;
+  double _e_dummy, e, gmin, fvar, step;
 
   if( !eval ) eval = &_e_dummy;
   zMatIdent( opt->_h );
@@ -846,6 +848,7 @@ int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, d
     return 0; /* no need for iteration. */
   opt->_g0 = zVecNorm( opt->_g ); /* for Levenberg-Marquardt method */
   opt->_dec0 = -1;
+  fvar = gmin * opt->_xscale; /* first-order variation of the function at the initial guess */
   gmin *= opt->tol_grad;
   for( i=0; i<iter; i++ ){
     opt->_vec( opt, var, opt->_d, util ); /* descent vector */
@@ -861,9 +864,17 @@ int zOptDMSolve(zOptDM *opt, const zVec var, void *util, double tol, int iter, d
     }
     if( !opt->_step( opt, var, tol, util, *eval, &e ) ) return -1; /* line search failed. */
     *eval = e;
-    if( zVecElemAbsMax( opt->_g, NULL ) <= gmin ||
-        zVecElemAbsMax( opt->_p, NULL ) <= tol * ( zVecElemAbsMax( var, NULL ) + opt->_xscale ) )
+    if( zVecElemAbsMax( opt->_g, NULL ) <= gmin )
       return i + 1; /* succeed. */
+    if( zVecElemAbsMax( opt->_p, NULL ) <= ( step = tol * ( zVecElemAbsMax( var, NULL ) + opt->_xscale ) ) ){
+      /* the first-order decrease of the function within a negligible step is not negligible, e.g.,
+         toward a pole, which implies that the function is unbounded below. */
+      if( zVecElemAbsMax( opt->_g, NULL ) * step > fvar ){
+        ZRUNWARN( ZM_WARN_OPT_UNBOUNDED );
+        return -1;
+      }
+      return i + 1; /* succeed. */
+    }
     opt->_update_h( opt, i ); /* update quasi-hessian matrix */
     opt->_to_start = false;
   }

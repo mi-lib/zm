@@ -43,6 +43,7 @@
 #define ZM_WARN_INSUFFICIENT_SAMPLES       "maybe insufficient number of samples %d for %d parameters"
 
 #define ZM_WARN_OPT_BADINI                 "probably inadequate initial guess"
+#define ZM_WARN_OPT_UNBOUNDED              "the function might be unbounded below"
 
 #define ZM_WARN_ODE_GEAR1                  "invalid step number %d, modified to 1"
 #define ZM_WARN_ODE_GEAR2                  "step number %d over 6 may cause instability, modified"

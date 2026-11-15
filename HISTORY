@@ -1,3 +1,6 @@
+2026.11.15. Added a test of zOptDMSolve for functions unbounded below toward a pole and an initial guess close to the minimum. [test]
+2026.11.15. Modified zOptDMSolve to fail if the step becomes negligible while the first-order decrease of the function within the step is larger than that at the initial guess, which implies that the function is unbounded below. [zm_opt_dm]
+2026.11.15. Added ZM_WARN_OPT_UNBOUNDED. [zm_errmsg]
 2026.11.15. Added a test of zComplexAbs for complex numbers with very small and large components, and extended the test of zComplexIsReal and zComplexCoconj to such numbers. [test]
 2026.11.15. Mmodified the method abs of zComplex to use zComplexAbs instead of _zComplexAbs for C++. [zm_complex]
 2026.11.15. Modified zComplexAbs to cope with underflow and overflow. [zm_complex]

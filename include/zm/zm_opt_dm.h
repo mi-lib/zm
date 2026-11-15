@@ -261,11 +261,15 @@ __ZM_EXPORT void zOptDMDestroy(zOptDM *opt);
  * If the initial guess is at the boundary of the domain of the function, it might fail to compute the
  * numerical gradient. If the minimum is at the boundary of the domain, it might be regarded as a failure
  * even if the solution reaches it.
+ * If the step becomes small while the first-order decrease of the function within it, namely, the
+ * maximum absolute component of the gradient vector times \a tol ( |\a var|inf + s0 ), is larger than
+ * that at the initial guess, namely, that of the initial gradient vector times s0, it is regarded as a
+ * failure, since the function might be unbounded below, e.g., toward a pole.
  * \return
  * zOptDMSolve() returns the number of iterations if the iteration converges. It returns 0 if the gradient
  * vector at the initial point is zero. Otherwise, i.e., if the number of iterations exceeds \a iter, the
- * line search fails, the function value or the gradient vector at the initial point is not finite, or
- * the descent direction is not finite, it returns -1.
+ * line search fails, the function value or the gradient vector at the initial point is not finite, the
+ * descent direction is not finite, or the function might be unbounded below, it returns -1.
  */
 __ZM_EXPORT int zOptDMSolve(zOptDM *opt, zVec var, void *util, double tol, int iter, double *eval);
 
