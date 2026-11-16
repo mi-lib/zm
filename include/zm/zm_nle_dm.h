@@ -63,11 +63,29 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zNLE ){
  * zNLESetNRDampCoeff().
  * Broyden's method of zNLE computes the step in the same way, where J is replaced by its approximation
  * updated by Broyden's rule. The exact Jacobian matrix is computed only at the initial point and when
- * the approximate one fails to give a step that decreases the residual or the step stagnates. Hence,
+ * the approximate one fails to give a step that decreases the residual, the step stagnates or the
+ * iteration makes little progress (see ZM_NLE_NR_DECREASE_RATIO_MIN). Hence,
  * it requires less evaluations of the function than Newton-Raphson's method, if the Jacobian matrix
  * is not given and computed numerically, while the convergence is superlinear instead of quadratic.
  */
 #define ZM_NLE_NR_DEFAULT_DAMP_COEFF ( 1.0e-12 )
+
+/*! \brief criterion of the slow progress of Newton-Raphson's method and Broyden's method.
+ *
+ * An iteration of Newton-Raphson's method or Broyden's method is regarded to make little progress if
+ * the squared norm of the residual decreases less than ZM_NLE_NR_DECREASE_RATIO_MIN times itself, i.e.,
+ * |f_{k+1}|^2 > ( 1 - ZM_NLE_NR_DECREASE_RATIO_MIN ) |f_k|^2. If more than ZM_NLE_NR_SLOW_ITER_MAX
+ * successive iterations make little progress, the iteration is regarded to fail. For Broyden's method, the
+ * Jacobian matrix is recomputed exactly instead if it is approximate, and the iteration fails if the
+ * next step still makes little progress. It happens, for example, when the line search has to
+ * shorten the step extremely along a curved valley of the norm of the residual, where the step is not
+ * small but the iteration would take an enormous number of iterations to converge, if at all.
+ * It is similar to the criterion of HYBRD in MINPACK, which judges that the iteration is not making
+ * good progress from the improvement in the last ten iterations (J. J. More, B. S. Garbow and
+ * K. E. Hillstrom, User Guide for MINPACK-1, Argonne National Laboratory Report ANL-80-74, 1980).
+ */
+#define ZM_NLE_NR_DECREASE_RATIO_MIN ( 1.0e-3 )
+#define ZM_NLE_NR_SLOW_ITER_MAX      10
 
 /*! \brief set the coefficient of the damping of Newton-Raphson's method and Broyden's method. */
 #define zNLESetNRDampCoeff(nle,coeff) ( (nle)->nr_damp_coeff = (coeff) )
@@ -141,6 +159,9 @@ __ZM_EXPORT zNLE *zNLEAssignBroyden(zNLE *nle);
  * namely, the iteration stagnates at a point where the
  * residual is not small enough, e.g., a local minimum of
  * the norm of the residual.
+ * Newton-Raphson's method and Broyden's method also fail
+ * if the residual decreases little in successive
+ * iterations (see ZM_NLE_NR_DECREASE_RATIO_MIN).
  * \a iter is the maximum iteration number. Iteration
  * would be done up to \a iter times. When \a iter is
  * zero, Z_MAX_ITER_NUM defined in zm_misc.h is chosen
@@ -149,8 +170,9 @@ __ZM_EXPORT zNLE *zNLEAssignBroyden(zNLE *nle);
  * vector at the answer is stored where \a err points, if
  * it is not the null pointer.
  * \return the number of iterations if it succeeds, or -1
- * if it fails, i.e., the iteration stagnates, the number
- * of iterations exceeds \a iter, or something is wrong.
+ * if it fails, i.e., the iteration stagnates or makes
+ * little progress, the number of iterations exceeds
+ * \a iter, or something is wrong.
  */
 #define zNLESolve(nle,var,util,tol_step,tol_err,iter,err) (nle)->_solve( nle, var, util, tol_step, tol_err, iter, err )
 

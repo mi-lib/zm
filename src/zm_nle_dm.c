@@ -79,6 +79,8 @@ static void _zNLEEvalRes(zNLE *nle, const zVec var, void *util, double *err)
  * - the step becomes small relatively to the variable, namely, |p|inf <= tol_step ( |x|inf + s0 ), where
  *   s0 is |x0|inf for the initial guess x0. if x0 = 0, s0 is |d0|inf for the first Newton step d0 instead,
  *   since the scale of the variable is unknown (1 if d0 = 0 as well),
+ * - (Newton-Raphson's method and Broyden's method) the squared norm of the residual decreases less than
+ *   ZM_NLE_NR_DECREASE_RATIO_MIN times itself in more than ZM_NLE_NR_SLOW_ITER_MAX successive iterations,
  * - the number of iterations exceeds the given upper limit iter, or
  * - the function cannot be evaluated along the step, or
  * - the residual at the initial guess or the descent direction includes NaN or infinity.
@@ -152,10 +154,10 @@ static bool _zNLEUpdateJacobiBroyden(zNLE *nle, const zVec var, void *util)
  * ( J^T W J + diag(damp) ) d = J^T W f, and the step -a d is chosen by the backtracking line search
  * to satisfy Armijo's condition on the squared norm of the residual. J is updated by update_jac.
  * if J is not exact, i.e., approximated by Broyden's rule, and it fails to give a step that decreases
- * the residual or the step stagnates, J is recomputed exactly. */
+ * the residual, the step stagnates or the iteration makes little progress, J is recomputed exactly. */
 static int _zNLESolveNewton(zNLE *nle, zVec var, void *util, double tol_step, double tol_err, int iter, double *err, bool (* update_jac)(zNLE*,const zVec,void*))
 {
-  int i, ret = -1;
+  int i, ret = -1, slow = 0; /* slow: number of successive iterations that make little progress */
   double a, e, ep, slope;
   bool is_exact; /* true if J is the exact Jacobian matrix at var */
   bool terminate = false;
@@ -203,14 +205,15 @@ static int _zNLESolveNewton(zNLE *nle, zVec var, void *util, double tol_step, do
       ret = i + 1; /* succeed */
       terminate = true;
     } else
-    if( !_zNLEStepIsSmall( nle, var, a, tol_step ) ){
+    if( !_zNLEStepIsSmall( nle, var, a, tol_step ) &&
+        ( slow = ( e - ep < ZM_NLE_NR_DECREASE_RATIO_MIN * e ? slow + 1 : 0 ) ) <= ZM_NLE_NR_SLOW_ITER_MAX ){
       is_exact = update_jac( nle, var, util );
     } else
     if( is_exact ){
-      terminate = true; /* stagnate */
-    } else{ /* the stagnation might be due to the approximate Jacobian matrix */
+      terminate = true; /* stagnate or make no progress */
+    } else{ /* the stagnation or the slow progress might be due to the approximate Jacobian matrix */
       nle->_jac( nle, nle->_opt._x, nle->_j, util );
-      is_exact = true;
+      is_exact = true; /* slow is not reset, so that the iteration fails if the next step makes little progress */
     }
     zVecCopyNC( nle->_opt._x, var );
     zVecCopyNC( nle->_fp, nle->_f );

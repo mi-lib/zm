@@ -833,6 +833,77 @@ void assert_nle_nan(void)
   zAssert( zNLESolve (failure for residual or Jacobian matrix including NaN), result );
 }
 
+/* the equation of the backward Euler method for van der Pol's equation x'' - mu (1-x^2) x' + x = 0 with
+ * mu = 1000 and the time step dt = 0.01, namely, f(x) = x - x_prev - dt v(x), from the state x_prev where
+ * the solution of the stiff equation turns rapidly. Newton-Raphson's method moves only by an extremely
+ * shortened step along a curved valley of the norm of the residual, which decreases quite slowly. */
+#define SLOW_MU 1000.0
+#define SLOW_DT 0.01
+static const double slow_x_prev[] = { 0x1.f5fbd5813eedcp-1, -0x1.41beb14b8838ep-1 };
+static int slow_count;
+
+zVec slow_f(const zVec var, zVec f, void *dummy)
+{
+  double x0, x1;
+
+  slow_count++;
+  x0 = zVecElemNC(var,0);
+  x1 = zVecElemNC(var,1);
+  zVecSetElemNC( f, 0, x0 - slow_x_prev[0] - SLOW_DT * x1 );
+  zVecSetElemNC( f, 1, x1 - slow_x_prev[1] - SLOW_DT * ( SLOW_MU*( 1 - x0*x0 )*x1 - x0 ) );
+  return f;
+}
+
+zMat slow_jac(const zVec var, zMat jac, void *dummy)
+{
+  double x0, x1;
+
+  x0 = zVecElemNC(var,0);
+  x1 = zVecElemNC(var,1);
+  zMatSetElemNC( jac, 0, 0, 1 );
+  zMatSetElemNC( jac, 0, 1, -SLOW_DT );
+  zMatSetElemNC( jac, 1, 0, -SLOW_DT * ( -2*SLOW_MU*x0*x1 - 1 ) );
+  zMatSetElemNC( jac, 1, 1, 1 - SLOW_DT * SLOW_MU*( 1 - x0*x0 ) );
+  return jac;
+}
+
+#define SLOW_ITER  10000
+/* spending all the iterations takes at least SLOW_ITER evaluations of the residual. */
+#define SLOW_COUNT ( SLOW_ITER / 2 )
+
+/* Newton-Raphson's method and Broyden's method have to give up an iteration that makes little progress
+ * quickly, instead of spending all the iterations, unless they succeed. */
+void assert_nle_slow_progress(void)
+{
+  method_t *meth;
+  zNLE nle;
+  zVec var, res;
+  zMat (* jac[])(const zVec,zMat,void*) = { slow_jac, NULL }, (** j)(const zVec,zMat,void*);
+  int ret;
+  bool result = true;
+
+  var = zVecAlloc( 2 );
+  res = zVecAlloc( 2 );
+  for( j=jac; j<jac+2; j++ )
+    for( meth=method; meth->label; meth++ ){
+      if( meth->assign != assign_nr && meth->assign != assign_broyden ) continue;
+      zNLECreate( &nle, 2, 2, slow_f, *j );
+      meth->assign( &nle );
+      zVecSetElemList( var, slow_x_prev[0], slow_x_prev[1] );
+      slow_count = 0;
+      zEchoOff();
+      ret = zNLESolve( &nle, var, NULL, TOL_STEP, TOL_ERR, SLOW_ITER, NULL );
+      zEchoOn();
+      zNLEDestroy( &nle );
+      if( ret >= 0 ? !zVecIsTol( slow_f( var, res, NULL ), TOL_ERR ) : slow_count > SLOW_COUNT ){
+        eprintf( "%s (%s Jacobian): returned %d after %d evaluations\n", meth->label, *j ? "analytic" : "numerical", ret, slow_count );
+        result = false;
+      }
+    }
+  zVecFreeAtOnce( 2, var, res );
+  zAssert( zNLESolve (early failure without progress), result );
+}
+
 /* a smooth residual that is not finite (the value is given via util) for x_0 > 0.3 or x_1 < 0.7 */
 #define bounded_is_out(v) ( zVecElemNC(v,0) > 0.3 || zVecElemNC(v,1) < 0.7 )
 zVec bounded_f(const zVec var, zVec f, void *util)
@@ -920,5 +991,6 @@ int main(void)
   assert_nle_return();
   assert_nle_nan();
   assert_nle_jacobian_bounded();
+  assert_nle_slow_progress();
   return 0;
 }

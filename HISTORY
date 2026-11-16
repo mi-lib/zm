@@ -1,3 +1,6 @@
+2026.11.16. Added a test of zNLESolve with Newton-Raphson's method and Broyden's method for an equation where the iteration makes little progress. [test]
+2026.11.16. Modified zNLESolve with Newton-Raphson's method and Broyden's method to fail if the residual decreases less than ZM_NLE_NR_DECREASE_RATIO_MIN times itself in more than ZM_NLE_NR_SLOW_ITER_MAX successive iterations. [zm_nle_dm]
+2026.11.16. Added ZM_NLE_NR_DECREASE_RATIO_MIN and ZM_NLE_NR_SLOW_ITER_MAX. [zm_nle_dm]
 2026.11.15. Added tests of the success and the failure of implicit methods to solve the nonlinear equation, and modified the test of the termination of the adaptive step size control for a function which is not a number to check the returned value. [test]
 2026.11.15. Modified zNLESolve with Newton-Raphson's method and Broyden's method to estimate the scale of the variable from the first step for the zero initial guess. [zm_nle_dm]
 2026.11.15. Modified zODEUpdateDC and the embedded Runge-Kutta methods to return the null pointer if a time step fails even with the minimum time step. [zm_ode_dc, zm_ode2]
