@@ -172,6 +172,141 @@ void assert_le(void)
   eprintf( "success rate (LU+RI)  %d/%d ", count_ri, n );     zAssert( zLESolveLURI,      count_ri == n );
 }
 
+/* balancing by powers of two */
+void assert_le_balancing(void)
+{
+  const int size = 8, testnum = 100;
+  zMat m, mb;
+  zVec v, s;
+  int i, j, k;
+  double r, f;
+  bool result_exact = true, result_range = true;
+
+  m = zMatAllocSqr( size );
+  mb = zMatAllocSqr( size );
+  v = zVecAlloc( size );
+  s = zVecAlloc( size );
+  if( !m || !mb || !v || !s ) goto TERMINATE;
+  for( k=0; k<testnum; k++ ){
+    zMatRandUniform( m, -1, 1 );
+    for( i=0; i<size; i++ ){ /* rows and columns of various scales */
+      zRawVecMulDRC( zMatRowBuf(m,i), pow( 10, zRandF(-100,100) ), size );
+      for( f=pow( 10, zRandF(-100,100) ), j=0; j<size; j++ ) zMatElemNC(m,j,i) *= f;
+    }
+    zMatCopy( m, mb );
+    zVecSetAll( v, 1 );
+    zMatVecBalancingDST( mb, v, s );
+    for( i=0; i<size; i++ ){
+      /* the balancing factors are powers of two, and v[i] is the inverse row-balancing factor, so that
+       * mb = diag(v) m diag(s) exactly. */
+      if( zPow2Floor( zVecElemNC(s,i) ) != zVecElemNC(s,i) || zPow2Floor( zVecElemNC(v,i) ) != zVecElemNC(v,i) )
+        result_exact = false;
+      for( r=0, j=0; j<size; j++ ){
+        if( zMatElemNC(mb,i,j) != zMatElemNC(m,i,j) * zVecElemNC(s,j) * zVecElemNC(v,i) ) result_exact = false;
+        if( fabs( zMatElemNC(mb,i,j) ) > r ) r = fabs( zMatElemNC(mb,i,j) );
+      }
+      if( r < 1 || r >= 2 ) result_range = false;
+    }
+  }
+ TERMINATE:
+  zMatFreeAtOnce( 2, m, mb );
+  zVecFreeAtOnce( 2, v, s );
+  zAssert( zMatVecBalancingDST (exactness), result_exact );
+  zAssert( zMatVecBalancingDST (range of the maximum component of each row), result_range );
+}
+
+/* LU decomposition + residual iteration method for matrices with rows and columns of various scales */
+void assert_le_luri_scale(void)
+{
+  const double scale[] = { 1, 1.0e3, 1.0e6, 1.0e10 };
+  const double tol = 1.0e-8; /* tolerance of the relative error */
+  const int size = 10, testnum = 100;
+  zMat a;
+  zVec b, x, ans, d;
+  int i, j, k, l;
+  double err;
+  bool result = true;
+
+  a = zMatAllocSqr( size );
+  b = zVecAlloc( size );
+  x = zVecAlloc( size );
+  ans = zVecAlloc( size );
+  d = zVecAlloc( size );
+  if( !a || !b || !x || !ans || !d ) goto TERMINATE;
+  for( l=0; l<sizeof(scale)/sizeof(double); l++ )
+    for( k=0; k<testnum; k++ ){
+      /* a = D1 a0 D2 for a random matrix a0 and diagonal matrices D1 and D2 */
+      zMatRandUniform( a, -10, 10 );
+      for( i=0; i<size; i++ ){
+        zRawVecMulDRC( zMatRowBuf(a,i), pow( scale[l], zRandF(-1,1) ), size );
+        zVecSetElemNC( d, i, pow( scale[l], zRandF(-1,1) ) );
+        for( j=0; j<size; j++ ) zMatElemNC(a,j,i) *= zVecElemNC(d,i);
+      }
+      for( i=0; i<size; i++ )
+        zVecSetElemNC( ans, i, zRandF(-10,10) / zVecElemNC(d,i) );
+      zMulMatVec( a, ans, b );
+      if( !zLESolveLURI( a, b, x ) ){
+        eprintf( "scale %g, case #%d: judged to be singular\n", scale[l], k );
+        result = false;
+        continue;
+      }
+      for( err=0, i=0; i<size; i++ )
+        err = zMax( err, fabs( zVecElemNC(x,i) - zVecElemNC(ans,i) ) / fabs( zVecElemNC(ans,i) ) );
+      if( err > tol ){
+        eprintf( "scale %g, case #%d: relative error = %g\n", scale[l], k, err );
+        result = false;
+      }
+    }
+ TERMINATE:
+  zMatFree( a );
+  zVecFreeAtOnce( 4, b, x, ans, d );
+  zAssert( zLESolveLURI (rows and columns of various scales), result );
+}
+
+/* LU decomposition + residual iteration method for ill-conditioned matrices, namely, Hilbert matrices
+ * multiplied by the least common multiple of 1, ..., 2n-1, of which the components are integers, so that
+ * b = a x is exactly computed for an integer vector x. */
+void assert_le_luri_ill(void)
+{
+  const double tol = 4 * DBL_EPSILON; /* tolerance of the relative error */
+  zMat a;
+  zVec b, x, ans;
+  int n, i, j, k;
+  double lcm, g, h, t, err;
+  bool result = true;
+
+  for( n=4; n<=11; n++ ){ /* the condition number is up to 5e+14 */
+    a = zMatAllocSqr( n );
+    b = zVecAlloc( n );
+    x = zVecAlloc( n );
+    ans = zVecAlloc( n );
+    if( !a || !b || !x || !ans ) goto TERMINATE;
+    for( lcm=1, k=2; k<2*n; k++ ){
+      for( g=lcm, h=k; h>0; g=h, h=t ) t = fmod( g, h );
+      lcm = lcm / g * k;
+    }
+    for( i=0; i<n; i++ )
+      for( j=0; j<n; j++ ) zMatSetElemNC( a, i, j, lcm / ( i + j + 1 ) );
+    for( i=0; i<n; i++ )
+      zVecSetElemNC( ans, i, zRandI(1,9) * ( zRandI(0,1) ? 1 : -1 ) );
+    zMulMatVec( a, ans, b );
+    if( !zLESolveLURI( a, b, x ) ){
+      eprintf( "size %d: judged to be singular\n", n );
+      result = false;
+    } else{
+      zVecSubDRC( x, ans );
+      if( ( err = zVecInfNorm( x ) / zVecInfNorm( ans ) ) > tol ){
+        eprintf( "size %d: relative error = %g\n", n, err );
+        result = false;
+      }
+    }
+   TERMINATE:
+    zMatFree( a );
+    zVecFreeAtOnce( 3, b, x, ans );
+  }
+  zAssert( zLESolveLURI (ill-conditioned matrices), result );
+}
+
 void assert_le_mat_capacity(void)
 {
   zMat a;
@@ -1286,7 +1421,10 @@ int main(void)
   assert_mat_inv(); /* zMatInv() is used in assert_mat_det_adj() and assert_le() */
   assert_mat_det_adj(); /* zMatAdj() and zMatDet() are used in assert_le() */
   assert_mat_det_scale();
+  assert_le_balancing();
   assert_le();
+  assert_le_luri_scale();
+  assert_le_luri_ill();
   assert_le_cholesky();
   assert_mat_vec_sweep_out(); /* zLESolveGauss() is used to make the reference */
   assert_le_mat_capacity();

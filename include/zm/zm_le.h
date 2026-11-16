@@ -14,12 +14,14 @@ __BEGIN_DECLS
 /*! \brief make a pair of matrix and vector balanced.
  *
  * zMatColBalancingDST() destructively makes a matrix column-balanced. Namely, each column of \a m is
- * divided by the absolute-maximum component in the same column.
+ * divided by the power of two not greater than the absolute-maximum component in the same column.
  *
  * zMatVecRowBalancingDST() destructively makes a pair of matrix \a m and vector \a v row-balanced.
- * Namely, each column of \a m is primarily divided by the absolute-maximum component in the same column,
- * and then, each row of \a m and the corresponding component of \a v by the absolute-maximum value in
- * the row.
+ * Namely, each row of \a m and the corresponding component of \a v are divided by the power of two not
+ * greater than the absolute-maximum component in the row.
+ *
+ * Since the balancing factors are powers of two, the balancing is exact unless the components
+ * underflow, and the absolute-maximum component in each column or row of the result is in [1,2).
  *
  * zMatVecBalancingDST() destructively makes a pair of matrix \a m and vector \a v both column- and row-
  * balanced.
@@ -29,7 +31,8 @@ __BEGIN_DECLS
  * They work as preprocesses of a linear equation solver. Actually, zLESolveGaussDST() internally calls
  * zMatVecBalancingDST().
  *
- * The column-balancing factors are stored in \a s for all the functions if it is not the null pointer.
+ * The column-balancing factors are stored in \a s for all the functions if it is not the null pointer,
+ * where the factor of a column of which all the components are zero is one.
  * It is used for re-balancing. For the original equation \a morg x = \a vorg, the balanced equation is
  * \a m \a s x = v. Thus, the solution \a y of \a m y = v has to be amplified by \a s in such a way as
  * zVecAmpDRC( y, s ).
@@ -48,16 +51,21 @@ __ZM_EXPORT bool zMatVecBalancing(const zMat morg, const zVec vorg, zMat m, zVec
 
 /*! \brief make a pair of matrices balanced.
  *
+ * zMatMatRowBalancingDST() destructively makes a pair of matrices \a m1 and \a m2 row-balanced
+ * simultaneously. Namely, each row of \a m1 and the corresponding row of \a m2 are divided by the power
+ * of two not greater than the absolute-maximum component in the row of \a m1.
+ *
  * zMatMatBalancingDST() destructively makes a pair of matrices \a m1 and \a m2 both column- and row-
  * balanced.
  *
  * The column-balancing factors are stored in \a s to be used for re-balancing, if it is not the null
  * pointer.
  * \return
- * zMatMatBalancingDST() does not return any value.
+ * zMatMatRowBalancingDST() and zMatMatBalancingDST() do not return any value.
  * \sa
  * zMatVecBalancingDST
  */
+__ZM_EXPORT void zMatMatRowBalancingDST(zMat m1, zMat m2);
 __ZM_EXPORT void zMatMatBalancingDST(zMat m1, zMat m2, zVec s);
 
 /*! \brief directly make a pair of matrices and a vector balanced.
@@ -141,6 +149,12 @@ __ZM_EXPORT zVec zLESolveCholesky(const zMat l, const zVec b, zVec ans, const zI
  *
  * zLESolveLURI() solves linear equation \a a x = \a b based on LU decomposition and improves accuracy
  * by residual iteration. The answer is put into \a ans.
+ * The equation is balanced by zMatVecBalancingDST() before the decomposition, so that the regularity of
+ * \a a is judged regardless of the scales of the rows and columns.
+ * The residual is computed as accurately as in twice the working precision by Dot2 algorithm (T. Ogita,
+ * S. M. Rump and S. Oishi, Accurate Sum and Dot Product, SIAM J. Sci. Comput., 26(6), pp. 1955-1988,
+ * 2005), so that the error of the answer decreases through the iteration even for an ill-conditioned
+ * matrix unless the condition number is comparable to the inverse of the machine epsilon.
  * \return
  * zLESolveLURI() returns a pointer \a ans if succeeds.
  * If \a a is not a regular matrix, meaning that the equation does not have a unique answer, it returns

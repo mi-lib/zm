@@ -152,6 +152,43 @@ __ZM_EXPORT double zCbrt(double x);
  */
 __ZM_EXPORT double zPow2Floor(double x);
 
+/*! \brief error-free transformations of the sum and the product of two values.
+ *
+ * zAdd() computes the sum of \a a and \a b in floating-point arithmetic, and puts the rounding error of
+ * it into \a error, so that \a a + \a b = (the returned value) + \a error exactly (Knuth's TwoSum).
+ *
+ * zMul() computes the product of \a a and \a b in floating-point arithmetic, and puts the rounding error
+ * of it into \a error, so that \a a \a b = (the returned value) + \a error exactly.
+ *
+ * zSplitMant() splits the mantissa of \a a into the upper and the lower halves, namely, two values with
+ * at most DBL_MANT_DIG/2 (rounded down; 26 for IEEE 754 double-precision floating-point numbers)
+ * significant bits, of which the lower is put into \a lower, so that \a a = (the returned value) +
+ * \a lower exactly (Veltkamp's splitting). The product of two such halves is exactly representable.
+ * It is used in zMul() if fma() is not available.
+ *
+ * They are useful to compute sums and inner products accurately, e.g., by Dot2 algorithm by T. Ogita,
+ * S. M. Rump and S. Oishi:
+ *  T. Ogita, S. M. Rump and S. Oishi, Accurate Sum and Dot Product, SIAM Journal of Science and Computing,
+ *  26(6):1955-1988, 2005.
+ *
+ * They assume binary floating-point arithmetic with rounding to nearest. They are not affected by
+ * contractions of multiplications and additions into fused multiply-add operations, but are broken by
+ * optimizations which reorder floating-point operations, e.g., -ffast-math of GCC.
+ * The transformations are exact unless overflow or underflow happens. Note that zSplitMant() overflows
+ * if the absolute value of the argument is greater than about 1e+300, and so does zMul() if fma() is not
+ * available.
+ * \notes
+ * In zMul(), the error is computed by fma() if it is available (C99 or C++11 and later), or by Dekker's
+ * TwoProduct otherwise.
+ * \return
+ * zAdd() returns the sum computed in floating-point arithmetic.
+ * zMul() returns the product computed in floating-point arithmetic.
+ * zSplitMant() returns the upper half.
+ */
+__ZM_EXPORT double zAdd(double a, double b, double *error);
+__ZM_EXPORT double zMul(double a, double b, double *error);
+__ZM_EXPORT double zSplitMant(double a, double *lower);
+
 /*! \brief permutation.
  *
  * zPermutation() computes \a n_P_\a i.

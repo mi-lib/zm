@@ -194,6 +194,41 @@ void assert_combination_pascaltriangle(void)
   zAssert( zCombinationSeries (pascal triangle), result );
 }
 
+/* error-free transformations, which are checked by independent exact computations: the rounding error
+ * of a sum by Dekker's FastTwoSum, which is exact for |x| >= |y|, and that of a product by fma(). */
+void assert_error_free_transformation(void)
+{
+  const int testnum = 10000;
+  double a, b, x, y, s, p, e, u, l;
+  int i, k, ex;
+  bool result_add = true, result_mul = true, result_split = true;
+
+  for( i=0; i<testnum; i++ ){
+    a = zRandF(-1,1) * pow( 10, zRandF(-100,100) );
+    b = zRandF(-1,1) * pow( 10, zRandF(-100,100) );
+    if( i % 4 == 0 ) b = -a * ( 1 + zRandF(-1,1)*1.0e-10 ); /* nearly cancelling */
+    if( i % 4 == 1 ) b = a * zRandF(-1,1)*1.0e-15; /* much smaller */
+    /* sum */
+    s = zAdd( a, b, &e );
+    if( fabs( a ) >= fabs( b ) ){ x = a; y = b; } else{ x = b; y = a; }
+    if( s != a + b || e != y - ( s - x ) ) result_add = false;
+    /* product */
+    p = zMul( a, b, &e );
+    if( p != a * b || e != fma( a, b, -p ) ) result_mul = false;
+    /* splitting of the mantissa into halves with at most DBL_MANT_DIG/2 significant bits */
+    u = zSplitMant( a, &l );
+    if( u + l != a ) result_split = false;
+    for( k=0; k<2; k++ ){
+      if( ( x = k == 0 ? u : l ) == 0 ) continue;
+      frexp( x, &ex );
+      if( fmod( ldexp( x, DBL_MANT_DIG/2 - ex ), 1 ) != 0 ) result_split = false; /* x 2^(DBL_MANT_DIG/2-ex) has to be an integer */
+    }
+  }
+  zAssert( zAdd, result_add );
+  zAssert( zMul, result_mul );
+  zAssert( zSplitMant, result_split );
+}
+
 int main(void)
 {
   zRandInit();
@@ -205,6 +240,7 @@ int main(void)
   assert_ceil();
   assert_cube_cbrt();
   assert_pow2floor();
+  assert_error_free_transformation();
   assert_log();
   assert_permutation();
   assert_combination();

@@ -107,6 +107,54 @@ double zPow2Floor(double x)
   return ldexp( 1.0, e - 1 );
 }
 
+/* error-free transformation of a sum (Knuth's TwoSum). */
+double zAdd(double a, double b, double *error)
+{
+  double s, z;
+
+  s = a + b;
+  z = s - a;
+  *error = ( a - ( s - z ) ) + ( b - z );
+  return s;
+}
+
+/* the factor for splitting the mantissa, which is 2^s + 1 for s = ceil(DBL_MANT_DIG/2), i.e., 2^27 + 1
+ * for IEEE 754 double-precision floating-point numbers. */
+#define _ZM_SPLIT_MANT_FACTOR ( (double)( 1UL << ( ( DBL_MANT_DIG + 1 ) / 2 ) ) + 1 )
+
+/* split the mantissa of a value into the upper and the lower halves (Veltkamp's splitting). */
+double zSplitMant(double a, double *lower)
+{
+  /* "volatile" prevents the compiler from contracting the multiplication and the subtraction */
+  volatile double c;
+  double upper;
+
+  c = _ZM_SPLIT_MANT_FACTOR * a;
+  upper = c - ( c - a );
+  *lower = a - upper;
+  return upper;
+}
+
+/* error-free transformation of a product. the rounding error is computed by fma(), which rounds only
+ * once by definition, if it is available (C99 or C++11 and later), or by Dekker's TwoProduct otherwise. */
+double zMul(double a, double b, double *error)
+{
+#if defined( __cplusplus ) || ( defined( __STDC_VERSION__ ) && __STDC_VERSION__ >= 199901L )
+  double p;
+
+  p = a * b;
+  *error = fma( a, b, -p );
+#else
+  double p, au, al, bu, bl;
+
+  p = a * b;
+  au = zSplitMant( a, &al );
+  bu = zSplitMant( b, &bl );
+  *error = al * bl - ( ( ( p - au * bu ) - al * bu ) - au * bl );
+#endif
+  return p;
+}
+
 /* permutation. */
 double zPermutation(int n, int i)
 {

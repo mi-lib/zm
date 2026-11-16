@@ -6,7 +6,8 @@
 
 #include <zm/zm_le.h>
 
-/* directly make a matrix column-balanced. */
+/* directly make a matrix column-balanced, where each column is divided by the power of two not greater
+ * than the absolute-maximum component in the column, so that the balancing is exact. */
 void zMatColBalancingDST(zMat m, zVec s)
 {
   int i, j;
@@ -18,13 +19,19 @@ void zMatColBalancingDST(zMat m, zVec s)
       tmp = fabs( zMatElemNC(m,j,i) );
       if( tmp > zVecElemNC(s,i) ) zVecSetElemNC( s, i, tmp );
     }
-    if( zVecElemNC(s,i) == 0 ) continue;
-    /* inverse column-balancing factor */
-    zVecSetElemNC( s, i, 1.0 / zVecElemNC(s,i) );
+    if( zVecElemNC(s,i) == 0 ){
+      zVecSetElemNC( s, i, 1.0 );
+      continue;
+    }
+    /* inverse column-balancing factor, which is also a power of two */
+    zVecSetElemNC( s, i, 1.0 / zPow2Floor( zVecElemNC(s,i) ) );
     for( j=0; j<zMatRowSizeNC(m); j++ )
       zMatElemNC(m,j,i) *= zVecElemNC(s,i);
   }
 }
+
+/* the power of two not greater than the absolute-maximum component of a row of a matrix. */
+#define _zMatRowBalancingFactor(mp,m) zPow2Floor( zDataAbsMax( mp, zMatColSizeNC(m), NULL ) )
 
 /* directly make a pair of matrix and vector row-balanced. */
 void zMatVecRowBalancingDST(zMat m, zVec v)
@@ -33,8 +40,7 @@ void zMatVecRowBalancingDST(zMat m, zVec v)
   double *mp, tmp;
 
   for( mp=zMatBuf(m), i=0; i<zMatRowSizeNC(m); mp+=zMatColCapacity(m), i++ ){
-    if( ( tmp = zDataAbsMax( mp, zMatColSizeNC(m), NULL ) ) == 0 )
-      continue;
+    if( ( tmp = _zMatRowBalancingFactor( mp, m ) ) == 0 ) continue;
     zRawVecDivDRC( mp, tmp, zMatColSizeNC(m) );
     zVecElemNC(v,i) /= tmp;
   }
@@ -77,8 +83,7 @@ void zMatMatRowBalancingDST(zMat m1, zMat m2)
   double *mp1, *mp2, tmp;
 
   for( mp1=zMatBuf(m1), mp2=zMatBuf(m2), i=0; i<zMatRowSizeNC(m1); mp1+=zMatColCapacity(m1), mp2+=zMatColCapacity(m2), i++ ){
-    if( ( tmp = zDataAbsMax( mp1, zMatColSizeNC(m1), NULL ) ) == 0 )
-      continue;
+    if( ( tmp = _zMatRowBalancingFactor( mp1, m1 ) ) == 0 ) continue;
     zRawVecDivDRC( mp1, tmp, zMatColSizeNC(m1) );
     zRawVecDivDRC( mp2, tmp, zMatColSizeNC(m2) );
   }
@@ -99,8 +104,7 @@ void zMatMatVecRowBalancingDST(zMat m1, zMat m2, zVec v)
   double *mp1, *mp2, tmp;
 
   for( mp1=zMatBuf(m1), mp2=zMatBuf(m2), i=0; i<zMatRowSizeNC(m1); mp1+=zMatColCapacity(m1), mp2+=zMatColCapacity(m2), i++ ){
-    if( ( tmp = zDataAbsMax( mp1, zMatColSizeNC(m1), NULL ) ) == 0 )
-      continue;
+    if( ( tmp = _zMatRowBalancingFactor( mp1, m1 ) ) == 0 ) continue;
     zRawVecDivDRC( mp1, tmp, zMatColSizeNC(m1) );
     zRawVecDivDRC( mp2, tmp, zMatColSizeNC(m2) );
     zVecElemNC(v,i) /= tmp;
@@ -297,45 +301,73 @@ zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, const zIndex
   return ans;
 }
 
+/* residual b - a x computed as accurately as in twice the working precision, based on Dot2 algorithm
+ * by T. Ogita, S. M. Rump and S. Oishi:
+ *  T. Ogita, S. M. Rump and S. Oishi, Accurate Sum and Dot Product, SIAM J. Sci. Comput.,
+ *  26(6):1955-1988, 2005.
+ * The components of a and x are assumed to be less than about 1e+300 in the absolute values, so that
+ * zMul() does not overflow. */
+static zVec _zLEResidualDot2(const zMat a, const zVec b, const zVec x, zVec res)
+{
+  int i, j;
+  double p, q, h, r, c;
+
+  for( i=0; i<zMatRowSizeNC(a); i++ ){
+    p = zVecElemNC(b,i);
+    for( c=0, j=0; j<zMatColSizeNC(a); j++ ){
+      h = zMul( -zMatElemNC(a,i,j), zVecElemNC(x,j), &r );
+      p = zAdd( p, h, &q );
+      c += q + r;
+    }
+    zVecSetElemNC( res, i, p + c );
+  }
+  return res;
+}
+
 /* linear equation solver: Residual iteration on LU decomposition. */
 zVec zLESolveLURI(const zMat a, const zVec b, zVec ans)
 {
   int i;
-  zMat l, u;
-  zVec res, err;
+  zMat ab, l, u;
+  zVec bb, s, res, err;
   double err_norm, err_norm_old = HUGE_VAL;
   zIndex index;
+  zVec ret = NULL;
 
+  ab = zMatClone( a );
+  bb = zVecClone( b );
+  s = zVecAlloc( zVecSizeNC(b) );
   l = zMatAllocSqr( zVecSizeNC(b) );
   u = zMatAllocSqr( zVecSizeNC(b) );
   res = zVecAlloc( zVecSizeNC(b) );
   err = zVecAlloc( zVecSizeNC(b) );
   index = zIndexCreate( zVecSizeNC(b) );
-  if( !l || !u || !res || !err || !index ) goto TERMINATE;
-
-  if( zMatDecompLU( a, l, u, index ) < zMatRowSizeNC(a) ){
+  if( !ab || !bb || !s || !l || !u || !res || !err || !index ) goto TERMINATE;
+  /* the balancing by powers of two is exact, so that the residual of the balanced equation is that of
+   * the original equation scaled exactly. */
+  zMatVecBalancingDST( ab, bb, s );
+  if( zMatDecompLU( ab, l, u, index ) < zMatRowSizeNC(ab) ){
     ZRUNERROR( ZM_ERR_MAT_SINGULAR );
-    ans = NULL;
     goto TERMINATE;
   }
-  zLESolveLU( l, u, b, ans, index );
+  zLESolveLU( l, u, bb, ans, index );
+  /* the iteration terminates when the correction becomes negligible or stops decreasing. */
   for( i=0; i<Z_MAX_ITER_NUM; i++ ){
-    zLEResidual( a, b, ans, res );
-    err_norm = zVecNorm( res );
-    if( err_norm >= err_norm_old ) goto TERMINATE;
-    err_norm_old = err_norm;
+    _zLEResidualDot2( ab, bb, ans, res );
     zLESolveLU( l, u, res, err, index );
+    if( ( err_norm = zVecNorm( err ) ) >= err_norm_old ) break;
     zVecAddNCDRC( ans, err );
+    if( err_norm <= DBL_EPSILON * zVecNorm( ans ) ) break;
+    err_norm_old = err_norm;
   }
-  ZITERWARN( Z_MAX_ITER_NUM );
+  if( i == Z_MAX_ITER_NUM ) ZITERWARN( Z_MAX_ITER_NUM );
+  ret = zVecAmpNC( ans, s, ans );
 
  TERMINATE:
-  zMatFree( l );
-  zMatFree( u );
-  zVecFree( res );
-  zVecFree( err );
+  zMatFreeAtOnce( 3, ab, l, u );
+  zVecFreeAtOnce( 4, bb, s, res, err );
   zIndexFree( index );
-  return ans;
+  return ret;
 }
 
 /* linear equation solver: Gauss-Seidel's method. */
