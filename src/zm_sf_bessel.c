@@ -10,9 +10,6 @@
 
 #include <zm/zm_sf.h>
 
-/* 2/PI */
-#define Z_2_PI 0.6366197723675814
-
 /* recursive polynomial computation */
 static double _zBesselRec(double *c, int dim, double x)
 {

@@ -1,3 +1,4 @@
+2026.11.17. Removed Z_2_PI. [zm_sf_bessel]
 2026.11.16. Added a test of zPow2Floor. [test]
 2026.11.16. Added a test to compare the roots by zQESolve and zCESolve with those by zPexDKA and zPexBH for polynomials with roots of various magnitudes. [test]
 2026.11.16. Modified the tests of zQESolve and zCESolve to evaluate the backward errors of the answers relative to the scales of the terms. [test]

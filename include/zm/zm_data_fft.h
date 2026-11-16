@@ -40,7 +40,7 @@ __BEGIN_DECLS
  *
  * (Acknowledgment)
  * This implementation is a modification of the code by Dr. Takuya Ooura
- * (in http://www.kurims.kyoto-u.ac.jp/~ooura/fftman/index.html).
+ * (in https://www.kurims.kyoto-u.ac.jp/~ooura/fft-j.html).
  * \return
  * These functions return the false value if the sizes of \a data and \a result are not equal or they fail
  * to allocate internal work space. Otherwise, the true value is returned.
