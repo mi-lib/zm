@@ -93,7 +93,7 @@ static int _zMatDecompLQDST_Q(zMat l, zMat q, zIndex index) /* q has to be initi
 
   zMatZero( l );
   zIndexOrder( index, 0 );
-  tol = ZM_LQ_DECOMP_TOL * _zMatRowNormMax( q );
+  tol = zTOL * _zMatRowNormMax( q );
   for( rank=0; rank<zMatRowSizeNC(q); rank++ ){
     /* pivoting: the row with the largest residual is orthonormalized next (rows are physically swapped). */
     for( r=0, p=i=rank; i<zMatRowSizeNC(q); i++ )
@@ -131,7 +131,7 @@ static int _zMatDecompLQFullDST(zMat m, zMat q, zIndex index) /* m has to be ini
   int i, p, colsize, rank;
 
   scale = _zMatScalePow2( m );
-  tol = ZM_LQ_DECOMP_TOL * _zMatRowNormMax( m );
+  tol = zTOL * _zMatRowNormMax( m );
   zIndexOrder( index, 0 );
   /* forward reflections: the k-th reflection is I - 2 nu nu^T, where the unit vector nu is stored in
    * the k-th row of q. Rows of m are not physically swapped to keep the correspondence to the original. */

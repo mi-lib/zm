@@ -46,16 +46,6 @@ __ZM_EXPORT bool _zMatHouseholderUnitNormal(const double *x, int n, double *nu, 
 __ZM_EXPORT void _zMatHouseholderL(zMat m, const double *nu, int n, int r0, int c0, int c1, double *w);
 __ZM_EXPORT void _zMatHouseholderR(zMat m, const double *nu, int n, int c0, int r0, int r1);
 
-/*! \brief relative tolerance for rank detection in LQ decomposition.
- *
- * In LQ decompositions, the row vectors are orthogonalized in the order of the norms of their residuals
- * (row pivoting). The remaining row vectors are regarded as linearly dependent on the preceding ones
- * if the maximum norm of their residuals after orthogonalization (by Gram=Schmidt's method) or of their
- * components remaining after the preceding reflections (by Householder's method) is not greater than
- * this value times the maximum norm of the row vectors of the original matrix.
- */
-#define ZM_LQ_DECOMP_TOL ( 1.0e-10 )
-
 /*! \brief LQ decomposition of a matrix.
  *
  * zMatDecompLQ() decomposes a matrix \a m into a lower triangular matrix \a l and a row-orthonormal
@@ -73,8 +63,11 @@ __ZM_EXPORT void _zMatHouseholderR(zMat m, const double *nu, int n, int c0, int 
  * If \a m is degenerated, the sizes of \a l and \a q are automatically adjusted to be column-full-rank
  * and row-full-rank, respectively. Namely, suppose the rank of \a m is d (<= s), the sizes of \a l
  * and \a q will be adjusted to r x d and d x c, respectively.
- * The rank is detected with the relative tolerance ZM_LQ_DECOMP_TOL, so that the result
- * does not depend on the scale of \a m.
+ * In the course of the orthogonalization, the remaining row vectors are regarded as linearly dependent
+ * on the preceding ones if the maximum norm of their residuals after orthogonalization (by Gram=Schmidt's
+ * method) or of their components remaining after the preceding reflections (by Householder's method) is
+ * not greater than zTOL times the maximum norm of the row vectors of \a m, so that the rank does not
+ * depend on the scale of \a m.
  * It does not allocate any internal memory.
  *
  * zMatDecompLQAlloc() automatically allocates matrices \a l and \a q in addition to the index vector
@@ -96,8 +89,8 @@ __ZM_EXPORT int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q, zIndex *index)
  * If \a m is with the size of r x c, \a l and \a q have to be with the sizes of r x c and c x c, respectively.
  * \a index is an index vector for order description, which has the same meaning with that for
  * zMatDecompLQ(). The size of \a index has to be r.
- * A row vector linearly dependent on the preceding ones (judged with the relative tolerance
- * ZM_LQ_DECOMP_TOL) does not consume a column of \a l. Hence, suppose the rank of \a m is d, the last
+ * A row vector linearly dependent on the preceding ones (judged in the same way with zMatDecompLQ())
+ * does not consume a column of \a l. Hence, suppose the rank of \a m is d, the last
  * c-d columns of \a l are zero, and the last c-d rows of \a q span the null space of \a m.
  * It does not allocate any internal memory.
  *

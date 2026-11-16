@@ -441,7 +441,7 @@ bool assert_mat_decomp_lq_rank(void)
   zMat m[3], l, q;
   int i, size, rank;
   bool result = false;
-  const double residual = 1.0e-12;
+  const double residual = 1.0e-13;
 
   m[0] = zMatCreateList( 3, 3, /* square case */
     1.0, 0.0, 0.0,

@@ -516,10 +516,10 @@ void assert_le_gen(void)
   /* tolerances of the normwise backward errors for MP(LQ), MP(LU), MP(SVD), and SR. Those for MP(SVD)
    * in ill-conditioned cases and SR are loose, since the former is based on the eigenvalues of a^T a,
    * and the latter does not intend to solve the equation exactly. In ill-conditioned cases, a row
-   * which is close to linearly dependent on the others within ZM_LQ_DECOMP_TOL is discarded by LQ
+   * which is close to linearly dependent on the others within zTOL is discarded by LQ
    * decomposition, and MP(LU) loses accuracy in solving the normal equations of the factors. */
   const double tol_general[] = { 1.0e-14, 1.0e-12, 1.0e-13, 1.0e-6 };
-  const double tol_illcond[] = { ZM_LQ_DECOMP_TOL, 1.0e-11, 1.0e-5, 1.0e-5 };
+  const double tol_illcond[] = { zTOL, 1.0e-11, 1.0e-5, 1.0e-5 };
   const int rowsize = 150;
   const int colsize = 200;
   zMat a;
@@ -671,6 +671,146 @@ void assert_le_gen_rowlong(void)
   zMatFree( a );
   zVecFreeAtOnce( 3, b, x_ref, x_lq );
   zAssert( zLESolveMP_LQ (row-long cases), result );
+}
+
+/* a matrix a = U S V^T with random orthogonal matrices U and V and singular values from 1 to 1/kappa
+ * in geometric progression, where u, s and v are returned. */
+void le_gen_known_svd(zMat a, zMat u, zVec s, zMat v, double kappa)
+{
+  int m, n, r, i, j, k;
+  zMat g, h, rg, rh;
+  zIndex ig, ih;
+  double x;
+
+  m = zMatRowSizeNC(a); n = zMatColSizeNC(a); r = zMin( m, n );
+  g = zMatAllocSqr( m ); rg = zMatAllocSqr( m ); ig = zIndexCreate( m );
+  h = zMatAllocSqr( n ); rh = zMatAllocSqr( n ); ih = zIndexCreate( n );
+  zMatRandUniform( g, -1, 1 ); zMatDecompQR( g, u, rg, ig );
+  zMatRandUniform( h, -1, 1 ); zMatDecompQR( h, v, rh, ih );
+  for( k=0; k<r; k++ ) zVecSetElemNC( s, k, pow( kappa, -(double)k/(r-1) ) );
+  for( i=0; i<m; i++ )
+    for( j=0; j<n; j++ ){
+      for( x=0, k=0; k<r; k++ ) x += zMatElemNC(u,i,k) * zVecElemNC(s,k) * zMatElemNC(v,j,k);
+      zMatSetElemNC( a, i, j, x );
+    }
+  zMatFreeAtOnce( 4, g, rg, h, rh );
+  zIndexFree( ig ); zIndexFree( ih );
+}
+
+/* the MP-inverse solution V S^-1 U^T b of a = U S V^T (the minimum-norm solution for a row-full-rank a,
+ * or the least-square solution for a column-full-rank a). */
+zVec le_gen_known_svd_solve(const zMat u, const zVec s, const zMat v, const zVec b, zVec x)
+{
+  int i, j, r;
+  zVec c;
+
+  r = zVecSizeNC(s);
+  c = zVecAlloc( r );
+  for( i=0; i<r; i++ ){
+    for( j=0; j<zVecSizeNC(b); j++ ) zVecElemNC(c,i) += zMatElemNC(u,j,i) * zVecElemNC(b,j);
+    zVecElemNC(c,i) /= zVecElemNC(s,i);
+  }
+  for( j=0; j<zVecSizeNC(x); j++ )
+    for( zVecSetElemNC(x,j,0), i=0; i<r; i++ ) zVecElemNC(x,j) += zMatElemNC(v,j,i) * zVecElemNC(c,i);
+  zVecFree( c );
+  return x;
+}
+
+/* norm-minimizing, referred-norm-minimizing and error-minimizing solvers for ill-conditioned matrices,
+ * the errors of which have to be proportional to the condition number (not to its square). */
+#define TOL_LE_GEN_HOUSEHOLDER 100 /* tolerance of the relative error relative to kappa eps */
+void assert_le_gen_householder(void)
+{
+  const int m = 6, n = 10, testnum = 100;
+  const double kappa = 1.0e8;
+  const double tol = TOL_LE_GEN_HOUSEHOLDER * kappa * DBL_EPSILON;
+  zMat a, at, u, v;
+  zVec s, b, bt, x, xs, y, ys, ref;
+  int k;
+  bool result_nm = true, result_rnm = true, result_em = true;
+
+  a = zMatAlloc( m, n ); at = zMatAlloc( n, m );
+  u = zMatAllocSqr( m ); v = zMatAllocSqr( n ); s = zVecAlloc( m );
+  b = zVecAlloc( m ); bt = zVecAlloc( n );
+  x = zVecAlloc( n ); xs = zVecAlloc( n ); ref = zVecAlloc( n );
+  y = zVecAlloc( m ); ys = zVecAlloc( m );
+  for( k=0; k<testnum; k++ ){
+    le_gen_known_svd( a, u, s, v, kappa );
+    /* minimum-norm solution for a general right-hand side */
+    zVecRandUniform( b, -1, 1 );
+    le_gen_known_svd_solve( u, s, v, b, xs );
+    if( !zLESolveNormMin( a, b, NULL, x ) || zVecDist( x, xs ) > tol * zVecNorm( xs ) ) result_nm = false;
+    /* referred-norm-minimizing solution: x = ref + a^+ ( b - a ref ) */
+    zVecRandUniform( ref, -1, 1 );
+    zMulMatVec( a, ref, y );
+    zVecSubDRC( y, b ); /* y = a ref - b */
+    zVecRevDRC( y );
+    le_gen_known_svd_solve( u, s, v, y, xs );
+    zVecAddDRC( xs, ref );
+    if( !zLESolveRefNormMin( a, b, NULL, ref, x ) || zVecDist( x, xs ) > tol * zVecNorm( xs ) ) result_rnm = false;
+    /* least-square solution for a general right-hand side, where a^T = V S U^T */
+    zMatT( a, at );
+    zVecRandUniform( bt, -1, 1 );
+    le_gen_known_svd_solve( v, s, u, bt, ys );
+    if( !zLESolveErrorMin( at, bt, NULL, y ) || zVecDist( y, ys ) > tol * zVecNorm( ys ) ) result_em = false;
+  }
+  zMatFreeAtOnce( 4, a, at, u, v );
+  zVecFreeAtOnce( 9, s, b, bt, x, xs, ref, y, ys, NULL );
+  zAssert( zLESolveNormMin (ill-conditioned cases), result_nm );
+  zAssert( zLESolveRefNormMin (ill-conditioned cases), result_rnm );
+  zAssert( zLESolveErrorMin (ill-conditioned cases), result_em );
+}
+
+/* weighted norm-minimizing and error-minimizing solvers, which are compared with the solutions by
+ * MP-inverse based on singular value decomposition of the weighted coefficient matrices, namely,
+ * x = W^1/2 ( a W^1/2 )^+ b and y = ( W^1/2 a )^+ W^1/2 b. */
+void assert_le_gen_householder_weight(void)
+{
+  const int m = 6, n = 10, testnum = 100;
+  const double tol = 1.0e-12;
+  zMat a, at, aw;
+  zVec b, bt, w, x, xs, y, ys, bw;
+  int i, j, k;
+  double err, err_nm = 0, err_em = 0;
+  bool result_shape = true;
+
+  a = zMatAlloc( m, n ); at = zMatAlloc( n, m );
+  b = zVecAlloc( m ); bt = zVecAlloc( n ); w = zVecAlloc( n );
+  x = zVecAlloc( n ); xs = zVecAlloc( n ); y = zVecAlloc( m ); ys = zVecAlloc( m ); bw = zVecAlloc( n );
+  for( k=0; k<testnum; k++ ){
+    zMatRandUniform( a, -1, 1 );
+    zVecRandUniform( b, -1, 1 );
+    for( j=0; j<n; j++ ) zVecSetElemNC( w, j, pow( 10, zRandF(-2,2) ) );
+    aw = zMatAlloc( m, n );
+    for( i=0; i<m; i++ )
+      for( j=0; j<n; j++ ) zMatSetElemNC( aw, i, j, zMatElemNC(a,i,j) * sqrt( zVecElemNC(w,j) ) );
+    zLESolveMP_SVD( aw, b, xs );
+    for( j=0; j<n; j++ ) zVecElemNC(xs,j) *= sqrt( zVecElemNC(w,j) );
+    zMatFree( aw );
+    if( !zLESolveNormMin( a, b, w, x ) ) err = HUGE_VAL; else err = zVecDist( x, xs ) / zVecNorm( xs );
+    if( !( err <= err_nm ) ) err_nm = err;
+    zMatT( a, at );
+    zVecRandUniform( bt, -1, 1 );
+    aw = zMatAlloc( n, m );
+    for( i=0; i<n; i++ ){
+      for( j=0; j<m; j++ ) zMatSetElemNC( aw, i, j, zMatElemNC(at,i,j) * sqrt( zVecElemNC(w,i) ) );
+      zVecSetElemNC( bw, i, zVecElemNC(bt,i) * sqrt( zVecElemNC(w,i) ) );
+    }
+    zLESolveMP_SVD( aw, bw, ys );
+    zMatFree( aw );
+    if( !zLESolveErrorMin( at, bt, w, y ) ) err = HUGE_VAL; else err = zVecDist( y, ys ) / zVecNorm( ys );
+    if( !( err <= err_em ) ) err_em = err;
+  }
+  /* coefficient matrices that cannot be full-rank */
+  zEchoOff();
+  if( zLESolveNormMin( at, bt, NULL, y ) || zLESolveErrorMin( a, b, NULL, x ) ) result_shape = false;
+  zEchoOn();
+  zMatFreeAtOnce( 2, a, at );
+  zVecFreeAtOnce( 8, b, bt, w, x, xs, y, ys, bw );
+  eprintf( "maximum relative errors from the solutions by SVD = %g (norm-min.), %g (error-min.)\n", err_nm, err_em );
+  zAssert( zLESolveNormMin (weighted cases), err_nm <= tol );
+  zAssert( zLESolveErrorMin (weighted cases), err_em <= tol );
+  zAssert( zLESolveNormMin and zLESolveErrorMin (rank-deficient shapes), result_shape );
 }
 
 void assert_le_gen_aux(void)
@@ -1283,6 +1423,70 @@ void assert_mpnull(void)
   zVecFreeAtOnce( 3, v, u, e );
 }
 
+/* weighted MP-inverse solutions of rank-deficient equations a x = b with a = p r^T, where p and r are
+ * column-full-rank. Since r^T is row-full-rank, the reference answer is found by minimizing the weighted
+ * error of p z = b and then the weighted norm of x subject to r^T x = z. A component of we is
+ * occasionally zero, for which the corresponding equation is ignored, if p remains column-full-rank
+ * without the corresponding row. */
+#define TOL_LE_MP_WEIGHT 1.0e-10
+void assert_le_mp_weight(void)
+{
+  const int size[][3] = { { 6, 10, 4 }, { 10, 6, 4 }, { 8, 8, 5 }, { 6, 10, 6 }, { 10, 6, 6 } };
+  const int nsize = sizeof(size) / sizeof(size[0]), testnum = 100;
+  zMat a, p, rt, mn, am;
+  zVec b, wn, we, x, xs, z, aux, v;
+  int i, j, k, l, m, n, r;
+  double err, err_lq = 0, err_lu = 0, err_null = 0, err_proj = 0, err_aux = 0;
+
+  for( l=0; l<nsize; l++ ){
+    m = size[l][0]; n = size[l][1]; r = size[l][2];
+    a = zMatAlloc( m, n ); p = zMatAlloc( m, r ); rt = zMatAlloc( r, n ); mn = zMatAlloc( n, n ); am = zMatAlloc( m, n );
+    b = zVecAlloc( m ); we = zVecAlloc( m ); z = zVecAlloc( r );
+    wn = zVecAlloc( n ); x = zVecAlloc( n ); xs = zVecAlloc( n ); aux = zVecAlloc( n ); v = zVecAlloc( n );
+    for( k=0; k<testnum; k++ ){
+      zMatRandUniform( p, -1, 1 );
+      zMatRandUniform( rt, -1, 1 );
+      zMulMatMat( p, rt, a );
+      zVecRandUniform( b, -1, 1 );
+      for( i=0; i<m; i++ ) zVecSetElemNC( we, i, pow( 10, zRandF(-1,1) ) );
+      for( j=0; j<n; j++ ) zVecSetElemNC( wn, j, pow( 10, zRandF(-1,1) ) );
+      if( k % 2 && m > r ) zVecSetElemNC( we, zRandI(0,m-1), 0 );
+      if( !zLESolveErrorMin( p, b, we, z ) || !zLESolveNormMin( rt, z, wn, xs ) ){ /* not expected */
+        err_lq = err_lu = HUGE_VAL;
+        continue;
+      }
+      err = zLESolveMP_LQ( a, b, wn, we, x ) ? zVecDist( x, xs ) / zVecNorm( xs ) : HUGE_VAL;
+      if( !( err <= err_lq ) ) err_lq = err;
+      err = zLESolveMP_LU( a, b, wn, we, x ) ? zVecDist( x, xs ) / zVecNorm( xs ) : HUGE_VAL;
+      if( !( err <= err_lu ) ) err_lu = err;
+      if( k % 2 ) continue;
+      /* null-space projector mn = a# a - I, where all the weights are positive */
+      if( !zLESolveMPNull( a, b, wn, we, x, mn ) ){
+        err_null = HUGE_VAL;
+        continue;
+      }
+      err = zVecDist( x, xs ) / zVecNorm( xs );
+      if( !( err <= err_null ) ) err_null = err;
+      zMulMatMat( a, mn, am ); /* a mn = O */
+      err = zMatInfNorm( am ) / zMatInfNorm( a );
+      if( !( err <= err_proj ) ) err_proj = err;
+      zVecRandUniform( aux, -1, 1 ); /* a# b + ( I - a# a ) aux = x - mn aux */
+      zLESolveMPAux( a, b, wn, we, xs, aux );
+      zMulMatVec( mn, aux, v );
+      zVecSubDRC( x, v );
+      err = zVecDist( x, xs ) / zVecNorm( xs );
+      if( !( err <= err_aux ) ) err_aux = err;
+    }
+    zMatFreeAtOnce( 5, a, p, rt, mn, am );
+    zVecFreeAtOnce( 8, b, we, z, wn, x, xs, aux, v );
+  }
+  eprintf( "maximum relative errors from the reference solutions = %g (LQ), %g (LU), %g (null)\n", err_lq, err_lu, err_null );
+  eprintf( "maximum relative errors of the null-space projector = %g (a mn), %g (aux)\n", err_proj, err_aux );
+  zAssert( zLESolveMP_LQ (weighted rank-deficient cases), err_lq <= TOL_LE_MP_WEIGHT );
+  zAssert( zLESolveMP_LU (weighted rank-deficient cases), err_lu <= TOL_LE_MP_WEIGHT );
+  zAssert( zLESolveMPNull (weighted rank-deficient cases), err_null <= TOL_LE_MP_WEIGHT && err_proj <= TOL_LE_MP_WEIGHT && err_aux <= TOL_LE_MP_WEIGHT );
+}
+
 void assert_mat_det_adj(void)
 {
   zMat m, minv1, minv2;
@@ -1432,6 +1636,8 @@ int main(void)
   assert_le_gauss_seidel_scale();
   assert_le_gen();
   assert_le_gen_rowlong();
+  assert_le_gen_householder();
+  assert_le_gen_householder_weight();
   assert_le_gen_lu_rank();
   assert_le_gen_aux();
   assert_le_mpnull();
@@ -1445,5 +1651,6 @@ int main(void)
   assert_mat_mpinv();
   assert_mat_mpinv_rand();
   assert_mpnull();
+  assert_le_mp_weight();
   return EXIT_SUCCESS;
 }

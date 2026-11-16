@@ -18,8 +18,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zLEWorkspace ){
   zIndex index_le;  /* an index vector for pivotting */
   zVec b_copy;      /* copy of b vector */
   zVec v_ispace;    /* internal-space vector */
-  /* for referenced norm-minimization */
-  zVec v_ref;
+  /* for Householder transformations */
+  zMat m_house;     /* a copy of the coefficient matrix (or its transpose) to be transformed */
   /* for MP-inverse */
   zVec v_mp_ispace; /* full-rank internal-space vector */
   /* for LU/LQ factorization */
@@ -50,41 +50,48 @@ __ZM_EXPORT void zLEWorkspaceResizeMP(zLEWorkspace *workspace, int rank);
 
 /*! \brief generalized linear equation solver.
  *
- * These functions solve a generalized linear equation \a \a ans = \a b, where the coefficient
+ * These functions solve a generalized linear equation \a a \a ans = \a b, where the coefficient
  * matrix \a a is not necessarily regular.
  *
  * zLESolveNormMinDST() and zLESolveNormMin() solve a redundant linear equation, namely, an equation
- * where the number of variables is larger than the number of equations, as to minimize the squared
- * norm of the solution.
- * The coefficient matrix \a must be row-full-rank.
- * \a w is a weighting vector, namely diagonal components of a weighting matrix on each component
- * of \a ans. If the null pointer is assigned for \a w, a uniform weight is applied.
+ * where the number of variables is larger than the number of equations, as to minimize the weighted
+ * squared norm of the solution \a ans^T W^-1 \a ans, where W is a diagonal matrix of which the diagonal
+ * components are given by a weighting vector \a w. If the null pointer is assigned for \a w, a uniform
+ * weight is applied. The coefficient matrix \a a must be row-full-rank.
  *
  * zLESolveErrorMinDST() and zLESolveErrorMin() solve an overconstrained linear equation, namely,
  * an equation where the number of equations is larger than the number of variables, as to minimize
- * the residual of \a a \a ans and \a b.
+ * the weighted squared norm of the residual ( \a a \a ans - \a b )^T W ( \a a \a ans - \a b ), where W
+ * is a diagonal matrix of which the diagonal components are given by a weighting vector \a w. If the
+ * null pointer is assigned for \a w, a uniform weight is applied.
  * The coefficient matrix \a a must be column-full-rank.
- * \a w is a weighting vector, namely, diagonal components of a weighting matrix on the residual of
- * each equation. 
- * of \a ans. If the null pointer is assigned for \a w, a uniform weight is applied.
  *
  * zLESolveRefNormMinDST() and zLESolveRefNormMin() solve a redundant linear equation as to minimize
- * the squared error between the answer \a ans and a reference vector \a ref.
+ * the weighted squared error between the answer \a ans and a reference vector \a ref, namely,
+ * ( \a ans - \a ref )^T W^-1 ( \a ans - \a ref ).
  * \a a must be row-full-rank as well as zLESolveNormMinDST() and zLESolveNormMin().
- * \a w is a weighting vector on the error.
  *
- * zLESolveNormMinDST(), zLESolveErrorMinDST(), and zLESolveRefNormMinDST() solve the normal equation
- * after scaling it symmetrically by the inverse square roots of its diagonal components, which
- * suppresses the loss of accuracy due to unbalanced scales of rows (columns) of \a a.
- * zLESolveNormMinDST() and zLESolveErrorMinDST() destroy \a b, which is used to store the scaling
- * factors in zLESolveErrorMinDST().
+ * The components of the weighting vectors have to be non-negative.
+ *
+ * They are based on Householder's method without forming the normal equations, so that the error of
+ * the answer is proportional to the condition number of \a a, not to its square. zLESolveNormMinDST()
+ * and zLESolveRefNormMinDST() decompose \a a W^1/2 into a lower triangular matrix and a row-orthonormal
+ * matrix (LQ decomposition), and zLESolveErrorMinDST() decomposes W^1/2 \a a into a column-orthonormal
+ * matrix and an upper triangular matrix (QR decomposition).
+ * \a a is regarded as rank-deficient if the norm of the residual of a row (a column for
+ * zLESolveErrorMinDST()) of the weighted coefficient matrix orthogonalized to the preceding ones is not
+ * greater than zTOL times the maximum norm of the rows (columns) of the weighted coefficient matrix,
+ * which is the same criterion with that of zMatDecompLQ() (zMatDecompQR()).
+ * zLESolveErrorMinDST() destroys \a b. zLESolveNormMinDST() and zLESolveRefNormMinDST() do not.
  *
  * zLESolveNormMinDST(), zLESolveErrorMinDST(), and zLESolveRefNormMinDST() use a workspace \a workspace,
  * which should be initialized with zLEWorkspaceAlloc() beforehand and freed with zLEWorkspaceFree
- * afterward, for internal matrix-vector computations.
+ * afterward, for internal matrix-vector computations, where the numbers of equations and variables
+ * given to zLEWorkspaceAlloc() have to be those of \a a.
  * zLESolveNormMin(), zLESolveErrorMin(), and zLESolveRefNormMin() internally allocate workspace.
  * \return
- * All these functions return a pointer \a ans.
+ * These functions return a pointer \a ans if they succeed. If \a a is rank-deficient, or the workspace
+ * is not large enough, they return the null pointer.
  * \sa
  * zLEWorkspaceAlloc, zLEWorkspaceFree
  */
@@ -97,30 +104,32 @@ __ZM_EXPORT zVec zLESolveRefNormMin(const zMat a, const zVec b, const zVec w, co
 
 /*! \brief destructive version of generalized linear equation solver based on Moore-Penrose's inverse matrix.
  *
- * zLESolveMP_LQ_DST() solves a generalized linear equation a ans = b with internal workspace \a workspace,
- * where the coefficient matrix a has to be decomposed into L and Q matrices, and the vector b has to be
- * cloned in advance.
+ * These functions solve a generalized linear equation a ans = b with internal workspace \a workspace,
+ * where the weighted coefficient matrix We^1/2 a Wn^1/2 has to be decomposed in advance into the factors
+ * l_facto and r_facto of \a workspace, and b (not weighted) has to be copied to b_copy of \a workspace.
+ * We and Wn are diagonal matrices of which the diagonal components are given by \a we and \a wn,
+ * respectively. The null pointer for \a we or \a wn means the identity matrix.
  *
- * zLESolveMP_LU_DST() solves a generalized linear equation a ans = b with internal workspace \a workspace,
- * where the coefficient matrix a has to be decomposed into L and U matrices by the LU decomposition
- * with complete pivoting zMatDecompLUCP() with the index vectors index_row and index_col of \a workspace,
- * and the vector b has to be cloned in advance. Note that the decomposition by zMatDecompLU() based on
- * partial pivoting is not accepted, since the U matrix is supposed to be an upper triangular matrix with
- * columns permuted by index_col.
+ * zLESolveMP_LQ_DST() and zLESolveMPNullDST() accept the factors of the LQ decomposition by zMatDecompLQ()
+ * with the index vector index_row of \a workspace.
  *
- * zLESolveMPNullDST() solves a generalized linear equation a ans = b and simultaneously finds the null-space
- * projector with internal workspace \a workspace, where the coefficient matrix a has to be decomposed into
- * L and Q matrices, and the vector b has to be cloned in advance.
+ * zLESolveMP_LU_DST() accepts the factors of the LU decomposition with complete pivoting by
+ * zMatDecompLUCP() with the index vectors index_row and index_col of \a workspace. Note that the
+ * decomposition by zMatDecompLU() based on partial pivoting is not accepted, since the U matrix is
+ * supposed to be an upper triangular matrix with columns permuted by index_col.
  *
- * For these functions, \a wn is a weighting vector, namely, diagonal components of a weighting matrix on
- * the norm of the answer vector \a ans. \a we is a weighting vector, namely, diagonal components of a
- * weighting matrix on the residual of \a a \a ans and \a b.
- * \a rank is the rank of the coefficient matrix, which is the same with the column size of L matrix and
- * the row size of the Q/U matrix.
+ * zLESolveMPNullDST() simultaneously finds the null-space projector \a mn (see zLESolveMPNull()).
+ *
+ * \a wn is a weighting vector, namely, diagonal components of a weighting matrix on the norm of the
+ * answer vector \a ans. \a we is a weighting vector, namely, diagonal components of a weighting matrix
+ * on the residual of \a a \a ans and \a b.
+ * \a rank is the rank of the weighted coefficient matrix, which is the same with the column size of L
+ * matrix and the row size of the Q/U matrix.
  * The answer is stored where \a ans points.
- * \a mn for zLESolveMPNullDST() is a pointer where the null-space projector is stored.
  * \return
- * These functions return a pointer \a ans.
+ * These functions return a pointer \a ans if they succeed. If they fail to solve the equations of the
+ * factors, they return the null pointer. zLESolveMPNullDST() also returns the null pointer if a
+ * component of \a wn is not positive.
  * \sa
  * zMatDecompLQ, zMatDecompLUCP
  */
@@ -137,8 +146,16 @@ __ZM_EXPORT zVec zLESolveMPNullDST(zLEWorkspace *workspace, const zVec we, const
  * answer vector \a ans.
  * \a we is a weighting vector, namely, diagonal components of a weighting matrix on the residual
  * of \a a \a ans and \a b.
- * They find the weighted Moore-Penrose's inverse (MP-inverse) solution \a ans, which minimizes error
- * between \a a \a ans and \b weighted by \a we with minimum weighted norm by \a wn.
+ * They find the weighted Moore-Penrose's inverse (MP-inverse) solution \a ans, which minimizes
+ *  ( \a a \a ans - \a b )^T We ( \a a \a ans - \a b ),
+ * and then minimizes \a ans^T Wn^-1 \a ans among the minimizers, where We and Wn are diagonal matrices
+ * of which the diagonal components are given by \a we and \a wn, respectively. The null pointer for
+ * \a we or \a wn means the identity matrix. The components of the weighting vectors have to be
+ * non-negative. An equation with zero weight is ignored, and a variable with zero weight is fixed to zero.
+ * Since \a ans = Wn^1/2 y, where y is the MP-inverse solution of We^1/2 \a a Wn^1/2 y = We^1/2 \a b,
+ * the weighted coefficient matrix We^1/2 \a a Wn^1/2 is decomposed. Its rank is detected in the
+ * decomposition (see zMatDecompLQ() and zMatDecompLUCP()), and the directions regarded as degenerated
+ * are discarded.
  *
  * Three methods to find the MP-inverse solution are available.
  * zLESolveMP_LQ() uses LQ decomposition.
@@ -146,15 +163,20 @@ __ZM_EXPORT zVec zLESolveMPNullDST(zLEWorkspace *workspace, const zVec we, const
  * zLESolveMP_SVD() uses the singular value decomposition, which does not accept weights.
  * zLESolveMP() is an alias to zLESolveMP_LQ().
  *
- * zLESolveMPNull finds the MP-inverse solution \a ans, and the null-space projector \a wn simultaneously.
- * \a wn is a square matrix that maps arbitrary vector to the zero vector.
+ * zLESolveMPNull() finds the MP-inverse solution \a ans, and simultaneously the null-space projector
+ * \a mn = \a a # \a a - I, where \a a # is the weighted MP-inverse matrix of \a a and I is the identity
+ * matrix, namely, \a mn = Wn^1/2 ( Q^T Q - I ) Wn^-1/2 for the LQ decomposition L Q of the weighted
+ * coefficient matrix. \a a \a mn = O holds if all the components of \a we are positive, and
+ * \a ans - \a mn v is the MP-inverse solution biased by a vector v in the null-space (see zLESolveMPAux()).
+ * The components of \a wn have to be positive for zLESolveMPNull().
  *
  * zLESolveMPAux() finds the MP-inverse solution plus a bias in the null-space, which is mapped from
  * a vector \a aux. Namely,
- *  \a ans = \a a # \a b + ( I - \a a # \a a ) \a aux,
- * where \a a # is the MP-inverse matrix of \a a, and I is the identity matrix.
+ *  \a ans = \a a # \a b + ( I - \a a # \a a ) \a aux.
  * \return
- * All these functions return a pointer \a ans.
+ * All these functions return a pointer \a ans if they succeed. If they fail to allocate internal
+ * workspace or to solve the equations of the factors, they return the null pointer.
+ * zLESolveMPNull() also returns the null pointer if a component of \a wn is not positive.
  */
 __ZM_EXPORT zVec zLESolveMP_LQ(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans);
 __ZM_EXPORT zVec zLESolveMP_LU(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans);
@@ -167,7 +189,7 @@ __ZM_EXPORT zVec zLESolveMPAux(const zMat a, const zVec b, const zVec wn, const 
 
 /*! \brief singularity-robust generalized linear equation solver.
  *
- * These functions solve a generalized linear equation \a \a ans = \a b, where the coefficient
+ * These functions solve a generalized linear equation \a a \a ans = \a b, where the coefficient
  * matrix \a a is not necessarily regular, with the singularity-robust inverse matrix proposed
  * by Y. Nakamura and H. Hanafusa (1986):
  *  Y. Nakamura and H. Hanafusa, Inverse Kinematic Solutions with Singularity Robustness for
