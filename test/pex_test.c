@@ -216,6 +216,106 @@ void assert_peqsolve_scale(void)
   zAssert( zPexBH (various scales), ret_bh );
 }
 
+#define NUM_PE_COMPARE 1000
+/* check if each expected root coincides with the nearest computed root not matched yet up to tol times
+ * its magnitude. */
+bool check_roots_match(const char *name, const zComplex *ans, const zComplex *expected, int n, double tol)
+{
+  int i, j, jmin;
+  double d, dmin;
+  bool matched[3] = { false, false, false };
+  zComplex c;
+
+  for( i=0; i<n; i++ ){
+    for( dmin=HUGE_VAL, jmin=-1, j=0; j<n; j++ ){
+      if( matched[j] ) continue;
+      zComplexSub( &ans[j], &expected[i], &c );
+      if( ( d = zComplexAbs( &c ) ) < dmin ){
+        dmin = d;
+        jmin = j;
+      }
+    }
+    if( jmin < 0 || !( dmin <= tol * zComplexAbs( &expected[i] ) ) ){
+      eprintf( "%s: root %g%+gi not found (relative error = %g)\n", name, expected[i].re, expected[i].im, dmin / zComplexAbs( &expected[i] ) );
+      return false;
+    }
+    matched[jmin] = true;
+  }
+  return true;
+}
+
+/* random roots of a quadratic or cubic polynomial, which are real or a pair of complex conjugates.
+ * each root (or pair) is multiplied by its own factor in [1e-2,1e2] and a common scale, and the
+ * roots are separated from each other relatively to their magnitudes. Since the magnitudes before
+ * the multiplications are in [0.1,3*sqrt(2)], the ratio of the magnitudes of the roots is within the
+ * limit of zCESolve() (about 1e+150). Note that zPexBH might fail
+ * for larger differences of the magnitudes of the roots (e.g., 0.3% of cubic polynomials for 1e+-6). */
+void pe_random_roots(zComplex *root, int n, double scale)
+{
+  int i, j;
+  double f;
+  zComplex c;
+
+ RETRY:
+  i = 0;
+  if( zRandI(0,1) ){ /* a pair of complex conjugates */
+    f = scale * pow( 10, zRandF(-2,2) );
+    zComplexCreate( &root[0], f*zRandF(-3,3), f*zRandF(0.1,3) );
+    zComplexConj( &root[0], &root[1] );
+    i = 2;
+  }
+  for( ; i<n; i++ ) zComplexCreate( &root[i], scale*pow( 10, zRandF(-2,2) )*zRandF(0.1,3)*( zRandI(0,1) ? 1 : -1 ), 0 );
+  for( i=0; i<n; i++ )
+    for( j=i+1; j<n; j++ ){
+      zComplexSub( &root[i], &root[j], &c );
+      if( zComplexAbs( &c ) < 0.1 * zMax( zComplexAbs( &root[i] ), zComplexAbs( &root[j] ) ) ) goto RETRY;
+    }
+}
+
+/* zQESolve and zCESolve have to give the same roots with zPexDKA and zPexBH. */
+#define TOL_PE_COMPARE ( 1.0e-10 )
+void assert_pe_solve_compare(void)
+{
+  zComplex root[3], ans[3];
+  zPex pex;
+  zCVec cans;
+  double a, scale;
+  int n, k;
+  bool ret_qe = true, ret_ce = true, ret_dka = true, ret_bh = true;
+
+  for( n=2; n<=3; n++ ){
+    pex = zPexAlloc( n );
+    cans = zCVecAlloc( n );
+    for( k=0; k<NUM_PE_COMPARE; k++ ){
+      scale = pow( 10, zRandF(-90,90) ); /* the coefficients have to be representable */
+      pe_random_roots( root, n, scale );
+      a = zRandF(0.5,3) * ( zRandI(0,1) ? 1 : -1 );
+      /* a (x-r0)(x-r1) or a (x-r0)(x-r1)(x-r2), where complex conjugates come in pairs */
+      if( n == 2 ){
+        zPexSetCoeffList( pex, a*( root[0].re*root[1].re - root[0].im*root[1].im ), -a*( root[0].re + root[1].re ), a );
+        zQESolve( zPexCoeff(pex,2), zPexCoeff(pex,1), zPexCoeff(pex,0), ans );
+        if( !check_roots_match( "zQESolve", ans, root, n, TOL_PE_COMPARE ) ) ret_qe = false;
+      } else{
+        double s1, s2, s3; /* elementary symmetric polynomials of the roots */
+        s1 = root[0].re + root[1].re + root[2].re;
+        s2 = root[0].re*root[1].re - root[0].im*root[1].im + ( root[0].re + root[1].re )*root[2].re;
+        s3 = ( root[0].re*root[1].re - root[0].im*root[1].im )*root[2].re;
+        zPexSetCoeffList( pex, -a*s3, a*s2, -a*s1, a );
+        zCESolve( zPexCoeff(pex,3), zPexCoeff(pex,2), zPexCoeff(pex,1), zPexCoeff(pex,0), ans );
+        if( !check_roots_match( "zCESolve", ans, root, n, TOL_PE_COMPARE ) ) ret_ce = false;
+      }
+      if( !zPexDKA( pex, cans, 0, 0 ) || !check_roots_match( "zPexDKA", zCVecBufNC(cans), root, n, TOL_PE_COMPARE ) ) ret_dka = false;
+      if( !zPexBH( pex, cans, 0, 0 ) || !check_roots_match( "zPexBH", zCVecBufNC(cans), root, n, TOL_PE_COMPARE ) ) ret_bh = false;
+    }
+    zPexFree( pex );
+    zCVecFree( cans );
+  }
+  zAssert( zQESolve (comparison with zPexDKA and zPexBH), ret_qe );
+  zAssert( zCESolve (comparison with zPexDKA and zPexBH), ret_ce );
+  zAssert( zPexDKA (comparison with zQESolve and zCESolve), ret_dka );
+  zAssert( zPexBH (comparison with zQESolve and zCESolve), ret_bh );
+}
+
 #define NUM 7
 
 void assert_exp(void)
@@ -283,6 +383,7 @@ int main(void)
   assert_pex_div();
   assert_peqsolve();
   assert_peqsolve_scale();
+  assert_pe_solve_compare();
   assert_exp();
   assert_cexp();
   return EXIT_SUCCESS;

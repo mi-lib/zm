@@ -1,4 +1,5 @@
 #include <zm/zm.h>
+#include <float.h>
 
 void assert_equal(void)
 {
@@ -90,6 +91,35 @@ void assert_cube_cbrt(void)
   zAssert( zCbrt, zIsTiny( zCube( zCbrt( val ) ) - val ) );
 }
 
+/* zPow2Floor(x) has to be a power of two p such that |x|/p is in [1,2), including for the extreme
+ * values, and zero, infinity and NaN have to be returned as they are (in absolute values). */
+void assert_pow2floor(void)
+{
+  struct{
+    double x, p;
+  } *c, val[] = {
+    { 1.0, 1.0 }, { 1.5, 1.0 }, { 3.0, 2.0 }, { 0.75, 0.5 }, { -5.0, 4.0 },
+    { DBL_MAX, 0x1p1023 }, { DBL_MIN, DBL_MIN }, { 0x3p-1074, 0x1p-1073 }, { 0x1.3p-1060, 0x1p-1060 },
+    { 0, 0 }, { -HUGE_VAL, HUGE_VAL }, { HUGE_VAL, HUGE_VAL },
+  };
+  double x, p;
+  int i, e;
+  bool result = true;
+
+  for( c=val; c<val+sizeof(val)/sizeof(val[0]); c++ )
+    if( zPow2Floor( c->x ) != c->p ){
+      eprintf( "zPow2Floor(%a) = %a (expected %a)\n", c->x, zPow2Floor( c->x ), c->p );
+      result = false;
+    }
+  if( !zIsNan( zPow2Floor( NAN ) ) ) result = false;
+  for( i=0; i<1000; i++ ){
+    x = zRandF(-1,1) * pow( 10, zRandF(-300,300) );
+    p = zPow2Floor( x );
+    if( x != 0 && !( fabs( x ) / p >= 1 && fabs( x ) / p < 2 && frexp( p, &e ) == 0.5 ) ) result = false;
+  }
+  zAssert( zPow2Floor, result );
+}
+
 void assert_log(void)
 {
   double val;
@@ -174,6 +204,7 @@ int main(void)
   assert_phase_normalize();
   assert_ceil();
   assert_cube_cbrt();
+  assert_pow2floor();
   assert_log();
   assert_permutation();
   assert_combination();

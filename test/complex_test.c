@@ -3,66 +3,164 @@
 
 #define NUM 100
 
-#define TOL ( 1.0e-7 )
-
-bool assert_qesolve_check(double a, double b, double c, zComplex *ans)
+/* the backward error of an answer x of a polynomial equation coeff[n] x^n + ... + coeff[0] = 0, namely,
+ * the residual relative to its scale sum_k |coeff[k]||x|^k (the residual itself if the scale is zero).
+ * for |x| > 1, both are divided by x^n and evaluated as polynomials of 1/x so as not to overflow. */
+double pe_backward_error(const double coeff[], int n, zComplex *x)
 {
-  zComplex r1, r2;
+  zComplex r, rw, w;
+  double aw, s;
+  int k;
 
-  zComplexMul( ans, a, &r1 );
-  r1.re += b;
-  zComplexCMul( ans, &r1, &r2 );
-  r2.re += c;
-  return zComplexIsTol( &r2, TOL );
+  if( zComplexAbs( x ) > 1 ){
+    zComplexInv( x, &w );
+    aw = zComplexAbs( &w );
+    zComplexCreate( &r, coeff[0], 0 );
+    for( s=fabs(coeff[0]), k=1; k<=n; k++ ){
+      zComplexCMul( &w, &r, &rw );
+      zComplexCreate( &r, rw.re + coeff[k], rw.im );
+      s = s * aw + fabs( coeff[k] );
+    }
+  } else{
+    aw = zComplexAbs( x );
+    zComplexCreate( &r, coeff[n], 0 );
+    for( s=fabs(coeff[n]), k=n-1; k>=0; k-- ){
+      zComplexCMul( x, &r, &rw );
+      zComplexCreate( &r, rw.re + coeff[k], rw.im );
+      s = s * aw + fabs( coeff[k] );
+    }
+  }
+  return s > 0 ? zComplexAbs( &r ) / s : zComplexAbs( &r );
 }
 
+#define TOL_PE_SOLVE ( 100*DBL_EPSILON )
+
+bool check_pe_answers(const char *name, const double coeff[], int n, zComplex ans[])
+{
+  int i;
+  double e;
+  bool result = true;
+
+  for( i=0; i<n; i++ )
+    if( !( ( e = pe_backward_error( coeff, n, &ans[i] ) ) <= TOL_PE_SOLVE ) ){
+      eprintf( "%s: backward error %g of %g%+gi for coefficients", name, e, ans[i].re, ans[i].im );
+      for( i=n; i>=0; i-- ) eprintf( " %.17g", coeff[i] );
+      eprintf( "\n" );
+      result = false;
+      break;
+    }
+  return result;
+}
+
+bool check_qesolve(double a, double b, double c)
+{
+  double coeff[] = { c, b, a };
+  zComplex ans[2];
+
+  zQESolve( a, b, c, ans );
+  return check_pe_answers( "zQESolve", coeff, 2, ans );
+}
+
+bool check_cesolve(double a, double b, double c, double d)
+{
+  double coeff[] = { d, c, b, a };
+  zComplex ans[3];
+
+  zCESolve( a, b, c, d, ans );
+  if( ans[0].im != 0 ){
+    eprintf( "zCESolve: the first answer is not real for (%.17g, %.17g, %.17g, %.17g)\n", a, b, c, d );
+    return false;
+  }
+  return check_pe_answers( "zCESolve", coeff, 3, ans );
+}
+
+/* random coefficients, which include a small leading coefficient, coefficients making a nearly double
+ * answer, and coefficients of various scales. */
 bool assert_qesolve(void)
 {
   int i;
   double a, b, c;
-  zComplex ans[2];
+  bool result = true;
 
   for( i=0; i<NUM; i++ ){
     a = zRandF(-3,3); if( a == 0 ) a = 1;
     b = zRandF(-3,3);
     c = zRandF(-3,3);
-    zQESolve( a, b, c, ans );
-    if( !assert_qesolve_check( a, b, c, &ans[0] ) ||
-        !assert_qesolve_check( a, b, c, &ans[1] ) ) return false;
+    if( !check_qesolve( a, b, c ) ) result = false;
+    if( !check_qesolve( ( a > 0 ? 1 : -1 ) * pow( 10, zRandF(-12,-4) ), b, c ) ) result = false;
+    if( !check_qesolve( a, b, b*b/(4*a)*( 1 + zRandF(-1.0e-8,1.0e-8) ) ) ) result = false;
+    if( !check_qesolve( a*pow( 10, zRandF(-150,150) ), b*pow( 10, zRandF(-150,150) ), c*pow( 10, zRandF(-150,150) ) ) ) result = false;
   }
-  return true;
+  return result;
 }
 
-bool assert_cesolve_check(double a, double b, double c, double d, zComplex *ans)
+/* equations with zero, multiple and imaginary answers */
+bool assert_qesolve_special(void)
 {
-  zComplex r1, r2, r3;
+  struct{
+    double a, b, c;
+  } *eq, special[] = {
+    { 2,  0,  0 }, /* 2 x^2 */
+    { 1, -1,  0 }, /* x ( x - 1 ) */
+    { 1, -2,  1 }, /* ( x - 1 )^2 */
+    { 1,  0,  1 }, /* ( x - i )( x + i ) */
+    { 1,  0, -1 }, /* ( x - 1 )( x + 1 ) */
+    { 0,  0,  0 },
+  };
+  bool result = true;
 
-  zComplexMul( ans, a, &r1 );
-  r1.re += b;
-  zComplexCMul( ans, &r1, &r2 );
-  r2.re += c;
-  zComplexCMul( ans, &r2, &r3 );
-  r3.re += d;
-  return zComplexIsTol( &r3, TOL );
+  for( eq=special; eq->a!=0; eq++ )
+    if( !check_qesolve( eq->a, eq->b, eq->c ) ) result = false;
+  return result;
 }
 
+/* random coefficients, which include
+ * - a small leading coefficient, for which the answers except the largest one suffered from cancellation,
+ * - c ~ b^2/(3a), for which the depressed cubic equation has p ~ 0 and Cardano's formula suffered from
+ *   cancellation, and
+ * - coefficients of various scales. */
 bool assert_cesolve(void)
 {
   int i;
   double a, b, c, d;
-  zComplex ans[3];
+  bool result = true;
 
   for( i=0; i<NUM; i++ ){
     a = zRandF(-3,3); if( a == 0 ) a = 1;
     b = zRandF(-3,3);
     c = zRandF(-3,3);
     d = zRandF(-3,3);
-    zCESolve( a, b, c, d, ans );
-    if( !assert_cesolve_check( a, b, c, d, &ans[0] ) ||
-        !assert_cesolve_check( a, b, c, d, &ans[1] ) ||
-        !assert_cesolve_check( a, b, c, d, &ans[2] ) ) return false;
+    if( !check_cesolve( a, b, c, d ) ) result = false;
+    if( !check_cesolve( ( a > 0 ? 1 : -1 ) * pow( 10, zRandF(-12,-4) ), b, c, d ) ) result = false;
+    if( !check_cesolve( a, b, b*b/(3*a)*( 1 + zRandF(-1.0e-6,1.0e-6) ), d ) ) result = false;
+    if( !check_cesolve( a*pow( 10, zRandF(-8,8) ), b*pow( 10, zRandF(-8,8) ), c*pow( 10, zRandF(-8,8) ), d*pow( 10, zRandF(-8,8) ) ) ) result = false;
+    /* the ratio of the magnitudes of the answers is within the limit about 1e+150 (see zCESolve()) */
+    if( !check_cesolve( a*pow( 10, zRandF(-30,30) ), b*pow( 10, zRandF(-30,30) ), c*pow( 10, zRandF(-30,30) ), d*pow( 10, zRandF(-30,30) ) ) ) result = false;
   }
-  return true;
+  return result;
+}
+
+/* equations with zero, multiple and imaginary answers */
+bool assert_cesolve_special(void)
+{
+  struct{
+    double a, b, c, d;
+  } *eq, special[] = {
+    { 1,  0,  0,  0 }, /* x^3 */
+    { 1, -1,  0,  0 }, /* x^2 ( x - 1 ) */
+    { 1,  0, -1,  0 }, /* x ( x - 1 )( x + 1 ) */
+    { 1,  0,  1,  0 }, /* x ( x - i )( x + i ) */
+    { 1, -3,  3, -1 }, /* ( x - 1 )^3 */
+    { 1, -3,  0,  4 }, /* ( x - 2 )^2 ( x + 1 ) */
+    { 1,  0,  0, -1 }, /* x^3 - 1 */
+    { 1, -6, 11, -6 }, /* ( x - 1 )( x - 2 )( x - 3 ) */
+    { 0,  0,  0,  0 },
+  };
+  bool result = true;
+
+  for( eq=special; eq->a!=0; eq++ )
+    if( !check_cesolve( eq->a, eq->b, eq->c, eq->d ) ) result = false;
+  return result;
 }
 
 bool assert_isincluded(void)
@@ -256,7 +354,9 @@ int main(int argc, char *argv[])
   zAssert( zComplexValIsIncluded, assert_isincluded() );
   zAssert( zComplexAbs (underflow and overflow), assert_abs_range() );
   zAssert( zComplexIsReal + zComplexCoconj (relative judgements), assert_isreal_coconj() );
-  zAssert( zQESolve, assert_qesolve() );
-  zAssert( zCESolve, assert_cesolve() );
+  zAssert( zQESolve (random coefficients of various scales), assert_qesolve() );
+  zAssert( zQESolve (zero, multiple and imaginary answers), assert_qesolve_special() );
+  zAssert( zCESolve (random coefficients of various scales), assert_cesolve() );
+  zAssert( zCESolve (zero, multiple and imaginary answers), assert_cesolve_special() );
   return 0;
 }

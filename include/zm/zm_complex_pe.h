@@ -15,14 +15,29 @@ __BEGIN_DECLS
  *
  * zQESolve() finds two answers including duplicate answer of
  * a quadratic equation \a a x^2 + \a b x + \a c = 0.
+ * The coefficients are scaled by a power of two to avoid
+ * overflow and underflow in the discriminant, so that the
+ * answers are accurate unless they are not representable.
  * \a a must be nonzero.
  * The answers are put into an array pointed by \a ans.
  *
  * zCESolve() finds three answers including duplicate answer of
  * a cubic equation \a a x^3 + \a b x^2 + \a c x + \a d = 0
  * by Cardano's formula (originally derived by Fontana=Tartaglia).
+ * Only the answer(s) of the largest magnitude are directly computed
+ * by the formula, since the others might suffer from cancellation,
+ * e.g., if \a a is small relatively to the other coefficients.
+ * If it is real, the cubic equation is deflated by it from the
+ * constant term (backward deflation), and the remaining quadratic
+ * equation is solved by zQESolve(). Otherwise, the real answer is
+ * computed from the product of the answers.
+ * The variable and the coefficients are scaled by powers of two to
+ * avoid overflow and underflow in the formula. Note that the smaller
+ * answers might be inaccurate if the ratio of the magnitudes of the
+ * largest and the smallest answers exceeds about 1e+150.
  * \a a must be nonzero.
- * The answers are put into an array pointed by \a ans.
+ * The answers are put into an array pointed by \a ans, where the
+ * first one is real.
  * \return
  * zQESolve() and zCESolve() return \a ans if succeeding.
  * If \a a is zero, the null pointer is returned.

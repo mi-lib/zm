@@ -298,15 +298,6 @@ double zRawVecSqrNorm(const double *v, int size)
   return zRawVecInnerProd( v, v, size );
 }
 
-/* the power of two 2^(e-1) such that a positive finite value x divided by it is in [1,2). */
-static double _zPow2Floor(double x)
-{
-  int e;
-
-  frexp( x, &e );
-  return ldexp( 1.0, e - 1 );
-}
-
 /* the power of two not greater than the absolute maximum component of a raw vector. */
 double zRawVecAbsMaxPow2(const double *v, int size)
 {
@@ -316,7 +307,7 @@ double zRawVecAbsMaxPow2(const double *v, int size)
     if( _zIsNan( *v ) ) return *v;
     if( ( x = fabs( *v ) ) > absmax ) absmax = x;
   }
-  return absmax == 0 || !_zIsFinite( absmax ) ? absmax : _zPow2Floor( absmax );
+  return absmax == 0 || !_zIsFinite( absmax ) ? absmax : zPow2Floor( absmax );
 }
 
 /* add the square of a value to a scaled sum of squares. */
@@ -331,7 +322,7 @@ void zNormScaledAdd(double x, double *scale, double *ssq)
   }
   if( !_zIsFinite( *scale ) || x == 0 ) return;
   if( ( x = fabs( x ) ) >= 2 * *scale ){ /* a larger power of two to scale the values */
-    r = _zPow2Floor( x );
+    r = zPow2Floor( x );
     if( *scale > 0 ){
       *ssq *= *scale / r; /* exact multiplications by powers of two */
       *ssq *= *scale / r;

@@ -141,6 +141,17 @@ __ZM_EXPORT double zSigmoid(double x);
 /*! \brief the cubic root of \a x. */
 __ZM_EXPORT double zCbrt(double x);
 
+/*! \brief the power of two not greater than the absolute value of a value.
+ *
+ * zPow2Floor() returns the power of two 2^(e-1) such that the absolute value of \a x divided by it is
+ * in [1,2). Since multiplications and divisions by it are exact unless they overflow or underflow,
+ * it is useful to scale values to avoid overflow and underflow.
+ * \return
+ * zPow2Floor() returns the power of two. It returns zero for zero, infinity for infinity, and NaN for
+ * NaN, respectively.
+ */
+__ZM_EXPORT double zPow2Floor(double x);
+
 /*! \brief permutation.
  *
  * zPermutation() computes \a n_P_\a i.

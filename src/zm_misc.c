@@ -97,6 +97,16 @@ double zCbrt(double x)
   return 0.5 * ( w + 3.0*x / (2.0*w*w + x/w) );
 }
 
+/* the power of two 2^(e-1) such that |x| divided by it is in [1,2). */
+double zPow2Floor(double x)
+{
+  int e;
+
+  if( x == 0 || !_zIsFinite( x ) ) return fabs( x );
+  frexp( x, &e );
+  return ldexp( 1.0, e - 1 );
+}
+
 /* permutation. */
 double zPermutation(int n, int i)
 {
