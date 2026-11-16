@@ -82,6 +82,94 @@ void assert_lp_simplex(void)
   zAssert( zLPSolveSimplex (regular case), result );
 }
 
+/* generate a problem with redundant equality constraints from a regular problem with m independent
+ * equality constraints, where nr redundant constraints, which are linear combinations of the independent
+ * ones, are inserted at random positions, and the constraints are scaled by s. */
+bool generate_lp_redundant(int n, int m, int nr, double s, zVec *c, zMat *a, zVec *b, zVec *ans)
+{
+  zMat a0;
+  zVec b0;
+  zIndex index;
+  int i, j, k, p, q;
+  double cp, cq;
+
+  if( !generate_lp( n, m, c, &a0, &b0, ans ) ) return false;
+  *a = zMatAlloc( m+nr, n );
+  *b = zVecAlloc( m+nr );
+  index = zIndexCreate( m+nr );
+  if( !*a || !*b || !index ){
+    zMatFree( *a );
+    zVecFreeAtOnce( 3, *b, *c, *ans );
+    zMatFree( a0 );
+    zVecFree( b0 );
+    zIndexFree( index );
+    return false;
+  }
+  zIndexShuffle( index, 0 );
+  for( i=0; i<m; i++ )
+    for( j=0; j<n; j++ )
+      zMatSetElemNC( *a, zIndexElemNC(index,i), j, zMatElemNC(a0,i,j) );
+  for( ; i<m+nr; i++ ){
+    p = zRandI( 0, m-1 );
+    q = zRandI( 0, m-1 );
+    cp = zRandF( -2, 2 );
+    cq = zRandI( 0, 1 ) ? zRandF( -2, 2 ) : 0;
+    k = zIndexElemNC(index,i);
+    for( j=0; j<n; j++ )
+      zMatSetElemNC( *a, k, j, cp*zMatElemNC(a0,p,j) + cq*zMatElemNC(a0,q,j) );
+  }
+  zMatMulDRC( *a, s );
+  zMulMatVec( *a, *ans, *b );
+  zMatFree( a0 );
+  zVecFree( b0 );
+  zIndexFree( index );
+  return true;
+}
+
+/* check if x satisfies a x = b and x >= 0. */
+bool check_lp_feasible(zMat a, zVec b, zVec x, double tol)
+{
+  zVec r;
+  bool ret;
+
+  if( !( r = zVecAlloc( zVecSizeNC(b) ) ) ) return false;
+  zMulMatVec( a, x, r );
+  zVecSubDRC( r, b );
+  ret = zVecNorm( r ) <= tol * ( 1 + zVecNorm( b ) ) && zVecElemMin( x, NULL ) >= -tol * ( 1 + zVecElemAbsMax( x, NULL ) );
+  zVecFree( r );
+  return ret;
+}
+
+void assert_lp_simplex_redundant(void)
+{
+  zMat a;
+  zVec c, b, ans, x;
+  double cost, s;
+  const int n = 10, m = 5;
+  const double tol = 1.0e-8;
+  int num_trial = 100;
+  bool result_solve = true, result_feasible = true;
+
+  for( ; num_trial>0; num_trial-- ){
+    s = pow( 10, zRandF( -6, 6 ) );
+    if( !generate_lp_redundant( n, m, zRandI( 1, 3 ), s, &c, &a, &b, &ans ) ) return;
+    if( !( x = zVecAlloc( n ) ) ) break;
+    if( !zLPSolveSimplex( a, b, c, x, &cost ) ){
+      eprintf( ">> failure case detected (scale = %g) <<\n", s );
+      result_solve = false;
+    } else
+      check_answer( x, ans, tol, &result_solve );
+    if( !zLPFeasibleBase( a, b, x ) || !check_lp_feasible( a, b, x, tol ) ){
+      eprintf( ">> infeasible base detected (scale = %g) <<\n", s );
+      result_feasible = false;
+    }
+    zMatFree( a );
+    zVecFreeAtOnce( 4, c, b, x, ans );
+  }
+  zAssert( zLPSolveSimplex (redundant equality constraints), result_solve );
+  zAssert( zLPFeasibleBase (redundant equality constraints), result_feasible );
+}
+
 bool test_lp_megiddo_dyer(int num_test, int num_constraint)
 {
   zLPMegiddoDyer lp;
@@ -184,6 +272,7 @@ int main(void)
 {
   zRandInit();
   assert_lp_simplex();
+  assert_lp_simplex_redundant();
   assert_lp_megiddo_dyer();
   return 0;
 }

@@ -110,7 +110,6 @@ static bool _zQPASMInitBase(zQPASM *qpasm, const zMat a, const zVec b)
     ret = false;
     goto TERMINATE;
   }
-  zLPTableauFindBase( &tab ); /* remove artificial variables from the bases */
   /* rearrange initial feasible solution and active set */
   zIndexSetSize( qpasm->ia, zIndexSizeNC(tab.ir) );
   zIndexCopyNC( tab.ir, qpasm->ia );
@@ -118,10 +117,10 @@ static bool _zQPASMInitBase(zQPASM *qpasm, const zMat a, const zVec b)
   zVecZero( qpasm->xtmp );
   for( i=0; i<zIndexSizeNC(tab.ib); i++ ){
     if( zIndexElemNC(tab.ib,i) < zMatColSizeNC(a) ){
-      zVecSetElemNC( qpasm->xtmp, zIndexElemNC(tab.ib,i), zVecElemNC(tab.b,i) );
+      zVecSetElemNC( qpasm->xtmp, zIndexElemNC(tab.ib,i), zVecElemNC(tab.b,zIndexElemNC(tab.ir,i)) );
     } else
     if( ( i_to_activate = zIndexElemNC(tab.ib,i) - n ) < 0 ){
-      zVecSetElemNC( qpasm->xtmp, zIndexElemNC(tab.ib,i)-zMatColSizeNC(a),-zVecElemNC(tab.b,i) );
+      zVecSetElemNC( qpasm->xtmp, zIndexElemNC(tab.ib,i)-zMatColSizeNC(a),-zVecElemNC(tab.b,zIndexElemNC(tab.ir,i)) );
     } else
     if( i_to_activate < zMatRowSizeNC(a) ){
       zIndexRemoveVal( qpasm->ia, i_to_activate );

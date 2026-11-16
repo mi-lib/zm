@@ -120,13 +120,17 @@ static int _zLPTableauFindNA_deg(zLPTableau *tab, double ctol)
 static int _zLPTableauFindNP(zLPTableau *tab, int *na, double ctol)
 { /* next pivot */
   int i, np;
-  double a, p, p_min;
+  double a, p, p_min, atol;
   bool f_try = true;
 
  RETRY:
+  /* a should be compared with 0 in theory, but an element which is small relative to the maximum
+   * absolute value in the column is not chosen as the pivot, since it might be a round-off error. */
+  for( atol=0, i=0; i<zIndexSizeNC(tab->ir); i++ )
+    if( ( a = fabs( zMatElemNC(tab->a,zIndexElemNC(tab->ir,i),zIndexElemNC(tab->in,*na)) ) ) > atol ) atol = a;
+  atol *= ZM_LP_SIMPLEX_PIVOT_TOL;
   for( p_min=HUGE_VAL, np=-1, i=0; i<zIndexSizeNC(tab->ir); i++ ){
-    /* a should be comared with 0 in theory. But zTOL instead of 0 does work. */
-    if( ( a = zMatElemNC(tab->a,zIndexElemNC(tab->ir,i),zIndexElemNC(tab->in,*na)) ) < zTOL )
+    if( ( a = zMatElemNC(tab->a,zIndexElemNC(tab->ir,i),zIndexElemNC(tab->in,*na)) ) <= atol )
       continue;
     p = zVecElemNC(tab->b,zIndexElemNC(tab->ir,i)) / a;
     if( zIsTiny( p ) && f_try ){ /* degenerated case */
@@ -245,49 +249,64 @@ bool zLPTableauSimplex(zLPTableau *tab)
   return _zLPTableauSimplex( tab, -1 ); /* never terminates by the cost */
 }
 
-/* the first stage of simplex method to find a feasible base. */
-bool zLPTableauFindFeasibleBase(zLPTableau *tab)
+/* arrange the bases for the second stage after the first stage. */
+static void _zLPTableauArrangeBase(zLPTableau *tab, double amax)
 {
-  int i;
-  double scale = 1.0; /* initial sum of artificial variables (+1) */
+  int i, j, jmax, n, r;
+  double a, binv;
 
-  for( i=0; i<zVecSizeNC(tab->b); i++ )
-    scale += fabs( zVecElemNC(tab->b,i) );
-  /* the iteration terminates as soon as the sum of artificial variables vanishes, since
-   * the first stage has a degenerate optimum, at which the round-off errors of reduced
-   * costs would let the iteration go astray. */
-  if( !_zLPTableauSimplex( tab, zTOL * scale ) ) return false;
-  tab->d = _zLPTableauSumArtVal( tab );
-  return zIsTol( tab->d, zTOL * scale );
-}
-
-/* find initial feasible base for the second stage from tableau. */
-bool zLPTableauFindBase(zLPTableau *tab)
-{
-  int i, j, n;
-
-  tab->d = 0; /* precautionary touch-up */
-  n = zVecSizeNC(tab->c) - zVecSizeNC(tab->b);
+  tab->d = 0;
+  n = _zLPTableauArtIndex(tab);
+  /* artificial variables remaining in the bases are replaced by non-artificial variables, or removed
+   * together with the constraints if the constraints are redundant. */
   for( i=0; i<zIndexSizeNC(tab->ib); i++ ){
     if( zIndexElemNC(tab->ib,i) < n ) continue;
-    for( j=0; j<zIndexSizeNC(tab->in); j++ ){
-      if( zIndexElemNC(tab->in,j) < n && !zIsTiny( zMatElemNC(tab->a,i,zIndexElemNC(tab->in,j)) ) ){
-        _zLPTableauSweepA( tab, i, j );
-        _zLPTableauSwapPivot( tab, i, j );
-        goto NEXT;
+    r = zIndexElemNC(tab->ir,i);
+    for( binv=0, j=n; j<zMatColSizeNC(tab->a); j++ )
+      if( ( a = fabs( zMatElemNC(tab->a,r,j) ) ) > binv ) binv = a;
+    for( jmax=-1, j=0; j<zIndexSizeNC(tab->in); j++ )
+      if( zIndexElemNC(tab->in,j) < n &&
+          ( a = fabs( zMatElemNC(tab->a,r,zIndexElemNC(tab->in,j)) ) ) > ZM_LP_SIMPLEX_PIVOT_TOL * binv * amax ){
+        if( jmax < 0 || a > fabs( zMatElemNC(tab->a,r,zIndexElemNC(tab->in,jmax)) ) ) jmax = j;
       }
+    if( jmax >= 0 ){
+      /* the artificial variable, which vanishes within the tolerance, is replaced at zero level
+       * so as not to make the other variables negative. */
+      zVecSetElemNC( tab->b, r, 0 );
+      _zLPTableauSweepA( tab, i, jmax );
+      _zLPTableauSwapPivot( tab, i, jmax );
+    } else{ /* redundant constraint */
+      zIndexRemove( tab->ir, i );
+      zIndexRemove( tab->ib, i );
+      i--;
     }
-    zIndexRemove( tab->ir, i );
-    zIndexRemove( tab->ib, i );
-    i--;
-   NEXT: ;
   }
-  /* rearrange nonfeasible bases */
+  /* remove artificial variables from non-bases */
   for( i=0; i<zIndexSizeNC(tab->in); i++ )
     if( zIndexElemNC(tab->in,i) >= n ){
       zIndexRemove( tab->in, i );
       i--;
     }
+}
+
+/* the first stage of simplex method to find a feasible base. */
+bool zLPTableauFindFeasibleBase(zLPTableau *tab)
+{
+  int i, j;
+  double scale = 1.0; /* initial sum of artificial variables (+1) */
+  double amax = 0, a; /* maximum absolute value of the initial coefficients of non-artificial variables */
+
+  for( i=0; i<zVecSizeNC(tab->b); i++ ){
+    scale += fabs( zVecElemNC(tab->b,i) );
+    for( j=0; j<_zLPTableauArtIndex(tab); j++ )
+      if( ( a = fabs( zMatElemNC(tab->a,i,j) ) ) > amax ) amax = a;
+  }
+  /* the iteration terminates as soon as the sum of artificial variables vanishes, since
+   * the first stage has a degenerate optimum, at which the round-off errors of reduced
+   * costs would let the iteration go astray. */
+  if( !_zLPTableauSimplex( tab, zTOL * scale ) ||
+      !zIsTol( _zLPTableauSumArtVal( tab ), zTOL * scale ) ) return false;
+  _zLPTableauArrangeBase( tab, amax );
   return true;
 }
 
@@ -304,7 +323,7 @@ static void _zLPTableauAns(zLPTableau *tab, zVec ans)
 
   zVecZero( ans );
   for( i=0; i<zIndexSizeNC(tab->ib); i++ )
-    zVecSetElemNC( ans, zIndexElemNC(tab->ib,i), zVecElemNC(tab->b,i) );
+    zVecSetElemNC( ans, zIndexElemNC(tab->ib,i), zVecElemNC(tab->b,zIndexElemNC(tab->ir,i)) );
 }
 
 /* dual-phase simplex method for linear programming. */
@@ -330,7 +349,6 @@ bool zLPSolveSimplex(const zMat a, const zVec b, const zVec c, zVec ans, double 
     ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
     goto TERMINATE;
   }
-  zLPTableauFindBase( &tab );
   /* second phase: body problem */
   _zLTableauSetC( &tab, c );
   if( !zLPTableauSimplex( &tab ) ){

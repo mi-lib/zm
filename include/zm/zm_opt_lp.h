@@ -29,25 +29,40 @@ __BEGIN_DECLS
  */
 #define ZM_LP_SIMPLEX_TOL ( 1.0e-10 )
 
+/*! \brief relative tolerance for pivots in simplex method.
+ *
+ * An element of the tableau is not chosen as a pivot in the ratio test if it is not larger than
+ * this value times the maximum absolute value in the column.
+ * After the first stage, a constraint is regarded as redundant if the absolute values of the
+ * coefficients of all non-base non-artificial variables are not larger than this value times the
+ * maximum absolute value of the coefficients of the artificial variables in the row (a row of the
+ * inverse of the basis matrix) times that of the initial coefficients of non-artificial variables.
+ */
+#define ZM_LP_SIMPLEX_PIVOT_TOL ( 1.0e-10 )
+
 /*! \brief create initial simplex tableau with slack variables. */
 __ZM_EXPORT bool zLPTableauCreate(zLPTableau *tab, const zMat a, const zVec b);
 /*! \brief destroy simplex tableau. */
 __ZM_EXPORT void zLPTableauDestroy(zLPTableau *tab);
 /*! \brief simplex method for initialized tableau. */
 __ZM_EXPORT bool zLPTableauSimplex(zLPTableau *tab);
+
 /*! \brief the first stage of simplex method to find a feasible base.
  *
- * zLPTableauFindFeasibleBase() applies simplex method to a tableau \a tab, which has
- * to be initialized for the first stage, and checks if the resulting cost (the
- * sum of artificial variables) is zero within the tolerance relative to the
- * initial sum of the constraint vector, namely, zTOL*(1+|b|_1).
+ * zLPTableauFindFeasibleBase() applies the simplex method to a tableau \a tab, which has to be
+ * initialized for the first stage, and checks if the resulting cost (the sum of artificial variables)
+ * is zero within the tolerance relative to the initial sum of the constraint vector, namely,
+ * zTOL*(1+|b|_1).
+ * If a feasible base is found, the bases are arranged for the second stage, namely, artificial
+ * variables remaining in the bases are replaced by non-artificial variables, or removed together with
+ * the constraints if the constraints are redundant (see ZM_LP_SIMPLEX_PIVOT_TOL), and artificial
+ * variables are removed from the non-bases.
+ * The cost of \a tab is reset for zero.
  * \return
  * zLPTableauFindFeasibleBase() returns the true value if a feasible base is found.
  * Otherwise, the false value is returned.
  */
 __ZM_EXPORT bool zLPTableauFindFeasibleBase(zLPTableau *tab);
-/*! \brief find initial feasible base for the second stage from tableau. */
-__ZM_EXPORT bool zLPTableauFindBase(zLPTableau *tab);
 
 /*! \brief convert linear programming problem from inequality constraint to standard equation form.
  *
