@@ -1,3 +1,4 @@
+2026.11.18. Abolished ZM_CHOLESKY_DECOMP_TOL, and replaced it with zTOL. [zm_mat_decomp_lu]
 2026.11.18. Modified the tests of zLESolveMP_LQ for row-long cases and for weighted rank-deficient cases such that the reference solutions are found by zLESolveErrorMin and zLESolveNormMin with well-conditioned factors. [test]
 2026.11.18. Added a test of zLESolveGauss, zMatInv, zMulInvMatMat, zMulMatInvMat and zMulInvMatMatAndVec for singular and regular matrices of various scales. [test]
 2026.11.18. Abolished ZM_LU_DECOMP_TOL, and replaced it with zTOL. [zm_mat_decomp_lu]

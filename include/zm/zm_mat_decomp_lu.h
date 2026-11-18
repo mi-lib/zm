@@ -67,14 +67,6 @@ __ZM_EXPORT int zMatDecompLUAlloc(const zMat m, zMat *l, zMat *u, zIndex *index)
 __ZM_EXPORT int zMatDecompLUCP(const zMat m, zMat l, zMat u, zIndex index_row, zIndex index_col);
 __ZM_EXPORT int zMatDecompLUCPAlloc(const zMat m, zMat *l, zMat *u, zIndex *index_row, zIndex *index_col);
 
-/*! \brief relative tolerance for rank detection in Cholesky decomposition.
- *
- * A pivot is regarded as zero if its absolute value is not greater than this value times the maximum
- * absolute diagonal component of the original matrix. A negative pivot beyond it means that the matrix
- * is not positive semi-definite.
- */
-#define ZM_CHOLESKY_DECOMP_TOL ( 1.0e-12 )
-
 /*! \brief Cholesky decomposition.
  *
  * zMatDecompCholesky() decomposes a positive semi-definite symmetric matrix \a m into \a l \a l ^T.
@@ -82,8 +74,9 @@ __ZM_EXPORT int zMatDecompLUCPAlloc(const zMat m, zMat *l, zMat *u, zIndex *inde
  * and the rows \a index[0], \a index[1], ... of \a l are lower triangular in this order.
  * \a l has to have the same size with \a m.
  * If \a m is degenerated, the size of \a l is automatically adjusted to be column-full-rank.
- * The rank is detected with the relative tolerance ZM_CHOLESKY_DECOMP_TOL, so that the result does
- * not depend on the scale of \a m.
+ * A pivot is regarded as zero if its absolute value is not greater than zTOL times the maximum
+ * absolute diagonal component of \a m, so that the result does not depend on the scale of \a m.
+ * A negative pivot beyond it means that \a m is not positive semi-definite.
  *
  * zMatDecompCholeskyAlloc() automatically allocates matrix \a l and the index vector \a index, and then
  * conducts the Cholesky decomposition. If it fails to allocate them, both \a l and \a index are set

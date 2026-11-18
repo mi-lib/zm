@@ -10,29 +10,29 @@
 
 /* the exponent e such that 2^e is close to an upper bound of the absolute values of the roots of a
  * polynomial, max_k |a_{n-k}/a_n|^(1/k). */
-static int _zPexEqScaleExp(const zPex a)
+static int _zPexEqScaleExp(const zPex pex)
 {
   int k, n, e;
   double r, rmax = 0;
 
-  n = zPexDim(a);
+  n = zPexDim(pex);
   for( k=1; k<=n; k++ )
-    if( ( r = pow( fabs( zPexCoeff(a,n-k) / zPexCoeff(a,n) ), 1.0/k ) ) > rmax ) rmax = r;
+    if( ( r = pow( fabs( zPexCoeff(pex,n-k) / zPexCoeff(pex,n) ), 1.0/k ) ) > rmax ) rmax = r;
   if( !( rmax > 0 ) || !zIsFinite( rmax ) ) return 0;
   frexp( rmax, &e );
   return e;
 }
 
-/* scale a polynomial a(x) to b(y) = a(2^e y) / 2^f, where 2^f is close to the leading coefficient of
- * a(2^e y). Since the coefficients are multiplied by powers of two, no rounding error is introduced. */
-static zPex _zPexEqScale(const zPex a, int e, zPex b)
+/* scale a polynomial pex(x) to b(y) = pex(2^e y) / 2^f, where 2^f is close to the leading coefficient of
+ * pex(2^e y). Since the coefficients are multiplied by powers of two, no rounding error is introduced. */
+static zPex _zPexEqScale(const zPex pex, int e, zPex b)
 {
   int k, n, f;
 
-  n = zPexDim(a);
-  frexp( zPexCoeff(a,n), &f );
+  n = zPexDim(pex);
+  frexp( zPexCoeff(pex,n), &f );
   for( k=0; k<=n; k++ )
-    zPexSetCoeff( b, k, ldexp( zPexCoeff(a,k), ( k - n ) * e - f ) );
+    zPexSetCoeff( b, k, ldexp( zPexCoeff(pex,k), ( k - n ) * e - f ) );
   return b;
 }
 
@@ -51,54 +51,54 @@ static zCVec _zPexEqScaleRoots(zCVec ans, int n, int e)
 /* the value of a polynomial at a complex number z, its derivative (if dval is not the null pointer),
  * and the sum of the absolute values of the terms sum_k |a_k| |z|^k, which is the scale of the rounding
  * error of the value. */
-static void _zPexEqCVal(const zPex a, const zComplex *z, zComplex *val, zComplex *dval, double *bound)
+static void _zPexEqCVal(const zPex pex, const zComplex *z, zComplex *val, zComplex *dval, double *bound)
 {
   int k;
   double az;
   zComplex tmp;
 
   az = zComplexAbs( z );
-  zComplexCreate( val, zPexCoeff(a,zPexDim(a)), 0 );
+  zComplexCreate( val, zPexCoeff(pex,zPexDim(pex)), 0 );
   if( dval ) zComplexZero( dval );
-  *bound = fabs( zPexCoeff(a,zPexDim(a)) );
-  for( k=zPexDim(a)-1; k>=0; k-- ){
+  *bound = fabs( zPexCoeff(pex,zPexDim(pex)) );
+  for( k=zPexDim(pex)-1; k>=0; k-- ){
     if( dval ){
       zComplexCMul( dval, z, &tmp );
       zComplexAdd( &tmp, val, dval );
     }
     zComplexCMul( val, z, &tmp );
-    zComplexCreate( val, tmp.re + zPexCoeff(a,k), tmp.im );
-    *bound = *bound * az + fabs( zPexCoeff(a,k) );
+    zComplexCreate( val, tmp.re + zPexCoeff(pex,k), tmp.im );
+    *bound = *bound * az + fabs( zPexCoeff(pex,k) );
   }
 }
 
 /* Bairstow-Hitchcock's method. */
 
-/* coefficients of the quotient of a polynomial a of degree n divided by x^2 + p x + q, which are
+/* coefficients of the quotient of a polynomial pex of degree n divided by x^2 + p x + q, which are
  * stored in b[2], ..., b[n], while b[0] and b[1] are the coefficients of the remainder. */
-static void _zPexBHQuotient(const zPex a, int n, double p, double q, double *b)
+static void _zPexBHQuotient(const zPex pex, int n, double p, double q, double *b)
 {
   int j;
 
-  b[n]   = zPexCoeff(a,n);
-  b[n-1] = zPexCoeff(a,n-1) - p * b[n];
+  b[n]   = zPexCoeff(pex,n);
+  b[n-1] = zPexCoeff(pex,n-1) - p * b[n];
   for( j=2; j<=n; j++ )
-    b[n-j] = zPexCoeff(a,n-j) - p * b[n-j+1] - q * b[n-j+2];
+    b[n-j] = zPexCoeff(pex,n-j) - p * b[n-j+1] - q * b[n-j+2];
 }
 
-/* iterative calculation of quadratic factor x^2 + p x + q of a polynomial a of degree n based on
+/* iterative calculation of quadratic factor x^2 + p x + q of a polynomial pex of degree n based on
  * Bairstow-Hitchcock's method. b and c are workspaces with the sizes n+1 and n, respectively.
  * The iteration is regarded as converged if the updates of p and q are not greater than tol times the
  * scale of the roots of the factor m = |p| + sqrt(|q|) and its square, respectively.
  * It returns the true value if it converges within iter steps. */
-static bool _zPexBH(double *p, double *q, const zPex a, int n, double tol, int iter, double *b, double *c)
+static bool _zPexBH(double *p, double *q, const zPex pex, int n, double tol, int iter, double *b, double *c)
 {
   double dp, dq, d, m;
   int i, j;
 
   for( i=0; i<iter; i++ ){
     /* coefficients of quontient */
-    _zPexBHQuotient( a, n, *p, *q, b );
+    _zPexBHQuotient( pex, n, *p, *q, b );
     /* gradient of divider coefficients */
     c[n-1] = b[n];
     c[n-2] = b[n-1] - *p * c[n-1];
@@ -118,59 +118,59 @@ static bool _zPexBH(double *p, double *q, const zPex a, int n, double tol, int i
   return false;
 }
 
-/* deflate a polynomial a of degree n by a quadratic factor x^2 + p x + q. The quotient is computed
+/* deflate a polynomial pex of degree n by a quadratic factor x^2 + p x + q. The quotient is computed
  * from the highest-order coefficient (forward deflation) if the roots of the factor are smaller than
- * the geometric mean of the roots of a, or from the lowest-order one (backward deflation) otherwise,
+ * the geometric mean of the roots of pex, or from the lowest-order one (backward deflation) otherwise,
  * since the forward and backward deflations are stable for small and large roots, respectively. */
-static void _zPexBHDeflate(zPex a, int n, double p, double q, double *b)
+static void _zPexBHDeflate(zPex pex, int n, double p, double q, double *b)
 {
   int j;
 
-  if( fabs( q ) <= pow( fabs( zPexCoeff(a,0) / zPexCoeff(a,n) ), 2.0/n ) ){ /* forward deflation */
-    _zPexBHQuotient( a, n, p, q, b );
-    for( j=2; j<=n; j++ ) zPexSetCoeff( a, j-2, b[j] );
+  if( fabs( q ) <= pow( fabs( zPexCoeff(pex,0) / zPexCoeff(pex,n) ), 2.0/n ) ){ /* forward deflation */
+    _zPexBHQuotient( pex, n, p, q, b );
+    for( j=2; j<=n; j++ ) zPexSetCoeff( pex, j-2, b[j] );
   } else{ /* backward deflation, in which the k-th coefficient of the quotient c_k is computed from
            * a_k = q c_k + p c_{k-1} + c_{k-2}, and overwrites a_k after a_k is used. */
-    zPexSetCoeff( a, 0, zPexCoeff(a,0) / q );
-    zPexSetCoeff( a, 1, ( zPexCoeff(a,1) - p * zPexCoeff(a,0) ) / q );
+    zPexSetCoeff( pex, 0, zPexCoeff(pex,0) / q );
+    zPexSetCoeff( pex, 1, ( zPexCoeff(pex,1) - p * zPexCoeff(pex,0) ) / q );
     for( j=2; j<=n-2; j++ )
-      zPexSetCoeff( a, j, ( zPexCoeff(a,j) - p * zPexCoeff(a,j-1) - zPexCoeff(a,j-2) ) / q );
+      zPexSetCoeff( pex, j, ( zPexCoeff(pex,j) - p * zPexCoeff(pex,j-1) - zPexCoeff(pex,j-2) ) / q );
   }
 }
 
-/* numerical solution of a scaled polynomial equation a=0 based on Bairstow-Hitchcock's method.
+/* numerical solution of a scaled polynomial equation pex=0 based on Bairstow-Hitchcock's method.
  * (destructive) If the original polynomial org is given, each quadratic factor found for the deflated
  * polynomial is refined by Bairstow-Hitchcock's method for org before deflation, in order to prevent
  * the accumulation of errors through the deflations. org must not have zero roots, since the factor
- * could converge to x^2, which has already been removed from a. */
+ * could converge to x^2, which has already been removed from pex. */
 #define ZM_PEX_EQ_BH_TRIAL 8
-static zCVec _zPexBHDST(zPex a, const zPex org, zCVec ans, double tol, int iter)
+static zCVec _zPexBHDST(zPex pex, const zPex org, zCVec ans, double tol, int iter)
 {
   int n, k;
   double p, q, pr, qr, *b, *c;
   bool converged = false;
 
   ZITERINIT( iter );
-  b = zAlloc( double, zPexDim(a) + 1 );
-  c = zAlloc( double, zPexDim(a) + 1 );
+  b = zAlloc( double, zPexDim(pex) + 1 );
+  c = zAlloc( double, zPexDim(pex) + 1 );
   if( !b || !c ){
     ans = NULL;
     goto TERMINATE;
   }
-  for( n=zPexDim(a); n>0; n-=2 ){
-    while( n > 0 && zPexCoeff(a,0) == 0 ){ /* a zero root */
+  for( n=zPexDim(pex); n>0; n-=2 ){
+    while( n > 0 && zPexCoeff(pex,0) == 0 ){ /* a zero root */
       zComplexZero( zCVecElemNC(ans,--n) );
-      for( k=0; k<=n; k++ ) zPexSetCoeff( a, k, zPexCoeff(a,k+1) );
+      for( k=0; k<=n; k++ ) zPexSetCoeff( pex, k, zPexCoeff(pex,k+1) );
     }
     switch( n ){
     case 0: /* no more root */
       goto TERMINATE;
     case 1: /* linear equation */
-      zComplexCreate( zCVecElemNC(ans,0), -zPexCoeff(a,0)/zPexCoeff(a,1), 0 );
+      zComplexCreate( zCVecElemNC(ans,0), -zPexCoeff(pex,0)/zPexCoeff(pex,1), 0 );
       goto TERMINATE;
     case 2: /* quadratic equation */
-      p = zPexCoeff(a,1) / zPexCoeff(a,2);
-      q = zPexCoeff(a,0) / zPexCoeff(a,2);
+      p = zPexCoeff(pex,1) / zPexCoeff(pex,2);
+      q = zPexCoeff(pex,0) / zPexCoeff(pex,2);
       break;
     default:
       /* division by quadratic expression based on Bairstow's method, where the initial factor is
@@ -179,7 +179,7 @@ static zCVec _zPexBHDST(zPex a, const zPex org, zCVec ans, double tol, int iter)
       for( k=0; k<ZM_PEX_EQ_BH_TRIAL; k++ ){
         p = -2 * cos( zPI * ( k + 0.5 ) / ZM_PEX_EQ_BH_TRIAL );
         q = 1;
-        if( ( converged = _zPexBH( &p, &q, a, n, tol, iter, b, c ) ) ) break;
+        if( ( converged = _zPexBH( &p, &q, pex, n, tol, iter, b, c ) ) ) break;
       }
       if( !converged ){
         ZITERWARN( iter );
@@ -197,7 +197,7 @@ static zCVec _zPexBHDST(zPex a, const zPex org, zCVec ans, double tol, int iter)
     }
     /* append solution of 'x^2 + p x + q = 0' */
     zQESolve( 1, p, q, zCVecElemNC(ans,n-2) );
-    if( n > 2 ) _zPexBHDeflate( a, n, p, q, b );
+    if( n > 2 ) _zPexBHDeflate( pex, n, p, q, b );
   }
  TERMINATE:
   zFree( b );
@@ -209,19 +209,19 @@ static zCVec _zPexBHDST(zPex a, const zPex org, zCVec ans, double tol, int iter)
  * errors accumulated through the deflations. A step is adopted only if it decreases the residual, so
  * that the iteration terminates when the residual reaches the level of rounding errors. */
 #define ZM_PEX_EQ_POLISH_ITER 5
-static void _zPexEqPolish(const zPex a, zComplex *z)
+static void _zPexEqPolish(const zPex pex, zComplex *z)
 {
   zComplex val, dval, dz, z_new, val_new;
   double bound;
   int i;
 
-  _zPexEqCVal( a, z, &val, &dval, &bound );
+  _zPexEqCVal( pex, z, &val, &dval, &bound );
   for( i=0; i<ZM_PEX_EQ_POLISH_ITER; i++ ){
     if( zComplexAbs( &val ) == 0 ) return; /* an exact root */
     if( zComplexAbs( &dval ) == 0 ) return; /* a multiple root */
     zComplexCDiv( &val, &dval, &dz );
     zComplexSub( z, &dz, &z_new );
-    _zPexEqCVal( a, &z_new, &val_new, &dval, &bound );
+    _zPexEqCVal( pex, &z_new, &val_new, &dval, &bound );
     if( !( zComplexAbs( &val_new ) < zComplexAbs( &val ) ) ) return;
     zComplexCopy( &z_new, z );
     zComplexCopy( &val_new, &val );
@@ -230,14 +230,14 @@ static void _zPexEqPolish(const zPex a, zComplex *z)
 
 /* polish the roots of a polynomial with real coefficients, where a complex root with a positive
  * imaginary part is polished and its conjugate is replaced by the conjugate of the result. */
-static void _zPexEqPolishRoots(const zPex a, zCVec ans, int n)
+static void _zPexEqPolishRoots(const zPex pex, zCVec ans, int n)
 {
   int i, j, jmin;
   double d, dmin;
   zComplex c;
 
-  for( i=0; i<n; i++ ) /* an exact zero root is not polished, since it is removed from a */
-    if( zCVecElemNC(ans,i)->im >= 0 && !( zCVecElemNC(ans,i)->re == 0 && zCVecElemNC(ans,i)->im == 0 ) ) _zPexEqPolish( a, zCVecElemNC(ans,i) );
+  for( i=0; i<n; i++ ) /* an exact zero root is not polished, since it is removed from pex */
+    if( zCVecElemNC(ans,i)->im >= 0 && !( zCVecElemNC(ans,i)->re == 0 && zCVecElemNC(ans,i)->im == 0 ) ) _zPexEqPolish( pex, zCVecElemNC(ans,i) );
   for( i=0; i<n; i++ ){ /* the conjugate of a complex root with a negative imaginary part */
     if( !( zCVecElemNC(ans,i)->im < 0 ) ) continue;
     for( dmin=HUGE_VAL, jmin=-1, j=0; j<n; j++ ){
@@ -250,17 +250,17 @@ static void _zPexEqPolishRoots(const zPex a, zCVec ans, int n)
       }
     }
     if( jmin >= 0 ) zComplexConj( zCVecElemNC(ans,jmin), zCVecElemNC(ans,i) );
-    else _zPexEqPolish( a, zCVecElemNC(ans,i) );
+    else _zPexEqPolish( pex, zCVecElemNC(ans,i) );
   }
 }
 
 /* check the size of the vector to store the roots of a polynomial. */
-static bool _zPexEqCheckSize(const zPex a, const zCVec ans)
+static bool _zPexEqCheckSize(const zPex pex, const zCVec ans)
 {
   char buf[BUFSIZ];
 
-  if( zPexDim(a) > (int)zCVecSizeNC(ans) ){
-    ZRUNERROR( ZM_ERR_PEX_EQ_SIZEMISMATCH, zCVecSizeNC(ans), zI2AOrdinal(zPexDim(a),buf,BUFSIZ) );
+  if( zPexDim(pex) > (int)zCVecSizeNC(ans) ){
+    ZRUNERROR( ZM_ERR_PEX_EQ_SIZEMISMATCH, zCVecSizeNC(ans), zI2AOrdinal(zPexDim(pex),buf,BUFSIZ) );
     return false;
   }
   return true;
@@ -268,34 +268,34 @@ static bool _zPexEqCheckSize(const zPex a, const zCVec ans)
 
 /* numerical solution of polynomial equation based on Bairstow-Hitchcock's method.
  * (destructive) */
-zCVec zPexBHDST(zPex a, zCVec ans, double tol, int iter)
+zCVec zPexBHDST(zPex pex, zCVec ans, double tol, int iter)
 {
   int e;
 
-  if( !_zPexEqCheckSize( a, ans ) ) return NULL;
+  if( !_zPexEqCheckSize( pex, ans ) ) return NULL;
   if( tol <= 0 ) tol = zTOL;
-  e = _zPexEqScaleExp( a );
-  _zPexEqScale( a, e, a );
-  if( !_zPexBHDST( a, NULL, ans, tol, iter ) ) return NULL;
-  return _zPexEqScaleRoots( ans, zVecSizeNC(a)-1, e );
+  e = _zPexEqScaleExp( pex );
+  _zPexEqScale( pex, e, pex );
+  if( !_zPexBHDST( pex, NULL, ans, tol, iter ) ) return NULL;
+  return _zPexEqScaleRoots( ans, zVecSizeNC(pex)-1, e );
 }
 
 /* numerical solution of polynomial equation based on Bairstow-Hitchcock's method. */
-zCVec zPexBH(zPex a, zCVec ans, double tol, int iter)
+zCVec zPexBH(zPex pex, zCVec ans, double tol, int iter)
 {
   zPex as, ac;
   int e, k;
 
-  if( !_zPexEqCheckSize( a, ans ) ) return NULL;
+  if( !_zPexEqCheckSize( pex, ans ) ) return NULL;
   if( tol <= 0 ) tol = zTOL;
-  as = zPexAlloc( zPexDim(a) );
-  ac = zPexAlloc( zPexDim(a) );
+  as = zPexAlloc( zPexDim(pex) );
+  ac = zPexAlloc( zPexDim(pex) );
   if( !as || !ac ){
     ans = NULL;
     goto TERMINATE;
   }
-  e = _zPexEqScaleExp( a );
-  _zPexEqScale( a, e, as );
+  e = _zPexEqScaleExp( pex );
+  _zPexEqScale( pex, e, as );
   zVecCopyNC( as, ac );
   while( zPexDim(as) > 0 && zPexCoeff(as,0) == 0 ){ /* zero roots are removed for refinement */
     for( k=0; k<zPexDim(as); k++ ) zPexSetCoeff( as, k, zPexCoeff(as,k+1) );
@@ -303,8 +303,8 @@ zCVec zPexBH(zPex a, zCVec ans, double tol, int iter)
   }
   if( ( ans = _zPexBHDST( ac, as, ans, tol, iter ) ) ){
     /* the roots are polished on the scaled polynomial before deflation */
-    _zPexEqPolishRoots( as, ans, zPexDim(a) );
-    _zPexEqScaleRoots( ans, zPexDim(a), e );
+    _zPexEqPolishRoots( as, ans, zPexDim(pex) );
+    _zPexEqScaleRoots( ans, zPexDim(pex), e );
   }
  TERMINATE:
   zPexFree( as );
@@ -319,7 +319,7 @@ zCVec zPexBH(zPex a, zCVec ans, double tol, int iter)
  * times the scales of the rounding errors of the values of the polynomial, after which the correction
  * continues while the residuals decrease, in order to improve the accuracy of ill-conditioned roots. */
 #define ZM_PEX_EQ_DKA_EXTRA 10
-zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter)
+zCVec zPexDKA(zPex pex, zCVec ans, double tol, int iter)
 {
   int k, e, extra = 0;
   uint i, j, n;
@@ -328,8 +328,8 @@ zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter)
   zComplex *p, tmp1, tmp2;
   zPex as, b;
 
-  if( !_zPexEqCheckSize( a, ans ) ) return NULL;
-  n = zPexDim(a);
+  if( !_zPexEqCheckSize( pex, ans ) ) return NULL;
+  n = zPexDim(pex);
   p = zAlloc( zComplex, n );
   as = zPexAlloc( n );
   b = zPexAlloc( n );
@@ -338,8 +338,8 @@ zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter)
     goto TERMINATE;
   }
   if( tol <= 0 ) tol = zTOL;
-  e = _zPexEqScaleExp( a );
-  _zPexEqScale( a, e, as );
+  e = _zPexEqScaleExp( pex );
+  _zPexEqScale( pex, e, as );
   /* Aberth-Iri's initialization */
   s = zPexCoeff(as,n-1) / ( zPexCoeff(as,n) * n );
   zPexModulo( as, s, b );
@@ -351,7 +351,7 @@ zCVec zPexDKA(zPex a, zCVec ans, double tol, int iter)
     zComplexCreatePolar( zCVecElemNC(ans,i), r0, ( zPIx2*i + 1.5 )/n );
     zCVecElemNC(ans,i)->re -= s;
   }
-  if( r0 == 0 ) goto SUCCESS; /* a(x) = a_n (x+s)^n, the roots of which are all -s */
+  if( r0 == 0 ) goto SUCCESS; /* pex(x) = a_n (x+s)^n, the roots of which are all -s */
   /* Durand's method with Kerner's interpretation */
   ZITERINIT( iter );
   for( k=0; k<iter; k++ ){

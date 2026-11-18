@@ -374,7 +374,7 @@ int zMatDecompCholesky(const zMat m, zMat l, zIndex index)
   for( i=0; i<zMatRowSizeNC(m); i++ ) /* maximum absolute diagonal component */
     if( ( d = fabs( zMatElemNC(m,i,i) ) ) > dmax ) dmax = d;
   zMatCopyNC( m, l );
-  return _zMatDecompCholeskyDST( l, index, ZM_CHOLESKY_DECOMP_TOL * dmax );
+  return _zMatDecompCholeskyDST( l, index, zTOL * dmax );
 }
 
 /* Cholesky decomposition with an automatic matrix allocation. */
