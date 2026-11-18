@@ -11,14 +11,6 @@
 
 __BEGIN_DECLS
 
-/*! \brief relative tolerance for rank detection in LU decomposition.
- *
- * A pivot is regarded as zero, namely, the remaining part of the matrix is regarded as linearly
- * dependent on the part already decomposed, if the maximum absolute value of the candidates of the
- * pivot is not greater than this value times the maximum absolute component of the original matrix.
- */
-#define ZM_LU_DECOMP_TOL ( 1.0e-12 )
-
 /*! \brief LU decomposition.
  *
  * zMatDecompLU() and zMatDecompLUCP() decompose a matrix \a m into a lower triangular matrix \a l and
@@ -29,8 +21,10 @@ __BEGIN_DECLS
  * If \a m is degenerated, the sizes of \a l and \a u are automatically adjusted to be column-full-rank
  * and row-full-rank, respectively. Namely, suppose the rank of \a m is d (<= s), the sizes of \a l
  * and \a u will be adjusted to r x d and d x c, respectively.
- * The rank is detected with the relative tolerance ZM_LU_DECOMP_TOL, so that the result does not
- * depend on the scale of \a m.
+ * A pivot is regarded as zero, namely, the remaining part of the matrix is regarded as linearly
+ * dependent on the part already decomposed, if the maximum absolute value of the candidates of the
+ * pivot is not greater than zTOL times the maximum absolute component of \a m, so that the rank does
+ * not depend on the scale of \a m.
  * They do not allocate any internal memory.
  *
  * The two functions differ in the pivoting strategy.

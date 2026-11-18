@@ -99,6 +99,8 @@ __ZM_EXPORT zVec zLEResidual(const zMat a, const zVec b, const zVec x, zVec res)
  * zLESolveGaussDST() destructively modifies \a a and \a b while calculating.
  * \a index is a workspace to store the order of pivots.
  * \a s is used for column-balancing, if it is not the null pointer.
+ * \a a is regarded as singular if the maximum absolute value of the candidates of a pivot is not greater
+ * than zTOL times the maximum absolute component of \a a balanced by zMatVecBalancingDST().
  * \return
  * zLESolveGaussDST() and zLESolveGauss() return a pointer \a ans if they succeed.
  * When \a a is a singular matrix, the equation does not have a unique answer and they return the null pointer.

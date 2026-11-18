@@ -28,16 +28,18 @@ __BEGIN_DECLS
  * is put into \a m, i.e. \a m = \a m1 \a m2^-1
  *
  * zMatInv() calculates the inverse matrix of \a m and set it into \a im.
+ *
+ * The inverse matrices are computed by Gaussian elimination as well as zLESolveGauss(), where the
+ * matrix to be inverted is regarded as singular in the same way with zLESolveGauss().
  * \return
  * zMatDet() and zMatDetDST() return the determinant of the given matrix.
  *
  * zMatAdj() returns a pointer \a adj.
  *
- * zMulInvMatMat() returns a pointer \a m, if succeeding. The null pointer is returned if \a m1 is
- * not full rank.
+ * zMulInvMatMat() and zMulMatInvMat() return a pointer \a m, if succeeding. The null pointer is
+ * returned if \a m1 (\a m2 for zMulMatInvMat()) is singular.
  *
- * zMatInv() returns a pointer \a im, if succeeding. The null pointer is returned if \a m is not
- * full rank.
+ * zMatInv() returns a pointer \a im, if succeeding. The null pointer is returned if \a m is singular.
  * \sa
  * zMatInvHotelling
  */
@@ -57,7 +59,8 @@ __ZM_EXPORT zMat zMatInv(const zMat m, zMat im);
  * \return
  * zMulInvMatMatAndVecDST(), zMulInvMatMatAndVecNC(), and zMulInvMatMatAndVec() return the pointer \a m1,
  * if they succeed.
- * zMulInvMatMatAndVecDST() returns the null pointer if \a m1 is not invertible.
+ * zMulInvMatMatAndVecDST() returns the null pointer if \a m1 is singular (judged in the same way with
+ * zLESolveGauss()).
  * zMulInvMatMatAndVecNC() returns the null pointer if it fails to allocate matrices and vectors for
  * internal workspace.
  * zMulInvMatMatAndVec() returns the null pointer if sizes of \a m1, \a m2, and \a v are not consistent.

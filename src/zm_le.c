@@ -130,15 +130,16 @@ zVec zLEResidual(const zMat a, const zVec b, const zVec x, zVec res)
 zVec zLESolveGaussDST(zMat a, zVec b, zVec ans, zIndex index, zVec s)
 {
   int i, j, k, n, p, q;
-  double ahead;
+  double ahead, tol;
   double x;
 
   n = zVecSizeNC( b );
   zMatVecBalancingDST( a, b, s );
+  tol = zTOL * zMatElemAbsMax( a, NULL, NULL );
   /* forward elimination */
   for( i=0; i<n; i++ ){
     p = zMatPivoting( a, index, i, i );
-    if( ( ahead = zMatElemNC(a,p,i) ) == 0 ){
+    if( !( fabs( ahead = zMatElemNC(a,p,i) ) > tol ) ){
       ZRUNERROR( ZM_ERR_MAT_SINGULAR );
       return NULL;
     }
@@ -188,8 +189,10 @@ zVec zLESolveGauss(const zMat a, const zVec b, zVec ans)
   index = zIndexCreate( zVecSizeNC(b) );
   if( acp && bcp && index && s )
     ans = zLESolveGaussDST( acp, bcp, ans, index, s );
-  else
+  else{
     ZALLOCERROR();
+    ans = NULL;
+  }
   zMatFree( acp );
   zVecFree( bcp );
   zVecFree( s );

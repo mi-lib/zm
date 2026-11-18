@@ -100,15 +100,16 @@ static zMat _zMulInvMat(const zMat m1, const zMat m2, zMat m, zIndex idx, zVec s
 {
   int i, j, k;
   int n, p, q;
-  double head;
+  double head, tol;
   double x;
 
   n = zMatRowSizeNC( m );
   zMatMatBalancingDST( m1, m2, s );
+  tol = zTOL * zMatElemAbsMax( m1, NULL, NULL );
   /* forward elimination */
   for( i=0; i<n; i++ ){
     p = zMatPivoting( m1, idx, i, i );
-    if( ( head = zMatElemNC(m1,p,i) ) == 0 ){
+    if( !( fabs( head = zMatElemNC(m1,p,i) ) > tol ) ){
       ZRUNERROR( ZM_ERR_MAT_SINGULAR );
       return NULL;
     }
@@ -230,13 +231,8 @@ zMat zMatInv(const zMat m, zMat im)
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return NULL;
   }
-  if( zMatColSize(m) == 1 ){ /* scalar case */
-    zMatBuf(im)[0] = 1.0 / zMatBuf(m)[0];
-  } else{
-    zMatIdentNC( im );
-    _zMulInvMatMatNC( m, im, im );
-  }
-  return im;
+  zMatIdentNC( im );
+  return _zMulInvMatMatNC( m, im, im );
 }
 
 /* multiplication of an inverse matrix and another matrix and a vector (destructive). */
@@ -244,15 +240,16 @@ zMat zMulInvMatMatAndVecDST(const zMat m1, const zMat m2, const zVec v, zMat mat
 {
   int i, j, k;
   int n, p, q;
-  double head;
+  double head, tol;
   double x;
 
   n = zVecSizeNC( v );
   zMatMatVecBalancingDST( m1, m2, v, s );
+  tol = zTOL * zMatElemAbsMax( m1, NULL, NULL );
   /* forward elimination */
   for( i=0; i<n; i++ ){
     p = zMatPivoting( m1, idx, i, i );
-    if( ( head = zMatElemNC(m1,p,i) ) == 0 ){
+    if( !( fabs( head = zMatElemNC(m1,p,i) ) > tol ) ){
       ZRUNERROR( ZM_ERR_MAT_SINGULAR );
       return NULL;
     }

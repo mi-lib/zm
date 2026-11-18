@@ -111,7 +111,7 @@ int zMatDecompLU(const zMat m, zMat l, zMat u, zIndex index)
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return -1;
   }
-  tol = ZM_LU_DECOMP_TOL * zMatElemAbsMax( m, NULL, NULL );
+  tol = zTOL * zMatElemAbsMax( m, NULL, NULL );
   if( zMatRowSizeNC(m) > zMatColSizeNC(m) ){ /* row-long rectangular matrix */
     if( !zMatSizeEqual( m, l ) || !zMatRowColSizeEqual( u, l ) || !zMatIsSqr( u ) ){
       ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
@@ -258,7 +258,7 @@ int zMatDecompLUCP(const zMat m, zMat l, zMat u, zIndex index_row, zIndex index_
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return -1;
   }
-  tol = ZM_LU_DECOMP_TOL * zMatElemAbsMax( m, NULL, NULL );
+  tol = zTOL * zMatElemAbsMax( m, NULL, NULL );
   if( zMatRowSizeNC(m) > zMatColSizeNC(m) ){ /* row-long rectangular matrix */
     if( !zMatSizeEqual( m, l ) || !zMatRowColSizeEqual( u, l ) || !zMatIsSqr( u ) ){
       ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );

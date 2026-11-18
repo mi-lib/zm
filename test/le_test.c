@@ -567,20 +567,12 @@ void assert_le_gen(void)
 /* minimum-norm least-square solution of (f1 f2) x = b, where f1 and f2 are column-full-rank and row-full-rank. */
 zVec le_gen_rowlong_ref(const zMat f1, const zMat f2, const zVec b, zVec x)
 {
-  zMat g;
-  zVec y, z;
+  zVec z;
 
-  g = zMatAllocSqr( zMatColSizeNC(f1) );
-  y = zVecAlloc( zMatColSizeNC(f1) );
-  z = zVecAlloc( zMatColSizeNC(f1) );
-  zMulMatTMat( f1, f1, g );
-  zMulMatTVec( f1, b, y );
-  zLESolveGauss( g, y, z ); /* z = ( f1^T f1 )^-1 f1^T b */
-  zMulMatMatT( f2, f2, g );
-  zLESolveGauss( g, z, y ); /* y = ( f2 f2^T )^-1 z */
-  zMulMatTVec( f2, y, x );
-  zMatFree( g );
-  zVecFreeAtOnce( 2, y, z );
+  if( !( z = zVecAlloc( zMatColSizeNC(f1) ) ) ) return NULL;
+  if( !zLESolveErrorMin( f1, b, NULL, z ) || /* z = ( f1^T f1 )^-1 f1^T b */
+      !zLESolveNormMin( f2, z, NULL, x ) ) x = NULL; /* x = f2^T ( f2 f2^T )^-1 z */
+  zVecFree( z );
   return x;
 }
 
@@ -661,7 +653,7 @@ void assert_le_gen_rowlong(void)
     zMatRandUniform( f2, -1, 1 );
     zMulMatMat( f1, f2, a );
     zVecRandUniform( b, -1, 1 );
-    le_gen_rowlong_ref( f1, f2, b, x_ref );
+    if( !le_gen_rowlong_ref( f1, f2, b, x_ref ) ) result = false;
     zMatFreeAtOnce( 2, f1, f2 );
     zVecZero( x_lq );
     zLESolveMP_LQ( a, b, NULL, NULL, x_lq );
@@ -1423,6 +1415,90 @@ void assert_mpnull(void)
   zVecFreeAtOnce( 3, v, u, e );
 }
 
+/* check if Gaussian elimination regards a matrix as singular with the relative tolerance, where a
+ * singular matrix (thus, the pivot is not exactly zero due to rounding errors) is regarded as singular,
+ * and a regular matrix is not, independently of the scale. */
+bool le_singular_one(zMat a, zMat m, zMat im, zVec b, zVec x, bool singular)
+{
+  bool r[5];
+  int i;
+
+  r[0] = zLESolveGauss( a, b, x ) != NULL;
+  r[1] = zMatInv( a, im ) != NULL;
+  r[2] = zMulInvMatMat( a, m, im ) != NULL;
+  r[3] = zMulMatInvMat( m, a, im ) != NULL;
+  r[4] = zMulInvMatMatAndVec( a, m, b, im, x ) != NULL;
+  for( i=0; i<5; i++ )
+    if( r[i] == singular ) return false;
+  return true;
+}
+
+/* generate a singular matrix a = ( b, b c ; r^T b, r^T b c ) with a diagonally dominant matrix b and
+ * random vectors c and r, of which the last row and the last column are linear combinations of the
+ * others. Note that Gaussian elimination with partial pivoting does not necessarily reveal the rank
+ * of a matrix of which only the rows are dependent, since the dependency might appear at an earlier
+ * pivot as a small but not negligible value. */
+void le_singular_mat(zMat a)
+{
+  int i, j, k, n;
+  double c, r;
+
+  n = zMatRowSizeNC(a);
+  zMatRandUniform( a, -1, 1 );
+  for( i=0; i<n-1; i++ )
+    zMatElemNC(a,i,i) += zMatElemNC(a,i,i) >= 0 ? n : -n;
+  for( i=0; i<n; i++ ) zMatSetElemNC( a, i, n-1, 0 );
+  for( k=0; k<n-1; k++ ){
+    c = zRandF( -1, 1 );
+    for( i=0; i<n-1; i++ ) zMatElemNC(a,i,n-1) += zMatElemNC(a,i,k) * c;
+  }
+  for( j=0; j<n; j++ ) zMatSetElemNC( a, n-1, j, 0 );
+  for( k=0; k<n-1; k++ ){
+    r = zRandF( -1, 1 );
+    for( j=0; j<n; j++ ) zMatElemNC(a,n-1,j) += r * zMatElemNC(a,k,j);
+  }
+}
+
+void assert_le_singular(void)
+{
+  const int n = 6, testnum = 100;
+  const double scale[] = { 1.0e-100, 1.0, 1.0e100 };
+  const int nscale = sizeof(scale) / sizeof(double);
+  zMat a, m, im, a1;
+  zVec b, x;
+  int i, k;
+  bool result_singular = true, result_regular = true, result_scalar;
+
+  a = zMatAllocSqr( n ); m = zMatAllocSqr( n ); im = zMatAllocSqr( n );
+  b = zVecAlloc( n ); x = zVecAlloc( n );
+  zEchoOff();
+  for( k=0; k<testnum; k++ ){
+    zMatRandUniform( m, -1, 1 );
+    zVecRandUniform( b, -1, 1 );
+    for( i=0; i<nscale; i++ ){
+      zMatRandUniform( a, -1, 1 );
+      zMatMulDRC( a, scale[i] );
+      if( !le_singular_one( a, m, im, b, x, false ) ) result_regular = false;
+      le_singular_mat( a );
+      zMatMulDRC( a, scale[i] );
+      if( !le_singular_one( a, m, im, b, x, true ) ) result_singular = false;
+    }
+  }
+  a1 = zMatAllocSqr( 1 ); /* scalar zero */
+  zVecSetSize( b, 1 );
+  zVecSetSize( x, 1 );
+  zMatSetSize( im, 1, 1 );
+  result_scalar = !zLESolveGauss( a1, b, x ) && !zMatInv( a1, im );
+  zVecSetSize( b, n );
+  zVecSetSize( x, n );
+  zEchoOn();
+  zMatFreeAtOnce( 4, a, m, im, a1 );
+  zVecFreeAtOnce( 2, b, x );
+  zAssert( zLESolveGauss + zMatInv + zMulInvMatMat + zMulMatInvMat + zMulInvMatMatAndVec (singular matrices), result_singular );
+  zAssert( zLESolveGauss + zMatInv + zMulInvMatMat + zMulMatInvMat + zMulInvMatMatAndVec (regular matrices), result_regular );
+  zAssert( zLESolveGauss + zMatInv (scalar zero), result_scalar );
+}
+
 /* weighted MP-inverse solutions of rank-deficient equations a x = b with a = p r^T, where p and r are
  * column-full-rank. Since r^T is row-full-rank, the reference answer is found by minimizing the weighted
  * error of p z = b and then the weighted norm of x subject to r^T x = z. A component of we is
@@ -1446,6 +1522,10 @@ void assert_le_mp_weight(void)
     for( k=0; k<testnum; k++ ){
       zMatRandUniform( p, -1, 1 );
       zMatRandUniform( rt, -1, 1 );
+      for( i=0; i<r; i++ ){ /* p and r are made well-conditioned, so that the error is bounded */
+        zMatElemNC(p,i,i) += zMatElemNC(p,i,i) >= 0 ? r : -r;
+        zMatElemNC(rt,i,i) += zMatElemNC(rt,i,i) >= 0 ? r : -r;
+      }
       zMulMatMat( p, rt, a );
       zVecRandUniform( b, -1, 1 );
       for( i=0; i<m; i++ ) zVecSetElemNC( we, i, pow( 10, zRandF(-1,1) ) );
@@ -1652,5 +1732,6 @@ int main(void)
   assert_mat_mpinv_rand();
   assert_mpnull();
   assert_le_mp_weight();
+  assert_le_singular();
   return EXIT_SUCCESS;
 }
