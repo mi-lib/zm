@@ -198,7 +198,6 @@ __ZM_EXPORT zVec zLESolveGaussSeidel(const zMat a, const zVec b, zVec ans);
 __END_DECLS
 
 #include <zm/zm_le_mat_inv.h>   /* determinant and inverse matrix */
-#include <zm/zm_le_mat_mpinv.h> /* Moore-Penrose inverse matrix */
 #include <zm/zm_le_tridiag.h>   /* tridiagonal equation */
 #include <zm/zm_le_gen.h>       /* generalized linear equation */
 #include <zm/zm_le_lyapnov.h>   /* Lyapnov equation */

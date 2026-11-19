@@ -68,17 +68,24 @@ __ZM_EXPORT void _zMatHouseholderR(zMat m, const double *nu, int n, int c0, int 
  * method) or of their components remaining after the preceding reflections (by Householder's method) is
  * not greater than zTOL times the maximum norm of the row vectors of \a m, so that the rank does not
  * depend on the scale of \a m.
- * It does not allocate any internal memory.
+ *
+ * The orthogonality of \a q by Gram=Schmidt's method might be lost in proportion to the condition number
+ * of \a m, while \a l is accurate. zMatDecompLQReorth() reorthogonalizes each row of \a q against the
+ * preceding rows once again, so that the orthogonality is kept within the order of the machine epsilon,
+ * at the cost of about twice the computation of zMatDecompLQ() in the column-long case. It is the
+ * same with zMatDecompLQ() in the row-long case, where \a q by Householder's method is orthogonal.
+ * The rank is detected in the same way in both functions.
  *
  * zMatDecompLQAlloc() automatically allocates matrices \a l and \a q in addition to the index vector
- * \a index, and then conducts the LQ decomposition.
+ * \a index, and then conducts the LQ decomposition by zMatDecompLQ().
  * \return
- * zMatDecompLQ() and zMatDecompLQAlloc() return the rank of \a m. If \a m is a zero matrix, they
- * return 0, and the sizes of \a l and \a q are adjusted to r x 0 and 0 x c, respectively.
+ * zMatDecompLQ(), zMatDecompLQReorth() and zMatDecompLQAlloc() return the rank of \a m. If \a m is a
+ * zero matrix, they return 0, and the sizes of \a l and \a q are adjusted to r x 0 and 0 x c, respectively.
  * If they fail to allocate memory or find mismatches of sizes of matrices and the index vector,
  * they return -1.
  */
 __ZM_EXPORT int zMatDecompLQ(const zMat m, zMat l, zMat q, zIndex index);
+__ZM_EXPORT int zMatDecompLQReorth(const zMat m, zMat l, zMat q, zIndex index);
 __ZM_EXPORT int zMatDecompLQAlloc(const zMat m, zMat *l, zMat *q, zIndex *index);
 
 /*! \brief full-sized LQ decomposition of a matirx.

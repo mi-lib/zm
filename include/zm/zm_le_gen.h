@@ -1,7 +1,7 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_le_gen - linear equation: generalized inverse matrix.
+ * zm_le_gen - linear equation: generalized inverse matrix and Moore-Penrose inverse matrix.
  */
 
 #ifndef __ZM_LE_GEN_H__
@@ -81,8 +81,10 @@ __ZM_EXPORT void zLEWorkspaceResizeMP(zLEWorkspace *workspace, int rank);
  * \a a is regarded as rank-deficient if the norm of the residual of a row (a column for
  * zLESolveErrorMinDST()) of the weighted coefficient matrix orthogonalized to the preceding ones is not
  * greater than zTOL times the maximum norm of the rows (columns) of the weighted coefficient matrix,
- * which is the same criterion with that of zMatDecompLQ() (zMatDecompQR()).
- * zLESolveErrorMinDST() destroys \a b. zLESolveNormMinDST() and zLESolveRefNormMinDST() do not.
+ * which is the same tolerance with that of zMatDecompLQ() (zMatDecompQR()). Since the rows (columns) are
+ * not pivoted, the rank might be judged differently from zMatDecompLQ() for nearly rank-deficient matrices.
+ * zLESolveErrorMinDST() destroys \a b. zLESolveNormMinDST() and zLESolveRefNormMinDST() do not, and
+ * \a ans can be the same vector with \a b for them.
  *
  * zLESolveNormMinDST(), zLESolveErrorMinDST(), and zLESolveRefNormMinDST() use a workspace \a workspace,
  * which should be initialized with zLEWorkspaceAlloc() beforehand and freed with zLEWorkspaceFree
@@ -110,8 +112,10 @@ __ZM_EXPORT zVec zLESolveRefNormMin(const zMat a, const zVec b, const zVec w, co
  * We and Wn are diagonal matrices of which the diagonal components are given by \a we and \a wn,
  * respectively. The null pointer for \a we or \a wn means the identity matrix.
  *
- * zLESolveMP_LQ_DST() and zLESolveMPNullDST() accept the factors of the LQ decomposition by zMatDecompLQ()
- * with the index vector index_row of \a workspace.
+ * zLESolveMP_LQ_DST() and zLESolveMPNullDST() accept the factors of the LQ decomposition by
+ * zMatDecompLQReorth() with the index vector index_row of \a workspace. Those by zMatDecompLQ() are also
+ * accepted, while the residual of the answer might increase in proportion to the condition number of the
+ * weighted coefficient matrix due to the loss of orthogonality of the right factor.
  *
  * zLESolveMP_LU_DST() accepts the factors of the LU decomposition with complete pivoting by
  * zMatDecompLUCP() with the index vectors index_row and index_col of \a workspace. Note that the
@@ -131,7 +135,7 @@ __ZM_EXPORT zVec zLESolveRefNormMin(const zMat a, const zVec b, const zVec w, co
  * factors, they return the null pointer. zLESolveMPNullDST() also returns the null pointer if a
  * component of \a wn is not positive.
  * \sa
- * zMatDecompLQ, zMatDecompLUCP
+ * zMatDecompLQReorth, zMatDecompLQ, zMatDecompLUCP
  */
 __ZM_EXPORT zVec zLESolveMP_LQ_DST(zLEWorkspace *workspace, const zVec we, const zVec wn, int rank, zVec ans);
 __ZM_EXPORT zVec zLESolveMP_LU_DST(zLEWorkspace *workspace, const zVec we, const zVec wn, int rank, zVec ans);
@@ -154,8 +158,8 @@ __ZM_EXPORT zVec zLESolveMPNullDST(zLEWorkspace *workspace, const zVec we, const
  * non-negative. An equation with zero weight is ignored, and a variable with zero weight is fixed to zero.
  * Since \a ans = Wn^1/2 y, where y is the MP-inverse solution of We^1/2 \a a Wn^1/2 y = We^1/2 \a b,
  * the weighted coefficient matrix We^1/2 \a a Wn^1/2 is decomposed. Its rank is detected in the
- * decomposition (see zMatDecompLQ() and zMatDecompLUCP()), and the directions regarded as degenerated
- * are discarded.
+ * decomposition (see zMatDecompLQReorth() and zMatDecompLUCP()), and the directions regarded as
+ * degenerated are discarded.
  *
  * Three methods to find the MP-inverse solution are available.
  * zLESolveMP_LQ() uses LQ decomposition.
@@ -232,6 +236,39 @@ __ZM_EXPORT zVec zLESolveSRAuxDST(zMat a, zVec b, zVec wn, zVec we, zVec ans, zV
 __ZM_EXPORT zVec zLESolveSRAux(const zMat a, const zVec b, const zVec wn, const zVec we, zVec ans, const zVec aux);
 __ZM_EXPORT zVec zLESolveSRRefDST(zMat a, zVec b, zVec wn, zVec we, zVec ref, zVec ans, zLEWorkspace *workspace);
 __ZM_EXPORT zVec zLESolveSRRef(const zMat a, const zVec b, const zVec wn, const zVec we, const zVec ref, zVec ans);
+
+/*! \brief Moore-Penrose inverse matrix.
+ *
+ * zMatMPInv() calculates the Moore-Penrose inverse (MP-inverse) matrix of an arbitrary matrix \a m.
+ * The result is put into \a mp. Suppose a matrix B is the MP-inverse matrix of a matrix A. The
+ * following relations are satisfied.
+ *   A B A = A
+ *   B A B = B
+ *   ( A B )^T = A B
+ *   ( B A )^T = B A
+ * It is computed with the LQ decomposition \a m = L Q (see zMatDecompLQReorth()) as \a mp = Q^T L#, where
+ * L# is the MP-inverse matrix of the column-full-rank matrix L, which is found by forward substitution
+ * if L is square, or with the QR decomposition of L based on Householder's method otherwise. The rank
+ * is detected in the LQ decomposition, and the directions regarded as degenerated are discarded.
+ *
+ * zMatMPInvNull() calculates the MP-inverse matrix \a mp of \a m, and simultaneously the null-space
+ * projector \a mn = \a mp \a m - I, where I is the identity matrix.
+ *
+ * zMulMPInvMatMat() multiplies the MP-inverse matrix of \a m1 by \a m2 from the left side without
+ * forming the MP-inverse matrix explicitly, and puts the result into \a m. \a m2 and \a m can be the
+ * same matrix.
+ *
+ * zMatMPInvPenrose() calculates the MP-inverse matrix \a mp of \a m based on Penrose's iterative method.
+ * \return
+ * zMatMPInv(), zMatMPInvNull() and zMatMPInvPenrose() return the rank of \a m. zMatMPInv() and
+ * zMatMPInvNull() return -1 if the sizes of the matrices do not match or they fail to allocate
+ * internal workspace.
+ * zMulMPInvMatMat() returns a pointer \a m if it succeeds, or the null pointer otherwise.
+ */
+__ZM_EXPORT int zMatMPInv(const zMat m, zMat mp);
+__ZM_EXPORT int zMatMPInvNull(const zMat m, zMat mp, zMat mn);
+__ZM_EXPORT zMat zMulMPInvMatMat(const zMat m1, const zMat m2, zMat m);
+__ZM_EXPORT int zMatMPInvPenrose(const zMat m, zMat mp);
 
 __END_DECLS
 

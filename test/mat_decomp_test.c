@@ -561,6 +561,83 @@ bool assert_mat_decomp_lq_illcond(void)
   return result;
 }
 
+/* a random matrix with orthonormal columns by Gram=Schmidt's method with reorthogonalization. */
+void mat_rand_orthonormal_col(zMat u)
+{
+  int i, j, k, n;
+  double s;
+
+  zMatRandUniform( u, -1, 1 );
+  for( j=0; j<zMatColSizeNC(u); j++ ){
+    for( n=0; n<2; n++ )
+      for( k=0; k<j; k++ ){
+        for( s=0, i=0; i<zMatRowSizeNC(u); i++ ) s += zMatElemNC(u,i,k) * zMatElemNC(u,i,j);
+        for( i=0; i<zMatRowSizeNC(u); i++ ) zMatElemNC(u,i,j) -= s * zMatElemNC(u,i,k);
+      }
+    for( s=0, i=0; i<zMatRowSizeNC(u); i++ ) s += zSqr( zMatElemNC(u,i,j) );
+    for( s=sqrt(s), i=0; i<zMatRowSizeNC(u); i++ ) zMatElemNC(u,i,j) /= s;
+  }
+}
+
+/* check zMatDecompLQReorth() for column-long matrices with prescribed singular values and ranks, where
+ * the orthogonality of Q by zMatDecompLQ() is lost in proportion to the condition number. The rank has
+ * to be the same with that by zMatDecompLQ(), and the orthogonality has to be within the order of the
+ * machine epsilon. */
+bool assert_mat_decomp_lq_reorth(int n)
+{
+  zMat u, v, m, l, q, lq;
+  zIndex index;
+  double sv[20], kappa;
+  long double acc;
+  int r, c, k, i, j, p, rank[2], trial;
+  bool result = true;
+  const double tol_comp = 1.0e-14, tol_orth = 1.0e-14;
+
+  for( trial=0; trial<n; trial++ ){
+    r = zRandI( 2, 20 );
+    c = zRandI( r, 30 );
+    k = zRandI( 1, r );
+    kappa = pow( 10, zRandF( 0, 10 ) );
+    for( p=0; p<k; p++ ) sv[p] = k == 1 ? 1 : pow( kappa, -(double)p/(k-1) );
+    u = zMatAlloc( r, k );
+    v = zMatAlloc( c, k );
+    m = zMatAlloc( r, c );
+    l = zMatAllocSqr( r );
+    q = zMatAlloc( r, c );
+    lq = zMatAlloc( r, c );
+    index = zIndexCreate( r );
+    mat_rand_orthonormal_col( u );
+    mat_rand_orthonormal_col( v );
+    for( i=0; i<r; i++ ) /* m = U S V^T */
+      for( j=0; j<c; j++ ){
+        for( acc=0, p=0; p<k; p++ ) acc += (long double)zMatElemNC(u,i,p) * sv[p] * zMatElemNC(v,j,p);
+        zMatSetElemNC( m, i, j, acc );
+      }
+    rank[0] = zMatDecompLQ( m, l, q, index );
+    zMatSetSizeNC( l, r, r );
+    zMatSetSizeNC( q, r, c );
+    rank[1] = zMatDecompLQReorth( m, l, q, index );
+    if( rank[0] != k || rank[1] != k ){
+      eprintf( "rank = %d (zMatDecompLQ), %d (zMatDecompLQReorth), expected %d\n", rank[0], rank[1], k );
+      result = false;
+    } else
+    if( !check_mat_decomp_lq_index( l, index, rank[1] ) ){
+      result = false;
+    } else{
+      zMulMatMat( l, q, lq );
+      zMatSubDRC( lq, m );
+      if( !( zMatNorm( lq ) <= tol_comp * zMatNorm( m ) ) ){
+        eprintf( "relative error of the composition = %g\n", zMatNorm( lq ) / zMatNorm( m ) );
+        result = false;
+      }
+      if( !check_matrix_orthogonality( q, rank[1], tol_orth ) ) result = false;
+    }
+    zMatFreeAtOnce( 6, u, v, m, l, q, lq );
+    zIndexFree( index );
+  }
+  return result;
+}
+
 bool assert_mat_decomp_lq_full_one(int rowsize, int colsize, int rank_max, int n)
 {
   zMat mat, l, q;
@@ -937,6 +1014,7 @@ int main(void)
   zAssert( zMatDecompLQ (scale-independent rank detection), assert_mat_decomp_lq_scale() );
   zAssert( zMatDecompLQ (ill-conditioned matrices), assert_mat_decomp_lq_illcond() );
   zAssert( zMatDecompLQ + zMatDecompLQFull (nearly dependent rows), assert_mat_decomp_lq_pivot( n ) );
+  zAssert( zMatDecompLQReorth (ill-conditioned column-long matrices), assert_mat_decomp_lq_reorth( 1000 ) );
   zAssert( zMatDecompLQFull (5x8), assert_mat_decomp_lq_full_one( size_small, size_large, size_small, n ) );
   zAssert( zMatDecompLQFull (8x5), assert_mat_decomp_lq_full_one( size_large, size_small, size_small, n ) );
   zAssert( zMatDecompLQFull (8x8), assert_mat_decomp_lq_full_one( size_large, size_large, size_small, n ) );

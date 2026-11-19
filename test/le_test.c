@@ -1388,6 +1388,151 @@ void assert_mat_mpinv_rand(void)
   zVecFree( v );
 }
 
+/* a random matrix with orthonormal columns by Gram=Schmidt's method with reorthogonalization. */
+void mat_rand_orthonormal_col(zMat u)
+{
+  int i, j, k, n;
+  double s;
+
+  zMatRandUniform( u, -1, 1 );
+  for( j=0; j<zMatColSizeNC(u); j++ ){
+    for( n=0; n<2; n++ )
+      for( k=0; k<j; k++ ){
+        for( s=0, i=0; i<zMatRowSizeNC(u); i++ ) s += zMatElemNC(u,i,k) * zMatElemNC(u,i,j);
+        for( i=0; i<zMatRowSizeNC(u); i++ ) zMatElemNC(u,i,j) -= s * zMatElemNC(u,i,k);
+      }
+    for( s=0, i=0; i<zMatRowSizeNC(u); i++ ) s += zSqr( zMatElemNC(u,i,j) );
+    for( s=sqrt(s), i=0; i<zMatRowSizeNC(u); i++ ) zMatElemNC(u,i,j) /= s;
+  }
+}
+
+/* relative error of a matrix in the Frobenius norm. */
+double mat_rel_error(const zMat m, const zMat ref)
+{
+  int i, j;
+  double e = 0, n = 0;
+
+  for( i=0; i<zMatRowSizeNC(m); i++ )
+    for( j=0; j<zMatColSizeNC(m); j++ ){
+      e += zSqr( zMatElemNC(m,i,j) - zMatElemNC(ref,i,j) );
+      n += zSqr( zMatElemNC(ref,i,j) );
+    }
+  return sqrt( e / n );
+}
+
+/* check the MP-inverse matrix and the product of it and a matrix with the reference ap of the
+ * MP-inverse matrix of a, where b = a x is consistent and xref = ap a x is the reference of the
+ * product. The relative error has to be within a margin times the condition number of a times the
+ * machine epsilon, which is the order of the forward error of a backward stable method. */
+bool check_mat_mpinv_illcond(const zMat a, const zMat ap, const zMat b, const zMat xref)
+{
+  zMat mp, x;
+  double kappa;
+  bool result = true;
+  const double margin = 10;
+
+  mp = zMatAlloc( zMatColSizeNC(a), zMatRowSizeNC(a) );
+  x = zMatAlloc( zMatColSizeNC(a), zMatColSizeNC(b) );
+  kappa = zMatNorm( a ) * zMatNorm( ap );
+  zMatMPInv( a, mp );
+  if( !( mat_rel_error( mp, ap ) <= margin * kappa * DBL_EPSILON ) ){
+    eprintf( "zMatMPInv: relative error = %g, kappa = %g\n", mat_rel_error( mp, ap ), kappa );
+    result = false;
+  }
+  zMulMPInvMatMat( a, b, x );
+  if( !( mat_rel_error( x, xref ) <= margin * kappa * DBL_EPSILON ) ){
+    eprintf( "zMulMPInvMatMat: relative error = %g, kappa = %g\n", mat_rel_error( x, xref ), kappa );
+    result = false;
+  }
+  zMatFreeAtOnce( 2, mp, x );
+  return result;
+}
+
+/* ill-conditioned cases of MP-inverse matrices: random matrices with prescribed singular values and
+ * ranks, and row-long matrices stacking transposed Kahan matrices, whose ill-conditioning is not
+ * revealed by pivoting, so that the left factor of the LQ decomposition is rectangular and ill-conditioned. */
+void assert_mat_mpinv_illcond(void)
+{
+  zMat a, ap, x, b, xref, u, v;
+  long double ka[20][20], ki[20][20], acc;
+  double sv[20], kappa, th, sn, cs, alpha;
+  int r, c, k, i, j, l, trial;
+  bool result_rand = true, result_kahan = true;
+  const int ntrial = 100;
+  const int n = 20;
+  const int nb = 3;
+
+  for( trial=0; trial<ntrial; trial++ ){
+    r = zRandI( 2, 20 );
+    c = zRandI( 2, 20 );
+    k = zRandI( 1, zMin( r, c ) );
+    kappa = pow( 10, zRandF( 0, 10 ) );
+    for( l=0; l<k; l++ ) sv[l] = k == 1 ? 1 : pow( kappa, -(double)l/(k-1) );
+    a = zMatAlloc( r, c );
+    ap = zMatAlloc( c, r );
+    u = zMatAlloc( r, k );
+    v = zMatAlloc( c, k );
+    x = zMatAlloc( c, nb );
+    b = zMatAlloc( r, nb );
+    xref = zMatAlloc( c, nb );
+    mat_rand_orthonormal_col( u );
+    mat_rand_orthonormal_col( v );
+    zMatRandUniform( x, -1, 1 );
+    for( i=0; i<r; i++ ) /* a = U S V^T */
+      for( j=0; j<c; j++ ){
+        for( acc=0, l=0; l<k; l++ ) acc += (long double)zMatElemNC(u,i,l) * sv[l] * zMatElemNC(v,j,l);
+        zMatSetElemNC( a, i, j, acc );
+      }
+    for( i=0; i<c; i++ ) /* a# = V S^-1 U^T */
+      for( j=0; j<r; j++ ){
+        for( acc=0, l=0; l<k; l++ ) acc += (long double)zMatElemNC(v,i,l) / sv[l] * zMatElemNC(u,j,l);
+        zMatSetElemNC( ap, i, j, acc );
+      }
+    zMulMatMat( a, x, b );
+    zMulMatMat( ap, b, xref );
+    if( !check_mat_mpinv_illcond( a, ap, b, xref ) ) result_rand = false;
+    zMatFreeAtOnce( 7, a, ap, u, v, x, b, xref );
+  }
+  a = zMatAlloc( 2*n, n );
+  ap = zMatAlloc( n, 2*n );
+  x = zMatAlloc( n, nb );
+  b = zMatAlloc( 2*n, nb );
+  for( trial=0; trial<ntrial; trial++ ){
+    th = zRandF( 0.6, 1.0 ); /* the condition number is approximately from 1e+5 to 1e+10 */
+    sn = sin( th );
+    cs = cos( th );
+    alpha = zRandF( 0.5, 2 );
+    /* Kahan matrix K, of which columns are slightly scaled so that pivoting does not swap them */
+    for( i=0; i<n; i++ )
+      for( j=0; j<n; j++ )
+        ka[i][j] = ( j < i ? 0 : powl( sn, i ) * ( j == i ? 1 : -cs ) ) * powl( 1 - 100*DBL_EPSILON, j );
+    for( j=0; j<n; j++ ) /* K^-1 by backward substitution */
+      for( i=n-1; i>=0; i-- ){
+        for( acc=( i == j ), l=i+1; l<n; l++ ) acc -= ka[i][l] * ki[l][j];
+        ki[i][j] = acc / ka[i][i];
+      }
+    /* a = ( K^T alpha K^T )^T, a# = ( K^-1 alpha K^-1 ) / ( 1 + alpha^2 ) */
+    for( i=0; i<n; i++ )
+      for( j=0; j<n; j++ ){
+        zMatSetElemNC( a, i, j, ka[j][i] );
+        zMatSetElemNC( a, n+i, j, alpha * ka[j][i] );
+        zMatSetElemNC( ap, i, j, ki[j][i] / ( 1 + alpha*alpha ) );
+        zMatSetElemNC( ap, i, n+j, alpha * ki[j][i] / ( 1 + alpha*alpha ) );
+      }
+    zMatRandUniform( x, -1, 1 );
+    for( i=0; i<n; i++ )
+      for( j=0; j<nb; j++ ){
+        for( acc=0, l=0; l<n; l++ ) acc += ka[l][i] * zMatElemNC(x,l,j);
+        zMatSetElemNC( b, i, j, acc );
+        zMatSetElemNC( b, n+i, j, alpha * acc );
+      }
+    if( !check_mat_mpinv_illcond( a, ap, b, x ) ) result_kahan = false;
+  }
+  zMatFreeAtOnce( 4, a, ap, x, b );
+  zAssert( zMatMPInv + zMulMPInvMatMat (ill-conditioned rank-deficient cases), result_rand );
+  zAssert( zMatMPInv + zMulMPInvMatMat (row-long Kahan-type cases), result_kahan );
+}
+
 void assert_mpnull(void)
 {
   zMat a, mp, mn;
@@ -1800,6 +1945,7 @@ int main(void)
   assert_mat_mul_inv_mat_vec();
   assert_mat_mpinv();
   assert_mat_mpinv_rand();
+  assert_mat_mpinv_illcond();
   assert_mpnull();
   assert_le_mp_weight();
   assert_le_singular();

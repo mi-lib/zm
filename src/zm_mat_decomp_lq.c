@@ -84,29 +84,75 @@ static double _zMatRowNormMax(const zMat m)
   return norm_max;
 }
 
+/* workspace for the row pivoting of the Gram=Schmidt process: the squared norm of the residual of each
+ * remaining row, which is downdated at each orthogonalization, and its base, namely, the squared norm exactly
+ * computed last time, from which it has been downdated. they are stored in the last two columns of the space
+ * given for the left factor, which are not used for the factor until the last two steps. ws is the whole space,
+ * and row is the index of a row of the original matrix. */
+#define _zMatDecompLQResSqrNorm(ws,row)     zMatElemNC(ws,row,zMatColSizeNC(ws)-1)
+#define _zMatDecompLQResSqrNormBase(ws,row) zMatElemNC(ws,row,zMatColSizeNC(ws)-2)
+/* the squared norm is computed again if it is downdated to be less than this ratio to the base, where the
+ * relative error of the downdated one is in the order of the machine epsilon divided by this ratio. */
+#define ZM_LQ_DOWNDATE_TOL ( 1.0e-8 )
+
 /* LQ decomposition of column-long rectangular matrices based on modified Gram=Schmidt's method with row
- * pivoting. (destructive) */
-static int _zMatDecompLQDST_Q(zMat l, zMat q, zIndex index) /* q has to be initially set for the original matrix. */
+ * pivoting. (destructive)
+ * if reorth is true, the pivot row is orthogonalized again against the preceding orthonormal rows before
+ * normalized, so that the orthogonality of q is kept within the order of the machine epsilon regardless
+ * of the condition number of the matrix (twice is enough). the rank is detected in the same way in both
+ * cases, namely, with the norms of the residuals before the reorthogonalization.
+ * the norms of the residuals for pivoting are downdated instead of computed at each step while three or
+ * more rows remain, where the workspace is borrowed from l. the norm of the pivot row is exactly computed. */
+static int _zMatDecompLQDST_Q(zMat l, zMat q, zIndex index, bool reorth) /* q has to be initially set for the original matrix. */
 {
-  int i, p, rank;
-  double *qk, *qi, r, norm, tol;
+  int i, p, rank, row;
+  double *qk, *qi, r, norm, tol, s;
+  zMat ws = l; /* workspace for pivoting borrowed from l */
+  bool use_ws;
 
   zMatZero( l );
   zIndexOrder( index, 0 );
   tol = zTOL * _zMatRowNormMax( q );
+  if( zMatRowSizeNC(q) > 2 )
+    for( i=0; i<zMatRowSizeNC(q); i++ )
+      _zMatDecompLQResSqrNormBase(ws,i) = _zMatDecompLQResSqrNorm(ws,i) = zRawVecSqrNorm( zMatRowBufNC(q,i), zMatColSizeNC(q) );
   for( rank=0; rank<zMatRowSizeNC(q); rank++ ){
     /* pivoting: the row with the largest residual is orthonormalized next (rows are physically swapped). */
-    for( r=0, p=i=rank; i<zMatRowSizeNC(q); i++ )
-      if( ( norm = zRawVecNorm( zMatRowBufNC(q,i), zMatColSizeNC(q) ) ) > r ){
-        r = norm;
-        p = i;
+    if( ( use_ws = zMatRowSizeNC(q) - rank > 2 ) ){
+      for( norm=-1, p=i=rank; i<zMatRowSizeNC(q); i++ ){
+        row = zIndexElemNC(index,i);
+        if( _zMatDecompLQResSqrNorm(ws,row) < ZM_LQ_DOWNDATE_TOL * _zMatDecompLQResSqrNormBase(ws,row) ) /* cancellation */
+          _zMatDecompLQResSqrNormBase(ws,row) = _zMatDecompLQResSqrNorm(ws,row) = zRawVecSqrNorm( zMatRowBufNC(q,i), zMatColSizeNC(q) );
+        if( _zMatDecompLQResSqrNorm(ws,row) > norm ){
+          norm = _zMatDecompLQResSqrNorm(ws,row);
+          p = i;
+        }
       }
+      r = zRawVecNorm( zMatRowBufNC(q,p), zMatColSizeNC(q) );
+    } else{ /* the workspace is not available in the last two steps. */
+      for( r=0, p=i=rank; i<zMatRowSizeNC(q); i++ )
+        if( ( norm = zRawVecNorm( zMatRowBufNC(q,i), zMatColSizeNC(q) ) ) > r ){
+          r = norm;
+          p = i;
+        }
+    }
     if( !( r > tol ) ) break; /* the residuals of all the remaining rows are negligible. */
     if( p != rank ){
       zMatSwapRowNC( q, rank, p );
       zIndexSwapNC( index, rank, p );
     }
+    if( use_ws ) /* the workspace of the pivot row is released to be a part of the upper triangle of l. */
+      _zMatDecompLQResSqrNormBase(ws,zIndexElemNC(index,rank)) = _zMatDecompLQResSqrNorm(ws,zIndexElemNC(index,rank)) = 0;
     qk = zMatRowBufNC(q,rank);
+    if( reorth ){ /* the coefficients of the reorthogonalization are added to l */
+      for( i=0; i<rank; i++ ){
+        qi = zMatRowBufNC(q,i);
+        s = zRawVecInnerProd( qk, qi, zMatColSizeNC(q) );
+        zRawVecCatDRC( qk, -s, qi, zMatColSizeNC(q) );
+        zMatElemNC(l,zIndexElemNC(index,rank),i) += s;
+      }
+      if( !( ( r = zRawVecNorm( qk, zMatColSizeNC(q) ) ) > 0 ) ) break;
+    }
     zRawVecDivDRC( qk, r, zMatColSizeNC(q) );
     zMatSetElemNC( l, zIndexElemNC(index,rank), rank, r );
     for( i=rank+1; i<zMatRowSizeNC(q); i++ ){ /* orthogonalization of the remaining rows */
@@ -114,8 +160,16 @@ static int _zMatDecompLQDST_Q(zMat l, zMat q, zIndex index) /* q has to be initi
       r = zRawVecInnerProd( qi, qk, zMatColSizeNC(q) );
       zRawVecCatDRC( qi, -r, qk, zMatColSizeNC(q) );
       zMatSetElemNC( l, zIndexElemNC(index,i), rank, r );
+      if( zMatRowSizeNC(q) - rank > 3 ) /* downdated for the next step. */
+        _zMatDecompLQResSqrNorm(ws,zIndexElemNC(index,i)) -= r*r;
+      else
+      if( zMatRowSizeNC(q) - rank == 3 ) /* the workspace is released since it is not used anymore. */
+        _zMatDecompLQResSqrNormBase(ws,zIndexElemNC(index,i)) = _zMatDecompLQResSqrNorm(ws,zIndexElemNC(index,i)) = 0;
     }
   }
+  if( rank < zMatRowSizeNC(q) - 2 ) /* the workspace of the remaining rows is released. */
+    for( i=rank; i<zMatRowSizeNC(q); i++ )
+      _zMatDecompLQResSqrNormBase(ws,zIndexElemNC(index,i)) = _zMatDecompLQResSqrNorm(ws,zIndexElemNC(index,i)) = 0;
   if( rank < zMatRowSizeNC(q) ){ /* automatically adjust sizes of factorized matrices */
     zMatColResize( l, rank ); /* to be column-full-rank */
     zMatRowResize( q, rank ); /* to be row-full-rank */
@@ -174,8 +228,8 @@ static int _zMatDecompLQFullDST(zMat m, zMat q, zIndex index) /* m has to be ini
   return rank;
 }
 
-/* LQ decomposition. */
-int zMatDecompLQ(const zMat m, zMat l, zMat q, zIndex index)
+/* LQ decomposition, where the rows of q of a column-long matrix are reorthogonalized if reorth is true. */
+static int _zMatDecompLQ(const zMat m, zMat l, zMat q, zIndex index, bool reorth)
 {
   int rank;
   double scale;
@@ -202,10 +256,22 @@ int zMatDecompLQ(const zMat m, zMat l, zMat q, zIndex index)
     }
     zMatCopyNC( m, q );
     scale = _zMatScalePow2( q );
-    rank = _zMatDecompLQDST_Q( l, q, index );
+    rank = _zMatDecompLQDST_Q( l, q, index, reorth );
     zMatMulDRC( l, scale ); /* the scaling by a power of two to avoid overflow and underflow is undone */
   }
   return rank;
+}
+
+/* LQ decomposition. */
+int zMatDecompLQ(const zMat m, zMat l, zMat q, zIndex index)
+{
+  return _zMatDecompLQ( m, l, q, index, false );
+}
+
+/* LQ decomposition with reorthogonalization. */
+int zMatDecompLQReorth(const zMat m, zMat l, zMat q, zIndex index)
+{
+  return _zMatDecompLQ( m, l, q, index, true );
 }
 
 /* LQ decomposition with an automatic matrix allocation. */

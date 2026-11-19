@@ -1,7 +1,7 @@
 /* ZM - Z's Mathematics Toolbox
  * Copyright (C) 1998 Tomomichi Sugihara (Zhidao)
  *
- * zm_le_gen - linear equation: generalized inverse matrix.
+ * zm_le_gen - linear equation: generalized inverse matrix and Moore-Penrose inverse matrix.
  */
 
 #include <zm/zm_le.h>
@@ -166,19 +166,24 @@ void zLEWorkspaceResizeMP(zLEWorkspace *workspace, int rank)
  * the k-th column) of m, respectively, and the diagonal components of L are stored in d, where
  * beta_k = -1 / ( d_k v_kk ). Since it applies the reflectors to the rows, which are contiguous in
  * memory, it is applied to the transpose of a column-full-rank matrix for QR decomposition.
- * A row is regarded as dependent on the preceding ones if the norm of its components remaining after
- * the preceding reflections is not greater than zTOL times the maximum norm of the rows of the original
- * matrix, which is the same criterion with that of zMatDecompLQ(). It returns false in that case. */
-static bool _zLEHouseholderLQ(zMat m, double d[])
+ * If check is true, a row is regarded as dependent on the preceding ones if the norm of its components
+ * remaining after the preceding reflections is not greater than zTOL times the maximum norm of the rows
+ * of the original matrix, which is the same tolerance with that of zMatDecompLQ(). It returns false in
+ * that case. If check is false, m is supposed to be a factor of a decomposition by which the rank has
+ * already been detected, and it returns false only if the remaining components are exactly zero, since
+ * the rank detected with another matrix might contradict. */
+static bool _zLEHouseholderLQ(zMat m, double d[], bool check)
 {
   int i, j, k, r, c;
   double *mk, *mi, s, nu, beta, tol = 0;
 
   r = zMatRowSizeNC(m);
   c = zMatColSizeNC(m);
-  for( k=0; k<r; k++ ) /* the maximum norm of the rows */
-    if( ( s = zRawVecNorm( zMatRowBufNC(m,k), c ) ) > tol ) tol = s;
-  tol *= zTOL;
+  if( check ){
+    for( k=0; k<r; k++ ) /* the maximum norm of the rows */
+      if( ( s = zRawVecNorm( zMatRowBufNC(m,k), c ) ) > tol ) tol = s;
+    tol *= zTOL;
+  }
   for( k=0; k<r; k++ ){
     mk = zMatRowBufNC(m,k);
     if( !( ( s = zRawVecNorm( mk+k, c-k ) ) > tol ) ) return false;
@@ -227,8 +232,9 @@ static bool _zLEWorkspaceSetSizeHouseholder(zLEWorkspace *workspace, int r, int 
 /* minimum-weighted-norm solution of a redundant linear equation a x = b, which minimizes
  * ( x - ref )^T W^-1 ( x - ref ) for W = diag(w), where ref is the null pointer for ref = 0.
  * With z = W^-1/2 ( x - ref ), it is the minimum-norm solution of a W^1/2 z = b - a ref, which is
- * found by LQ decomposition a W^1/2 = ( L O ) Q as z = Q^T ( y O )^T, L y = b - a ref. */
-static zVec _zLESolveNormMinHouseholder(const zMat a, const zVec b, const zVec w, const zVec ref, zVec ans, zLEWorkspace *workspace)
+ * found by LQ decomposition a W^1/2 = ( L O ) Q as z = Q^T ( y O )^T, L y = b - a ref.
+ * the rank of a is checked if check is true (see _zLEHouseholderLQ()). */
+static zVec _zLESolveNormMinDST(const zMat a, const zVec b, const zVec w, const zVec ref, zVec ans, zLEWorkspace *workspace, bool check)
 {
   int i, j, r, c;
   double *d, x;
@@ -244,7 +250,7 @@ static zVec _zLESolveNormMinHouseholder(const zMat a, const zVec b, const zVec w
     for( j=0; j<c; j++ )
       zMatSetElemNC( workspace->m_house, i, j, w ? zMatElemNC(a,i,j) * sqrt( zVecElemNC(w,j) ) : zMatElemNC(a,i,j) );
   d = zVecBufNC(workspace->v_ispace);
-  if( !_zLEHouseholderLQ( workspace->m_house, d ) ){
+  if( !_zLEHouseholderLQ( workspace->m_house, d, check ) ){
     ZRUNERROR( ZM_ERR_MAT_SINGULAR );
     return NULL;
   }
@@ -265,11 +271,11 @@ static zVec _zLESolveNormMinHouseholder(const zMat a, const zVec b, const zVec w
 /* weighted-norm-minimizing redundant linear equation solver without checking size consistency. */
 zVec zLESolveNormMinDST(const zMat a, const zVec b, const zVec w, zVec ans, zLEWorkspace *workspace)
 {
-  return _zLESolveNormMinHouseholder( a, b, w, NULL, ans, workspace );
+  return _zLESolveNormMinDST( a, b, w, NULL, ans, workspace, true );
 }
 
 /* allocate workspace for solvers based on Householder transformations, and copy the right-hand-side
- * vector, where the matrices for the normal equations are not allocated. */
+ * vector b unless it is the null pointer, where the matrices for the normal equations are not allocated. */
 static bool _zLEWorkspaceAllocHouseholder(zLEWorkspace *workspace, const zMat a, const zVec b)
 {
   int minsize, maxsize;
@@ -277,10 +283,10 @@ static bool _zLEWorkspaceAllocHouseholder(zLEWorkspace *workspace, const zMat a,
   zLEWorkspaceInit( workspace );
   minsize = zMin( zMatRowSizeNC(a), zMatColSizeNC(a) );
   maxsize = zMax( zMatRowSizeNC(a), zMatColSizeNC(a) );
-  workspace->b_copy = zVecClone( b );
+  if( b ) workspace->b_copy = zVecClone( b );
   workspace->v_ispace = zVecAlloc( minsize );
   workspace->m_house = zMatAlloc( minsize, maxsize );
-  if( !workspace->b_copy || !workspace->v_ispace || !workspace->m_house ){
+  if( ( b && !workspace->b_copy ) || !workspace->v_ispace || !workspace->m_house ){
     ZALLOCERROR();
     return false;
   }
@@ -300,8 +306,9 @@ zVec zLESolveNormMin(const zMat a, const zVec b, const zVec w, zVec ans)
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
-  ans = _zLEWorkspaceAllocHouseholder( &workspace, a, b ) ?
-    zLESolveNormMinDST( a, workspace.b_copy, w, ans, &workspace ) : NULL;
+  /* b is not copied, since it is not modified, and ans can be the same vector with b. */
+  ans = _zLEWorkspaceAllocHouseholder( &workspace, a, NULL ) ?
+    zLESolveNormMinDST( a, b, w, ans, &workspace ) : NULL;
   zLEWorkspaceFree( &workspace );
   return ans;
 }
@@ -309,8 +316,9 @@ zVec zLESolveNormMin(const zMat a, const zVec b, const zVec w, zVec ans)
 /* error-minimizing inferior linear equation solver without checking size consistency.
  * it minimizes ( a x - b )^T W ( a x - b ) for W = diag(w), namely, |W^1/2 a x - W^1/2 b|^2, which is
  * solved by QR decomposition W^1/2 a = Q^T ( L^T O )^T obtained by LQ decomposition of a^T W^1/2 as
- * L^T x = ( Q W^1/2 b )_upper. b is destroyed. */
-zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLEWorkspace *workspace)
+ * L^T x = ( Q W^1/2 b )_upper. b is destroyed. the rank of a is checked if check is true (see
+ * _zLEHouseholderLQ()). */
+static zVec _zLESolveErrorMinDST(const zMat a, zVec b, const zVec w, zVec ans, zLEWorkspace *workspace, bool check)
 {
   int i, j, r, c;
   double *d, x;
@@ -328,7 +336,7 @@ zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLEWorkspace *workspa
   if( w )
     for( i=0; i<r; i++ ) zVecElemNC(b,i) *= sqrt( zVecElemNC(w,i) );
   d = zVecBufNC(workspace->v_ispace);
-  if( !_zLEHouseholderLQ( workspace->m_house, d ) ){
+  if( !_zLEHouseholderLQ( workspace->m_house, d, check ) ){
     ZRUNERROR( ZM_ERR_MAT_SINGULAR );
     return NULL;
   }
@@ -340,6 +348,12 @@ zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLEWorkspace *workspa
     zVecSetElemNC( ans, j, x / d[j] );
   }
   return ans;
+}
+
+/* error-minimizing inferior linear equation solver without checking size consistency (destructive). */
+zVec zLESolveErrorMinDST(zMat a, zVec b, zVec w, zVec ans, zLEWorkspace *workspace)
+{
+  return _zLESolveErrorMinDST( a, b, w, ans, workspace, true );
 }
 
 /* error-minimizing inferior linear equation solver. */
@@ -365,7 +379,7 @@ zVec zLESolveErrorMin(const zMat a, const zVec b, const zVec w, zVec ans)
  * equation solver without checking size consistency. */
 zVec zLESolveRefNormMinDST(const zMat a, const zVec b, const zVec w, const zVec ref, zVec ans, zLEWorkspace *workspace)
 {
-  return _zLESolveNormMinHouseholder( a, b, w, ref, ans, workspace );
+  return _zLESolveNormMinDST( a, b, w, ref, ans, workspace, true );
 }
 
 /* referred-norm-minimizing redundant linear equation solver. */
@@ -381,8 +395,9 @@ zVec zLESolveRefNormMin(const zMat a, const zVec b, const zVec w, const zVec ref
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
-  ans = _zLEWorkspaceAllocHouseholder( &workspace, a, b ) ?
-    zLESolveRefNormMinDST( a, workspace.b_copy, w, ref, ans, &workspace ) : NULL;
+  /* b is not copied, since it is not modified, and ans can be the same vector with b. */
+  ans = _zLEWorkspaceAllocHouseholder( &workspace, a, NULL ) ?
+    zLESolveRefNormMinDST( a, b, w, ref, ans, &workspace ) : NULL;
   zLEWorkspaceFree( &workspace );
   return ans;
 }
@@ -412,7 +427,8 @@ static zMat _zLEWeightMat(const zMat a, const zVec wn, const zVec we, zMat aw)
   return aw;
 }
 
-/* solve L z = We^1/2 b in the sense of least squares for the left factor L. */
+/* solve L z = We^1/2 b in the sense of least squares for the left factor L. the rank is not checked
+ * again, since it has been detected in the decomposition. */
 static zVec _zLESolveMP_L(zLEWorkspace *workspace, const zVec we)
 {
   int i;
@@ -422,7 +438,7 @@ static zVec _zLESolveMP_L(zLEWorkspace *workspace, const zVec we)
       zVecElemNC(workspace->b_copy,i) *= sqrt( zVecElemNC(we,i) );
   return zMatIsSqr( workspace->l_facto ) ?
     zLESolveL( workspace->l_facto, workspace->b_copy, workspace->v_mp_ispace, workspace->index_row ) :
-    zLESolveErrorMinDST( workspace->l_facto, workspace->b_copy, NULL, workspace->v_mp_ispace, workspace );
+    _zLESolveErrorMinDST( workspace->l_facto, workspace->b_copy, NULL, workspace->v_mp_ispace, workspace, false );
 }
 
 /* scale the answer as Wn^1/2 y. */
@@ -440,10 +456,8 @@ static zVec _zLESolveMPScaleAns(zVec ans, const zVec wn)
 zVec zLESolveMP_LQ_DST(zLEWorkspace *workspace, const zVec we, const zVec wn, int rank, zVec ans)
 {
   if( !_zLESolveMP_L( workspace, we ) ) return NULL;
-  /* Q^T z is not used for a row-long Q, since Q by Gram=Schmidt's method might lose orthogonality. */
-  return _zLESolveMPScaleAns( zMatIsSqr( workspace->r_facto ) ?
-    zMulMatTVec( workspace->r_facto, workspace->v_mp_ispace, ans ) :
-    zLESolveNormMinDST( workspace->r_facto, workspace->v_mp_ispace, NULL, ans, workspace ), wn );
+  /* Q is supposed to be orthonormal by zMatDecompLQReorth(). */
+  return _zLESolveMPScaleAns( zMulMatTVec( workspace->r_facto, workspace->v_mp_ispace, ans ), wn );
 }
 
 /* generalized linear equation solver using MP-inverse based on LU decomposition (destructive). */
@@ -452,7 +466,7 @@ zVec zLESolveMP_LU_DST(zLEWorkspace *workspace, const zVec we, const zVec wn, in
   if( !_zLESolveMP_L( workspace, we ) ) return NULL;
   return _zLESolveMPScaleAns( zMatIsSqr( workspace->r_facto ) ?
     zLESolveUCP( workspace->r_facto, workspace->v_mp_ispace, ans, workspace->index_col ) :
-    zLESolveNormMinDST( workspace->r_facto, workspace->v_mp_ispace, NULL, ans, workspace ), wn );
+    _zLESolveNormMinDST( workspace->r_facto, workspace->v_mp_ispace, NULL, NULL, ans, workspace, false ), wn );
 }
 
 /* generalized linear equation solver using MP-inverse with the null space (destructive). */
@@ -502,7 +516,7 @@ zVec zLESolveMP_LQ(const zMat a, const zVec b, const zVec wn, const zVec we, zVe
   zVec ret = NULL;
 
   if( !( aw = _zLEWorkspaceAllocMPWeighted( &workspace, a, b, wn, we ) ) ) goto TERMINATE;
-  if( ( rank = zMatDecompLQ( aw, workspace.l_facto, workspace.r_facto, workspace.index_row ) ) > 0 ){
+  if( ( rank = zMatDecompLQReorth( aw, workspace.l_facto, workspace.r_facto, workspace.index_row ) ) > 0 ){
     zLEWorkspaceResizeMP( &workspace, rank );
     ret = zLESolveMP_LQ_DST( &workspace, we, wn, rank, ans );
   } else
@@ -574,7 +588,7 @@ zVec zLESolveMPNull(const zMat a, const zVec b, const zVec wn, const zVec we, zV
   zVec ret = NULL;
 
   if( !( aw = _zLEWorkspaceAllocMPWeighted( &workspace, a, b, wn, we ) ) ) goto TERMINATE;
-  if( ( rank = zMatDecompLQ( aw, workspace.l_facto, workspace.r_facto, workspace.index_row ) ) > 0 ){
+  if( ( rank = zMatDecompLQReorth( aw, workspace.l_facto, workspace.r_facto, workspace.index_row ) ) > 0 ){
     zLEWorkspaceResizeMP( &workspace, rank );
     ret = zLESolveMPNullDST( &workspace, we, wn, rank, ans, mn );
   } else
@@ -692,4 +706,184 @@ zVec zLESolveSRRef(const zMat a, const zVec b, const zVec wn, const zVec we, con
     zLESolveSRRefDST( a, workspace.b_copy, wn, we, ref, ans, &workspace ) : NULL;
   zLEWorkspaceFree( &workspace );
   return ans;
+}
+
+/* Moore-Penrose inverse matrix */
+
+/* The MP-inverse matrix of m is found with the LQ decomposition m = L Q by zMatDecompLQReorth(), where L
+ * is column-full-rank and Q has orthonormal rows, as m# = Q^T L#. If L is square, L# = L^-1 is found by forward substitution.
+ * Otherwise, L# = ( L^T L )^-1 L^T is found with the QR decomposition L = H^T ( R^T O )^T, which is
+ * obtained by the Householder LQ decomposition of L^T, as L# b = R^-1 ( H b )_upper. The normal matrix
+ * L^T L, which squares the condition number, is not formed. The rank is detected only in the LQ
+ * decomposition of m, and is not checked again in the QR decomposition of L. */
+
+/* y = L# b for the left factor L of the LQ decomposition with the row index, where b is regarded as the
+ * identity matrix if it is the null pointer. h, d and v are workspace used only for a non-square L. */
+static bool _zMulMPInvLMat(const zMat l, const zIndex index, const zMat b, zMat h, double d[], double v[], zMat y)
+{
+  int i, j, k, p, r, rank, n;
+  double e;
+
+  r = zMatRowSizeNC(l);
+  rank = zMatColSizeNC(l);
+  n = zMatColSizeNC(y);
+  if( rank == r ){ /* forward substitution, where the rows of l permuted by index form a lower triangular matrix */
+    for( j=0; j<n; j++ )
+      for( i=0; i<r; i++ ){
+        p = zIndexElemNC(index,i);
+        e = b ? zMatElemNC(b,p,j) : ( p == j ? 1 : 0 );
+        for( k=0; k<i; k++ ) e -= zMatElemNC(l,p,k) * zMatElemNC(y,k,j);
+        zMatSetElemNC( y, i, j, e / zMatElemNC(l,p,i) );
+      }
+    return true;
+  }
+  zMatTNC( l, h );
+  if( !_zLEHouseholderLQ( h, d, false ) ) return false;
+  for( j=0; j<n; j++ ){
+    for( i=0; i<r; i++ )
+      v[i] = b ? zMatElemNC(b,i,j) : ( i == j ? 1 : 0 );
+    _zLEHouseholderApply( h, d, v, true );
+    for( i=rank-1; i>=0; i-- ){ /* R y_j = ( H b_j )_upper, where R^T is stored in the lower part of h */
+      e = v[i];
+      for( k=i+1; k<rank; k++ ) e -= zMatElemNC(h,k,i) * zMatElemNC(y,k,j);
+      zMatSetElemNC( y, i, j, e / d[i] );
+    }
+  }
+  return true;
+}
+
+/* x = m# b, where b is regarded as the identity matrix if it is the null pointer. if mn is not the null
+ * pointer, the null-space projector mn = m# m - I is also found. b and x can be the same matrix.
+ * it returns the rank of m, or -1 if it fails. */
+static int _zMulMPInvMatMat(const zMat m, const zMat b, zMat x, zMat mn)
+{
+  int i, r, rank;
+  zMat l = NULL, q = NULL, h = NULL, y = NULL;
+  zIndex index = NULL;
+  zVec w = NULL;
+
+  r = zMatRowSizeNC(m);
+  l = zMatAlloc( r, zMatMinSize(m) );
+  q = zMatAlloc( zMatMinSize(m), zMatColSizeNC(m) );
+  index = zIndexCreate( r );
+  if( !l || !q || !index ){
+    ZALLOCERROR();
+    rank = -1;
+    goto TERMINATE;
+  }
+  if( ( rank = zMatDecompLQReorth( m, l, q, index ) ) <= 0 ){
+    if( rank == 0 ){ /* m# = O */
+      zMatZero( x );
+      if( mn ){
+        zMatZero( mn );
+        for( i=0; i<zMatRowSizeNC(mn); i++ ) zMatSetElemNC( mn, i, i, -1.0 );
+      }
+    }
+    goto TERMINATE;
+  }
+  y = zMatAlloc( rank, zMatColSizeNC(x) );
+  if( rank < r ){
+    h = zMatAlloc( rank, r );
+    w = zVecAlloc( rank + r );
+  }
+  if( !y || ( rank < r && ( !h || !w ) ) ){
+    ZALLOCERROR();
+    rank = -1;
+    goto TERMINATE;
+  }
+  if( !_zMulMPInvLMat( l, index, b, h, w ? zVecBufNC(w) : NULL, w ? zVecBufNC(w) + rank : NULL, y ) ){
+    ZRUNERROR( ZM_ERR_MAT_SINGULAR );
+    rank = -1;
+    goto TERMINATE;
+  }
+  zMulMatTMatNC( q, y, x );
+  if( mn ){
+    zMulMatTMatNC( q, q, mn );
+    for( i=0; i<zMatRowSizeNC(mn); i++ ) zMatElemNC(mn,i,i) -= 1.0;
+  }
+ TERMINATE:
+  zMatFreeAtOnce( 4, l, q, h, y );
+  zIndexFree( index );
+  zVecFree( w );
+  return rank;
+}
+
+/* Moore-Penrose's inverse matrix. */
+int zMatMPInv(const zMat m, zMat mp)
+{
+  if( !zMatRowColSizeEqual( m, mp ) || !zMatRowColSizeEqual( mp, m ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+    return -1;
+  }
+  return _zMulMPInvMatMat( m, NULL, mp, NULL );
+}
+
+/* Moore-Penrose's inverse matrix with its null space. */
+int zMatMPInvNull(const zMat m, zMat mp, zMat mn)
+{
+  if( !zMatRowColSizeEqual( m, mp ) || !zMatRowColSizeEqual( mp, m ) ||
+      !zMatIsSqr( mn ) || !zMatRowColSizeEqual( mn, m ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+    return -1;
+  }
+  return _zMulMPInvMatMat( m, NULL, mp, mn );
+}
+
+/* multiply Moore-Penrose's inverse matrix from the left side to another matrix. */
+zMat zMulMPInvMatMat(const zMat m1, const zMat m2, zMat m)
+{
+  if( !zMatRowSizeEqual( m1, m2 ) || !zMatRowColSizeEqual( m, m1 ) || !zMatColSizeEqual( m, m2 ) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+    return NULL;
+  }
+  return _zMulMPInvMatMat( m1, m2, m, NULL ) < 0 ? NULL : m;
+}
+
+/* Penrose's iterative algorithm */
+
+/* internal call of Moore-Penrose inverse matrix based on Penrose's iterative algorithm. */
+static int _zMatMPInvPenrose(const zMat m, zMat mp)
+{
+  zMat b, c, c2, cb;
+  double trace = 0;
+  int rank = 0;
+
+  b = zMatAllocSqr( zMatColSizeNC(m) );
+  c = zMatAllocSqr( zMatColSizeNC(m) );
+  c2 = zMatAllocSqr( zMatColSizeNC(m) );
+  cb = zMatAllocSqr( zMatColSizeNC(m) );
+  if( !b || !c || !c2 || !cb ) goto TERMINATE;
+
+  zMulMatTMatNC( m, m, b );
+  zMatIdentNC( c2 );
+  zMatCopyNC( b, cb );
+  for( rank=1; !zMatIsTiny(cb); rank++ ){
+    zMatCopyNC( c2, c );
+    trace = zMatTraceNC( cb );
+    zMatIdentNC( c2 );
+    zMatMulNCDRC( c2, trace / rank );
+    zMatSubNCDRC( c2, cb );
+    zMulMatMatNC( c2, b, cb );
+  }
+  zMatMulNCDRC( c, --rank / trace );
+  zMulMatMatTNC( c, m, mp );
+ TERMINATE:
+  zMatFreeAtOnce( 4, b, c, c2, cb );
+  return rank;
+}
+
+/* Moore-Penrose inverse matrix based on Penrose's iterative algorithm. */
+int zMatMPInvPenrose(const zMat m, zMat mp)
+{
+  int rank;
+
+  if( zMatColSizeNC(m) > zMatRowSizeNC(m) ){
+    zMatTDRC( m );
+    zMatTDRC( mp );
+    rank = _zMatMPInvPenrose( m, mp );
+    zMatTDRC( m );
+    zMatTDRC( mp );
+  } else
+    rank = _zMatMPInvPenrose( m, mp );
+  return rank;
 }
