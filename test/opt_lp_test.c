@@ -170,6 +170,74 @@ void assert_lp_simplex_redundant(void)
   zAssert( zLPFeasibleBase (redundant equality constraints), result_feasible );
 }
 
+/* Beale's example, which cycles by Dantzig's rule with the first-found leaving variable. */
+void assert_lp_simplex_degenerate(void)
+{
+  double a_array[] = {
+    1, 0, 0, 0.25, -8, -1, 9,
+    0, 1, 0, 0.5, -12, -0.5, 3,
+    0, 0, 1, 0, 0, 1, 0 };
+  double b_array[] = { 0, 0, 1 };
+  double c_array[] = { 0, 0, 0, -0.75, 20, -0.5, 6 };
+  double ans_array[] = { 0.75, 0, 0, 1, 0, 1, 0 };
+  zMat a;
+  zVec b, c, ans, x;
+  double cost;
+  bool result;
+
+  a = zMatCloneArray( a_array, 3, 7 );
+  b = zVecCloneArray( b_array, 3 );
+  c = zVecCloneArray( c_array, 7 );
+  ans = zVecCloneArray( ans_array, 7 );
+  x = zVecAlloc( 7 );
+  result = zLPSolveSimplex( a, b, c, x, &cost ) && zVecEqual( x, ans, zTOL ) && zIsTiny( cost + 1.25 );
+  zMatFree( a );
+  zVecFreeAtOnce( 4, b, c, ans, x );
+  zAssert( zLPSolveSimplex (degenerate case), result );
+}
+
+/* inequality constraints a x >= b on free variables x with many more constraints than variables, which
+ * are converted to equality constraints [a -a -I] [x+ x- s]^T = b on non-negative variables, as the
+ * active set method for quadratic programming does. the first stage needs many more iterations than the
+ * number of columns of the tableau. */
+void assert_lp_feasible_base_many_constraints(void)
+{
+  zMat a, a_eq;
+  zVec b, x, x_eq;
+  const int n = 50, m = 300, n_active = 25;
+  const double tol = 1.0e-8;
+  int i, num_trial = 5;
+  bool result = true;
+
+  a = zMatAlloc( m, n );
+  a_eq = zMatAlloc( m, 2*n+m );
+  b = zVecAlloc( m );
+  x = zVecAlloc( n );
+  x_eq = zVecAlloc( 2*n+m );
+  if( !a || !a_eq || !b || !x || !x_eq ) goto TERMINATE;
+  for( ; num_trial>0; num_trial-- ){
+    zMatRandUniform( a, -1, 1 );
+    zVecRandUniform( x, -10, 10 );
+    zMulMatVec( a, x, b );
+    for( i=n_active; i<m; i++ ) /* inactive constraints at x */
+      zVecElemNC(b,i) -= zRandF( 1, 10 ) * zRawVecNorm( zMatRowBufNC(a,i), n );
+    zMatZero( a_eq );
+    for( i=0; i<m; i++ ){
+      zRawVecCopy( zMatRowBufNC(a,i), zMatRowBufNC(a_eq,i), n );
+      zRawVecRev( zMatRowBufNC(a,i), zMatRowBufNC(a_eq,i)+n, n );
+      zMatSetElemNC( a_eq, i, 2*n+i, -1 );
+    }
+    if( !zLPFeasibleBase( a_eq, b, x_eq ) || !check_lp_feasible( a_eq, b, x_eq, tol ) ){
+      eprintf( ">> failure case detected <<\n" );
+      result = false;
+    }
+  }
+ TERMINATE:
+  zMatFreeAtOnce( 2, a, a_eq );
+  zVecFreeAtOnce( 3, b, x, x_eq );
+  zAssert( zLPFeasibleBase (many inequality constraints on free variables), result );
+}
+
 /* generate an infeasible problem from a regular problem with m equality constraints, where a copy of
  * the first constraint with a different constant is appended. */
 bool generate_lp_inconsistent(int n, int m, zVec *c, zMat *a, zVec *b)
@@ -436,6 +504,8 @@ int main(void)
   zRandInit();
   assert_lp_simplex();
   assert_lp_simplex_redundant();
+  assert_lp_simplex_degenerate();
+  assert_lp_feasible_base_many_constraints();
   assert_lp_pdip();
   assert_lp_megiddo_dyer();
   return 0;

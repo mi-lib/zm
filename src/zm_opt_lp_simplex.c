@@ -116,12 +116,15 @@ static int _zLPTableauFindNA_deg(zLPTableau *tab, double ctol)
   return na;
 }
 
-/* find next pivot in axis column to be sweeped-out. */
+/* find next pivot in axis column to be sweeped-out.
+ * if the step is degenerated (zero ratio), the axis column is chosen again by Bland's rule, and the pivot
+ * is chosen among the rows with the zero ratio as the basic variable with the smallest index leaves the
+ * bases, which prevents the iteration from cycling. */
 static int _zLPTableauFindNP(zLPTableau *tab, int *na, double ctol)
 { /* next pivot */
   int i, np;
   double a, p, p_min, atol;
-  bool f_try = true;
+  bool bland = false;
 
  RETRY:
   /* a should be compared with 0 in theory, but an element which is small relative to the maximum
@@ -133,10 +136,17 @@ static int _zLPTableauFindNP(zLPTableau *tab, int *na, double ctol)
     if( ( a = zMatElemNC(tab->a,zIndexElemNC(tab->ir,i),zIndexElemNC(tab->in,*na)) ) <= atol )
       continue;
     p = zVecElemNC(tab->b,zIndexElemNC(tab->ir,i)) / a;
-    if( zIsTiny( p ) && f_try ){ /* degenerated case */
-      *na = _zLPTableauFindNA_deg( tab, ctol );
-      f_try = false;
-      goto RETRY;
+    if( zIsTiny( p ) ){ /* degenerated case */
+      if( !bland ){
+        *na = _zLPTableauFindNA_deg( tab, ctol );
+        bland = true;
+        goto RETRY;
+      }
+      if( !zIsTiny( p_min ) || zIndexElemNC(tab->ib,i) < zIndexElemNC(tab->ib,np) ){
+        p_min = p;
+        np = i;
+      }
+      continue;
     }
     if( p < p_min ){
       p_min = p;
@@ -222,7 +232,7 @@ static double _zLPTableauSumArtVal(const zLPTableau *tab)
 static bool _zLPTableauSimplex(zLPTableau *tab, double tol)
 { /* if tol >= 0 (the first stage), the iteration terminates as soon as all artificial variables
    * leave the bases or the cost becomes smaller than tol in the absolute value. */
-  int i = 0, na, np, n_art = 0;
+  int na, np, n_art = 0, n_deg = 0;
   double ctol; /* tolerance for reduced costs relative to the given cost coefficients */
 
   ctol = ZM_LP_SIMPLEX_TOL * ( 1 + _zVecElemAbsMax( tab->c, NULL ) );
@@ -230,11 +240,16 @@ static bool _zLPTableauSimplex(zLPTableau *tab, double tol)
   _zLPTableauSweepC( tab );
   while( !( tol >= 0 && ( n_art == 0 || zIsTol( tab->d, tol ) ) ) &&
          ( na = _zLPTableauFindNA( tab, ctol ) ) >= 0 ){
-    if( i++ > 2 * zMatColSizeNC(tab->a) ) /* probably degenerated case */
-      return false;
     if( ( np = _zLPTableauFindNP( tab, &na, ctol ) ) < 0 ) /* non-convex case */
       return false;
     _zLPTableauSweepA( tab, np, na );
+    /* the cost strictly decreases at a non-degenerated step, so that the bases never return to the
+     * previous ones. the iteration is regarded as stalled if degenerated steps continue more times
+     * than the number of columns, which would be due to round-off errors. */
+    if( zIsTiny( zVecElemNC(tab->b,zIndexElemNC(tab->ir,np)) ) ){
+      if( ++n_deg > zMatColSizeNC(tab->a) ) return false;
+    } else
+      n_deg = 0;
     if( tol >= 0 ){ /* count artificial variables in the bases */
       if( zIndexElemNC(tab->ib,np) >= _zLPTableauArtIndex(tab) ) n_art--;
       if( zIndexElemNC(tab->in,na) >= _zLPTableauArtIndex(tab) ) n_art++;

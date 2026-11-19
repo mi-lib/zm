@@ -1,3 +1,5 @@
+2026.11.19. Added tests of zLPSolveSimplex for a degenerate problem (Beale's example) and of zLPFeasibleBase for many inequality constraints on free variables. [test]
+2026.11.19. Modified the simplex method to choose the variable leaving the bases by Bland's rule at a degenerated step as well as the entering variable, and to regard the iteration as failed only if degenerated steps continue more times than the number of columns of the tableau. [zm_opt_lp_simplex]
 2026.11.19. Modified zMatDecompLQ and zMatDecompLQReorth for column-long matrices to downdate the norms of the residuals of rows for pivoting instead of computing them at each step. [zm_mat_decomp_lq]
 2026.11.19. Added a test of zMatDecompLQReorth for ill-conditioned column-long matrices. [test]
 2026.11.19. Modified zLESolveMP_LQ, zLESolveMPNull, zMatMPInv, zMatMPInvNull and zMulMPInvMatMat to be based on zMatDecompLQReorth, and zLESolveMP_LQ_DST to multiply the transpose of the right factor. [zm_le_gen]

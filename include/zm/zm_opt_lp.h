@@ -103,6 +103,12 @@ __ZM_EXPORT bool zLPUnb2Std(const zMat a, const zVec c, const zVec x, zMat *as, 
  * constant vector to describe the constraints, \a ans is a vector which the answer will be put into,
  * and \a index is an index vector for bases.
  *
+ * The axis column and the pivot are chosen by Dantzig's rule, namely, the column with the most negative
+ * reduced cost and the row with the smallest ratio. At a degenerated step (with the zero ratio), they
+ * are chosen by Bland's rule, namely, the variables with the smallest indices enter and leave the bases,
+ * which prevents the iteration from cycling. The iteration is regarded as stalled and fails if
+ * degenerated steps continue more times than the number of columns of the tableau.
+ *
  * The result optimum value is stored where \a cost points, unless \a cost is the null pointer.
  * \return
  * zLPSolveSimplex() returns the true value if it succeeds to get optimum (i.e. minimum) cost, or the
