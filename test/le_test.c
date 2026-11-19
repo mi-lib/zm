@@ -1698,6 +1698,75 @@ void assert_le_cholesky(void)
   zAssert( zLESolveCholesky (the same vector for the right-hand side and the answer), result2 );
 }
 
+/* zLESolveCholeskyGen() has to solve a consistent linear equation with a rank-deficient positive
+   semi-definite symmetric matrix decomposed by zMatDecompCholesky() or by the LQ decomposition of its
+   factor, where the components for the dependent rows are zero. zLESolveCholesky() has to return the
+   null pointer in that case. */
+void assert_le_cholesky_gen(void)
+{
+  zMat m, a, l, q;
+  zVec b, x, x2, r, t;
+  zIndex index;
+  int i, j, n, k, trial, rank;
+  double s, err;
+  bool result1 = true, result2 = true, result3 = true;
+  const int ntrial = 1000;
+  const double tol = TOL_CHOLESKY;
+
+  for( trial=0; trial<ntrial; trial++ ){
+    n = zRandI( 2, 10 );
+    k = zRandI( 1, n-1 );
+    s = pow( 10, zRandF( -6, 6 ) );
+    m = zMatAlloc( n, k );
+    a = zMatAllocSqr( n );
+    l = zMatAllocSqr( n );
+    q = zMatAllocSqr( k );
+    index = zIndexCreate( n );
+    b = zVecAlloc( n );
+    x = zVecAlloc( n );
+    x2 = zVecAlloc( n );
+    r = zVecAlloc( n );
+    t = zVecAlloc( k );
+    zMatRandUniform( m, -1, 1 );
+    zMatMulDRC( m, sqrt( s ) );
+    zMulMatMatTNC( m, m, a ); /* a = m m^T of rank k */
+    zVecRandUniform( x, -1, 1 );
+    zMulMatTVec( m, x, t );
+    zMulMatVec( m, t, b ); /* consistent right-hand side b = m m^T x, which is in the range of a up to rounding errors */
+    for( i=0; i<2; i++ ){ /* Cholesky decomposition of a and LQ decomposition of m */
+      zMatSetSizeNC( l, n, i == 0 ? n : k );
+      zMatSetSizeNC( q, k, k );
+      rank = i == 0 ? zMatDecompCholesky( a, l, index ) : zMatDecompLQ( m, l, q, index );
+      if( rank != k ){
+        eprintf( "unexpected rank %d of a %dx%d matrix of rank %d\n", rank, n, n, k );
+        result1 = false;
+        continue;
+      }
+      zLESolveCholeskyGen( l, b, x, index );
+      zMulMatVec( a, x, r );
+      zVecSubDRC( r, b );
+      if( !( ( err = zVecNorm( r ) / ( zMatNorm( a ) * zVecNorm( x ) + zVecNorm( b ) ) ) <= tol ) ){
+        eprintf( "relative residual = %g\n", err );
+        result1 = false;
+      }
+      for( j=rank; j<n; j++ )
+        if( zVecElemNC(x,zIndexElemNC(index,j)) != 0 ) result1 = false;
+      zVecCopy( b, x2 );
+      zLESolveCholeskyGen( l, x2, x2, index );
+      if( !zVecEqual( x, x2, 0 ) ) result2 = false;
+      zEchoOff();
+      if( zLESolveCholesky( l, b, x2, index ) ) result3 = false;
+      zEchoOn();
+    }
+    zMatFreeAtOnce( 4, m, a, l, q );
+    zVecFreeAtOnce( 5, b, x, x2, r, t );
+    zIndexFree( index );
+  }
+  zAssert( zLESolveCholeskyGen, result1 );
+  zAssert( zLESolveCholeskyGen (the same vector for the right-hand side and the answer), result2 );
+  zAssert( zLESolveCholesky (rank-deficient case), result3 );
+}
+
 int main(void)
 {
   zRandInit();
@@ -1710,6 +1779,7 @@ int main(void)
   assert_le_luri_scale();
   assert_le_luri_ill();
   assert_le_cholesky();
+  assert_le_cholesky_gen();
   assert_mat_vec_sweep_out(); /* zLESolveGauss() is used to make the reference */
   assert_le_mat_capacity();
   assert_le_gauss_seidel();

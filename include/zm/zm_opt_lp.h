@@ -127,11 +127,16 @@ __ZM_EXPORT bool zLPFeasibleBase(const zMat a, const zVec b, zVec base);
  * The result minimum cost value is put where \a cost points unless it is not the null pointer.
  *
  * zLPSolvePDIP_PC() is based on primal-dual interior-point method with Mehrotra s predictor-corrector
- * (1992 S. Mehrotra).
+ * (S. Mehrotra, 1992). The initial point is also found by Mehrotra's heuristic. The problem is normalized
+ * so that the norms of \a b and \a c are one, and the iteration is regarded as converged if the norms of
+ * the residuals of the constraints and the dual constraints, and the duality gap relative to the scale of
+ * its rounding error are not greater than zTOL. Linearly dependent constraints are allowed.
  * \return
  * zLPSolvePDIP_PC() returns the true value if it succeeds to obtain the minimum value. Or, the false
- * value is returned when it fails to allocate enough working memory or to solve the problem if a set of
- * constraints is unbounded.
+ * value is returned when it fails to allocate enough working memory, finds size mismatch of \a a, \a b,
+ * \a c and \a x, or fails to converge. The last includes the cases that the problem is infeasible or
+ * unbounded and that the problem is so ill-conditioned (e.g., some constraints are nearly but not exactly
+ * dependent) that the accuracy is not attained, where \a x is the last iterate.
  */
 __ZM_EXPORT bool zLPSolvePDIP_PC(const zMat a, const zVec b, const zVec c, zVec x, double *cost);
 

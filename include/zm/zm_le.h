@@ -135,17 +135,28 @@ __ZM_EXPORT zVec zLESolveLU(const zMat l, const zMat u, const zVec b, zVec ans, 
 
 /*! \brief linear equation solver by Cholesky decomposition method.
  *
- * zLESolveCholesky() solves linear equation \a l \a l ^T x = \a b, where \a l is the Cholesky factor of
- * a positive definite symmetric matrix obtained by zMatDecompCholesky(), namely, the rows \a index[0],
- * \a index[1], ... of \a l are lower triangular in this order. The answer is put into \a ans.
- * \a b and \a ans can be the same vector.
+ * zLESolveCholesky() and zLESolveCholeskyGen() solve linear equation \a l \a l ^T x = \a b, where \a l is
+ * the Cholesky factor of a positive semi-definite symmetric matrix obtained by zMatDecompCholesky(),
+ * namely, the rows \a index[0], \a index[1], ... of \a l are lower triangular in this order. The answer
+ * is put into \a ans. \a b and \a ans can be the same vector.
+ * If the matrix is degenerated, the column size of \a l is the rank r of the matrix, which is smaller
+ * than the row size. Then, zLESolveCholeskyGen() sets the components \a index[r], \a index[r+1], ... of
+ * the answer, which correspond to the dependent rows, for zero, and finds the other components from the
+ * equations of the rows \a index[0], ..., \a index[r-1]. Note that it is not the minimum-norm solution,
+ * and that the equations of the dependent rows are not satisfied unless \a b is consistent with them.
+ * The factor \a l in the same format is also obtained by the LQ decomposition of a matrix m by
+ * zMatDecompLQ(), where \a l \a l ^T = m m^T.
+ * zLESolveCholesky() does not accept a rank-deficient \a l, which is known from the column size of \a l.
  * \return
- * zLESolveCholesky() returns a pointer \a ans if it succeeds. If the sizes of \a l, \a b, \a ans and
- * \a index mismatch, it returns the null pointer.
+ * zLESolveCholesky() and zLESolveCholeskyGen() return a pointer \a ans if they succeed. If the sizes of
+ * \a l, \a b, \a ans and \a index mismatch or the column size of \a l is larger than the row size, they
+ * return the null pointer. zLESolveCholesky() also returns the null pointer if \a l is rank-deficient,
+ * where \a ans is not modified.
  * \sa
- * zMatDecompCholesky
+ * zMatDecompCholesky, zMatDecompLQ
  */
 __ZM_EXPORT zVec zLESolveCholesky(const zMat l, const zVec b, zVec ans, const zIndex index);
+__ZM_EXPORT zVec zLESolveCholeskyGen(const zMat l, const zVec b, zVec ans, const zIndex index);
 
 /*! \brief linear equation solver by LU decomposition method and residual iteration.
  *

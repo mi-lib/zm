@@ -247,38 +247,64 @@ zVec zLESolveUCP(const zMat u, const zVec b, zVec ans, const zIndex index)
   return ans;
 }
 
-/* a solver for L L^T x = b with the Cholesky factor L, where the rows index[0], index[1], ... of L are lower
-   triangular in this order. the intermediate and final answers are put at the permuted positions of ans,
-   so that b and ans can be the same vector. */
-zVec zLESolveCholesky(const zMat l, const zVec b, zVec ans, const zIndex index)
+/* check sizes of the Cholesky factor, the vectors and the index vector. */
+static bool _zLESolveCholeskySizeEqual(const zMat l, const zVec b, const zVec ans, const zIndex index)
 {
-  int i, j, n;
-  double x;
-
-  if( !zMatIsSqr(l) ){
-    ZRUNERROR( ZM_ERR_MAT_NOTSQR );
-    return NULL;
+  if( zMatColSize(l) > zMatRowSize(l) ){
+    ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
+    return false;
   }
   if( zMatRowSize(l) != zIndexSizeNC(index) ||
       zVecSize(b) != zIndexSizeNC(index) ||
       zVecSize(ans) != zIndexSizeNC(index) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
-    return NULL;
+    return false;
   }
-  n = zIndexSizeNC(index);
-  for( i=0; i<n; i++ ){ /* forward substitution */
+  return true;
+}
+
+/* a solver for L L^T x = b with the Cholesky factor L of which the rank r is the column size, where the
+   rows index[0], ..., index[r-1] of L are lower triangular in this order, and the components index[r],
+   ... of x are zero. the intermediate and final answers are put at the permuted positions of ans, so
+   that b and ans can be the same vector. */
+static zVec _zLESolveCholeskyGen(const zMat l, const zVec b, zVec ans, const zIndex index)
+{
+  int i, j, r;
+  double x;
+
+  r = zMatColSizeNC(l);
+  for( i=0; i<r; i++ ){ /* forward substitution */
     x = zVecElemNC( b, zIndexElemNC(index,i) );
     for( j=0; j<i; j++ )
       x -= zMatElemNC(l,zIndexElemNC(index,i),j) * zVecElemNC(ans,zIndexElemNC(index,j));
     zVecSetElemNC( ans, zIndexElemNC(index,i), x / zMatElemNC(l,zIndexElemNC(index,i),i) );
   }
-  for( i=n-1; i>=0; i-- ){ /* backward substitution */
+  for( ; i<zIndexSizeNC(index); i++ ) /* components for the dependent rows */
+    zVecSetElemNC( ans, zIndexElemNC(index,i), 0 );
+  for( i=r-1; i>=0; i-- ){ /* backward substitution */
     x = zVecElemNC( ans, zIndexElemNC(index,i) );
-    for( j=i+1; j<n; j++ )
+    for( j=i+1; j<r; j++ )
       x -= zMatElemNC(l,zIndexElemNC(index,j),i) * zVecElemNC(ans,zIndexElemNC(index,j));
     zVecSetElemNC( ans, zIndexElemNC(index,i), x / zMatElemNC(l,zIndexElemNC(index,i),i) );
   }
   return ans;
+}
+
+/* a generalized solver for L L^T x = b with a possibly rank-deficient Cholesky factor L. */
+zVec zLESolveCholeskyGen(const zMat l, const zVec b, zVec ans, const zIndex index)
+{
+  return _zLESolveCholeskySizeEqual( l, b, ans, index ) ? _zLESolveCholeskyGen( l, b, ans, index ) : NULL;
+}
+
+/* a solver for L L^T x = b with the Cholesky factor L. */
+zVec zLESolveCholesky(const zMat l, const zVec b, zVec ans, const zIndex index)
+{
+  if( !_zLESolveCholeskySizeEqual( l, b, ans, index ) ) return NULL;
+  if( zMatColSizeNC(l) < zMatRowSizeNC(l) ){ /* the rank is the column size of l */
+    ZRUNERROR( ZM_ERR_MAT_SINGULAR );
+    return NULL;
+  }
+  return _zLESolveCholeskyGen( l, b, ans, index );
 }
 
 /* a solver for LUx=b. */

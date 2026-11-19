@@ -170,6 +170,169 @@ void assert_lp_simplex_redundant(void)
   zAssert( zLPFeasibleBase (redundant equality constraints), result_feasible );
 }
 
+/* generate an infeasible problem from a regular problem with m equality constraints, where a copy of
+ * the first constraint with a different constant is appended. */
+bool generate_lp_inconsistent(int n, int m, zVec *c, zMat *a, zVec *b)
+{
+  zMat a0;
+  zVec b0, ans;
+  int i, j;
+
+  if( !generate_lp( n, m, c, &a0, &b0, &ans ) ) return false;
+  *a = zMatAlloc( m+1, n );
+  *b = zVecAlloc( m+1 );
+  if( *a && *b ){
+    for( i=0; i<m; i++ ){
+      for( j=0; j<n; j++ )
+        zMatSetElemNC( *a, i, j, zMatElemNC(a0,i,j) );
+      zVecSetElemNC( *b, i, zVecElemNC(b0,i) );
+    }
+    for( j=0; j<n; j++ )
+      zMatSetElemNC( *a, m, j, zMatElemNC(a0,0,j) );
+    zVecSetElemNC( *b, m, zVecElemNC(b0,0) + 1 + fabs( zVecElemNC(b0,0) ) );
+  }
+  zMatFree( a0 );
+  zVecFreeAtOnce( 2, b0, ans );
+  if( !*a || !*b ){
+    zMatFree( *a );
+    zVecFreeAtOnce( 2, *b, *c );
+    return false;
+  }
+  return true;
+}
+
+/* an estimate of the error of the answer of zLPSolvePDIP_PC() for a problem with the answer ans, which
+ * is based on the termination condition that the norm of the residual of the constraints and the duality
+ * gap are not greater than zTOL times |b| and |c||x| + |b||y|, respectively. Let B and N be the columns
+ * of a corresponding to the basic and the non-basic variables, respectively. The error of the non-basic
+ * variables dxN is bounded by the duality gap divided by the dual slack variables z_N = c_N - N^T y, where
+ * y satisfies B^T y = c_B, and the error of the basic variables is bounded by B^+ ( rp - N dxN ). */
+double lp_pdip_err_bound(zMat a, zVec b, zVec c, zVec ans)
+{
+  zMat bm, nm, bp, bpn;
+  zVec y, cb, zn;
+  int i, j, kb, kn, nb;
+  double gap, dxn = 0, bound = HUGE_VAL;
+
+  for( nb=0, j=0; j<zVecSizeNC(ans); j++ )
+    if( zVecElemNC(ans,j) > 0 ) nb++;
+  bm = zMatAlloc( zMatRowSizeNC(a), nb );
+  nm = zMatAlloc( zMatRowSizeNC(a), zVecSizeNC(ans)-nb );
+  bp = zMatAlloc( nb, zMatRowSizeNC(a) );
+  bpn = zMatAlloc( nb, zVecSizeNC(ans)-nb );
+  y = zVecAlloc( zMatRowSizeNC(a) );
+  cb = zVecAlloc( nb );
+  zn = zVecAlloc( zVecSizeNC(ans)-nb );
+  if( !bm || !nm || !bp || !bpn || !y || !cb || !zn ) goto TERMINATE;
+  for( kb=kn=0, j=0; j<zVecSizeNC(ans); j++ )
+    if( zVecElemNC(ans,j) > 0 ){
+      for( i=0; i<zMatRowSizeNC(a); i++ ) zMatSetElemNC( bm, i, kb, zMatElemNC(a,i,j) );
+      zVecSetElemNC( cb, kb++, zVecElemNC(c,j) );
+    } else{
+      for( i=0; i<zMatRowSizeNC(a); i++ ) zMatSetElemNC( nm, i, kn, zMatElemNC(a,i,j) );
+      zVecSetElemNC( zn, kn++, zVecElemNC(c,j) );
+    }
+  if( zMatMPInv( bm, bp ) < 0 ) goto TERMINATE;
+  zMulMatTVec( bp, cb, y ); /* B^T y = c_B */
+  for( j=0; j<zVecSizeNC(zn); j++ )
+    for( i=0; i<zMatRowSizeNC(nm); i++ )
+      zVecElemNC(zn,j) -= zMatElemNC(nm,i,j) * zVecElemNC(y,i);
+  zMulMatMat( bp, nm, bpn );
+  gap = zTOL * ( zVecNorm(c) * zVecNorm(ans) + zVecNorm(b) * zVecNorm(y) );
+  for( j=0; j<zVecSizeNC(zn); j++ ) dxn += 1 / zSqr( zVecElemNC(zn,j) );
+  dxn = gap * sqrt( dxn );
+  bound = dxn * ( 1 + zMatNorm(bpn) ) + zMatNorm(bp) * zTOL * zVecNorm(b);
+ TERMINATE:
+  zMatFreeAtOnce( 4, bm, nm, bp, bpn );
+  zVecFreeAtOnce( 3, y, cb, zn );
+  return bound;
+}
+
+/* solve a problem by zLPSolvePDIP_PC() and check if the error of the answer is within the estimate
+ * by lp_pdip_err_bound() with a safety factor. */
+bool check_lp_pdip(zMat a, zVec b, zVec c, zVec ans, zVec x)
+{
+  double cost, err, bound;
+  const double safety = 10;
+
+  if( !zLPSolvePDIP_PC( a, b, c, x, &cost ) ){
+    eprintf( ">> failure case detected (unsolved) <<\n" );
+    return false;
+  }
+  if( ( err = zVecDist( x, ans ) ) > safety * ( bound = lp_pdip_err_bound( a, b, c, ans ) ) ){
+    eprintf( ">> failure case detected (error %g > estimate %g) <<\n", err, bound );
+    return false;
+  }
+  return true;
+}
+
+void assert_lp_pdip(void)
+{
+  zMat a;
+  zVec c, b, ans, x;
+  double cost;
+  const int n = 10, m = 5, num_trial = 100;
+  int i;
+  bool result_regular = true, result_scale = true, result_redundant = true, result_unsolvable = true;
+
+  for( i=0; i<num_trial; i++ ){
+    if( !generate_lp( n, m, &c, &a, &b, &ans ) ) return;
+    if( !( x = zVecAlloc( n ) ) ) break;
+    if( !check_lp_pdip( a, b, c, ans, x ) ) result_regular = false;
+    /* scaled cost and constraints */
+    zVecMulDRC( c, pow( 10, zRandF( -6, 6 ) ) );
+    zMatMulDRC( a, pow( 10, zRandF( -6, 6 ) ) );
+    zVecMulDRC( ans, pow( 10, zRandF( -6, 6 ) ) );
+    zMulMatVec( a, ans, b );
+    if( !check_lp_pdip( a, b, c, ans, x ) ) result_scale = false;
+    zMatFree( a );
+    zVecFreeAtOnce( 4, c, b, x, ans );
+  }
+  zAssert( zLPSolvePDIP_PC (regular case), result_regular );
+  zAssert( zLPSolvePDIP_PC (scaled case), result_scale );
+
+  for( i=0; i<num_trial; i++ ){
+    if( !generate_lp_redundant( n, m, zRandI( 1, 3 ), pow( 10, zRandF( -6, 6 ) ), &c, &a, &b, &ans ) ) return;
+    if( !( x = zVecAlloc( n ) ) ) break;
+    if( !check_lp_pdip( a, b, c, ans, x ) ) result_redundant = false;
+    zMatFree( a );
+    zVecFreeAtOnce( 4, c, b, x, ans );
+  }
+  zAssert( zLPSolvePDIP_PC (redundant equality constraints), result_redundant );
+
+  /* inconsistent redundant constraints, where the last row is a copy of the first one */
+  for( i=0; i<num_trial; i++ ){
+    if( !generate_lp_inconsistent( n, m, &c, &a, &b ) ) return;
+    if( !( x = zVecAlloc( n ) ) ) break;
+    zEchoOff();
+    if( zLPSolvePDIP_PC( a, b, c, x, &cost ) ){
+      eprintf( ">> infeasible problem solved <<\n" );
+      result_unsolvable = false;
+    }
+    zEchoOn();
+    zMatFree( a );
+    zVecFreeAtOnce( 3, c, b, x );
+  }
+
+  /* unbounded problem: min. -x2 subject to x1 - x2 = 1, x >= 0 */
+  a = zMatCreateList( 1, 2, 1.0, -1.0 );
+  b = zVecCreateList( 1, 1.0 );
+  c = zVecCreateList( 2, 0.0, -1.0 );
+  x = zVecAlloc( 2 );
+  zEchoOff();
+  if( zLPSolvePDIP_PC( a, b, c, x, &cost ) ) result_unsolvable = false;
+  /* infeasible problem: min. x1 + x2 subject to x1 + x2 = -1, x >= 0 */
+  zMatSetElemNC( a, 0, 1, 1.0 );
+  zVecSetElemNC( b, 0, -1.0 );
+  zVecSetElemNC( c, 0, 1.0 );
+  zVecSetElemNC( c, 1, 1.0 );
+  if( zLPSolvePDIP_PC( a, b, c, x, &cost ) ) result_unsolvable = false;
+  zEchoOn();
+  zMatFree( a );
+  zVecFreeAtOnce( 3, b, c, x );
+  zAssert( zLPSolvePDIP_PC (infeasible and unbounded cases), result_unsolvable );
+}
+
 bool test_lp_megiddo_dyer(int num_test, int num_constraint)
 {
   zLPMegiddoDyer lp;
@@ -273,6 +436,7 @@ int main(void)
   zRandInit();
   assert_lp_simplex();
   assert_lp_simplex_redundant();
+  assert_lp_pdip();
   assert_lp_megiddo_dyer();
   return 0;
 }
