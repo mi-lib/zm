@@ -232,7 +232,7 @@ static double _zLPTableauSumArtVal(const zLPTableau *tab)
 static bool _zLPTableauSimplex(zLPTableau *tab, double tol)
 { /* if tol >= 0 (the first stage), the iteration terminates as soon as all artificial variables
    * leave the bases or the cost becomes smaller than tol in the absolute value. */
-  int na, np, n_art = 0, n_deg = 0;
+  int iter = 0, na, np, n_art = 0;
   double ctol; /* tolerance for reduced costs relative to the given cost coefficients */
 
   ctol = ZM_LP_SIMPLEX_TOL * ( 1 + _zVecElemAbsMax( tab->c, NULL ) );
@@ -240,16 +240,18 @@ static bool _zLPTableauSimplex(zLPTableau *tab, double tol)
   _zLPTableauSweepC( tab );
   while( !( tol >= 0 && ( n_art == 0 || zIsTol( tab->d, tol ) ) ) &&
          ( na = _zLPTableauFindNA( tab, ctol ) ) >= 0 ){
-    if( ( np = _zLPTableauFindNP( tab, &na, ctol ) ) < 0 ) /* non-convex case */
+    /* the iteration never cycles by Bland's rule in theory, but it is regarded as trapped if the number
+     * of iterations exceeds five times the number of columns (the number of constraints plus the number
+     * of variables), which would be due to round-off errors or a hard degenerated problem. */
+    if( ++iter > 5 * zMatColSizeNC(tab->a) ){
+      ZRUNWARN( ZM_ERR_OPT_TRAPPED );
       return false;
+    }
+    if( ( np = _zLPTableauFindNP( tab, &na, ctol ) ) < 0 ){ /* unbounded case */
+      ZRUNERROR( ZM_ERR_OPT_INFINITESOLUTION );
+      return false;
+    }
     _zLPTableauSweepA( tab, np, na );
-    /* the cost strictly decreases at a non-degenerated step, so that the bases never return to the
-     * previous ones. the iteration is regarded as stalled if degenerated steps continue more times
-     * than the number of columns, which would be due to round-off errors. */
-    if( zIsTiny( zVecElemNC(tab->b,zIndexElemNC(tab->ir,np)) ) ){
-      if( ++n_deg > zMatColSizeNC(tab->a) ) return false;
-    } else
-      n_deg = 0;
     if( tol >= 0 ){ /* count artificial variables in the bases */
       if( zIndexElemNC(tab->ib,np) >= _zLPTableauArtIndex(tab) ) n_art--;
       if( zIndexElemNC(tab->in,na) >= _zLPTableauArtIndex(tab) ) n_art++;
@@ -319,8 +321,11 @@ bool zLPTableauFindFeasibleBase(zLPTableau *tab)
   /* the iteration terminates as soon as the sum of artificial variables vanishes, since
    * the first stage has a degenerate optimum, at which the round-off errors of reduced
    * costs would let the iteration go astray. */
-  if( !_zLPTableauSimplex( tab, zTOL * scale ) ||
-      !zIsTol( _zLPTableauSumArtVal( tab ), zTOL * scale ) ) return false;
+  if( !_zLPTableauSimplex( tab, zTOL * scale ) ) return false;
+  if( !zIsTol( _zLPTableauSumArtVal( tab ), zTOL * scale ) ){ /* infeasible case */
+    ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
+    return false;
+  }
   _zLPTableauArrangeBase( tab, amax );
   return true;
 }
@@ -360,16 +365,10 @@ bool zLPSolveSimplex(const zMat a, const zVec b, const zVec c, zVec ans, double 
     goto TERMINATE;
   }
   /* first phase: initial feasible base */
-  if( !zLPTableauFindFeasibleBase( &tab ) ){
-    ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
-    goto TERMINATE;
-  }
+  if( !zLPTableauFindFeasibleBase( &tab ) ) goto TERMINATE;
   /* second phase: body problem */
   _zLTableauSetC( &tab, c );
-  if( !zLPTableauSimplex( &tab ) ){
-    ZRUNERROR( ZM_ERR_OPT_INFINITESOLUTION );
-    goto TERMINATE;
-  }
+  if( !zLPTableauSimplex( &tab ) ) goto TERMINATE;
   if( cost ) *cost = tab.d;
   _zLPTableauAns( &tab, ans );
   ret = true;
@@ -392,9 +391,7 @@ bool zLPFeasibleBase(const zMat a, const zVec b, zVec base)
     ZALLOCERROR();
     return false;
   }
-  if( !zLPTableauFindFeasibleBase( &tab ) ){
-    ZRUNWARN( ZM_ERR_OPT_UNSOLVABLE );
-  } else{
+  if( zLPTableauFindFeasibleBase( &tab ) ){
     _zLPTableauAns( &tab, base );
     ret = true;
   }

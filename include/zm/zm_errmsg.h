@@ -124,6 +124,7 @@
 #define ZM_ERR_OPT_INFINITESOLUTION        "infinite solution exists"
 #define ZM_ERR_OPT_NONCONVEX               "cannot solve non-convex QP programs"
 #define ZM_ERR_OPT_NONUNIQUE               "solution not uniquely determined"
+#define ZM_ERR_OPT_TRAPPED                 "optimization trapped"
 
 #define ZM_ERR_OPT_LP2_INVALID_COSTFUNC    "invalid coefficient of cost function. c2 has to be non-zero"
 #define ZM_ERR_OPT_LP2_INVALID_CONSTRAINT  "invalid constraint, both coefficients are too small"

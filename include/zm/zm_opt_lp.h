@@ -52,7 +52,7 @@ __ZM_EXPORT bool zLPTableauSimplex(zLPTableau *tab);
  * zLPTableauFindFeasibleBase() applies the simplex method to a tableau \a tab, which has to be
  * initialized for the first stage, and checks if the resulting cost (the sum of artificial variables)
  * is zero within the tolerance relative to the initial sum of the constraint vector, namely,
- * zTOL*(1+|b|_1).
+ * zTOL*(1+|b|).
  * If a feasible base is found, the bases are arranged for the second stage, namely, artificial
  * variables remaining in the bases are replaced by non-artificial variables, or removed together with
  * the constraints if the constraints are redundant (see ZM_LP_SIMPLEX_PIVOT_TOL), and artificial
@@ -60,7 +60,8 @@ __ZM_EXPORT bool zLPTableauSimplex(zLPTableau *tab);
  * The cost of \a tab is reset for zero.
  * \return
  * zLPTableauFindFeasibleBase() returns the true value if a feasible base is found.
- * Otherwise, the false value is returned.
+ * Otherwise, the false value is returned with a warning message that tells the reason, namely, the
+ * problem is infeasible or the iteration is trapped.
  */
 __ZM_EXPORT bool zLPTableauFindFeasibleBase(zLPTableau *tab);
 
@@ -106,14 +107,15 @@ __ZM_EXPORT bool zLPUnb2Std(const zMat a, const zVec c, const zVec x, zMat *as, 
  * The axis column and the pivot are chosen by Dantzig's rule, namely, the column with the most negative
  * reduced cost and the row with the smallest ratio. At a degenerated step (with the zero ratio), they
  * are chosen by Bland's rule, namely, the variables with the smallest indices enter and leave the bases,
- * which prevents the iteration from cycling. The iteration is regarded as stalled and fails if
- * degenerated steps continue more times than the number of columns of the tableau.
+ * which prevents the iteration from cycling. The iteration is regarded as trapped and fails if the
+ * number of iterations exceeds five times the number of columns of the tableau, namely, the number of
+ * constraints plus the number of variables.
  *
  * The result optimum value is stored where \a cost points, unless \a cost is the null pointer.
  * \return
  * zLPSolveSimplex() returns the true value if it succeeds to get optimum (i.e. minimum) cost, or the
  * the false value if there are vector/matrix size mismatch, bad memory allocation, non-feasible solution
- * and infinite solution found.
+ * and infinite solution found, or the iteration is trapped.
  */
 __ZM_EXPORT bool zLPSolveSimplex(const zMat a, const zVec b, const zVec c, zVec ans, double *cost);
 
