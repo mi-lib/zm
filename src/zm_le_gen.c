@@ -16,7 +16,7 @@ void zLEWorkspaceInit(zLEWorkspace *workspace)
   workspace->index_le = NULL;
   workspace->b_copy = workspace->v_ispace = NULL;
   /* for Householder transformations */
-  workspace->m_house = NULL;
+  workspace->m_normerrmin = NULL;
   /* for MP-inverse */
   workspace->v_mp_ispace = NULL;
   /* for LU/LQ factorization */
@@ -34,10 +34,10 @@ bool zLEWorkspaceAlloc(zLEWorkspace *workspace, int num_equation, int num_variab
   workspace->index_le = zIndexCreate( num_variable );
   /* the matrix for Householder transformations is large enough for both the coefficient matrix and its
    * transpose, and for those of the factors of LQ/LU decomposition. */
-  workspace->m_house = num_equation > 0 ?
+  workspace->m_normerrmin = num_equation > 0 ?
     zMatAlloc( zMin( num_equation, num_variable ), zMax( num_equation, num_variable ) ) : NULL;
   return workspace->m_regular && workspace->v_ispace && workspace->v_scale && workspace->index_le &&
-    ( num_equation == 0 || ( workspace->b_copy && workspace->m_house ) );
+    ( num_equation == 0 || ( workspace->b_copy && workspace->m_normerrmin ) );
 }
 
 /* allocate workspace for generalized linear equation solvers, and copy the right-hand-side vector. */
@@ -59,7 +59,7 @@ bool zLEWorkspaceClone(zLEWorkspace *src, zLEWorkspace *cln)
 
   if( src->b_copy && !( cln->b_copy = zVecClone( src->b_copy ) ) ) ret = false;
   if( src->v_ispace && !( cln->v_ispace = zVecClone( src->v_ispace ) ) ) ret = false;
-  if( src->m_house && !( cln->m_house = zMatClone( src->m_house ) ) ) ret = false;
+  if( src->m_normerrmin && !( cln->m_normerrmin = zMatClone( src->m_normerrmin ) ) ) ret = false;
 
   if( src->v_mp_ispace && !( cln->v_mp_ispace = zVecClone( src->v_mp_ispace ) ) ) ret = false;
 
@@ -80,7 +80,7 @@ void zLEWorkspaceFree(zLEWorkspace *workspace)
 
   zVecFree( workspace->b_copy );
   zVecFree( workspace->v_ispace );
-  zMatFree( workspace->m_house );
+  zMatFree( workspace->m_normerrmin );
 }
 
 /* allocate workspace for generalized linear equation solvers based on MP inverse. */
@@ -215,17 +215,17 @@ static void _zLEHouseholderApply(const zMat m, const double d[], double v[], boo
   }
 }
 
-/* set the size of the matrix for Householder transformations in a workspace to r x c, and check if
- * the workspace is large enough. */
-static bool _zLEWorkspaceSetSizeHouseholder(zLEWorkspace *workspace, int r, int c)
+/* set the size of the matrix to be transformed in a workspace for the norm-minimizing and error-minimizing
+ * solvers to r x c, and check if the workspace is large enough. */
+static bool _zLEWorkspaceSetSizeNormErrorMin(zLEWorkspace *workspace, int r, int c)
 {
-  if( !workspace->m_house || !workspace->v_ispace ||
-      zMatRowCapacity(workspace->m_house) < r || zMatColCapacity(workspace->m_house) < c ||
+  if( !workspace->m_normerrmin || !workspace->v_ispace ||
+      zMatRowCapacity(workspace->m_normerrmin) < r || zMatColCapacity(workspace->m_normerrmin) < c ||
       zVecSizeNC(workspace->v_ispace) < r ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH );
     return false;
   }
-  zMatSetSizeNC( workspace->m_house, r, c );
+  zMatSetSizeNC( workspace->m_normerrmin, r, c );
   return true;
 }
 
@@ -245,12 +245,12 @@ static zVec _zLESolveNormMinDST(const zMat a, const zVec b, const zVec w, const 
     ZRUNERROR( ZM_ERR_MAT_SINGULAR );
     return NULL;
   }
-  if( !_zLEWorkspaceSetSizeHouseholder( workspace, r, c ) ) return NULL;
+  if( !_zLEWorkspaceSetSizeNormErrorMin( workspace, r, c ) ) return NULL;
   for( i=0; i<r; i++ )
     for( j=0; j<c; j++ )
-      zMatSetElemNC( workspace->m_house, i, j, w ? zMatElemNC(a,i,j) * sqrt( zVecElemNC(w,j) ) : zMatElemNC(a,i,j) );
+      zMatSetElemNC( workspace->m_normerrmin, i, j, w ? zMatElemNC(a,i,j) * sqrt( zVecElemNC(w,j) ) : zMatElemNC(a,i,j) );
   d = zVecBufNC(workspace->v_ispace);
-  if( !_zLEHouseholderLQ( workspace->m_house, d, check ) ){
+  if( !_zLEHouseholderLQ( workspace->m_normerrmin, d, check ) ){
     ZRUNERROR( ZM_ERR_MAT_SINGULAR );
     return NULL;
   }
@@ -258,11 +258,11 @@ static zVec _zLESolveNormMinDST(const zMat a, const zVec b, const zVec w, const 
     x = zVecElemNC(b,i);
     if( ref ) x -= zRawVecInnerProd( zMatRowBufNC(a,i), zVecBufNC(ref), c );
     for( j=0; j<i; j++ )
-      x -= zMatElemNC(workspace->m_house,i,j) * zVecElemNC(ans,j);
+      x -= zMatElemNC(workspace->m_normerrmin,i,j) * zVecElemNC(ans,j);
     zVecSetElemNC( ans, i, x / d[i] );
   }
   for( ; i<c; i++ ) zVecSetElemNC( ans, i, 0 );
-  _zLEHouseholderApply( workspace->m_house, d, zVecBufNC(ans), false );
+  _zLEHouseholderApply( workspace->m_normerrmin, d, zVecBufNC(ans), false );
   if( w )
     for( j=0; j<c; j++ ) zVecElemNC(ans,j) *= sqrt( zVecElemNC(w,j) );
   return ref ? zVecAddNCDRC( ans, ref ) : ans;
@@ -274,9 +274,9 @@ zVec zLESolveNormMinDST(const zMat a, const zVec b, const zVec w, zVec ans, zLEW
   return _zLESolveNormMinDST( a, b, w, NULL, ans, workspace, true );
 }
 
-/* allocate workspace for solvers based on Householder transformations, and copy the right-hand-side
+/* allocate workspace for the norm-minimizing and error-minimizing solvers, and copy the right-hand-side
  * vector b unless it is the null pointer, where the matrices for the normal equations are not allocated. */
-static bool _zLEWorkspaceAllocHouseholder(zLEWorkspace *workspace, const zMat a, const zVec b)
+static bool _zLEWorkspaceAllocNormErrorMin(zLEWorkspace *workspace, const zMat a, const zVec b)
 {
   int minsize, maxsize;
 
@@ -285,8 +285,8 @@ static bool _zLEWorkspaceAllocHouseholder(zLEWorkspace *workspace, const zMat a,
   maxsize = zMax( zMatRowSizeNC(a), zMatColSizeNC(a) );
   if( b ) workspace->b_copy = zVecClone( b );
   workspace->v_ispace = zVecAlloc( minsize );
-  workspace->m_house = zMatAlloc( minsize, maxsize );
-  if( ( b && !workspace->b_copy ) || !workspace->v_ispace || !workspace->m_house ){
+  workspace->m_normerrmin = zMatAlloc( minsize, maxsize );
+  if( ( b && !workspace->b_copy ) || !workspace->v_ispace || !workspace->m_normerrmin ){
     ZALLOCERROR();
     return false;
   }
@@ -307,7 +307,7 @@ zVec zLESolveNormMin(const zMat a, const zVec b, const zVec w, zVec ans)
     return NULL;
   }
   /* b is not copied, since it is not modified, and ans can be the same vector with b. */
-  ans = _zLEWorkspaceAllocHouseholder( &workspace, a, NULL ) ?
+  ans = _zLEWorkspaceAllocNormErrorMin( &workspace, a, NULL ) ?
     zLESolveNormMinDST( a, b, w, ans, &workspace ) : NULL;
   zLEWorkspaceFree( &workspace );
   return ans;
@@ -329,22 +329,22 @@ static zVec _zLESolveErrorMinDST(const zMat a, zVec b, const zVec w, zVec ans, z
     ZRUNERROR( ZM_ERR_MAT_SINGULAR );
     return NULL;
   }
-  if( !_zLEWorkspaceSetSizeHouseholder( workspace, c, r ) ) return NULL;
+  if( !_zLEWorkspaceSetSizeNormErrorMin( workspace, c, r ) ) return NULL;
   for( i=0; i<r; i++ )
     for( j=0; j<c; j++ )
-      zMatSetElemNC( workspace->m_house, j, i, w ? zMatElemNC(a,i,j) * sqrt( zVecElemNC(w,i) ) : zMatElemNC(a,i,j) );
+      zMatSetElemNC( workspace->m_normerrmin, j, i, w ? zMatElemNC(a,i,j) * sqrt( zVecElemNC(w,i) ) : zMatElemNC(a,i,j) );
   if( w )
     for( i=0; i<r; i++ ) zVecElemNC(b,i) *= sqrt( zVecElemNC(w,i) );
   d = zVecBufNC(workspace->v_ispace);
-  if( !_zLEHouseholderLQ( workspace->m_house, d, check ) ){
+  if( !_zLEHouseholderLQ( workspace->m_normerrmin, d, check ) ){
     ZRUNERROR( ZM_ERR_MAT_SINGULAR );
     return NULL;
   }
-  _zLEHouseholderApply( workspace->m_house, d, zVecBufNC(b), true );
+  _zLEHouseholderApply( workspace->m_normerrmin, d, zVecBufNC(b), true );
   for( j=c-1; j>=0; j-- ){ /* L^T x = ( Q W^1/2 b )_upper */
     x = zVecElemNC(b,j);
     for( i=j+1; i<c; i++ )
-      x -= zMatElemNC(workspace->m_house,i,j) * zVecElemNC(ans,i);
+      x -= zMatElemNC(workspace->m_normerrmin,i,j) * zVecElemNC(ans,i);
     zVecSetElemNC( ans, j, x / d[j] );
   }
   return ans;
@@ -369,7 +369,7 @@ zVec zLESolveErrorMin(const zMat a, const zVec b, const zVec w, zVec ans)
     ZRUNERROR( ZM_ERR_VEC_SIZEMISMATCH );
     return NULL;
   }
-  ans = _zLEWorkspaceAllocHouseholder( &workspace, a, b ) ?
+  ans = _zLEWorkspaceAllocNormErrorMin( &workspace, a, b ) ?
     zLESolveErrorMinDST( a, workspace.b_copy, w, ans, &workspace ) : NULL;
   zLEWorkspaceFree( &workspace );
   return ans;
@@ -396,7 +396,7 @@ zVec zLESolveRefNormMin(const zMat a, const zVec b, const zVec w, const zVec ref
     return NULL;
   }
   /* b is not copied, since it is not modified, and ans can be the same vector with b. */
-  ans = _zLEWorkspaceAllocHouseholder( &workspace, a, NULL ) ?
+  ans = _zLEWorkspaceAllocNormErrorMin( &workspace, a, NULL ) ?
     zLESolveRefNormMinDST( a, b, w, ref, ans, &workspace ) : NULL;
   zLEWorkspaceFree( &workspace );
   return ans;

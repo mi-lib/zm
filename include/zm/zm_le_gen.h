@@ -18,8 +18,8 @@ ZDEF_STRUCT( __ZM_CLASS_EXPORT, zLEWorkspace ){
   zIndex index_le;  /* an index vector for pivotting */
   zVec b_copy;      /* copy of b vector */
   zVec v_ispace;    /* internal-space vector */
-  /* for Householder transformations */
-  zMat m_house;     /* a copy of the coefficient matrix (or its transpose) to be transformed */
+  /* for norm-minimizing and error-minimizing solvers */
+  zMat m_normerrmin; /* a copy of the coefficient matrix (or its transpose) to be transformed */
   /* for MP-inverse */
   zVec v_mp_ispace; /* full-rank internal-space vector */
   /* for LU/LQ factorization */

@@ -1,3 +1,6 @@
+2026.11.21. Modified the test of zLESolveErrorMin for ill-conditioned cases to take the error due to the nonzero residual of the least-square solution into account. [test]
+2026.11.21. Renamed a member m_house of zLEWorkspace to m_normerrmin. [zm_le_gen]
+2026.11.20. Renamed _zLEWorkspaceAllocHouseholder and _zLEWorkspaceSetSizeHouseholder to _zLEWorkspaceAllocNormErrorMin and _zLEWorkspaceSetSizeNormErrorMin, respectively. [zm_le_gen]
 2026.11.20. Modified the simplex method to output appropriate messages to tell the correct reason of failure. [zm_opt_lp_simplex, zm_opt_qp_asm]
 2026.11.20. Modified the simplex method to regard the iteration as trapped and failed if the number of iterations exceeds the number of columns of the tableau multiplied by a predefined number. [zm_opt_lp_simplex]
 2026.11.20. Added ZM_ERR_OPT_TRAPPED. [zm_errmsg]

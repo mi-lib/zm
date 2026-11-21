@@ -708,22 +708,26 @@ zVec le_gen_known_svd_solve(const zMat u, const zVec s, const zMat v, const zVec
   return x;
 }
 
-/* norm-minimizing, referred-norm-minimizing and error-minimizing solvers for ill-conditioned matrices,
- * the errors of which have to be proportional to the condition number (not to its square). */
-#define TOL_LE_GEN_HOUSEHOLDER 100 /* tolerance of the relative error relative to kappa eps */
+/* norm-minimizing, referred-norm-minimizing and error-minimizing solvers for ill-conditioned matrices.
+ * the errors of the norm-minimizing solvers have to be proportional to the condition number kappa
+ * (not to its square). the error of the least-square solution y for a nonzero residual r = A y - b
+ * is bounded by eps ( kappa + kappa^2 |r| / ( |A| |y| ) ) in the perturbation theory, where |A| is
+ * the 2-norm, namely, the largest singular value of A. */
+#define TOL_LE_GEN_HOUSEHOLDER 100 /* tolerance of the relative error relative to the above bounds */
 void assert_le_gen_householder(void)
 {
   const int m = 6, n = 10, testnum = 100;
   const double kappa = 1.0e8;
   const double tol = TOL_LE_GEN_HOUSEHOLDER * kappa * DBL_EPSILON;
   zMat a, at, u, v;
-  zVec s, b, bt, x, xs, y, ys, ref;
+  zVec s, b, bt, x, xs, y, ys, ref, res;
   int k;
+  double tol_em;
   bool result_nm = true, result_rnm = true, result_em = true;
 
   a = zMatAlloc( m, n ); at = zMatAlloc( n, m );
   u = zMatAllocSqr( m ); v = zMatAllocSqr( n ); s = zVecAlloc( m );
-  b = zVecAlloc( m ); bt = zVecAlloc( n );
+  b = zVecAlloc( m ); bt = zVecAlloc( n ); res = zVecAlloc( n );
   x = zVecAlloc( n ); xs = zVecAlloc( n ); ref = zVecAlloc( n );
   y = zVecAlloc( m ); ys = zVecAlloc( m );
   for( k=0; k<testnum; k++ ){
@@ -744,10 +748,13 @@ void assert_le_gen_householder(void)
     zMatT( a, at );
     zVecRandUniform( bt, -1, 1 );
     le_gen_known_svd_solve( v, s, u, bt, ys );
-    if( !zLESolveErrorMin( at, bt, NULL, y ) || zVecDist( y, ys ) > tol * zVecNorm( ys ) ) result_em = false;
+    zMulMatVec( at, ys, res );
+    zVecSubDRC( res, bt ); /* residual of the least-square solution */
+    tol_em = tol * ( 1 + kappa * zVecNorm( res ) / ( zVecElemNC(s,0) * zVecNorm( ys ) ) );
+    if( !zLESolveErrorMin( at, bt, NULL, y ) || zVecDist( y, ys ) > tol_em * zVecNorm( ys ) ) result_em = false;
   }
   zMatFreeAtOnce( 4, a, at, u, v );
-  zVecFreeAtOnce( 9, s, b, bt, x, xs, ref, y, ys, NULL );
+  zVecFreeAtOnce( 10, s, b, bt, x, xs, ref, y, ys, res, NULL );
   zAssert( zLESolveNormMin (ill-conditioned cases), result_nm );
   zAssert( zLESolveRefNormMin (ill-conditioned cases), result_rnm );
   zAssert( zLESolveErrorMin (ill-conditioned cases), result_em );
