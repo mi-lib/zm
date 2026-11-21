@@ -66,10 +66,10 @@ static bool _zQPASMInit(zQPASM *qpasm, const zMat q, const zVec c, const zMat a)
   int i, n, m;
 
   n = zVecSizeNC(c);
-  m = zMatRowSizeNC(a);
+  m = zMatRowSize(a); /* a is the null pointer if no constraint is given */
   qpasm->l = zMatAllocSqr( n );
   qpasm->il = zIndexCreate( n );
-  qpasm->abar = zMatAlloc( m, n );
+  qpasm->abar = m > 0 ? zMatAlloc( m, n ) : NULL;
   qpasm->cbar = zVecAlloc( n );
   qpasm->z = zVecAlloc( n );
   qpasm->lw = zMatAllocSqr( n );
@@ -80,7 +80,7 @@ static bool _zQPASMInit(zQPASM *qpasm, const zMat q, const zVec c, const zMat a)
   qpasm->_y = zVecAlloc( n );
   qpasm->_lambda = zVecAlloc( n );
   qpasm->_v = zVecAlloc( n );
-  if( !qpasm->l || !qpasm->il || !qpasm->abar || !qpasm->cbar || !qpasm->z ||
+  if( !qpasm->l || !qpasm->il || ( m > 0 && !qpasm->abar ) || !qpasm->cbar || !qpasm->z ||
       !qpasm->lw || !qpasm->u || !qpasm->ia || ( m > 0 && !qpasm->is_active ) ||
       !qpasm->_t || !qpasm->_y || !qpasm->_lambda || !qpasm->_v ) return false;
   if( zMatDecompCholesky( q, qpasm->l, qpasm->il ) < n ){
@@ -344,7 +344,7 @@ static bool _zQPASMAddEq(zQPASM *qpasm, const zVec b, const zVec zt, bool *moved
    * is negative beyond the round-off errors, which are proportional to the norms of the current and
    * temporary solutions. A constraint linearly dependent on the active constraints is not blocking. */
   scale = zTOL * zMax( zVecNorm(zt), zVecNorm(qpasm->z) );
-  for( dmin=HUGE_VAL, imin=-1, i=0; i<zMatRowSizeNC(qpasm->abar); i++ ){
+  for( dmin=HUGE_VAL, imin=-1, i=0; i<zMatRowSize(qpasm->abar); i++ ){
     if( qpasm->is_active[i] ) continue;
     ap = zRawVecInnerProd( zMatRowBufNC(qpasm->abar,i), zVecBufNC(zt), zVecSizeNC(zt) );
     if( zVecElemNC(b,i) <= ap ) continue;
@@ -392,15 +392,16 @@ static bool _zQPASMDelEq(zQPASM *qpasm)
   return true;
 }
 
-/* check if vector/matrix sizes are consistent and the quadratic term matrix is symmetric. */
+/* check if vector/matrix sizes are consistent and the quadratic term matrix is symmetric.
+ * a and b have to be both the null pointers if no constraint is given. */
 static bool _zQPASMCheck(const zMat q, const zVec c, const zMat a, const zVec b, zVec ans)
 {
   if( !zMatIsSymmetric( q ) ){
     ZRUNERROR( ZM_ERR_MAT_NOTSYMMETRIC );
     return false;
   }
-  if( !zMatRowVecSizeEqual( q, c ) || !zVecSizeEqual( c, ans ) ||
-      !zMatRowVecSizeEqual( a, b ) || !zMatColVecSizeEqual( a, ans ) ){
+  if( !zMatRowVecSizeEqual( q, c ) || !zVecSizeEqual( c, ans ) || ( !a ) != ( !b ) ||
+      ( a && ( !zMatRowVecSizeEqual( a, b ) || !zMatColVecSizeEqual( a, ans ) ) ) ){
     ZRUNERROR( ZM_ERR_MAT_SIZEMISMATCH_VEC );
     return false;
   }
@@ -418,6 +419,9 @@ bool zQPSolveASM(const zMat q, const zVec c, const zMat a, const zVec b, zVec an
   if( !_zQPASMCheck( q, c, a, b, ans ) ) return false;
   zt = zVecAlloc( zVecSizeNC(c) );
   if( !_zQPASMInit( &qpasm, q, c, a ) || !zt ) goto TERMINATE;
+  if( !a ) /* unconstrained case */
+    zVecZero( qpasm.z );
+  else
   if( !_zQPASMInitBase( &qpasm, a, b, ans ) ) goto TERMINATE;
   do{
     _zQPASMSolveEq( &qpasm, b, zt );
@@ -426,8 +430,8 @@ bool zQPSolveASM(const zMat q, const zVec c, const zMat a, const zVec b, zVec an
      * returns to the previous ones. the iteration is regarded as stalled if the current solution
      * does not move more times consecutively than the number of constraints. */
     stall = moved ? 0 : stall + 1;
-  } while( stall <= zMatRowSizeNC(a) );
-  if( stall > zMatRowSizeNC(a) ){
+  } while( stall <= zMatRowSize(a) );
+  if( stall > zMatRowSize(a) ){
     ZRUNWARN( ZM_ERR_OPT_TRAPPED );
     goto TERMINATE;
   }

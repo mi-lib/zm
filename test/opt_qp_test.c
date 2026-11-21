@@ -210,6 +210,43 @@ void assert_qp_asm_illcond(void)
   zAssert( zQPSolveASM (linearly dependent active constraints), result_degenerate );
 }
 
+/* unconstrained case, where both the constraint matrix and vector are the null pointers. */
+void assert_qp_asm_unconstrained(void)
+{
+  zMat q, r;
+  zVec c, b, ans, x;
+  const int n = 10;
+  const double tol = 1.0e-10;
+  int i, num_trial = 10;
+  bool result = true, result_mismatch = true;
+
+  q = zMatAllocSqr( n );
+  r = zMatAllocSqr( n );
+  c = zVecAlloc( n );
+  b = zVecAlloc( n );
+  ans = zVecAlloc( n );
+  x = zVecAlloc( n );
+  if( !q || !r || !c || !b || !ans || !x ) goto TERMINATE;
+  for( ; num_trial>0; num_trial-- ){
+    zMatRandUniform( r, -10, 10 );
+    zMulMatTMat( r, r, q );
+    for( i=0; i<n; i++ ) zMatElemNC(q,i,i) += 1.0; /* to guarantee positive-definiteness */
+    zVecRandUniform( ans, -10, 10 );
+    zMulMatVec( q, ans, c );
+    zVecRevDRC( c ); /* c = -q ans */
+    if( !zQPSolveASM( q, c, NULL, NULL, x, NULL ) || !check_answer_rel( x, ans, tol ) ) result = false;
+  }
+  /* only one of the constraint matrix and vector is the null pointer */
+  zEchoOff();
+  if( zQPSolveASM( q, c, NULL, b, x, NULL ) || zQPSolveASM( q, c, r, NULL, x, NULL ) ) result_mismatch = false;
+  zEchoOn();
+ TERMINATE:
+  zMatFreeAtOnce( 2, q, r );
+  zVecFreeAtOnce( 4, c, b, ans, x );
+  zAssert( zQPSolveASM (unconstrained case), result );
+  zAssert( zQPSolveASM (inconsistent null constraints), result_mismatch );
+}
+
 void assert_qp_lemke(void)
 {
   zMat q, a;
@@ -236,6 +273,7 @@ int main(void)
   zRandInit();
   assert_qp_asm();
   assert_qp_asm_illcond();
+  assert_qp_asm_unconstrained();
   assert_qp_lemke();
   return 0;
 }

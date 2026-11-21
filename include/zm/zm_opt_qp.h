@@ -46,7 +46,8 @@ __ZM_EXPORT bool zQPSolveIP(const zMat q, const zVec c, const zMat a, const zVec
  *
  * zQPSolveASM() solves a quadratic programming with inequality constraint conditions to find the vector
  * x that minimizes 0.5 x^T \a q x + \a c^T x subject to \a a x >= \a b based on the active set method.
- * \a q must be positive definite.
+ * \a q must be positive definite. If both \a a and \a b are the null pointers, it solves the problem
+ * without any constraint conditions.
  * An initial feasible solution is found by the simplex method. The problem is transformed with the
  * Cholesky factor of \a q, and the LQ decomposition of the coefficient matrix of the active constraints
  * is updated when a constraint is added or deleted. A constraint linearly dependent on the active

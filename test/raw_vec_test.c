@@ -226,8 +226,12 @@ void assert_raw_vec_div_range(void)
   zAssert( zRawVecDivDRC (very small or large divisor), result_drc );
 }
 
-/* norm of a vector, the squared norm of which underflows or overflows. */
+/* norm of a vector, the squared norm of which underflows or overflows.
+ * a norm smaller than DBL_MIN is a subnormal number, the precision of which is the smallest subnormal
+ * number 2^-1074 instead of DBL_EPSILON relative to itself. TEST_NORM_ULP_SUBNORMAL(e) is the smallest
+ * subnormal number scaled by 2^-e, which is added to the tolerance of the norm scaled by 2^-e. */
 #define N_NORM_TEST 1000
+#define TEST_NORM_ULP_SUBNORMAL(e) ldexp( 1.0, -1074-(e) )
 void assert_raw_vec_norm_range(void)
 {
   const int scale[] = { -1020, -1000, -600, -540, -520, -300, 0, 300, 500, 511, 520, 600, 1000, 1021 };
@@ -250,7 +254,7 @@ void assert_raw_vec_norm_range(void)
       norm = ldexp( zRawVecNorm( w, size ), -scale[k] );
       for( j=0; j<size; j++ ) w[j] = ldexp( w[j], -scale[k] ); /* exact, even for subnormal components */
       ref = sqrt( zRawVecSqrNorm( w, size ) );
-      if( !( fabs( norm - ref ) <= 2 * ( size + 1 ) * DBL_EPSILON * ref ) ){
+      if( !( fabs( norm - ref ) <= 2 * ( size + 1 ) * DBL_EPSILON * ref + TEST_NORM_ULP_SUBNORMAL(scale[k]) ) ){
         eprintf( "scale 2^%d: norm = %.17g, expected %.17g\n", scale[k], norm, ref );
         result = false;
       }
@@ -301,7 +305,7 @@ void assert_raw_vec_dist_wnorm_range(void)
         s2[j] = ldexp( s2[j], -scale[k] );
       }
       ref = sqrt( zRawVecSqrDist( s1, s2, size ) );
-      if( !( fabs( val - ref ) <= 4 * ( size + 1 ) * DBL_EPSILON * ref ) ){
+      if( !( fabs( val - ref ) <= 4 * ( size + 1 ) * DBL_EPSILON * ref + TEST_NORM_ULP_SUBNORMAL(scale[k]) ) ){
         eprintf( "zRawVecDist (scale 2^%d): %.17g, expected %.17g\n", scale[k], val, ref );
         result_dist = false;
       }
@@ -314,7 +318,7 @@ void assert_raw_vec_dist_wnorm_range(void)
         val = ldexp( zRawVecWNorm( s1, sw, size ), -scale[k]-wscale[kw]/2 );
         for( j=0; j<size; j++ ) s1[j] = ldexp( s1[j], -scale[k] );
         ref = sqrt( zRawVecWSqrNorm( s1, w, size ) );
-        if( !( fabs( val - ref ) <= 4 * ( size + 1 ) * DBL_EPSILON * ref ) ){
+        if( !( fabs( val - ref ) <= 4 * ( size + 1 ) * DBL_EPSILON * ref + TEST_NORM_ULP_SUBNORMAL(scale[k]+wscale[kw]/2) ) ){
           eprintf( "zRawVecWNorm (scale 2^%d, weight 2^%d): %.17g, expected %.17g\n", scale[k], wscale[kw], val, ref );
           result_wnorm = false;
         }
