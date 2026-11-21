@@ -55,98 +55,91 @@ bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double 
   return true;
 }
 
-/* create a polynomial function that fits a sequence of points based on the least square method. */
+/* create a polynomial function that fits a sequence of points based on the least square method,
+ * where the coefficients are found by zLESolveErrorMin() without forming the normal equation. */
 bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, const zVec t, const zVec x)
 {
-  int i, j, k, n, m;
+  int i, j;
+  double s, p;
   zMat a;
-  zVec b, v;
-  bool result = true;
+  zVec c;
+  bool result = false;
 
   if( !zVecSizeEqual( t, x ) ){
     ZRUNERROR( ZM_ERR_IP_SIZEMISMATCH );
     return false;
   }
-  if( !zPexIPAlloc( pc, term, dim ) ) return false;
-  n = zVecSizeNC( t );
-  m = zPexIPDim(pc) + 1;
-  a = zMatAllocSqr( m );
-  b = zVecAlloc( m );
-  v = zVecAlloc( 2 * m );
-  if( !a || !b || !v ){
-    result = false;
-    goto TERMINATE;
+  if( term == 0 ){
+    ZRUNERROR( ZM_ERR_IP_INVALID_TERM );
+    return false;
   }
-  for( i=0; i<n; i++ ){
-    for( j=0; j<zVecSizeNC(v); j++ )
-      zVecSetElemNC( v, j, pow( zVecElemNC(t,i)/zPexIPTerm(pc), j ) );
-    for( j=0; j<m; j++ ){
-      for( k=0; k<m; k++ )
-        zMatElemNC(a,j,k) += zVecElemNC(v,j+k);
-      zVecElemNC(b,j) += zVecElemNC(x,i) * zVecElemNC(v,j);
-    }
+  if( dim < 0 ){
+    ZRUNERROR( ZM_ERR_PEX_INVALID_DIM );
+    return false;
   }
-  zLESolveGauss( a, b, pc->c );
+  a = zMatAlloc( zVecSizeNC(t), dim + 1 );
+  c = zVecAlloc( dim + 1 );
+  if( !a || !c ) goto TERMINATE;
+  for( i=0; i<zVecSizeNC(t); i++ ){ /* Vandermonde matrix */
+    s = zVecElemNC(t,i) / term;
+    for( p=1, j=0; j<=dim; j++, p*=s ) zMatSetElemNC( a, i, j, p );
+  }
+  if( !zLESolveErrorMin( a, x, NULL, c ) || !zPexIPAlloc( pc, term, dim ) ) goto TERMINATE;
+  zVecCopyNC( c, pc->c );
+  result = true;
  TERMINATE:
   zMatFree( a );
-  zVecFreeAtOnce( 2, b, v );
+  zVecFree( c );
   return result;
 }
 
-/* create a polynomial function from the boundary condition and a sequence of points to fit. */
+/* create a polynomial function from the boundary condition and a sequence of points to fit.
+ * A polynomial function that satisfies the boundary condition is expressed as
+ *   f(t) = f0(t) + sum_k v_k phi_k(t),
+ * where f0 is created by zPexIPCreateBoundary() for v = 0, and phi_k is created by
+ * zPexIPCreateBoundary() for the null boundary condition and v = e_k (the k-th unit vector).
+ * The coefficients v_k are found by the least square method without any constraints. */
 bool zPexIPCreateBoundaryLSM(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, int dim, const zVec t, const zVec x)
 {
-  int i, j, k, n, m;
-  zMat a;
-  zVec b, v;
-  bool result = true;
+  zPexIP phi;
+  int i, k, n;
+  zMat a = NULL;
+  zVec r = NULL, v = NULL;
+  bool result = false;
 
   if( !zVecSizeEqual( t, x ) ){
     ZRUNERROR( ZM_ERR_IP_SIZEMISMATCH );
     return false;
   }
-
+  if( dim < 5 ){
+    ZRUNERROR( ZM_ERR_IP_TOOSMALLDIM, dim, 5 );
+    return false;
+  }
+  if( dim == 5 ) /* no free coefficient */
+    return zPexIPCreateBoundary( pc, term, x1, v1, a1, x2, v2, a2, NULL );
   n = zVecSizeNC(t);
-  if( !zPexIPAlloc( pc, term, dim ) ) return false;
-  m = dim + 1;
-  a = zMatAllocSqr( m );
-  b = zVecAlloc( m );
-  v = zVecAlloc( 2 * m );
-  if( !a || !b || !v ){
-    result = false;
-    goto TERMINATE;
+  a = zMatAlloc( n, dim - 5 );
+  r = zVecAlloc( n );
+  v = zVecAlloc( dim - 5 );
+  if( !a || !r || !v ) goto TERMINATE;
+  for( k=0; k<zVecSizeNC(v); k++ ){ /* basis functions */
+    zVecZero( v );
+    zVecSetElemNC( v, k, 1 );
+    if( !zPexIPCreateBoundary( &phi, term, 0, 0, 0, 0, 0, 0, v ) ) goto TERMINATE;
+    for( i=0; i<n; i++ )
+      zMatSetElemNC( a, i, k, zPexIPVal( &phi, zVecElemNC(t,i) ) );
+    zPexIPFree( &phi );
   }
-
-  for( i=0; i<n; i++ ){
-    for( j=0; j<zVecSizeNC(v); j++ )
-      zVecSetElemNC( v, j, pow( zVecElemNC(t,i)/term, j ) );
-    for( j=3; j<m-3; j++ ){
-      for( k=0; k<m; k++ )
-        zMatElemNC(a,j,k) += zVecElemNC(v,j+k);
-      zVecElemNC(b,j) += zVecElemNC(x,i) * zVecElemNC(v,j);
-    }
-  }
-  zMatSetElemNC( a, 0, 0, 1 );
-  zMatSetElemNC( a, 1, 1, 1/term );
-  zMatSetElemNC( a, 2, 2, 2/zSqr(term) );
-  for( i=0; i<m; i++ )
-    zMatSetElemNC( a, m-3, i, 1 );
-  for( i=1; i<m; i++ )
-    zMatSetElemNC( a, m-2, i, i );
-  for( i=2; i<m; i++ )
-    zMatSetElem( a, m-1, i, i*(i-1) );
-  zVecSetElemNC( b, 0, x1 );
-  zVecSetElemNC( b, 1, v1 );
-  zVecSetElemNC( b, 2, a1 );
-  zVecSetElemNC( b, m-3, x2 );
-  zVecSetElemNC( b, m-2, v2 );
-  zVecSetElemNC( b, m-1, a2 );
-
-  zLESolveGauss( a, b, pc->c );
-
+  zVecZero( v );
+  if( !zPexIPCreateBoundary( &phi, term, x1, v1, a1, x2, v2, a2, v ) ) goto TERMINATE;
+  for( i=0; i<n; i++ ) /* residual from f0 */
+    zVecSetElemNC( r, i, zVecElemNC(x,i) - zPexIPVal( &phi, zVecElemNC(t,i) ) );
+  zPexIPFree( &phi );
+  if( !zLESolveErrorMin( a, r, NULL, v ) ) goto TERMINATE;
+  result = zPexIPCreateBoundary( pc, term, x1, v1, a1, x2, v2, a2, v );
  TERMINATE:
   zMatFree( a );
-  zVecFree( b );
+  zVecFree( r );
   zVecFree( v );
   return result;
 }

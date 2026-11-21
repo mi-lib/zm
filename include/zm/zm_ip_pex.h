@@ -73,16 +73,22 @@ __ZM_EXPORT void zPexIPFree(zPexIP *pc);
  * zPexIPCreateLSM() creates a polynomial function \a pc so that the error from the sequence of
  * points {(t_i, x_i)} specified by vectors \a t and \a x is minimized based on the least square
  * method. \a term is the total duration of the function, and \a dim is the dimension of the
- * polynomial.
+ * polynomial. The points have to include at least \a dim+1 different values of t_i so that the
+ * polynomial function is uniquely determined.
  *
  * zPexIPCreateBoundaryLSM() creates a polynomial function \a pc that satisfies the boundary
- * conditions specified by \a term, \a x1, \a v1, \a a1, \a x2, \a v2, and \a a2, and also
- * fits the sequence of points {(t_i, x_i)} specified by vectors \a t and \a x. The meanings
- * of those arguments are the same with those for zPexIPCreateBoundary() and zPexIPCreateLSM().
- * \a dim is the dimension of the polynomial.
+ * conditions specified by \a term, \a x1, \a v1, \a a1, \a x2, \a v2, and \a a2, and
+ * minimizes the error from the sequence of points {(t_i, x_i)} specified by vectors \a t and
+ * \a x under the conditions. The meanings of those arguments are the same with those for
+ * zPexIPCreateBoundary() and zPexIPCreateLSM(). \a dim is the dimension of the polynomial, which
+ * has to be at least 5. The points have to include at least \a dim-5 different values of t_i
+ * other than 0 and \a term so that the polynomial function is uniquely determined.
  * \return
  * zPexIPCreateBoundary(), zPexIPCreateLSM() and zPexIPCreateBoundaryLSM() return the true value
  * if they succeed to create the polynomial function, or the false value otherwise.
+ * zPexIPCreateLSM() and zPexIPCreateBoundaryLSM() output an error message and return the false
+ * value if the polynomial function is not uniquely determined. If they fail, \a pc is not
+ * allocated, so that it must not be freed by zPexIPFree().
  */
 __ZM_EXPORT bool zPexIPCreateBoundary(zPexIP *pc, double term, double x1, double v1, double a1, double x2, double v2, double a2, const zVec v);
 __ZM_EXPORT bool zPexIPCreateLSM(zPexIP *pc, double term, int dim, const zVec t, const zVec x);

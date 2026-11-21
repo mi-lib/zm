@@ -1,3 +1,6 @@
+2026.11.21. Added tests of zPexIPCreateLSM and zPexIPCreateBoundaryLSM. [test]
+2026.11.21. Fixed zPexIPCreateBoundaryLSM to satisfy the terminal velocity and acceleration and to find the least square solution under the boundary conditions. [zm_ip_pex]
+2026.11.21. Modified zPexIPCreateLSM to find the coefficients by zLESolveErrorMin instead of solving the normal equation, and to return the false value if it fails. [zm_ip_pex]
 2026.11.21. Modified the tests of zRawVecNorm, zRawVecDist and zRawVecWNorm for very small and large vectors to take the precision of subnormal numbers into account. [test]
 2026.11.21. Added a test of zQPSolveASM for unconstrained problems. [test]
 2026.11.21. Modified zQPSolveASM to accept the null pointers as the constraint matrix and vector for unconstrained problems. [zm_opt_qp_asm]

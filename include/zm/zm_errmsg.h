@@ -98,6 +98,7 @@
 
 #define ZM_ERR_IP_INVALID_TERM             "invalid term for polynomial curve"
 #define ZM_ERR_IP_SIZEMISMATCH             "size mismatch of sample point vector"
+#define ZM_ERR_IP_TOOSMALLDIM              "dimension %d too small, which has to be at least %d"
 #define ZM_ERR_IP_INVALID_EDGETYPE         "unknown edge type"
 
 #define ZM_ERR_IP_TRVELPROF_NEGATIVEDISTANCE   "cannot travel negative distance %g"
