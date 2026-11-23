@@ -6,6 +6,12 @@
 
 #include <zm/zm_misc.h>
 
+/* sign function. */
+int zSgn(double x)
+{
+  return _zSgn( x );
+}
+
 /* check if a test value is less than a base value. */
 bool zIsLess(double testval, double baseval)
 {
@@ -135,24 +141,47 @@ double zSplitMant(double a, double *lower)
   return upper;
 }
 
-/* error-free transformation of a product. the rounding error is computed by fma(), which rounds only
- * once by definition, if it is available (C99 or C++11 and later), or by Dekker's TwoProduct otherwise. */
-double zMul(double a, double b, double *error)
+/* fused multiply-add. it is computed by fma(), which rounds only once by definition, if it is available
+ * (C99 or C++11 and later). otherwise, a b = p + e is computed exactly by Dekker's TwoProduct, p + c =
+ * s + t by TwoSum, and s + ( t + e ) is returned, in which only t + e and the last addition round.
+ * if c = -p, then s = t = 0 and e is returned exactly. */
+#undef zFMA /* zFMA might be defined as fma in the header */
+double zFMA(double a, double b, double c)
 {
 #if defined( __cplusplus ) || ( defined( __STDC_VERSION__ ) && __STDC_VERSION__ >= 199901L )
-  double p;
-
-  p = a * b;
-  *error = fma( a, b, -p );
+  return fma( a, b, c );
 #else
-  double p, au, al, bu, bl;
+  /* "volatile" prevents the compiler from contracting a b with the following additions */
+  volatile double p;
+  double e, s, t, au, al, bu, bl;
 
   p = a * b;
   au = zSplitMant( a, &al );
   bu = zSplitMant( b, &bl );
-  *error = al * bl - ( ( ( p - au * bu ) - al * bu ) - au * bl );
+  e = al * bl - ( ( ( p - au * bu ) - al * bu ) - au * bl );
+  s = zAdd( p, c, &t );
+  return s + ( t + e );
 #endif
+}
+
+/* error-free transformation of a product. */
+double zMul(double a, double b, double *error)
+{
+  double p;
+
+  p = a * b;
+  *error = zFMA( a, b, -p );
   return p;
+}
+
+/* error-free transformation of a sum of two values with the larger first (Dekker's FastTwoSum). */
+double zAddFast(double a, double b, double *error)
+{
+  double s;
+
+  s = a + b;
+  *error = b - ( s - a );
+  return s;
 }
 
 /* permutation. */

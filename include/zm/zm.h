@@ -33,6 +33,7 @@
 #ifndef __ZM_H__
 #define __ZM_H__
 
+#include <zm/zm_expansion.h>
 #include <zm/zm_rand.h>
 #include <zm/zm_sf.h>
 #include <zm/zm_mva.h>

@@ -98,8 +98,13 @@ __ZM_EXPORT double zPhaseNormalize(double angle);
 /*! \brief warn when an iteration counts over the maximum. */
 #define ZITERWARN(iter) ZRUNWARN( ZM_WARN_ITERATION, (iter) )
 
-/*! \brief sign function. */
-#define zSgn(x)     ( (x)>=0 ? 1 : -1 )
+/*! \brief sign function.
+ *
+ * zSgn() returns 1 if \a x is positive, -1 if \a x is negative, and 0 otherwise (i.e., if \a x is
+ * zero or NaN). _zSgn() is its macro version, which evaluates \a x more than once.
+ */
+#define _zSgn(x)    ( (x) > 0 ? 1 : ( (x) < 0 ? -1 : 0 ) )
+__ZM_EXPORT int zSgn(double x);
 /*! \brief the absolute-ceiling value.
  *  ( ex. zCeil(0.5) = 1.0 , zCeil(-0.5) = -1.0 ) */
 #define zCeil(x)    ( (x)>=0 ? ceil(x) : floor(x) )
@@ -152,6 +157,24 @@ __ZM_EXPORT double zCbrt(double x);
  */
 __ZM_EXPORT double zPow2Floor(double x);
 
+/*! \brief fused multiply-add.
+ *
+ * zFMA() computes \a a \a b + \a c.
+ * If fma() is available (C99 or C++11 and later), it is computed by fma(), namely, rounded only once.
+ * Otherwise, it is computed without rounding \a a \a b, but may be rounded twice. In this case, the
+ * error is not larger than about twice the unit roundoff relative to the result, plus the square of the
+ * unit roundoff relative to |\a a \a b|. The result is exact if \a c is the negative of \a a \a b
+ * computed in floating-point arithmetic, which zMul() uses.
+ * zFMA() assumes the same as zAdd() does if fma() is not available, and overflows if the absolute value
+ * of \a a or \a b is greater than about 1e+300 in this case.
+ * \return
+ * zFMA() returns the computed value.
+ */
+__ZM_EXPORT double zFMA(double a, double b, double c);
+#if defined( __cplusplus ) || ( defined( __STDC_VERSION__ ) && __STDC_VERSION__ >= 199901L )
+#define zFMA fma
+#endif
+
 /*! \brief error-free transformations of the sum and the product of two values.
  *
  * zAdd() computes the sum of \a a and \a b in floating-point arithmetic, and puts the rounding error of
@@ -176,10 +199,9 @@ __ZM_EXPORT double zPow2Floor(double x);
  * optimizations which reorder floating-point operations, e.g., -ffast-math of GCC.
  * The transformations are exact unless overflow or underflow happens. Note that zSplitMant() overflows
  * if the absolute value of the argument is greater than about 1e+300, and so does zMul() if fma() is not
- * available.
+ * available (see zFMA()).
  * \notes
- * In zMul(), the error is computed by fma() if it is available (C99 or C++11 and later), or by Dekker's
- * TwoProduct otherwise.
+ * In zMul(), the error is computed by zFMA().
  * \return
  * zAdd() returns the sum computed in floating-point arithmetic.
  * zMul() returns the product computed in floating-point arithmetic.
@@ -188,6 +210,18 @@ __ZM_EXPORT double zPow2Floor(double x);
 __ZM_EXPORT double zAdd(double a, double b, double *error);
 __ZM_EXPORT double zMul(double a, double b, double *error);
 __ZM_EXPORT double zSplitMant(double a, double *lower);
+
+/*! \brief error-free transformation of the sum of two values with the larger first.
+ *
+ * zAddFast() computes the sum of \a a and \a b in floating-point arithmetic, and puts the rounding
+ * error of it into \a error, so that \a a + \a b = (the returned value) + \a error exactly (Dekker's
+ * FastTwoSum). It is faster than zAdd(), but requires |\a a| >= |\a b| (or \a a = 0). Otherwise,
+ * \a error is not correct.
+ * The same assumptions with zAdd() are made.
+ * \return
+ * zAddFast() returns the sum computed in floating-point arithmetic.
+ */
+__ZM_EXPORT double zAddFast(double a, double b, double *error);
 
 /*! \brief permutation.
  *

@@ -1,11 +1,21 @@
 #include <zm/zm.h>
 #include <float.h>
 
+#undef zFMA /* test the function in the library */
+
 void assert_equal(void)
 {
   zAssert( zEqual (ordinary case), zEqual( 1.0, 1.1, 0.1 ) );
   zAssert( zEqual (large case),    zEqual( 1.0e10, 1.1e10, 0.1 ) );
   zAssert( zEqual (huge case),    !zEqual( 1.0, HUGE_VAL, zTOL ) );
+}
+
+void assert_sgn(void)
+{
+  zAssert( zSgn,
+    zSgn( 2.0 ) == 1 && zSgn( -2.0 ) == -1 && zSgn( 0.0 ) == 0 && zSgn( -0.0 ) == 0 &&
+    zSgn( DBL_MIN*DBL_EPSILON ) == 1 && zSgn( -DBL_MIN*DBL_EPSILON ) == -1 &&
+    zSgn( HUGE_VAL ) == 1 && zSgn( -HUGE_VAL ) == -1 && zSgn( NAN ) == 0 );
 }
 
 void assert_deg2rad(void)
@@ -201,7 +211,8 @@ void assert_error_free_transformation(void)
   const int testnum = 10000;
   double a, b, x, y, s, p, e, u, l;
   int i, k, ex;
-  bool result_add = true, result_mul = true, result_split = true;
+  bool result_add = true, result_add_fast = true, result_mul = true, result_split = true, result_fma = true;
+  double c, v;
 
   for( i=0; i<testnum; i++ ){
     a = zRandF(-1,1) * pow( 10, zRandF(-100,100) );
@@ -212,6 +223,13 @@ void assert_error_free_transformation(void)
     s = zAdd( a, b, &e );
     if( fabs( a ) >= fabs( b ) ){ x = a; y = b; } else{ x = b; y = a; }
     if( s != a + b || e != y - ( s - x ) ) result_add = false;
+    if( zAddFast( x, y, &u ) != s || u != e ) result_add_fast = false;
+    /* fused multiply-add, which may be rounded twice if fma() is not available in ZM */
+    c = zRandF(-1,1) * pow( 10, zRandF(-100,100) );
+    if( i % 4 == 2 ) c = -a * b * ( 1 + zRandF(-1,1)*1.0e-10 ); /* nearly cancelling */
+    v = fma( a, b, c );
+    if( fabs( zFMA( a, b, c ) - v ) > DBL_EPSILON * fabs( v ) + 0.25 * DBL_EPSILON * DBL_EPSILON * fabs( a * b ) ) result_fma = false;
+    if( zFMA( a, b, -a * b ) != fma( a, b, -a * b ) ) result_fma = false;
     /* product */
     p = zMul( a, b, &e );
     if( p != a * b || e != fma( a, b, -p ) ) result_mul = false;
@@ -225,6 +243,8 @@ void assert_error_free_transformation(void)
     }
   }
   zAssert( zAdd, result_add );
+  zAssert( zAddFast, result_add_fast );
+  zAssert( zFMA, result_fma );
   zAssert( zMul, result_mul );
   zAssert( zSplitMant, result_split );
 }
@@ -233,6 +253,7 @@ int main(void)
 {
   zRandInit();
   assert_equal();
+  assert_sgn();
   assert_deg2rad();
   assert_is_even_odd();
   assert_is_max_min();
